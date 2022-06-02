@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="it.vfsfitvnm.vimusic">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <application
+            android:allowBackup="true"
+            android:configChanges="colorMode|density|fontScale|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
+            android:hardwareAccelerated="true"
+            android:icon="@mipmap/ic_launcher_round"
+            android:label="${appName}"
+            android:name=".MainApplication"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:requestLegacyExternalStorage="true"
+            android:theme="@style/Theme.ViMusic.NoActionBar">
+
+        <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:theme="@style/Theme.ViMusic.NoActionBar"
+                android:launchMode="singleTop"
+                android:windowSoftInputMode="adjustResize">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
+
+                <data android:scheme="https"
+                        android:host="music.youtube.com"
+                        android:pathPrefix="/watch" />
+
+                <data android:scheme="https"
+                        android:host="www.youtube.com"
+                        android:pathPrefix="/watch" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".services.PlayerService" android:exported="false">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService"/>
+                <action android:name="android.media.browse.MediaBrowserService"/>
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

@@ -1,0 +1,18 @@
+<resources>
+    <style name="Theme.ViMusic" parent="@android:style/Theme.Holo.NoActionBar">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">#14161f</item>
+        <item name="android:statusBarColor">#14161f</item>
+        <item name="android:navigationBarColor">#14161f</item>
+    </style>
+
+    <style name="Theme.ViMusic.NoActionBar" parent="Theme.ViMusic">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>
