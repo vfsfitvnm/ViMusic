@@ -1,22 +1,20 @@
-# ViMusic
+<div align="center">
+    <img src="./app/src/main/ic_launcher-playstore.png" width="128" height="128" style="display: block; margin: 0 auto"/>
+    <h1>ViMusic</h1>
+    <p>A Jetpack Compose Android application for streaming music from YouTube Music</p>
 
-<p align="center">
-    <img src="./app/src/main/ic_launcher-playstore.png" width="100" style="display: block; margin: 0 auto"/>
-</p>
-
-<h3 align="center">A Jetpack Compose Android application for streaming music from YouTube Music</h3>
+[![Downloads](https://img.shields.io/badge/-Jetpack%20Compose-3a83f9?style=for-the-badge&logo=jetpackcompose&logoColor=white&labelColor=2ec781)](https://developer.android.com/jetpack/compose)
+[![Downloads](https://img.shields.io/github/downloads/vfsfitvnm/ViMusic/total?style=for-the-badge&labelColor=002b41)](https://github.com/vfsfitvnm/ViMusic/releases)
+</div>
 
 ---
 
-<p float="center">
+<p>
   <img src="https://user-images.githubusercontent.com/46219656/171632003-33a017d7-cdc8-4588-a1fc-45be294969a8.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/171632005-f51cce3f-20d4-44e6-83dd-c1d27e9c63e0.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/171632000-feadb479-41cf-43ba-8c8a-11aed303ad69.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/171632008-e66392c7-9462-4383-b7cf-8ec5f5701f9c.png" width="200" />
 </p>
-
-## Known problems
-The application is using `androidx.media3`, which is unstable. Expect random crashes or buggy notification behaviours. Hopefully, they will be fixed within the next alpha release.
 
 ## Features
 - Play any non-age-restricted song/video from YouTube Music
@@ -38,12 +36,15 @@ The application is using `androidx.media3`, which is unstable. Expect random cra
 - Translation
 
 ## Installation
-You can download the latest apk [here](https://github.com/vfsfitvnm/ViMusic/releases), **the unique distribution channel**.
+[<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/vfsfitvnm/ViMusic/releases/latest)
 
 After installing, I recommend executing the following ADB command to neutralize some animation lags you may experience in cold starts:
 ```
 adb shell cmd package compile -r bg-dexopt it.vfsfitvnm.vimusic
 ```
+
+## Known problems
+The application is using `androidx.media3`, which is unstable. Expect random crashes or buggy notification behaviours. Hopefully, they will be fixed within the next alpha release.
 
 ## Contributions
 There's a huge room for improvements! Please open an issue to report bugs, discuss ideas and so on.
