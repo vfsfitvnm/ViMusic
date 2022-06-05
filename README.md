@@ -12,7 +12,7 @@
 <p>
   <img src="https://user-images.githubusercontent.com/46219656/171632003-33a017d7-cdc8-4588-a1fc-45be294969a8.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/171632005-f51cce3f-20d4-44e6-83dd-c1d27e9c63e0.png" width="200" />
-  <img src="https://user-images.githubusercontent.com/46219656/171632000-feadb479-41cf-43ba-8c8a-11aed303ad69.png" width="200" />
+  <img src="https://user-images.githubusercontent.com/46219656/172060638-b6c7b06f-a708-48e8-9d2a-97558a83676c.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/171632008-e66392c7-9462-4383-b7cf-8ec5f5701f9c.png" width="200" />
 </p>
 
@@ -29,7 +29,6 @@
 
 ## TODO
 - **Improve UI/UX** (help needed)
-- Settings page
 - Support YouTube playlists (and other stuff to improve features parity)
 - Download songs (not sure about this)
 - Play local songs (not sure about this, too)
