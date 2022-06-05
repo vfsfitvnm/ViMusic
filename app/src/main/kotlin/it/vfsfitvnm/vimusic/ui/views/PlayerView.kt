@@ -241,15 +241,12 @@ fun PlayerView(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
+                        .weight(1f)
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 32.dp)
                         .padding(horizontal = 32.dp)
                         .size(thumbnailSizeDp)
                 ) {
-//                    BasicText(
-//                        text = playerState.error?.message ?: "",
-//                        style = typography.xs.medium
-//                    )
                     Error(
                         error = Outcome.Error.Unhandled(player.error!!),
                         onRetry = {
