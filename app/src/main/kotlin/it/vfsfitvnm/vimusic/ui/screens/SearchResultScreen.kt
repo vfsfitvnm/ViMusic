@@ -134,7 +134,7 @@ fun SearchResultScreen(
 
                         BasicText(
                             text = query,
-                            style = typography.m.semiBold,
+                            style = typography.m.semiBold.center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -143,6 +143,7 @@ fun SearchResultScreen(
                                     indication = null,
                                     onClick = onSearchAgain
                                 )
+                                .weight(1f)
                         )
 
                         Spacer(
