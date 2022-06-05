@@ -449,7 +449,8 @@ fun PlayerView(
                         .clickable {
                             player.mediaController.repeatMode =
                                 (player.mediaController.repeatMode + 2) % 3
-                            preferences.repeatMode = player.mediaController.repeatMode
+
+                            preferences.onRepeatModeChange(player.mediaController.repeatMode)
                         }
                         .padding(horizontal = 16.dp)
                         .size(28.dp)

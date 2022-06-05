@@ -112,17 +112,13 @@ fun SettingsScreen() {
                 EnumValueSelectorEntry(
                     title = "Theme mode",
                     selectedValue = preferences.colorPaletteMode,
-                    onValueSelected = {
-                        preferences.colorPaletteMode = it
-                    }
+                    onValueSelected = preferences.onColorPaletteModeChange
                 )
 
                 EnumValueSelectorEntry(
                     title = "Thumbnail roundness",
                     selectedValue = preferences.thumbnailRoundness,
-                    onValueSelected = {
-                        preferences.thumbnailRoundness = it
-                    }
+                    onValueSelected = preferences.onThumbnailRoundnessChange
                 )
             }
         }

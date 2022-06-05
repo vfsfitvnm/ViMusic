@@ -270,6 +270,8 @@ fun HomeScreen(intentVideoId: String?) {
                         }
                     }
 
+                    if (!preferences.isReady) return@LazyColumn
+
                     item {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -302,9 +304,7 @@ fun HomeScreen(intentVideoId: String?) {
                                     modifier = Modifier
                                         .clickable {
                                             val values = SongCollection.values()
-
-                                            preferences.homePageSongCollection =
-                                                values[(preferences.homePageSongCollection.ordinal + 1) % values.size]
+                                            preferences.onHomePageSongCollectionChange(values[(preferences.homePageSongCollection.ordinal + 1) % values.size])
                                         }
                                         .padding(horizontal = 8.dp, vertical = 8.dp)
                                         .size(16.dp)

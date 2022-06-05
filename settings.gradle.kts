@@ -32,6 +32,8 @@ dependencyResolutionManagement {
             alias("accompanist-systemuicontroller").to("com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
             alias("accompanist-flowlayout").to("com.google.accompanist", "accompanist-flowlayout").versionRef("accompanist")
 
+            alias("datastore").to("androidx.datastore", "datastore-preferences").version("1.0.0")
+
             version("room", "2.5.0-alpha01")
             alias("room").to("androidx.room", "room-ktx").versionRef("room")
             alias("room-compiler").to("androidx.room", "room-compiler").versionRef("room")

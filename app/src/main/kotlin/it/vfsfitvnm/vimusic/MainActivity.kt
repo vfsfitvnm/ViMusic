@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic
 
 import android.content.ComponentName
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,15 +21,13 @@ import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -41,13 +40,13 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
-import it.vfsfitvnm.vimusic.ui.screens.SettingsScreen
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.styling.rememberColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.rememberTypography
 import it.vfsfitvnm.vimusic.utils.*
 
+private val Context.dataStore by preferencesDataStore(name = "preferences")
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -64,7 +63,7 @@ class MainActivity : ComponentActivity() {
         val intentVideoId = intent?.data?.getQueryParameter("v")
 
         setContent {
-            val preferences = rememberPreferences()
+            val preferences by rememberPreferences(dataStore)
             val systemUiController = rememberSystemUiController()
 
             val isDarkTheme =  when (preferences.colorPaletteMode) {
@@ -121,10 +120,9 @@ class MainActivity : ComponentActivity() {
                 LocalColorPalette provides colorPalette,
                 LocalShimmerTheme provides shimmerTheme,
                 LocalTypography provides rememberTypography(colorPalette.text),
-                LocalYoutubePlayer provides rememberYoutubePlayer(
-                    mediaControllerFuture,
-                    preferences.repeatMode
-                ),
+                LocalYoutubePlayer provides rememberYoutubePlayer(mediaControllerFuture) {
+                   it.repeatMode = preferences.repeatMode
+                },
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()
             ) {
@@ -133,7 +131,6 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(LocalColorPalette.current.background)
                 ) {
-//                    SettingsScreen()
                     HomeScreen(intentVideoId = intentVideoId)
 
                     BottomSheetMenu(
@@ -151,3 +148,4 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 }
+

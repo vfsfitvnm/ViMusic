@@ -88,6 +88,8 @@ dependencies {
     implementation(libs.android.media)
     implementation(libs.bundles.media3)
 
+    implementation(libs.datastore)
+
     implementation(libs.room)
     kapt(libs.room.compiler)
 

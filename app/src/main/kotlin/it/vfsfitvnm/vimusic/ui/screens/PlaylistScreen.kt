@@ -51,7 +51,6 @@ fun LocalPlaylistScreen(
         Database.playlistWithSongs(playlistId).map { it ?: PlaylistWithSongs.NotFound }
     }.collectAsState(initial = PlaylistWithSongs.Empty, context = Dispatchers.IO)
 
-
     val lazyListState = rememberLazyListState()
 
     val albumRoute = rememberAlbumRoute()
