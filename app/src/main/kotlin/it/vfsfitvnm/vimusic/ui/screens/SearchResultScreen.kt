@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,6 +32,7 @@ import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
@@ -292,7 +294,7 @@ fun SmallSongItemShimmer(
     ) {
         Spacer(
             modifier = Modifier
-                .background(colorPalette.darkGray)
+                .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
                 .size(thumbnailSizeDp)
         )
 
@@ -365,7 +367,6 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-
                 .padding(vertical = 4.dp, horizontal = 16.dp)
         )
         is YouTube.Item.Video -> SmallVideoItem(
@@ -436,7 +437,9 @@ fun SmallAlbumItem(
         AsyncImage(
             model = album.thumbnail.size(thumbnailSizePx),
             contentDescription = null,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
+                .clip(ThumbnailRoundness.shape)
                 .size(thumbnailSizeDp)
         )
 

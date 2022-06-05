@@ -9,8 +9,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,6 +33,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -190,7 +193,9 @@ fun AlbumScreen(
                         AsyncImage(
                             model = album.thumbnail.size(thumbnailSizePx),
                             contentDescription = null,
+                            contentScale = ContentScale.FillBounds,
                             modifier = Modifier
+                                .clip(ThumbnailRoundness.shape)
                                 .size(thumbnailSizeDp)
                         )
 
@@ -309,7 +314,7 @@ private fun Loading() {
         ) {
             Spacer(
                 modifier = Modifier
-                    .background(color = colorPalette.darkGray)
+                    .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
                     .size(128.dp)
             )
 

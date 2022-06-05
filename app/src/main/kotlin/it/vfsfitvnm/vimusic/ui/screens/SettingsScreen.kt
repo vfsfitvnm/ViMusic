@@ -15,7 +15,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
@@ -115,13 +114,14 @@ fun SettingsScreen() {
                     selectedValue = preferences.colorPaletteMode,
                     onValueSelected = {
                         preferences.colorPaletteMode = it
-                    },
-                    valueText = {
-                        when (it) {
-                            ColorPaletteMode.Light -> "Light"
-                            ColorPaletteMode.Dark -> "Dark"
-                            ColorPaletteMode.System -> "System"
-                        }
+                    }
+                )
+
+                EnumValueSelectorEntry(
+                    title = "Thumbnail roundness",
+                    selectedValue = preferences.thumbnailRoundness,
+                    onValueSelected = {
+                        preferences.thumbnailRoundness = it
                     }
                 )
             }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
@@ -30,6 +31,7 @@ import androidx.media3.ui.TimeBar
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
@@ -113,8 +115,9 @@ fun PlayerView(
                     AsyncImage(
                         model = "${player.mediaMetadata.artworkUri}-w$smallThumbnailSize-h$smallThumbnailSize",
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.FillBounds,
                         modifier = Modifier
+                            .clip(ThumbnailRoundness.shape)
                             .size(64.dp)
                     )
 
@@ -231,9 +234,11 @@ fun PlayerView(
                     AsyncImage(
                         model = "$artworkUri-w$thumbnailSizePx-h$thumbnailSizePx",
                         contentDescription = null,
+                        contentScale = ContentScale.FillBounds,
                         modifier = Modifier
                             .padding(bottom = 32.dp)
                             .padding(horizontal = 32.dp)
+                            .clip(ThumbnailRoundness.shape)
                             .size(thumbnailSizeDp)
                     )
                 }
