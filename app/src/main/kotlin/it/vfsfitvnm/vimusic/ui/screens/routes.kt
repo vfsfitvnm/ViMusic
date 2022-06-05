@@ -80,3 +80,10 @@ fun rememberLyricsRoute(): Route0 {
         Route0("LyricsRoute")
     }
 }
+
+@Composable
+fun rememberSettingsRoute(): Route0 {
+    return remember {
+        Route0("SettingsRoute")
+    }
+}

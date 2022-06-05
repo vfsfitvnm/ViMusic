@@ -59,6 +59,7 @@ fun HomeScreen(intentVideoId: String?) {
     val lazyListState = rememberLazyListState()
 
     val intentVideoRoute = rememberIntentVideoRoute(intentVideoId)
+    val settingsRoute = rememberSettingsRoute()
     val playlistRoute = rememberLocalPlaylistRoute()
     val searchRoute = rememberSearchRoute()
     val searchResultRoute = rememberSearchResultRoute()
@@ -94,6 +95,10 @@ fun HomeScreen(intentVideoId: String?) {
                 IntentVideoScreen(
                     videoId = videoId ?: error("videoId must be not null")
                 )
+            }
+
+            settingsRoute {
+                SettingsScreen()
             }
 
             playlistRoute { playlistId ->
@@ -177,8 +182,14 @@ fun HomeScreen(intentVideoId: String?) {
                             modifier = Modifier
                                 .height(52.dp)
                         ) {
-                            Spacer(
+                            Image(
+                                painter = painterResource(R.drawable.cog),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
+                                    .clickable {
+                                        settingsRoute()
+                                    }
                                     .padding(horizontal = 16.dp, vertical = 8.dp)
                                     .size(24.dp)
                             )
