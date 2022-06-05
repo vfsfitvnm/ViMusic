@@ -238,6 +238,7 @@ fun PlayerView(
                         modifier = Modifier
                             .padding(bottom = 32.dp)
                             .padding(horizontal = 32.dp)
+                            .aspectRatio(1f)
                             .clip(ThumbnailRoundness.shape)
                             .size(thumbnailSizeDp)
                     )
