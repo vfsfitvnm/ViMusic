@@ -37,6 +37,7 @@ import it.vfsfitvnm.vimusic.utils.LocalYoutubePlayer
 import it.vfsfitvnm.vimusic.utils.YoutubePlayer
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.youtubemusic.Outcome
 import kotlinx.coroutines.launch
 
@@ -117,7 +118,7 @@ fun CurrentPlaylistView(
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .background(Color.Black.copy(alpha = 0.25f))
+                                .background(color = Color.Black.copy(alpha = 0.25f), shape = ThumbnailRoundness.shape)
                                 .size(54.dp)
                         ) {
                             if (isPaused) {
