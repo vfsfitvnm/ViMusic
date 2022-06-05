@@ -7,9 +7,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
-import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.withContext
 
 class YoutubePlayer(mediaController: MediaController) : PlayerState(mediaController) {
     object Radio {
@@ -34,7 +34,7 @@ class YoutubePlayer(mediaController: MediaController) : PlayerState(mediaControl
             nextContinuation = Outcome.Initial
         }
 
-        fun setup(watchEndpoint: NavigationEndpoint.Endpoint.Watch?) {
+        fun setup(watchEndpoint: NavigationEndpoint.Endpoint.Watch?, play: Boolean = true) {
             setup(
                 videoId = watchEndpoint?.videoId,
                 playlistId = watchEndpoint?.playlistId,
@@ -42,7 +42,7 @@ class YoutubePlayer(mediaController: MediaController) : PlayerState(mediaControl
                 playlistSetVideoId = watchEndpoint?.playlistSetVideoId
             )
 
-            listener?.process(true)
+            listener?.process(play)
         }
 
         suspend fun process(player: Player, force: Boolean = false, play: Boolean = false) {

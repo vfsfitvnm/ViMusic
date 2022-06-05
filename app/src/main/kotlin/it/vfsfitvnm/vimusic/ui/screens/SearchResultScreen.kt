@@ -202,11 +202,15 @@ fun SearchResultScreen(
                                 is YouTube.Item.Artist -> artistRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Song -> {
                                     player?.mediaController?.forcePlay(item.asMediaItem)
-                                    item.info.endpoint?.let(YoutubePlayer.Radio::setup)
+                                    item.info.endpoint?.let {
+                                        YoutubePlayer.Radio.setup(it, false)
+                                    }
                                 }
                                 is YouTube.Item.Video -> {
                                     player?.mediaController?.forcePlay(item.asMediaItem)
-                                    item.info.endpoint?.let(YoutubePlayer.Radio::setup)
+                                    item.info.endpoint?.let {
+                                        YoutubePlayer.Radio.setup(it, false)
+                                    }
                                 }
                             }
                         }
