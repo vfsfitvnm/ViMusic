@@ -22,13 +22,13 @@ dependencyResolutionManagement {
             alias("compose-ui-util").to("androidx.compose.ui", "ui-util").versionRef("compose")
             alias("compose-ripple").to("androidx.compose.material", "material-ripple").versionRef("compose")
 
-            alias("compose-shimmer").to("com.valentinilk.shimmer", "compose-shimmer").version("1.0.2")
+            alias("compose-shimmer").to("com.valentinilk.shimmer", "compose-shimmer").version("1.0.3")
 
-            alias("compose-activity").to("androidx.activity", "activity-compose").version("1.5.0-alpha03")
+            alias("compose-activity").to("androidx.activity", "activity-compose").version("1.5.0-rc01")
 
-            alias("compose-coil").to("io.coil-kt", "coil-compose").version("2.0.0-rc03")
+            alias("compose-coil").to("io.coil-kt", "coil-compose").version("2.1.0")
 
-            version("accompanist", "0.24.9-beta")
+            version("accompanist", "0.24.10-beta")
             alias("accompanist-systemuicontroller").to("com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
             alias("accompanist-flowlayout").to("com.google.accompanist", "accompanist-flowlayout").versionRef("accompanist")
 
@@ -42,7 +42,7 @@ dependencyResolutionManagement {
             alias("media3-exoplayer").to("androidx.media3", "media3-exoplayer").versionRef("media3")
             bundle("media3", listOf("media3-ui", "media3-session", "media3-exoplayer"))
 
-            version("ktor", "2.0.1")
+            version("ktor", "2.0.2")
             alias("ktor-client-core").to("io.ktor", "ktor-client-core").versionRef("ktor")
             alias("ktor-client-cio").to("io.ktor", "ktor-client-cio").versionRef("ktor")
             alias("ktor-client-content-negotiation").to("io.ktor", "ktor-client-content-negotiation").versionRef("ktor")
@@ -52,7 +52,7 @@ dependencyResolutionManagement {
 
             alias("brotli").to("org.brotli", "dec").version("0.1.2")
 
-            alias("guava-coroutines").to("org.jetbrains.kotlinx", "kotlinx-coroutines-guava").version("1.6.0")
+            alias("guava-coroutines").to("org.jetbrains.kotlinx", "kotlinx-coroutines-guava").version("1.6.2")
         }
 
         create("testLibs") {
