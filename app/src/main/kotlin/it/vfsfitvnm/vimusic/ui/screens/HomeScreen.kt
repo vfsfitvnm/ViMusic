@@ -275,7 +275,7 @@ fun HomeScreen(intentVideoId: String?) {
 
                     item {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalAlignment = Alignment.Bottom,
                             modifier = Modifier
                                 .zIndex(1f)
                                 .padding(horizontal = 8.dp)
@@ -298,17 +298,28 @@ fun HomeScreen(intentVideoId: String?) {
                                         .animateContentSize()
                                 )
 
-                                Image(
-                                    painter = painterResource(R.drawable.repeat),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                                val songCollections = enumValues<SongCollection>()
+                                val nextSongCollection = songCollections[(preferences.homePageSongCollection.ordinal + 1) % songCollections.size]
+
+                                BasicText(
+                                    text = when (nextSongCollection) {
+                                        SongCollection.MostPlayed -> "Most played"
+                                        SongCollection.Favorites -> "Favorites"
+                                        SongCollection.History -> "History"
+                                    },
+                                    style = typography.xxs.secondary.bold,
                                     modifier = Modifier
-                                        .clickable {
-                                            val values = SongCollection.values()
-                                            preferences.onHomePageSongCollectionChange(values[(preferences.homePageSongCollection.ordinal + 1) % values.size])
+                                        .clickable(
+                                            indication = rememberRipple(bounded = true),
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        ) {
+                                            preferences.onHomePageSongCollectionChange(
+                                                nextSongCollection
+                                            )
                                         }
-                                        .padding(horizontal = 8.dp, vertical = 8.dp)
-                                        .size(16.dp)
+//                                        .alignByBaseline()
+                                        .padding(horizontal = 16.dp)
+                                        .animateContentSize()
                                 )
                             }
 
