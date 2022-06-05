@@ -92,10 +92,10 @@ fun AlbumScreen(
 
             Column(
                 modifier = Modifier
-                    .verticalScroll(scrollState)
                     .padding(bottom = 72.dp)
                     .background(colorPalette.background)
                     .fillMaxSize()
+                    .verticalScroll(scrollState)
             ) {
                 TopAppBar(
                     modifier = Modifier
