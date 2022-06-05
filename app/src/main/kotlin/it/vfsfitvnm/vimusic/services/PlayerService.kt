@@ -330,10 +330,17 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                                 dataSpec.withUri(url.value.toUri())
                                     .subrange(dataSpec.uriPositionOffset, chunkLength)
                             }
-                            // TODO
-                            is Outcome.Error.Network -> throw Error("no network")
+                            is Outcome.Error.Network -> throw PlaybackException(
+                                "Couldn't reach the internet",
+                                null,
+                                PlaybackException.ERROR_CODE_REMOTE_ERROR
+                            )
                             is Outcome.Error.Unhandled -> throw url.throwable
-                            else -> TODO("unreachable")
+                            else -> throw PlaybackException(
+                                "Unexpected error",
+                                null,
+                                PlaybackException.ERROR_CODE_REMOTE_ERROR
+                            )
                         }
                     }
                 }
