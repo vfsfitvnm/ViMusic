@@ -207,7 +207,7 @@ private inline fun DefaultDialog(
             modifier = modifier
                 .padding(all = 48.dp)
                 .background(
-                    color = LocalColorPalette.current.lightBackground,
+                    color = LocalColorPalette.current.elevatedBackground,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(horizontal = 24.dp, vertical = 16.dp),
