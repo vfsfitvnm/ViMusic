@@ -32,6 +32,7 @@ import it.vfsfitvnm.route.rememberRoute
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.SongCollection
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.models.SongWithInfo
@@ -407,12 +408,13 @@ fun HomeScreen(intentVideoId: String?) {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .background(
-                                                Brush.verticalGradient(
+                                                brush = Brush.verticalGradient(
                                                     colors = listOf(
                                                         Color.Transparent,
                                                         Color.Black.copy(alpha = 0.75f)
                                                     )
-                                                )
+                                                ),
+                                                shape = ThumbnailRoundness.shape
                                             )
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
