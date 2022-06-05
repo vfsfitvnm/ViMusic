@@ -35,11 +35,13 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.common.util.concurrent.ListenableFuture
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
+import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.services.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
+import it.vfsfitvnm.vimusic.ui.screens.SettingsScreen
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.styling.rememberColorPalette
@@ -64,7 +66,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val preferences = rememberPreferences()
             val systemUiController = rememberSystemUiController()
-            val isDarkTheme = isSystemInDarkTheme()
+
+            val isDarkTheme =  when (preferences.colorPaletteMode) {
+                ColorPaletteMode.Light -> false
+                ColorPaletteMode.Dark -> true
+                ColorPaletteMode.System -> isSystemInDarkTheme()
+            }
 
             val colorPalette = rememberColorPalette(isDarkTheme)
 
@@ -126,6 +133,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(LocalColorPalette.current.background)
                 ) {
+//                    SettingsScreen()
                     HomeScreen(intentVideoId = intentVideoId)
 
                     BottomSheetMenu(

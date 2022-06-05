@@ -3,17 +3,21 @@ package it.vfsfitvnm.vimusic.ui.components.themed
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
@@ -26,10 +30,7 @@ import androidx.compose.ui.window.Dialog
 import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.color
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.delay
 
 @Composable
@@ -194,16 +195,15 @@ fun ConfirmationDialog(
 }
 
 @Composable
-private inline fun DefaultDialog(
+inline fun DefaultDialog(
     noinline onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     crossinline content: @Composable ColumnScope.() -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismiss
-    ) {
+    Dialog(onDismissRequest = onDismiss) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = horizontalAlignment,
             modifier = modifier
                 .padding(all = 48.dp)
                 .background(
@@ -213,5 +213,113 @@ private inline fun DefaultDialog(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             content = content
         )
+    }
+}
+
+@Composable
+inline fun <reified T : Enum<T>> EnumValueSelectorDialog(
+    noinline onDismiss: () -> Unit,
+    title: String,
+    selectedValue: T,
+    crossinline onValueSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    crossinline valueText: (T) -> String = Enum<T>::name
+) {
+    val typography = LocalTypography.current
+    val colorPalette = LocalColorPalette.current
+
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = modifier
+                .padding(all = 48.dp)
+                .background(
+                    color = LocalColorPalette.current.elevatedBackground,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(vertical = 16.dp),
+        ) {
+            BasicText(
+                text = title,
+                style = typography.s.semiBold,
+                modifier = Modifier
+                    .padding(vertical = 8.dp, horizontal = 24.dp)
+            )
+
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+            ) {
+                enumValues<T>().forEach { value ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier
+                            .clickable(
+                                indication = rememberRipple(bounded = true),
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    onDismiss()
+                                    onValueSelected(value)
+                                }
+                            )
+                            .padding(vertical = 8.dp, horizontal = 24.dp)
+                            .fillMaxWidth()
+                    ) {
+                        if (selectedValue == value) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Spacer(
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .background(
+                                            color = colorPalette.primaryContainer,
+                                            shape = CircleShape
+                                        )
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(
+                                            color = colorPalette.onPrimaryContainer,
+                                            shape = CircleShape
+                                        )
+                                )
+                            }
+
+                        } else {
+                            Spacer(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = colorPalette.textDisabled,
+                                        shape = CircleShape
+                                    )
+                            )
+                        }
+
+                        BasicText(
+                            text = valueText(value),
+                            style = typography.xs.medium
+                        )
+                    }
+                }
+            }
+
+            BasicText(
+                text = "Cancel",
+                style = typography.xs.semiBold,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .clip(RoundedCornerShape(36.dp))
+                    .clickable(
+                        indication = rememberRipple(bounded = true),
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = onDismiss
+                    )
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .align(Alignment.End)
+            )
+        }
     }
 }

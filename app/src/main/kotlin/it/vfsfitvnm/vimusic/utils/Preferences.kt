@@ -10,11 +10,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.media3.common.Player
+import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.SongCollection
 import it.vfsfitvnm.youtubemusic.YouTube
 
 @Stable
 class Preferences(holder: SharedPreferences) : SharedPreferences by holder {
+    var colorPaletteMode by preference("colorPaletteMode", ColorPaletteMode.System)
     var searchFilter by preference("searchFilter", YouTube.Item.Song.Filter.value)
     var repeatMode by preference("repeatMode", Player.REPEAT_MODE_OFF)
     var homePageSongCollection by preference("homePageSongCollection", SongCollection.MostPlayed)
