@@ -194,15 +194,16 @@ fun PlaylistOrAlbumScreen(
                                             onClick = {
                                                 menuState.hide()
 
-                                                playlistOrAlbum.valueOrNull?.url?.let { url ->
-                                                    val sendIntent = Intent().apply {
-                                                        action = Intent.ACTION_SEND
-                                                        type = "text/plain"
-                                                        putExtra(Intent.EXTRA_TEXT, url)
-                                                    }
+                                                (playlistOrAlbum.valueOrNull?.url
+                                                    ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}").let { url ->
+                                                        val sendIntent = Intent().apply {
+                                                            action = Intent.ACTION_SEND
+                                                            type = "text/plain"
+                                                            putExtra(Intent.EXTRA_TEXT, url)
+                                                        }
 
-                                                    context.startActivity(Intent.createChooser(sendIntent, null))
-                                                }
+                                                        context.startActivity(Intent.createChooser(sendIntent, null))
+                                                    }
                                             }
                                         )
                                     }
