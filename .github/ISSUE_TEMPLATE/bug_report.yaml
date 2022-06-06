@@ -1,0 +1,88 @@
+name: Bug report
+description: Create a bug report to help us improve
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **1- I am able to reproduce the bug with the [latest version](https://github.com/vfsfitvnm/vimusic/releases/latest).**
+        **2- I've checked that there is no issue about this bug.**
+        **3- This issue contains only one bug.**
+        **4- The title of this issue accurately describes the bug.**
+
+  - type: textarea
+    id: reproduce-steps
+    attributes:
+      label: Steps to reproduce the bug
+      description: What did you do for the bug to show up?
+      placeholder: |
+        Example:
+          1. Go to '...'
+          2. Click on '....'
+          3. Scroll down to '....'
+          4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      placeholder: |
+        Example:
+          "This should happen..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      placeholder: |
+        Example:
+          "This happened instead..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: sreen-media
+    attributes:
+      label: Screenshots/Screen recordings
+      description: |
+        A picture or video helps us understand the bug more.
+
+        You can upload them directly in the text box.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        If your bug includes a crash, please use `adb logcat` or other ways to provide logs.
+  
+  - type: input
+    id: vimusic-version
+    attributes:
+      label: ViMusic version
+      placeholder: |
+        Example: "0.1.2"
+    validations:
+      required: true
+
+  - type: input
+    id: android-version
+    attributes:
+      label: Android version
+      description: |
+        You can find this somewhere in your Android settings.
+      placeholder: |
+        Example: "Android 12"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional information
+      placeholder: |
+        Additional details and attachments.
