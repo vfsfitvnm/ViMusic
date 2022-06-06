@@ -34,12 +34,12 @@ import kotlinx.coroutines.withContext
 @ExperimentalAnimationApi
 @Composable
 fun IntentVideoScreen(videoId: String) {
-    val albumRoute = rememberAlbumRoute()
+    val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            AlbumScreen(
+            PlaylistOrAlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }

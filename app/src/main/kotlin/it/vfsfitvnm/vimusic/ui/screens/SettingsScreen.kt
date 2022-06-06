@@ -26,14 +26,14 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen() {
-    val albumRoute = rememberAlbumRoute()
+    val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            AlbumScreen(
+            PlaylistOrAlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }

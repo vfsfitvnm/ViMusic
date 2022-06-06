@@ -144,25 +144,27 @@ val SongWithInfo.asMediaItem: MediaItem
         .setMediaId(song.id)
         .build()
 
-fun YouTube.AlbumItem.toMediaItem(
+fun YouTube.PlaylistOrAlbum.Item.toMediaItem(
     albumId: String,
-    album: YouTube.Album
+    playlistOrAlbum: YouTube.PlaylistOrAlbum
 ): MediaItem? {
+    val isFromAlbum = thumbnail == null
+
     return MediaItem.Builder()
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(info.name)
-                .setArtist((authors ?: album.authors).joinToString("") { it.name })
-                .setAlbumTitle(album.title)
-                .setArtworkUri(album.thumbnail.url.toUri())
+                .setArtist((authors ?: playlistOrAlbum.authors)?.joinToString("") { it.name })
+                .setAlbumTitle(if (isFromAlbum) playlistOrAlbum.title else album?.name)
+                .setArtworkUri(if (isFromAlbum) playlistOrAlbum.thumbnail?.url?.toUri() else thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         "videoId" to info.endpoint?.videoId,
                         "playlistId" to info.endpoint?.playlistId,
-                        "albumId" to albumId,
+                        "albumId" to (if (isFromAlbum) albumId else album?.endpoint?.browseId),
                         "durationText" to durationText,
-                        "artistNames" to (authors ?: album.authors).map { it.name },
-                        "artistIds" to (authors ?: album.authors).map { it.endpoint?.browseId }
+                        "artistNames" to (authors ?: playlistOrAlbum.authors)?.map { it.name },
+                        "artistIds" to (authors ?: playlistOrAlbum.authors)?.map { it.endpoint?.browseId }
                     )
                 )
                 .build()

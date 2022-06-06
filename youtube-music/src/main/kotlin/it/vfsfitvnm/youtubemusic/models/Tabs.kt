@@ -34,6 +34,7 @@ data class SectionListRenderer(
     data class Content(
         @JsonNames("musicImmersiveCarouselShelfRenderer")
         val musicCarouselShelfRenderer: MusicCarouselShelfRenderer?,
+        @JsonNames("musicPlaylistShelfRenderer")
         val musicShelfRenderer: MusicShelfRenderer?,
         val gridRenderer: GridRenderer?,
         val musicDescriptionShelfRenderer: MusicDescriptionShelfRenderer?,

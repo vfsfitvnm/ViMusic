@@ -89,14 +89,14 @@ fun SearchResultScreen(
         }
     }
 
-    val albumRoute = rememberAlbumRoute()
+    val playlistOrAlbumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(
         listenToGlobalEmitter = true
     ) {
-        albumRoute { browseId ->
-            AlbumScreen(
+        playlistOrAlbumRoute { browseId ->
+            PlaylistOrAlbumScreen(
                 browseId = browseId ?: "browseId cannot be null"
             )
         }
@@ -176,6 +176,14 @@ fun SearchResultScreen(
                                 text = "Videos",
                                 value = YouTube.Item.Video.Filter.value
                             ),
+                            ChipItem(
+                                text = "Playlists",
+                                value = YouTube.Item.CommunityPlaylist.Filter.value
+                            ),
+                            ChipItem(
+                                text = "Featured playlists",
+                                value = YouTube.Item.FeaturedPlaylist.Filter.value
+                            ),
                         ),
                         value = preferences.searchFilter,
                         selectedBackgroundColor = colorPalette.primaryContainer,
@@ -198,8 +206,9 @@ fun SearchResultScreen(
                         thumbnailSizePx = thumbnailSizePx,
                         onClick = {
                             when (item) {
-                                is YouTube.Item.Album -> albumRoute(item.info.endpoint!!.browseId)
+                                is YouTube.Item.Album -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Artist -> artistRoute(item.info.endpoint!!.browseId)
+                                is YouTube.Item.Playlist -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Song -> {
                                     player?.mediaController?.forcePlay(item.asMediaItem)
                                     item.info.endpoint?.let {
@@ -377,6 +386,18 @@ fun SmallItem(
             onClick = onClick,
             modifier = modifier
         )
+        is YouTube.Item.Playlist -> SmallPlaylistItem(
+            playlist = item,
+            thumbnailSizeDp = thumbnailSizeDp,
+            thumbnailSizePx = thumbnailSizePx,
+            modifier = modifier
+                .clickable(
+                    indication = rememberRipple(bounded = true),
+                    interactionSource = remember { MutableInteractionSource() },
+                    onClick = onClick
+                )
+                .padding(vertical = 4.dp, horizontal = 16.dp)
+        )
     }
 }
 
@@ -420,6 +441,56 @@ fun SmallVideoItem(
         },
         modifier = modifier
     )
+}
+
+@ExperimentalAnimationApi
+@Composable
+fun SmallPlaylistItem(
+    playlist: YouTube.Item.Playlist,
+    thumbnailSizeDp: Dp,
+    thumbnailSizePx: Int,
+    modifier: Modifier = Modifier
+) {
+    val typography = LocalTypography.current
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
+        AsyncImage(
+            model = playlist.thumbnail.size(thumbnailSizePx),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .clip(ThumbnailRoundness.shape)
+                .size(thumbnailSizeDp)
+        )
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            BasicText(
+                text = playlist.info.name,
+                style = typography.xs.semiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            BasicText(
+                text = buildString {
+                    append(playlist.channel?.name)
+                    if (playlist.channel?.name?.isEmpty() == false && playlist.songCount != null) {
+                        append(" • ")
+                    }
+                    append("${playlist.songCount} songs")
+                },
+                style = typography.xs,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
 }
 
 @Composable

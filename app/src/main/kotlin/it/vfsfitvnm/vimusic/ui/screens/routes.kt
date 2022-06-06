@@ -18,12 +18,12 @@ fun rememberIntentVideoRoute(intentVideoId: String?): Route1<String?> {
 }
 
 @Composable
-fun rememberAlbumRoute(): Route1<String?> {
+fun rememberPlaylistOrAlbumRoute(): Route1<String?> {
     val browseId = rememberSaveable {
         mutableStateOf<String?>(null)
     }
     return remember {
-        Route1("AlbumRoute", browseId)
+        Route1("PlaylistOrAlbumRoute", browseId)
     }
 }
 

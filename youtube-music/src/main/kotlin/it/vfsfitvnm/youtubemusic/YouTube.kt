@@ -173,7 +173,6 @@ object YouTube {
             }
         }
 
-
         data class Video(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
@@ -253,6 +252,52 @@ object YouTube {
             }
         }
 
+        data class Playlist(
+            val info: Info<NavigationEndpoint.Endpoint.Browse>,
+            val channel: Info<NavigationEndpoint.Endpoint.Browse>?,
+            val songCount: Int?,
+            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail,
+        ) : Item() {
+            companion object : FromMusicShelfRendererContent<Playlist> {
+                override fun from(content: MusicShelfRenderer.Content): Playlist {
+                    val (mainRuns, otherRuns) = content.runs
+
+                    return Playlist(
+                        info = Info(
+                            name = mainRuns
+                                .firstOrNull()
+                                ?.text ?: "?",
+                            endpoint = content
+                                .musicResponsiveListItemRenderer
+                                .navigationEndpoint
+                                ?.browseEndpoint
+                        ),
+                        channel = otherRuns
+                            .firstOrNull()
+                            ?.firstOrNull()?.let {
+                                Info.from(it)
+                            },
+                        songCount = otherRuns
+                            .lastOrNull()
+                            ?.firstOrNull()
+                            ?.text
+                            ?.split(' ')
+                            ?.firstOrNull()
+                            ?.toIntOrNull(),
+                        thumbnail = content.thumbnail
+                    )
+                }
+            }
+        }
+
+        object CommunityPlaylist {
+            val Filter = Filter("EgeKAQQoAEABagoQAxAEEAoQCRAF")
+        }
+
+        object FeaturedPlaylist {
+            val Filter = Filter("EgeKAQQoADgBagwQDhAKEAMQBRAJEAQ%3D")
+        }
+
         interface FromMusicShelfRendererContent<out T : Item> {
             fun from(content: MusicShelfRenderer.Content): T
         }
@@ -313,7 +358,9 @@ object YouTube {
                             Item.Album.Filter.value -> Item.Album.Companion::from
                             Item.Artist.Filter.value -> Item.Artist.Companion::from
                             Item.Video.Filter.value -> Item.Video.Companion::from
-                            else -> error("Unknow filter: $filter")
+                            Item.CommunityPlaylist.Filter.value -> Item.Playlist.Companion::from
+                            Item.FeaturedPlaylist.Filter.value -> Item.Playlist.Companion::from
+                            else -> error("Unknown filter: $filter")
                         }
                     ) ?: emptyList(),
                 continuation = musicShelfRenderer
@@ -380,9 +427,10 @@ object YouTube {
                             name = renderer.title.text,
                             endpoint = renderer.navigationEndpoint.watchEndpoint
                         ),
-                        authors = renderer.longBylineText?.splitBySeparator()?.getOrNull(0)?.map { run ->
-                            Info.from(run)
-                        } ?: emptyList(),
+                        authors = renderer.longBylineText?.splitBySeparator()?.getOrNull(0)
+                            ?.map { run ->
+                                Info.from(run)
+                            } ?: emptyList(),
                         album = renderer.longBylineText?.splitBySeparator()?.getOrNull(1)?.get(0)
                             ?.let { run ->
                                 Info.from(run)
@@ -536,75 +584,109 @@ object YouTube {
         }.bodyCatching()
     }
 
-    data class Album(
-        val title: String,
-        val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
-        val year: String,
-        val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail,
-        val items: List<AlbumItem>
-    )
-
-    data class AlbumItem(
-        val info: Info<NavigationEndpoint.Endpoint.Watch>,
+    open class PlaylistOrAlbum(
+        val title: String?,
         val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
-        val durationText: String?,
-    )
+        val year: String?,
+        val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
+        val items: List<Item>?
+    ) {
+        open class Item(
+            val info: Info<NavigationEndpoint.Endpoint.Watch>,
+            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
+            val durationText: String?,
+            val album: Info<NavigationEndpoint.Endpoint.Browse>?,
+            val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
+        )
+    }
 
-    suspend fun album(browseId: String): Outcome<Album> {
+    suspend fun playlistOrAlbum(browseId: String): Outcome<PlaylistOrAlbum> {
         return browse(browseId).map { body ->
-            Album(
+            PlaylistOrAlbum(
                 title = body
-                    .header!!
-                    .musicDetailHeaderRenderer!!
-                    .title
-                    .text,
+                    .header
+                    ?.musicDetailHeaderRenderer
+                    ?.title
+                    ?.text,
                 thumbnail = body
                     .header
-                    .musicDetailHeaderRenderer!!
-                    .thumbnail
-                    .musicThumbnailRenderer
-                    .thumbnail
-                    .thumbnails.first(),
+                    ?.musicDetailHeaderRenderer
+                    ?.thumbnail
+                    ?.musicThumbnailRenderer
+                    ?.thumbnail
+                    ?.thumbnails
+                    ?.firstOrNull(),
                 authors = body
                     .header
-                    .musicDetailHeaderRenderer
-                    .subtitle.splitBySeparator().getOrNull(1)?.map { run ->
-                        Info.from(run)
-                    } ?: emptyList(),
+                    ?.musicDetailHeaderRenderer
+                    ?.subtitle
+                    ?.splitBySeparator()
+                    ?.getOrNull(1)
+                    ?.map { Info.from(it) },
                 year = body
                     .header
-                    .musicDetailHeaderRenderer
-                    .subtitle.splitBySeparator().getOrNull(2)?.first()!!.text,
+                    ?.musicDetailHeaderRenderer
+                    ?.subtitle
+                    ?.splitBySeparator()
+                    ?.getOrNull(2)
+                    ?.firstOrNull()
+                    ?.text,
                 items = body
                     .contents
-                    .singleColumnBrowseResultsRenderer!!
-                    .tabs
-                    .first()
-                    .tabRenderer
-                    .content!!
-                    .sectionListRenderer
-                    .contents
-                    .first()
-                    .musicShelfRenderer!!
-                    .contents
-                    .map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                    .mapNotNull { renderer ->
-                        AlbumItem(
-                            info = Info.from(
-                                renderer.flexColumns.getOrNull(0)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.getOrNull(
-                                    0
-                                ) ?: return@mapNotNull null
-                            ),
-                            authors = renderer.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text?.runs?.map { run ->
-                                Info.from<NavigationEndpoint.Endpoint.Browse>(run)
-                            }?.takeIf { it.isNotEmpty() },
-                            durationText = renderer.fixedColumns?.getOrNull(0)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.getOrNull(
-                                0
-                            )?.text
+                    .singleColumnBrowseResultsRenderer
+                    ?.tabs
+                    ?.firstOrNull()
+                    ?.tabRenderer
+                    ?.content
+                    ?.sectionListRenderer
+                    ?.contents
+                    ?.firstOrNull()
+                    ?.musicShelfRenderer
+                    ?.contents
+                    ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
+                    ?.mapNotNull { renderer ->
+                        PlaylistOrAlbum.Item(
+                            info = renderer
+                                .flexColumns
+                                .getOrNull(0)
+                                ?.musicResponsiveListItemFlexColumnRenderer
+                                ?.text
+                                ?.runs
+                                ?.getOrNull(0)
+                                ?.let { Info.from(it) } ?: return@mapNotNull null,
+                            authors = renderer
+                                .flexColumns
+                                .getOrNull(1)
+                                ?.musicResponsiveListItemFlexColumnRenderer
+                                ?.text
+                                ?.runs
+                                ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
+                                ?.takeIf { it.isNotEmpty() },
+                            durationText = renderer
+                                .fixedColumns
+                                ?.getOrNull(0)
+                                ?.musicResponsiveListItemFlexColumnRenderer
+                                ?.text
+                                ?.runs
+                                ?.getOrNull(0)
+                                ?.text,
+                            album = renderer
+                                .flexColumns
+                                .getOrNull(2)
+                                ?.musicResponsiveListItemFlexColumnRenderer
+                                ?.text
+                                ?.runs
+                                ?.firstOrNull()
+                                ?.let { Info.from(it) },
+                            thumbnail = renderer
+                                .thumbnail
+                                ?.musicThumbnailRenderer
+                                ?.thumbnail
+                                ?.thumbnails
+                                ?.firstOrNull()
                         )
-                    }.filter { item ->
-                        item.info.endpoint != null
                     }
+                    ?.filter { it.info.endpoint != null }
             )
         }
     }

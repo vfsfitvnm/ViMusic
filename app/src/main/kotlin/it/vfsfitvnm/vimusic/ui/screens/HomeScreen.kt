@@ -65,7 +65,7 @@ fun HomeScreen(intentVideoId: String?) {
     val playlistRoute = rememberLocalPlaylistRoute()
     val searchRoute = rememberSearchRoute()
     val searchResultRoute = rememberSearchResultRoute()
-    val albumRoute = rememberAlbumRoute()
+    val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     val (route, onRouteChanged) = rememberRoute(intentVideoId?.let { intentVideoRoute })
@@ -136,7 +136,7 @@ fun HomeScreen(intentVideoId: String?) {
             }
 
             albumRoute { browseId ->
-                AlbumScreen(
+                PlaylistOrAlbumScreen(
                     browseId = browseId ?: error("browseId cannot be null")
                 )
             }

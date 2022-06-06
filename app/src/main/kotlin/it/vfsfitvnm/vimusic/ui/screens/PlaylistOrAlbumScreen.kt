@@ -44,27 +44,27 @@ import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-fun AlbumScreen(
+fun PlaylistOrAlbumScreen(
     browseId: String,
 ) {
     val scrollState = rememberScrollState()
 
-    var album by remember {
-        mutableStateOf<Outcome<YouTube.Album>>(Outcome.Loading)
+    var playlistOrAlbum by remember {
+        mutableStateOf<Outcome<YouTube.PlaylistOrAlbum>>(Outcome.Loading)
     }
 
     val onLoad = relaunchableEffect(Unit) {
-        album = withContext(Dispatchers.IO) {
-            YouTube.album(browseId)
+        playlistOrAlbum = withContext(Dispatchers.IO) {
+            YouTube.playlistOrAlbum(browseId)
         }
     }
 
-    val albumRoute = rememberAlbumRoute()
+    val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            AlbumScreen(
+            PlaylistOrAlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }
@@ -85,6 +85,12 @@ fun AlbumScreen(
             val (thumbnailSizeDp, thumbnailSizePx) = remember {
                 density.run {
                     128.dp to 128.dp.roundToPx()
+                }
+            }
+
+            val (songThumbnailSizeDp, songThumbnailSizePx) = remember {
+                density.run {
+                    54.dp to 54.dp.roundToPx()
                 }
             }
 
@@ -128,10 +134,16 @@ fun AlbumScreen(
                                             enabled = player?.playbackState == Player.STATE_READY,
                                             onClick = {
                                                 menuState.hide()
-                                                album.valueOrNull?.let { album ->
-                                                    player?.mediaController?.enqueue(album.items.mapNotNull { song ->
-                                                        song.toMediaItem(browseId, album)
-                                                    })
+                                                playlistOrAlbum.valueOrNull?.let { album ->
+                                                    album.items
+                                                        ?.mapNotNull { song ->
+                                                            song.toMediaItem(browseId, album)
+                                                        }
+                                                        ?.let { mediaItems ->
+                                                            player?.mediaController?.enqueue(
+                                                                mediaItems
+                                                            )
+                                                        }
                                                 }
                                             }
                                         )
@@ -142,25 +154,30 @@ fun AlbumScreen(
                                             onClick = {
                                                 menuState.hide()
 
-                                                album.valueOrNull?.let { album ->
+                                                playlistOrAlbum.valueOrNull?.let { album ->
                                                     coroutineScope.launch(Dispatchers.IO) {
                                                         Database.internal.runInTransaction {
-                                                            val playlistId = Database.insert(Playlist(name = album.title))
+                                                            val playlistId =
+                                                                Database.insert(Playlist(name = album.title ?: "Unknown"))
 
-                                                            album.items.forEachIndexed { index, song ->
-                                                                song.toMediaItem(browseId, album)?.let { mediaItem ->
-                                                                    if (Database.song(mediaItem.mediaId) == null) {
-                                                                        Database.insert(mediaItem)
-                                                                    }
+                                                            album.items?.forEachIndexed { index, song ->
+                                                                song
+                                                                    .toMediaItem(browseId, album)
+                                                                    ?.let { mediaItem ->
+                                                                        if (Database.song(mediaItem.mediaId) == null) {
+                                                                            Database.insert(
+                                                                                mediaItem
+                                                                            )
+                                                                        }
 
-                                                                    Database.insert(
-                                                                        SongInPlaylist(
-                                                                            songId = mediaItem.mediaId,
-                                                                            playlistId = playlistId,
-                                                                            position = index
+                                                                        Database.insert(
+                                                                            SongInPlaylist(
+                                                                                songId = mediaItem.mediaId,
+                                                                                playlistId = playlistId,
+                                                                                position = index
+                                                                            )
                                                                         )
-                                                                    )
-                                                                }
+                                                                    }
                                                             }
                                                         }
                                                     }
@@ -176,12 +193,12 @@ fun AlbumScreen(
                 }
 
                 OutcomeItem(
-                    outcome = album,
+                    outcome = playlistOrAlbum,
                     onRetry = onLoad,
                     onLoading = {
                         Loading()
                     }
-                ) { album ->
+                ) { playlistOrAlbum ->
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
@@ -191,7 +208,7 @@ fun AlbumScreen(
                             .padding(bottom = 16.dp)
                     ) {
                         AsyncImage(
-                            model = album.thumbnail.size(thumbnailSizePx),
+                            model = playlistOrAlbum.thumbnail?.size(thumbnailSizePx),
                             contentDescription = null,
                             contentScale = ContentScale.FillBounds,
                             modifier = Modifier
@@ -206,12 +223,19 @@ fun AlbumScreen(
                         ) {
                             Column {
                                 BasicText(
-                                    text = album.title,
+                                    text = playlistOrAlbum.title ?: "Unknown",
                                     style = typography.m.semiBold
                                 )
 
                                 BasicText(
-                                    text = "${album.authors.joinToString("") { it.name }} • ${album.year}",
+                                    text = buildString {
+                                        val authors = playlistOrAlbum.authors?.joinToString("") { it.name }
+                                        append(authors)
+                                        if (authors?.isNotEmpty() == true && playlistOrAlbum.year != null) {
+                                            append(" • ")
+                                        }
+                                        append(playlistOrAlbum.year)
+                                    },
                                     style = typography.xs.secondary.semiBold,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
@@ -231,13 +255,19 @@ fun AlbumScreen(
                                     modifier = Modifier
                                         .clickable {
                                             YoutubePlayer.Radio.reset()
-                                            player?.mediaController?.forcePlayFromBeginning(
-                                                album.items.shuffled().mapNotNull { song ->
-                                                    song.toMediaItem(browseId, album)
-                                                })
+                                            playlistOrAlbum.items
+                                                ?.shuffled()
+                                                ?.mapNotNull { song ->
+                                                    song.toMediaItem(browseId, playlistOrAlbum)
+                                                }?.let { mediaItems ->
+                                                    player?.mediaController?.forcePlayFromBeginning(mediaItems)
+                                                }
                                         }
                                         .shadow(elevation = 2.dp, shape = CircleShape)
-                                        .background(color = colorPalette.elevatedBackground, shape = CircleShape)
+                                        .background(
+                                            color = colorPalette.elevatedBackground,
+                                            shape = CircleShape
+                                        )
                                         .padding(horizontal = 16.dp, vertical = 16.dp)
                                         .size(20.dp)
                                 )
@@ -249,12 +279,18 @@ fun AlbumScreen(
                                     modifier = Modifier
                                         .clickable {
                                             YoutubePlayer.Radio.reset()
-                                            player?.mediaController?.forcePlayFromBeginning(album.items.mapNotNull { song ->
-                                                song.toMediaItem(browseId, album)
-                                            })
+
+                                            playlistOrAlbum.items?.mapNotNull { song ->
+                                                song.toMediaItem(browseId, playlistOrAlbum)
+                                            }?.let { mediaItems ->
+                                                player?.mediaController?.forcePlayFromBeginning(mediaItems)
+                                            }
                                         }
                                         .shadow(elevation = 2.dp, shape = CircleShape)
-                                        .background(color = colorPalette.elevatedBackground, shape = CircleShape)
+                                        .background(
+                                            color = colorPalette.elevatedBackground,
+                                            shape = CircleShape
+                                        )
                                         .padding(horizontal = 16.dp, vertical = 16.dp)
                                         .size(20.dp)
                                 )
@@ -262,30 +298,45 @@ fun AlbumScreen(
                         }
                     }
 
-                    album.items.forEachIndexed { index, song ->
+                    playlistOrAlbum.items?.forEachIndexed { index, song ->
                         SongItem(
                             title = song.info.name,
-                            authors = (song.authors ?: album.authors).joinToString("") { it.name },
+                            authors = (song.authors ?: playlistOrAlbum.authors)?.joinToString("") { it.name },
                             durationText = song.durationText,
                             onClick = {
                                 YoutubePlayer.Radio.reset()
-                                player?.mediaController?.forcePlayAtIndex(album.items.mapNotNull { song ->
-                                    song.toMediaItem(browseId, album)
-                                }, index)
+
+                                playlistOrAlbum.items?.mapNotNull { song ->
+                                    song.toMediaItem(browseId, playlistOrAlbum)
+                                }?.let { mediaItems ->
+                                    player?.mediaController?.forcePlayAtIndex(mediaItems, index)
+                                }
                             },
                             startContent = {
-                                BasicText(
-                                    text = "${index + 1}",
-                                    style = typography.xs.secondary.bold.center,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .width(36.dp)
-                                )
+                                if (song.thumbnail == null) {
+                                    BasicText(
+                                        text = "${index + 1}",
+                                        style = typography.xs.secondary.bold.center,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier
+                                            .width(36.dp)
+                                    )
+                                } else {
+                                    AsyncImage(
+                                        model = song.thumbnail!!.size(songThumbnailSizePx),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.FillBounds,
+                                        modifier = Modifier
+                                            .clip(ThumbnailRoundness.shape)
+                                            .size(songThumbnailSizeDp)
+                                    )
+                                }
                             },
                             menuContent = {
                                 NonQueuedMediaItemMenu(
-                                    mediaItem = song.toMediaItem(browseId, album) ?: return@SongItem,
+                                    mediaItem = song.toMediaItem(browseId, playlistOrAlbum)
+                                        ?: return@SongItem,
                                     onDismiss = menuState::hide,
                                 )
                             }

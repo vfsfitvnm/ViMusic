@@ -24,7 +24,7 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
 import it.vfsfitvnm.vimusic.utils.*
@@ -203,7 +203,7 @@ fun BaseMediaItemMenu(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val albumRoute = rememberAlbumRoute()
+    val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     MediaItemMenu(

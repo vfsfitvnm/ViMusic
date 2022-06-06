@@ -27,7 +27,7 @@ fun <T>ChipGroup(
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
-            .horizontalScroll(rememberScrollState())
+            .horizontalScroll(rememberScrollState().also {  })
             .then(modifier)
     ) {
         items.forEach { chipItem ->

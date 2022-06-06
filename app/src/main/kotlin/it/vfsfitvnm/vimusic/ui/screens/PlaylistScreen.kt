@@ -53,12 +53,12 @@ fun LocalPlaylistScreen(
 
     val lazyListState = rememberLazyListState()
 
-    val albumRoute = rememberAlbumRoute()
+    val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            AlbumScreen(
+            PlaylistOrAlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }

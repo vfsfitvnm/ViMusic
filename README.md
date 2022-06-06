@@ -20,7 +20,7 @@
 - Play any non-age-restricted song/video from YouTube Music
 - Background playback
 - Cache audio chunks for offline playback
-- Search for songs, albums, artists and videos
+- Search for songs, albums, artists videos and playlists
 - Display songs lyrics
 - Local playlist management
 - Reorder songs in playlist or queue
@@ -29,7 +29,6 @@
 
 ## TODO
 - **Improve UI/UX** (help needed)
-- Support YouTube playlists (and other stuff to improve features parity)
 - Download songs (not sure about this)
 - Play local songs (not sure about this, too)
 - Translation

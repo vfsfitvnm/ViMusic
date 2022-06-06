@@ -134,7 +134,7 @@ fun SongItem(
 @Composable
 fun SongItem(
     title: String,
-    authors: String,
+    authors: String?,
     durationText: String?,
     onClick: () -> Unit,
     startContent: @Composable () -> Unit,
@@ -175,7 +175,7 @@ fun SongItem(
             BasicText(
                 text = buildString {
                     append(authors)
-                    if (authors.isNotEmpty() && durationText != null) {
+                    if (authors?.isNotEmpty() == true && durationText != null) {
                         append(" • ")
                     }
                     append(durationText)
