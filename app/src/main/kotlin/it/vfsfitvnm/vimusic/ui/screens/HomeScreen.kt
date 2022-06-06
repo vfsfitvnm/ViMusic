@@ -47,6 +47,7 @@ import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
@@ -75,7 +76,11 @@ fun HomeScreen(intentVideoId: String?) {
 
     val preferences = LocalPreferences.current
 
-    val songCollection by remember(preferences.homePageSongCollection) {
+    val songCollection by remember(preferences.isReady, preferences.homePageSongCollection) {
+        if (!preferences.isReady) {
+            return@remember flowOf(emptyList())
+        }
+
         when (preferences.homePageSongCollection) {
             SongCollection.MostPlayed -> Database.mostPlayed()
             SongCollection.Favorites -> Database.favorites()
