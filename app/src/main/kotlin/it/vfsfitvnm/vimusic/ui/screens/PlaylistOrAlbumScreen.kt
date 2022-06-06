@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +78,7 @@ fun PlaylistOrAlbumScreen(
         }
 
         host {
+            val context = LocalContext.current
             val density = LocalDensity.current
             val player = LocalYoutubePlayer.current
             val colorPalette = LocalColorPalette.current
@@ -181,6 +184,24 @@ fun PlaylistOrAlbumScreen(
                                                             }
                                                         }
                                                     }
+                                                }
+                                            }
+                                        )
+
+                                        MenuEntry(
+                                            icon = R.drawable.share_social,
+                                            text = "Share",
+                                            onClick = {
+                                                menuState.hide()
+
+                                                playlistOrAlbum.valueOrNull?.url?.let { url ->
+                                                    val sendIntent = Intent().apply {
+                                                        action = Intent.ACTION_SEND
+                                                        type = "text/plain"
+                                                        putExtra(Intent.EXTRA_TEXT, url)
+                                                    }
+
+                                                    context.startActivity(Intent.createChooser(sendIntent, null))
                                                 }
                                             }
                                         )

@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BrowseResponse(
     val contents: Contents,
-    val header: Header?
+    val header: Header?,
+    val microformat: Microformat?
 ) {
     @Serializable
     data class Contents(
@@ -45,5 +46,15 @@ data class BrowseResponse(
                 val buttonRenderer: ButtonRenderer
             )
         }
+    }
+
+    @Serializable
+    data class Microformat(
+        val microformatDataRenderer: MicroformatDataRenderer?
+    ) {
+        @Serializable
+        data class MicroformatDataRenderer(
+            val urlCanonical: String?
+        )
     }
 }

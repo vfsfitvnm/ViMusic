@@ -589,7 +589,8 @@ object YouTube {
         val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
         val year: String?,
         val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
-        val items: List<Item>?
+        val items: List<Item>?,
+        val url: String?
     ) {
         open class Item(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
@@ -686,7 +687,11 @@ object YouTube {
                                 ?.firstOrNull()
                         )
                     }
-                    ?.filter { it.info.endpoint != null }
+                    ?.filter { it.info.endpoint != null },
+                url = body
+                    .microformat
+                    ?.microformatDataRenderer
+                    ?.urlCanonical
             )
         }
     }
