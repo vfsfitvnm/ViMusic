@@ -63,7 +63,8 @@ object YouTube {
     @Serializable
     data class GetQueueBody(
         val context: Context,
-        val videoIds: List<String>
+        val videoIds: List<String>?,
+        val playlistId: String?,
     )
 
     @Serializable
@@ -407,39 +408,63 @@ object YouTube {
         }.bodyCatching()
     }
 
-    suspend fun getQueue(videoId: String): Outcome<Item.Song?> {
+    private suspend fun getQueue(body: GetQueueBody): Outcome<List<Item.Song>?> {
         return client.postCatching("/youtubei/v1/music/get_queue") {
             contentType(ContentType.Application.Json)
-            setBody(
-                GetQueueBody(
-                    context = Context.DefaultWeb,
-                    videoIds = listOf(videoId)
-                )
-            )
+            setBody(body)
             parameter("key", Key)
             parameter("prettyPrint", false)
         }
             .bodyCatching<GetQueueResponse>()
             .map { body ->
-                body.queueDatas?.firstOrNull()?.content?.playlistPanelVideoRenderer?.let { renderer ->
-                    Item.Song(
-                        info = Info(
-                            name = renderer.title.text,
-                            endpoint = renderer.navigationEndpoint.watchEndpoint
-                        ),
-                        authors = renderer.longBylineText?.splitBySeparator()?.getOrNull(0)
-                            ?.map { run ->
-                                Info.from(run)
-                            } ?: emptyList(),
-                        album = renderer.longBylineText?.splitBySeparator()?.getOrNull(1)?.get(0)
-                            ?.let { run ->
-                                Info.from(run)
-                            },
-                        thumbnail = renderer.thumbnail.thumbnails[0],
-                        durationText = renderer.lengthText.text
-                    )
+                body.queueDatas?.mapNotNull { queueData ->
+                    queueData.content?.playlistPanelVideoRenderer?.let { renderer ->
+                        Item.Song(
+                            info = Info(
+                                name = renderer
+                                    .title
+                                    .text,
+                                endpoint = renderer
+                                    .navigationEndpoint
+                                    .watchEndpoint
+                            ),
+                            authors = renderer
+                                .longBylineText
+                                ?.splitBySeparator()
+                                ?.getOrNull(0)
+                                ?.map { Info.from(it) } ?: emptyList(),
+                            album = renderer
+                                .longBylineText
+                                ?.splitBySeparator()
+                                ?.getOrNull(1)
+                                ?.get(0)
+                                ?.let { Info.from(it) },
+                            thumbnail = renderer.thumbnail.thumbnails[0],
+                            durationText = renderer.lengthText.text
+                        )
+                    }
                 }
             }
+    }
+
+    suspend fun song(videoId: String): Outcome<Item.Song?> {
+        return getQueue(
+            GetQueueBody(
+                context = Context.DefaultWeb,
+                videoIds = listOf(videoId),
+                playlistId = null
+            )
+        ).map { it?.firstOrNull() }
+    }
+
+    suspend fun queue(playlistId: String): Outcome<List<Item.Song>?> {
+        return getQueue(
+            GetQueueBody(
+                context = Context.DefaultWeb,
+                videoIds = null,
+                playlistId = playlistId
+            )
+        )
     }
 
     suspend fun next(

@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,9 +51,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
+
 @ExperimentalAnimationApi
 @Composable
-fun HomeScreen(intentVideoId: String?) {
+fun HomeScreen(
+    intentUri: Uri?
+) {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
 
@@ -60,7 +64,7 @@ fun HomeScreen(intentVideoId: String?) {
 
     val lazyListState = rememberLazyListState()
 
-    val intentVideoRoute = rememberIntentVideoRoute(intentVideoId)
+    val intentUriRoute = rememberIntentUriRoute(intentUri)
     val settingsRoute = rememberSettingsRoute()
     val playlistRoute = rememberLocalPlaylistRoute()
     val searchRoute = rememberSearchRoute()
@@ -68,7 +72,7 @@ fun HomeScreen(intentVideoId: String?) {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
-    val (route, onRouteChanged) = rememberRoute(intentVideoId?.let { intentVideoRoute })
+    val (route, onRouteChanged) = rememberRoute(intentUri?.let { intentUriRoute })
 
     val playlistPreviews by remember {
         Database.playlistPreviews()
@@ -97,9 +101,9 @@ fun HomeScreen(intentVideoId: String?) {
             onRouteChanged = onRouteChanged,
             listenToGlobalEmitter = true
         ) {
-            intentVideoRoute { videoId ->
-                IntentVideoScreen(
-                    videoId = videoId ?: error("videoId must be not null")
+            intentUriRoute { uri ->
+                IntentUriScreen(
+                    uri = uri ?: error("uri must be not null")
                 )
             }
 
@@ -136,9 +140,7 @@ fun HomeScreen(intentVideoId: String?) {
             }
 
             albumRoute { browseId ->
-                PlaylistOrAlbumScreen(
-                    browseId = browseId ?: error("browseId cannot be null")
-                )
+                PlaylistOrAlbumScreen(browseId = browseId ?: error("browseId cannot be null"))
             }
 
             artistRoute { browseId ->

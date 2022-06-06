@@ -60,8 +60,6 @@ class MainActivity : ComponentActivity() {
         val sessionToken = SessionToken(this, ComponentName(this, PlayerService::class.java))
         mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
 
-        val intentVideoId = intent?.data?.getQueryParameter("v")
-
         setContent {
             val preferences by rememberPreferences(dataStore)
             val systemUiController = rememberSystemUiController()
@@ -131,7 +129,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(LocalColorPalette.current.background)
                 ) {
-                    HomeScreen(intentVideoId = intentVideoId)
+                    HomeScreen(intentUri = intent?.data)
 
                     BottomSheetMenu(
                         state = LocalMenuState.current,

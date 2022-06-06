@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -8,12 +9,12 @@ import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.Route1
 
 @Composable
-fun rememberIntentVideoRoute(intentVideoId: String?): Route1<String?> {
-    val videoId = rememberSaveable {
-        mutableStateOf(intentVideoId)
+fun rememberIntentUriRoute(intentUri: Uri?): Route1<Uri?> {
+    val uri = rememberSaveable {
+        mutableStateOf(intentUri)
     }
     return remember {
-        Route1("rememberIntentVideoRoute", videoId)
+        Route1("rememberIntentUriRoute", uri)
     }
 }
 

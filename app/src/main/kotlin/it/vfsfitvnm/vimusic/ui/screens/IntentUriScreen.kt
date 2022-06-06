@@ -1,0 +1,161 @@
+package it.vfsfitvnm.vimusic.ui.screens
+
+import android.net.Uri
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.ShimmerBounds
+import com.valentinilk.shimmer.rememberShimmer
+import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.ui.components.Error
+import it.vfsfitvnm.vimusic.ui.components.Message
+import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.youtubemusic.Outcome
+import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.toNullable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+@ExperimentalAnimationApi
+@Composable
+fun IntentUriScreen(uri: Uri) {
+    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val artistRoute = rememberArtistRoute()
+
+    val lazyListState = rememberLazyListState()
+
+    RouteHandler(listenToGlobalEmitter = true) {
+        albumRoute { browseId ->
+            PlaylistOrAlbumScreen(
+                browseId = browseId ?: error("browseId cannot be null")
+            )
+        }
+
+        artistRoute { browseId ->
+            ArtistScreen(
+                browseId = browseId ?: error("browseId cannot be null")
+            )
+        }
+
+        host {
+            val colorPalette = LocalColorPalette.current
+            val density = LocalDensity.current
+            val player = LocalYoutubePlayer.current
+
+            val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
+
+
+            var items by remember {
+                mutableStateOf<Outcome<List<YouTube.Item.Song>>>(Outcome.Loading)
+            }
+
+            val onLoad = relaunchableEffect(Unit) {
+                items = withContext(Dispatchers.IO) {
+                    uri.getQueryParameter("list")?.let { playlistId ->
+                        YouTube.queue(playlistId).toNullable()?.map { songList ->
+                            songList
+                        }
+                    } ?: uri.getQueryParameter("v")?.let { videoId ->
+                        YouTube.song(videoId).toNullable()?.map { listOf(it) }
+                    } ?: Outcome.Error.Network
+                }
+            }
+
+            LazyColumn(
+                state = lazyListState,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(bottom = 64.dp),
+                modifier = Modifier
+                    .background(colorPalette.background)
+                    .fillMaxSize()
+            ) {
+                item {
+                    TopAppBar(
+                        modifier = Modifier
+                            .height(52.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.chevron_back),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .clickable(onClick = pop)
+                                .padding(vertical = 8.dp)
+                                .padding(horizontal = 16.dp)
+                                .size(24.dp)
+                        )
+                    }
+                }
+
+                when (val currentItems = items) {
+                    is Outcome.Error -> item {
+                        Error(
+                            error = currentItems,
+                            onRetry = onLoad,
+                            modifier = Modifier
+                                .padding(vertical = 16.dp)
+                        )
+                    }
+                    is Outcome.Recovered -> item {
+                        Error(
+                            error = currentItems.error,
+                            onRetry = onLoad,
+                            modifier = Modifier
+                                .padding(vertical = 16.dp)
+                        )
+                    }
+                    is Outcome.Loading, is Outcome.Initial -> items(count = 5) { index ->
+                        SmallSongItemShimmer(
+                            shimmer = shimmer,
+                            thumbnailSizeDp = 54.dp,
+                            modifier = Modifier
+                                .alpha(1f - index * 0.175f)
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 16.dp)
+                        )
+                    }
+                    is Outcome.Success -> {
+                        if (currentItems.value.isEmpty()) {
+                            item {
+                                Message(
+                                    text = "No songs were found",
+                                    modifier = Modifier
+                                )
+                            }
+                        } else {
+                            itemsIndexed(currentItems.value) { index, item ->
+                               SmallSongItem(
+                                   song = item,
+                                   thumbnailSizePx = density.run { 54.dp.roundToPx() },
+                                   onClick = {
+                                       YoutubePlayer.Radio.reset()
+
+                                       player?.mediaController?.forcePlayAtIndex(currentItems.value.map(YouTube.Item.Song::asMediaItem), index)
+                                       pop()
+                                   }
+                               )
+                            }
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+}

@@ -35,7 +35,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="https" />
+                <data android:scheme="https"
+                        android:host="music.youtube.com"
+                        android:pathPrefix="/playlist" />
+
+                <data android:scheme="https"
+                        android:host="www.youtube.com"
+                        android:pathPrefix="/playlist" />
 
                 <data android:scheme="https"
                         android:host="music.youtube.com"
