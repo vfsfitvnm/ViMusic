@@ -22,10 +22,10 @@ import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.Outcome
 
 @Composable
-inline fun <T> OutcomeItem(
+fun <T> OutcomeItem(
     outcome: Outcome<T>,
-    noinline onInitialize: (() -> Unit)? = null,
-    noinline onRetry: (() -> Unit)? = onInitialize,
+    onInitialize: (() -> Unit)? = null,
+    onRetry: (() -> Unit)? = onInitialize,
     onUninitialized: @Composable () -> Unit = {
         onInitialize?.let {
             SideEffect(it)
