@@ -83,7 +83,6 @@ dependencies {
     implementation(libs.compose.coil)
 
     implementation(libs.accompanist.systemuicontroller)
-    implementation(libs.accompanist.flowlayout)
 
     implementation(libs.android.media)
     implementation(libs.bundles.media3)

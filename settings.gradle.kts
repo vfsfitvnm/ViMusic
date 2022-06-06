@@ -30,7 +30,6 @@ dependencyResolutionManagement {
 
             version("accompanist", "0.24.10-beta")
             alias("accompanist-systemuicontroller").to("com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
-            alias("accompanist-flowlayout").to("com.google.accompanist", "accompanist-flowlayout").versionRef("accompanist")
 
             alias("datastore").to("androidx.datastore", "datastore-preferences").version("1.0.0")
 
