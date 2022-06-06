@@ -25,6 +25,7 @@
 - Local playlist management
 - Reorder songs in playlist or queue
 - Light/Dark theme
+- Open YouTube/YouTube Music links (`watch`, `playlist`)
 - ...
 
 ## TODO
