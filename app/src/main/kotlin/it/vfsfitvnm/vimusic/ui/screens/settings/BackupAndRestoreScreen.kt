@@ -259,7 +259,7 @@ fun BackupAndRestoreScreen() {
                     )
 
                     BasicText(
-                        text = "The restore replaces the existing application database with the selected - previously exported - one.\nThis means every currently existing data will be wiped: THE TWO DATABASES WON'T BE MERGED.\nIt is recommended to restore the database immediately after a the application is installed on a new device.",
+                        text = "The restore replaces the existing application database with the selected - previously exported - one.\nThis means every currently existing data will be wiped: THE TWO DATABASES WON'T BE MERGED.\nIt is recommended to restore the database immediately after the application is installed on a new device.",
                         style = typography.xxs.secondary
                     )
                 }
