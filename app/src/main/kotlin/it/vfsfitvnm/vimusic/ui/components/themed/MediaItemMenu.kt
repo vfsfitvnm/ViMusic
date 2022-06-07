@@ -24,9 +24,9 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -149,6 +149,10 @@ fun NonQueuedMediaItemMenu(
             YoutubePlayer.Radio.setup(playlistId = playlistId)
             player?.mediaController?.forcePlay(mediaItem)
         },
+        onPlaySingle = {
+            YoutubePlayer.Radio.reset()
+            player?.mediaController?.forcePlay(mediaItem)
+        },
         onPlayNext = if (player?.playbackState == Player.STATE_READY) ({
             player.mediaController.addNext(mediaItem)
         }) else null,
@@ -192,6 +196,7 @@ fun BaseMediaItemMenu(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     onStartRadio: (() -> Unit)? = null,
+    onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
@@ -211,6 +216,7 @@ fun BaseMediaItemMenu(
         onDismiss = onDismiss,
         onStartRadio = onStartRadio,
         onPlayNext = onPlayNext,
+        onPlaySingle = onPlaySingle,
         onEnqueue = onEnqueue,
         onAddToPlaylist = { playlist, position ->
             coroutineScope.launch(Dispatchers.IO) {
@@ -250,6 +256,7 @@ fun MediaItemMenu(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     onStartRadio: (() -> Unit)? = null,
+    onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
@@ -355,6 +362,17 @@ fun MediaItemMenu(
                             onClick = {
                                 onDismiss()
                                 onStartRadio()
+                            }
+                        )
+                    }
+
+                    onPlaySingle?.let { onPlaySingle ->
+                        MenuEntry(
+                            icon = R.drawable.play,
+                            text = "Play single",
+                            onClick = {
+                                onDismiss()
+                                onPlaySingle()
                             }
                         )
                     }
