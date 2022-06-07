@@ -1,9 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.with
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -17,9 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.route.Route0
-import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.route.fastFade
+import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
@@ -47,13 +43,9 @@ fun SettingsScreen() {
         listenToGlobalEmitter = true,
         transitionSpec = {
             when (targetState.route) {
-                appearanceRoute, backupAndRestoreRoute ->
-                    slideIntoContainer(AnimatedContentScope.SlideDirection.Left) with
-                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left)
+                appearanceRoute, backupAndRestoreRoute -> leftSlide
                 else -> when (initialState.route) {
-                    appearanceRoute, backupAndRestoreRoute ->
-                        slideIntoContainer(AnimatedContentScope.SlideDirection.Right) with
-                                slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+                    appearanceRoute, backupAndRestoreRoute -> rightSlide
                     else -> fastFade
                 }
             }
