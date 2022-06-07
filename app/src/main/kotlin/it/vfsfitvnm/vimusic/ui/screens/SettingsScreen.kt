@@ -19,10 +19,7 @@ import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
-import it.vfsfitvnm.vimusic.ui.screens.settings.AppearanceScreen
-import it.vfsfitvnm.vimusic.ui.screens.settings.BackupAndRestoreScreen
-import it.vfsfitvnm.vimusic.ui.screens.settings.rememberAppearanceRoute
-import it.vfsfitvnm.vimusic.ui.screens.settings.rememberBackupAndRestoreRoute
+import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.medium
@@ -36,6 +33,7 @@ fun SettingsScreen() {
     val artistRoute = rememberArtistRoute()
     val appearanceRoute = rememberAppearanceRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
+    val aboutRoute = rememberAboutRoute()
 
     val scrollState = rememberScrollState()
 
@@ -43,9 +41,9 @@ fun SettingsScreen() {
         listenToGlobalEmitter = true,
         transitionSpec = {
             when (targetState.route) {
-                appearanceRoute, backupAndRestoreRoute -> leftSlide
+                appearanceRoute, backupAndRestoreRoute, aboutRoute -> leftSlide
                 else -> when (initialState.route) {
-                    appearanceRoute, backupAndRestoreRoute -> rightSlide
+                    appearanceRoute, backupAndRestoreRoute, aboutRoute -> rightSlide
                     else -> fastFade
                 }
             }
@@ -69,6 +67,10 @@ fun SettingsScreen() {
 
         backupAndRestoreRoute {
             BackupAndRestoreScreen()
+        }
+
+        aboutRoute {
+            AboutScreen()
         }
 
         host {
@@ -149,14 +151,12 @@ fun SettingsScreen() {
                             BasicText(
                                 text = title,
                                 style = typography.s.semiBold,
-                                modifier = Modifier
                             )
 
                             BasicText(
                                 text = description,
                                 style = typography.xs.secondary.medium,
-                                maxLines = 1,
-                                modifier = Modifier
+                                maxLines = 1
                             )
                         }
                     }
@@ -176,6 +176,14 @@ fun SettingsScreen() {
                     title = "Backup & Restore",
                     description = "Backup and restore the app database",
                     route = backupAndRestoreRoute
+                )
+
+                Entry(
+                    color = colorPalette.green,
+                    icon = R.drawable.information,
+                    title = "About",
+                    description = "App version and social links",
+                    route = aboutRoute
                 )
             }
         }

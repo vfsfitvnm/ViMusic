@@ -17,3 +17,10 @@ fun rememberBackupAndRestoreRoute(): Route0 {
         Route0("BackupAndRestoreRoute")
     }
 }
+
+@Composable
+fun rememberAboutRoute(): Route0 {
+    return remember {
+        Route0("AboutRoute")
+    }
+}

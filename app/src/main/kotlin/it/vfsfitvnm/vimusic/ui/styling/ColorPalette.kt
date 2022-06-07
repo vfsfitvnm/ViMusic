@@ -37,7 +37,7 @@ val DarkColorPalette = ColorPalette(
     darkGray = Color(0xFF838383),
     blue = Color(0xff507fdd),
     red = Color(0xffbf4040),
-    green = Color(0xff7fbf40),
+    green = Color(0xff82b154),
     orange = Color(0xffe9a033),
 
     primaryContainer = Color(0xff4046bf),
