@@ -237,30 +237,49 @@ fun BackupAndRestoreScreen() {
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 16.dp)
+                        .background(colorPalette.lightBackground)
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
+                    Image(
+                        painter = painterResource(R.drawable.alert_circle),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.red),
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .size(24.dp)
+                    )
+//
                     BasicText(
                         text = "Backup",
-                        style = typography.xxs.semiBold.secondary
+                        style = typography.xxs.semiBold,
+                        modifier = Modifier
+                                .padding(horizontal = 16.dp)
                     )
 
                     BasicText(
                         text = "The backup consists in exporting the application database to your device storage.\nThis means playlists, song history, favorites songs will exported.\nThis operation excludes personal preferences such as the theme mode and everything you can set in the Settings page.",
-                        style = typography.xxs.secondary
+                        style = typography.xxs.secondary,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                     )
-                }
 
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
-                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .height(32.dp)
+                    )
+
                     BasicText(
                         text = "Restore",
-                        style = typography.xxs.semiBold.secondary
+                        style = typography.xxs.semiBold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                     )
 
                     BasicText(
                         text = "The restore replaces the existing application database with the selected - previously exported - one.\nThis means every currently existing data will be wiped: THE TWO DATABASES WON'T BE MERGED.\nIt is recommended to restore the database immediately after the application is installed on a new device.",
-                        style = typography.xxs.secondary
+                        style = typography.xxs.secondary,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                     )
                 }
             }
