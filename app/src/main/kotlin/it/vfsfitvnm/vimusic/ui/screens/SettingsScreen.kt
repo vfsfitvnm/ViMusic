@@ -39,6 +39,7 @@ fun SettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
     val appearanceRoute = rememberAppearanceRoute()
+    val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
 
     val scrollState = rememberScrollState()
 
@@ -46,11 +47,11 @@ fun SettingsScreen() {
         listenToGlobalEmitter = true,
         transitionSpec = {
             when (targetState.route) {
-                appearanceRoute ->
+                appearanceRoute, backupAndRestoreRoute ->
                     slideIntoContainer(AnimatedContentScope.SlideDirection.Left) with
                             slideOutOfContainer(AnimatedContentScope.SlideDirection.Left)
                 else -> when (initialState.route) {
-                    appearanceRoute ->
+                    appearanceRoute, backupAndRestoreRoute ->
                         slideIntoContainer(AnimatedContentScope.SlideDirection.Right) with
                                 slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
                     else -> fastFade
@@ -72,6 +73,10 @@ fun SettingsScreen() {
 
         appearanceRoute {
             AppearanceScreen()
+        }
+
+        backupAndRestoreRoute {
+            BackupAndRestoreScreen()
         }
 
         host {
@@ -171,6 +176,14 @@ fun SettingsScreen() {
                     title = "Appearance",
                     description = "Change the colors and shapes of the app",
                     route = appearanceRoute,
+                )
+
+                Entry(
+                    color = colorPalette.orange,
+                    icon = R.drawable.server,
+                    title = "Backup & Restore",
+                    description = "Backup and restore the app database",
+                    route = backupAndRestoreRoute
                 )
             }
         }

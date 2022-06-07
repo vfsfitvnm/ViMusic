@@ -10,3 +10,10 @@ fun rememberAppearanceRoute(): Route0 {
         Route0("AppearanceRoute")
     }
 }
+
+@Composable
+fun rememberBackupAndRestoreRoute(): Route0 {
+    return remember {
+        Route0("BackupAndRestoreRoute")
+    }
+}

@@ -1,9 +1,12 @@
 package it.vfsfitvnm.vimusic
 
 import android.content.Context
+import android.database.Cursor
 import androidx.room.*
+import androidx.sqlite.db.SupportSQLiteQuery
 import it.vfsfitvnm.vimusic.models.*
 import kotlinx.coroutines.flow.Flow
+
 
 @Dao
 interface Database {
@@ -138,3 +141,19 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
 val Database.internal: RoomDatabase
     get() = DatabaseInitializer.Instance
+
+fun Database.checkpoint() {
+    internal.openHelper.writableDatabase.run {
+        query("PRAGMA journal_mode").use { cursor ->
+            if (cursor.moveToFirst()) {
+                when (cursor.getString(0).lowercase()) {
+                    "wal" -> {
+                        query("PRAGMA wal_checkpoint").use(Cursor::moveToFirst)
+                        query("PRAGMA wal_checkpoint(TRUNCATE)").use(Cursor::moveToFirst)
+                        query("PRAGMA wal_checkpoint").use(Cursor::moveToFirst)
+                    }
+                }
+            }
+        }
+    }
+}
