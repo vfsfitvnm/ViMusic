@@ -35,10 +35,10 @@ val DarkColorPalette = ColorPalette(
     lightGray = Color(0xfff8f8f8),
     gray = Color(0xFFE5E5E5),
     darkGray = Color(0xFF838383),
-    blue = Color(0xff4046bf),
+    blue = Color(0xff507fdd),
     red = Color(0xffbf4040),
     green = Color(0xff7fbf40),
-    orange = Color(0xffe8820e),
+    orange = Color(0xffe9a033),
 
     primaryContainer = Color(0xff4046bf),
     onPrimaryContainer = Color.White,

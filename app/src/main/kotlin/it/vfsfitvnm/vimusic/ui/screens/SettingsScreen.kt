@@ -1,25 +1,35 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.with
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
+import it.vfsfitvnm.vimusic.ui.screens.settings.AppearanceScreen
+import it.vfsfitvnm.vimusic.ui.screens.settings.BackupAndRestoreScreen
+import it.vfsfitvnm.vimusic.ui.screens.settings.rememberAppearanceRoute
+import it.vfsfitvnm.vimusic.ui.screens.settings.rememberBackupAndRestoreRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.LocalPreferences
+import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 
@@ -28,10 +38,26 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 fun SettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
+    val appearanceRoute = rememberAppearanceRoute()
 
     val scrollState = rememberScrollState()
 
-    RouteHandler(listenToGlobalEmitter = true) {
+    RouteHandler(
+        listenToGlobalEmitter = true,
+        transitionSpec = {
+            when (targetState.route) {
+                appearanceRoute ->
+                    slideIntoContainer(AnimatedContentScope.SlideDirection.Left) with
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left)
+                else -> when (initialState.route) {
+                    appearanceRoute ->
+                        slideIntoContainer(AnimatedContentScope.SlideDirection.Right) with
+                                slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+                    else -> fastFade
+                }
+            }
+        }
+    ) {
         albumRoute { browseId ->
             PlaylistOrAlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
@@ -44,17 +70,20 @@ fun SettingsScreen() {
             )
         }
 
+        appearanceRoute {
+            AppearanceScreen()
+        }
+
         host {
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
-            val preferences = LocalPreferences.current
 
             Column(
                 modifier = Modifier
-                    .padding(bottom = 72.dp)
                     .background(colorPalette.background)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
+                    .padding(bottom = 72.dp)
             ) {
                 TopAppBar(
                     modifier = Modifier
@@ -82,43 +111,66 @@ fun SettingsScreen() {
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .background(
-                            color = colorPalette.lightBackground,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(vertical = 8.dp)
-                        .fillMaxWidth()
+                @Composable
+                fun Entry(
+                    @DrawableRes icon: Int,
+                    color: Color,
+                    title: String,
+                    description: String,
+                    route: Route0
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.contrast),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .size(20.dp)
-                    )
+                            .clickable(
+                                indication = rememberRipple(bounded = true),
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    route()
+                                }
+                            )
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(color = color, shape = CircleShape)
+                                .size(36.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(icon),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette.background),
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(18.dp)
+                            )
+                        }
 
-                    BasicText(
-                        text = "Appearance",
-                        style = typography.m.semiBold,
-                        modifier = Modifier
-                    )
+                        Column {
+                            BasicText(
+                                text = title,
+                                style = typography.s.semiBold,
+                                modifier = Modifier
+                            )
+
+                            BasicText(
+                                text = description,
+                                style = typography.xs.secondary.medium,
+                                maxLines = 1,
+                                modifier = Modifier
+                            )
+                        }
+                    }
                 }
 
-                EnumValueSelectorEntry(
-                    title = "Theme mode",
-                    selectedValue = preferences.colorPaletteMode,
-                    onValueSelected = preferences.onColorPaletteModeChange
-                )
-
-                EnumValueSelectorEntry(
-                    title = "Thumbnail roundness",
-                    selectedValue = preferences.thumbnailRoundness,
-                    onValueSelected = preferences.onThumbnailRoundnessChange
+                Entry(
+                    color = colorPalette.blue,
+                    icon = R.drawable.color_palette,
+                    title = "Appearance",
+                    description = "Change the colors and shapes of the app",
+                    route = appearanceRoute,
                 )
             }
         }
@@ -126,7 +178,7 @@ fun SettingsScreen() {
 }
 
 @Composable
-private inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
+inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
     title: String,
     selectedValue: T,
     crossinline onValueSelected: (T) -> Unit,
@@ -158,7 +210,8 @@ private inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = { isShowingDialog = true }
             )
-            .padding(horizontal = 32.dp, vertical = 8.dp)
+            .padding(start = 24.dp)
+            .padding(horizontal = 32.dp, vertical = 16.dp)
             .fillMaxWidth()
     ) {
         BasicText(
