@@ -115,7 +115,7 @@ fun PlayerView(
                     AsyncImage(
                         model = "${player.mediaMetadata.artworkUri}-w$smallThumbnailSize-h$smallThumbnailSize",
                         contentDescription = null,
-                        contentScale = ContentScale.FillBounds,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .clip(ThumbnailRoundness.shape)
                             .size(64.dp)
@@ -234,7 +234,7 @@ fun PlayerView(
                     AsyncImage(
                         model = "$artworkUri-w$thumbnailSizePx-h$thumbnailSizePx",
                         contentDescription = null,
-                        contentScale = ContentScale.FillBounds,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .padding(bottom = 32.dp)
                             .padding(horizontal = 32.dp)

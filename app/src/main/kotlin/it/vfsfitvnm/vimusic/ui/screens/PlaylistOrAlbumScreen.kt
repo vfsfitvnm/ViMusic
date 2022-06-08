@@ -232,7 +232,7 @@ fun PlaylistOrAlbumScreen(
                         AsyncImage(
                             model = playlistOrAlbum.thumbnail?.size(thumbnailSizePx),
                             contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .clip(ThumbnailRoundness.shape)
                                 .size(thumbnailSizeDp)
@@ -348,7 +348,7 @@ fun PlaylistOrAlbumScreen(
                                     AsyncImage(
                                         model = song.thumbnail!!.size(songThumbnailSizePx),
                                         contentDescription = null,
-                                        contentScale = ContentScale.FillBounds,
+                                        contentScale = ContentScale.Crop,
                                         modifier = Modifier
                                             .clip(ThumbnailRoundness.shape)
                                             .size(songThumbnailSizeDp)

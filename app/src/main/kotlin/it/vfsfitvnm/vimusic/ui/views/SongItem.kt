@@ -115,7 +115,7 @@ fun SongItem(
                 AsyncImage(
                     model = thumbnailModel,
                     contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .clip(ThumbnailRoundness.shape)
                         .fillMaxSize()

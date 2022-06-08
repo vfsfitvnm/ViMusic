@@ -461,7 +461,7 @@ fun SmallPlaylistItem(
         AsyncImage(
             model = playlist.thumbnail.size(thumbnailSizePx),
             contentDescription = null,
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .clip(ThumbnailRoundness.shape)
                 .size(thumbnailSizeDp)
@@ -510,7 +510,7 @@ fun SmallAlbumItem(
         AsyncImage(
             model = album.thumbnail.size(thumbnailSizePx),
             contentDescription = null,
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .clip(ThumbnailRoundness.shape)
                 .size(thumbnailSizeDp)

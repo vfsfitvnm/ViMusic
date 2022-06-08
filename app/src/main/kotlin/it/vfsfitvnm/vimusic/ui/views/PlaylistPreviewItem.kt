@@ -70,7 +70,7 @@ fun PlaylistPreviewItem(
                 AsyncImage(
                     model = "${thumbnails.getOrNull(index)}-w$thumbnailSizePx-h$thumbnailSizePx",
                     contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .align(alignment)
                         .size(thumbnailSize)
