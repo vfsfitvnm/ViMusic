@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.styling
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 
@@ -45,6 +44,12 @@ val DarkColorPalette = ColorPalette(
     iconOnPrimaryContainer = Color.White,
 )
 
+val BlackColorPalette = DarkColorPalette.copy(
+    background = Color.Black,
+    lightBackground = Color(0xff0d0d12),
+    elevatedBackground = Color(0xff0d0d12),
+)
+
 val LightColorPalette = ColorPalette(
     background = Color(0xfffdfdfe),
     lightBackground = Color(0xFFf8f8fc),
@@ -69,10 +74,3 @@ val LightColorPalette = ColorPalette(
 )
 
 val LocalColorPalette = staticCompositionLocalOf { LightColorPalette }
-
-@Composable
-fun rememberColorPalette(isDarkTheme: Boolean = isSystemInDarkTheme()): ColorPalette {
-    return remember(isDarkTheme) {
-        if (isDarkTheme) DarkColorPalette else LightColorPalette
-    }
-}

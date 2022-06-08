@@ -40,10 +40,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.ui.styling.rememberColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.rememberTypography
+import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.*
 
 private val Context.dataStore by preferencesDataStore(name = "preferences")
@@ -64,13 +61,15 @@ class MainActivity : ComponentActivity() {
             val preferences by rememberPreferences(dataStore)
             val systemUiController = rememberSystemUiController()
 
-            val isDarkTheme =  when (preferences.colorPaletteMode) {
-                ColorPaletteMode.Light -> false
-                ColorPaletteMode.Dark -> true
-                ColorPaletteMode.System -> isSystemInDarkTheme()
+            val (isDarkTheme, colorPalette) = when (preferences.colorPaletteMode) {
+                ColorPaletteMode.Light -> false to LightColorPalette
+                ColorPaletteMode.Dark -> true to DarkColorPalette
+                ColorPaletteMode.Black -> true to BlackColorPalette
+                ColorPaletteMode.System -> when (isSystemInDarkTheme()) {
+                    true -> true to DarkColorPalette
+                    false -> false to LightColorPalette
+                }
             }
-
-            val colorPalette = rememberColorPalette(isDarkTheme)
 
             val rippleTheme = remember(colorPalette.text, isDarkTheme) {
                 object : RippleTheme {
