@@ -85,7 +85,8 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.android.media)
-    implementation(libs.bundles.media3)
+    implementation(libs.media3.session)
+    implementation(libs.media3.exoplayer)
 
     implementation(libs.datastore)
 

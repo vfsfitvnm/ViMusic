@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,19 +16,15 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.ui.DefaultTimeBar
-import androidx.media3.ui.TimeBar
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
@@ -179,7 +176,7 @@ fun PlayerView(
                 .padding(bottom = 72.dp)
                 .fillMaxSize()
         ) {
-            var scrubbingPosition by remember {
+            var scrubbingPosition by remember(player.mediaItemIndex) {
                 mutableStateOf<Long?>(null)
             }
 
@@ -272,7 +269,6 @@ fun PlayerView(
                     .padding(horizontal = 32.dp)
             )
 
-
             BasicText(
                 text = player.mediaMetadata.extras?.getStringArrayList("artistNames")
                     ?.joinToString("") ?: "",
@@ -283,40 +279,30 @@ fun PlayerView(
                     .padding(horizontal = 32.dp)
             )
 
-            AndroidView(
-                factory = { context ->
-                    DefaultTimeBar(context).also {
-                        it.setPlayedColor(colorPalette.text.toArgb())
-                        it.setUnplayedColor(colorPalette.textDisabled.toArgb())
-                        it.setScrubberColor(colorPalette.text.toArgb())
-                        it.addListener(object : TimeBar.OnScrubListener {
-                            override fun onScrubStart(timeBar: TimeBar, position: Long) = Unit
-
-                            override fun onScrubMove(timeBar: TimeBar, position: Long) {
-                                scrubbingPosition = position
-                            }
-
-                            override fun onScrubStop(
-                                timeBar: TimeBar,
-                                position: Long,
-                                canceled: Boolean
-                            ) {
-                                if (!canceled) {
-                                    scrubbingPosition = position
-                                    player.mediaController.seekTo(position)
-                                    player.currentPosition = player.mediaController.currentPosition
-                                }
-                                scrubbingPosition = null
-                            }
-                        })
+            SeekBar(
+                value = scrubbingPosition ?: player.currentPosition,
+                minimumValue = 0,
+                maximumValue = player.duration,
+                onDragStart = {
+                    scrubbingPosition = it
+                },
+                onDrag = { delta ->
+                    scrubbingPosition = if (player.duration != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, player.duration)
+                    } else {
+                        null
                     }
                 },
-                update = {
-                    it.setDuration(player.duration)
-                    it.setPosition(player.currentPosition)
+                onDragEnd = {
+                    player.mediaController.seekTo(scrubbingPosition ?: player.mediaController.currentPosition)
+                    player.currentPosition = player.mediaController.currentPosition
+                    scrubbingPosition = null
                 },
+                color = colorPalette.text,
+                backgroundColor = colorPalette.textDisabled,
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
-                    .padding(top = 16.dp)
+                    .padding(top = 24.dp, bottom = 12.dp)
                     .padding(horizontal = 32.dp)
                     .fillMaxWidth()
             )

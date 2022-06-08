@@ -38,10 +38,8 @@ dependencyResolutionManagement {
             alias("room-compiler").to("androidx.room", "room-compiler").versionRef("room")
 
             version("media3", "1.0.0-alpha03")
-            alias("media3-ui").to("androidx.media3", "media3-ui").versionRef("media3")
             alias("media3-session").to("androidx.media3", "media3-session").versionRef("media3")
             alias("media3-exoplayer").to("androidx.media3", "media3-exoplayer").versionRef("media3")
-            bundle("media3", listOf("media3-ui", "media3-session", "media3-exoplayer"))
 
             version("ktor", "2.0.2")
             alias("ktor-client-core").to("io.ktor", "ktor-client-core").versionRef("ktor")
