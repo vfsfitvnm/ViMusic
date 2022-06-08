@@ -117,7 +117,6 @@ fun PlayerView(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .clip(ThumbnailRoundness.shape)
                             .size(64.dp)
                     )
 
