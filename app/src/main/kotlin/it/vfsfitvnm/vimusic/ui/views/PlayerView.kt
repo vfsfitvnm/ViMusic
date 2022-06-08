@@ -329,14 +329,8 @@ fun PlayerView(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                val text by remember {
-                    derivedStateOf {
-                        DateUtils.formatElapsedTime((scrubbingPosition ?: player.currentPosition) / 1000)
-                    }
-                }
-
                 BasicText(
-                    text = text,
+                    text = DateUtils.formatElapsedTime((scrubbingPosition ?: player.currentPosition) / 1000),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
