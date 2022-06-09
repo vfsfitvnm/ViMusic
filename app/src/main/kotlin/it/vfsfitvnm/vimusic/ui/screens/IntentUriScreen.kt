@@ -231,7 +231,10 @@ fun IntentUriScreen(uri: Uri) {
                                 )
                             }
                         } else {
-                            itemsIndexed(currentItems.value) { index, item ->
+                            itemsIndexed(
+                                items = currentItems.value,
+                                contentType = { _, item -> item }
+                            ) { index, item ->
                                 SmallSongItem(
                                     song = item,
                                     thumbnailSizePx = density.run { 54.dp.roundToPx() },

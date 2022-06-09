@@ -273,8 +273,11 @@ fun LocalPlaylistScreen(
                     }
                 }
 
-
-                itemsIndexed(items = playlistWithSongs.songs, key = { _, song -> song.song.id }) { index, song ->
+                itemsIndexed(
+                    items = playlistWithSongs.songs,
+                    key = { _, song -> song.song.id },
+                    contentType = { _, song -> song },
+                ) { index, song ->
                     SongItem(
                         song = song,
                         thumbnailSize = thumbnailSize,

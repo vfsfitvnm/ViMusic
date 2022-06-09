@@ -199,7 +199,10 @@ fun SearchResultScreen(
                     )
                 }
 
-                items(items) { item ->
+                items(
+                    items = items,
+                    contentType = { it }
+                ) { item ->
                     SmallItem(
                         item = item,
                         thumbnailSizeDp = 54.dp,

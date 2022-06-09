@@ -262,7 +262,10 @@ fun HomeScreen(
                                 }
                             }
 
-                            items(playlistPreviews) { playlistPreview ->
+                            items(
+                                items = playlistPreviews,
+                                contentType = { it }
+                            ) { playlistPreview ->
                                 PlaylistPreviewItem(
                                     playlistPreview = playlistPreview,
                                     modifier = Modifier
@@ -391,7 +394,8 @@ fun HomeScreen(
                         items = songCollection,
                         key = { _, song ->
                             song.song.id
-                        }
+                        },
+                        contentType = { _, song -> song }
                     ) { index, song ->
                         SongItem(
                             song = song,
