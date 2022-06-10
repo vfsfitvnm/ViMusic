@@ -1,9 +1,8 @@
 package it.vfsfitvnm.vimusic.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,8 +11,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -50,21 +47,14 @@ fun SeekBar(
             }
             .pointerInput(minimumValue, maximumValue) {
                 if (maximumValue < minimumValue) return@pointerInput
-
-                forEachGesture {
-                    awaitPointerEventScope {
-                        val position = awaitFirstDown(requireUnconsumed = false)
-                        onDragStart((position.position.x / size.width * (maximumValue - minimumValue)).roundToLong())
-
-                        position.consume()
-
-                        if (awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull()
-                                ?.changedToUp() == true
-                        ) {
-                            onDragEnd()
-                        }
+                detectTapGestures(
+                    onPress = { offset ->
+                        onDragStart((offset.x / size.width * (maximumValue - minimumValue)).roundToLong())
+                    },
+                    onTap = {
+                        onDragEnd()
                     }
-                }
+                )
             }
             .padding(horizontal = scrubberRadius)
             .drawWithContent {
