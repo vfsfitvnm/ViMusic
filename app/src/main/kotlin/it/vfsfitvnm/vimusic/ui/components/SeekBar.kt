@@ -26,7 +26,7 @@ fun SeekBar(
     onDragEnd: () -> Unit,
     color: Color,
     backgroundColor: Color,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     barHeight: Dp = 3.5.dp,
     scrubberColor: Color = color,
     scrubberRadius: Dp = 6.dp,
@@ -47,9 +47,10 @@ fun SeekBar(
             }
             .pointerInput(minimumValue, maximumValue) {
                 if (maximumValue < minimumValue) return@pointerInput
+
                 detectTapGestures(
                     onPress = { offset ->
-                        onDragStart((offset.x / size.width * (maximumValue - minimumValue)).roundToLong())
+                        onDragStart((offset.x / size.width * (maximumValue - minimumValue) + minimumValue).roundToLong())
                     },
                     onTap = {
                         onDragEnd()
@@ -63,7 +64,7 @@ fun SeekBar(
                 val scrubberPosition = if (maximumValue < minimumValue) {
                     0f
                 } else {
-                    (value.toFloat() + minimumValue) / (maximumValue - minimumValue) * size.width
+                    (value.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
                 }
 
                 drawCircle(
@@ -84,7 +85,7 @@ fun SeekBar(
         Spacer(
             modifier = Modifier
                 .height(barHeight)
-                .fillMaxWidth((value.toFloat() + minimumValue) / (maximumValue - minimumValue))
+                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
                 .background(color = color, shape = shape)
         )
     }
