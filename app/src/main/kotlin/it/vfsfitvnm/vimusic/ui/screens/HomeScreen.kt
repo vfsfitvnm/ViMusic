@@ -80,11 +80,7 @@ fun HomeScreen(
 
     val preferences = LocalPreferences.current
 
-    val songCollection by remember(preferences.isReady, preferences.homePageSongCollection) {
-        if (!preferences.isReady) {
-            return@remember flowOf(emptyList())
-        }
-
+    val songCollection by remember(preferences.homePageSongCollection) {
         when (preferences.homePageSongCollection) {
             SongCollection.MostPlayed -> Database.mostPlayed()
             SongCollection.Favorites -> Database.favorites()
@@ -311,21 +307,19 @@ fun HomeScreen(
                                 val songCollections = enumValues<SongCollection>()
                                 val nextSongCollection = songCollections[(preferences.homePageSongCollection.ordinal + 1) % songCollections.size]
 
-                                BasicText(
-                                    text = when (nextSongCollection) {
-                                        SongCollection.MostPlayed -> "Most played"
-                                        SongCollection.Favorites -> "Favorites"
-                                        SongCollection.History -> "History"
-                                    },
-                                    style = typography.xxs.secondary.bold,
-                                    modifier = Modifier
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() }
-                                        ) {
-                                            preferences.onHomePageSongCollectionChange(
-                                                nextSongCollection
-                                            )
+                            BasicText(
+                                text = when (nextSongCollection) {
+                                    SongCollection.MostPlayed -> "Most played"
+                                    SongCollection.Favorites -> "Favorites"
+                                    SongCollection.History -> "History"
+                                },
+                                style = typography.xxs.secondary.bold,
+                                modifier = Modifier
+                                    .clickable(
+                                        indication = rememberRipple(bounded = true),
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = {
+                                            preferences.homePageSongCollection = nextSongCollection
                                         }
 //                                        .alignByBaseline()
                                         .padding(horizontal = 16.dp)

@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
         mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
 
         setContent {
-            val preferences by rememberPreferences(dataStore)
+            val preferences = rememberPreferences()
             val systemUiController = rememberSystemUiController()
 
             val (isDarkTheme, colorPalette) = when (preferences.colorPaletteMode) {
@@ -118,9 +118,7 @@ class MainActivity : ComponentActivity() {
                 LocalShimmerTheme provides shimmerTheme,
                 LocalTypography provides rememberTypography(colorPalette.text),
                 LocalYoutubePlayer provides rememberYoutubePlayer(mediaControllerFuture) {
-                    if (preferences.isReady) {
-                        it.repeatMode = preferences.repeatMode
-                    }
+                    it.repeatMode = preferences.repeatMode
                  },
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()

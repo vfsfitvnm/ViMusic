@@ -80,13 +80,17 @@ fun AppearanceScreen() {
                 EnumValueSelectorEntry(
                     title = "Theme mode",
                     selectedValue = preferences.colorPaletteMode,
-                    onValueSelected = preferences.onColorPaletteModeChange
+                    onValueSelected = {
+                        preferences.colorPaletteMode = it
+                    }
                 )
 
                 EnumValueSelectorEntry(
                     title = "Thumbnail roundness",
                     selectedValue = preferences.thumbnailRoundness,
-                    onValueSelected = preferences.onThumbnailRoundnessChange
+                    onValueSelected = {
+                        preferences.thumbnailRoundness = it
+                    }
                 )
             }
         }
