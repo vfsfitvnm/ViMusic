@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.R
@@ -22,6 +23,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.utils.disabled
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -33,6 +35,7 @@ fun SettingsScreen() {
     val artistRoute = rememberArtistRoute()
     val appearanceRoute = rememberAppearanceRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
+    val otherRoute = rememberOtherRoute()
     val aboutRoute = rememberAboutRoute()
 
     val scrollState = rememberScrollState()
@@ -41,9 +44,9 @@ fun SettingsScreen() {
         listenToGlobalEmitter = true,
         transitionSpec = {
             when (targetState.route) {
-                appearanceRoute, backupAndRestoreRoute, aboutRoute -> leftSlide
+                appearanceRoute, backupAndRestoreRoute, otherRoute, aboutRoute -> leftSlide
                 else -> when (initialState.route) {
-                    appearanceRoute, backupAndRestoreRoute, aboutRoute -> rightSlide
+                    appearanceRoute, backupAndRestoreRoute, otherRoute, aboutRoute -> rightSlide
                     else -> fastFade
                 }
             }
@@ -67,6 +70,10 @@ fun SettingsScreen() {
 
         backupAndRestoreRoute {
             BackupAndRestoreScreen()
+        }
+
+        otherRoute {
+            OtherScreen()
         }
 
         aboutRoute {
@@ -179,6 +186,14 @@ fun SettingsScreen() {
                 )
 
                 Entry(
+                    color = colorPalette.magenta,
+                    icon = R.drawable.shapes,
+                    title = "Other",
+                    description = "Advanced options",
+                    route = otherRoute
+                )
+
+                Entry(
                     color = colorPalette.green,
                     icon = R.drawable.information,
                     title = "About",
@@ -216,25 +231,92 @@ inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
         )
     }
 
-    Column(
+    SettingsEntry(
+        title = title,
+        text = valueText(selectedValue),
+        modifier = modifier,
+        onClick = {
+            isShowingDialog = true
+        }
+    )
+}
+
+@Composable
+@NonRestartableComposable
+fun SettingsEntry(
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    BaseSettingsEntry(
+        title = title,
+        text = text,
         modifier = modifier
             .clickable(
                 indication = rememberRipple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
-                onClick = { isShowingDialog = true }
+                onClick = onClick
             )
+    )
+}
+
+@Composable
+@NonRestartableComposable
+fun DisabledSettingsEntry(
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    BaseSettingsEntry(
+        title = title,
+        text = text,
+        modifier = modifier,
+        titleTextStyle = { disabled },
+        textStyle = { disabled },
+    )
+}
+
+@Composable
+fun BaseSettingsEntry(
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+    titleTextStyle: @Composable TextStyle.() -> TextStyle = { this },
+    textStyle: @Composable TextStyle.() -> TextStyle = { this },
+) {
+    val typography = LocalTypography.current
+
+    Column(
+        modifier = modifier
             .padding(start = 24.dp)
             .padding(horizontal = 32.dp, vertical = 16.dp)
             .fillMaxWidth()
     ) {
         BasicText(
             text = title,
-            style = typography.xs.semiBold,
+            style = typography.xs.semiBold.run { titleTextStyle() },
         )
 
         BasicText(
-            text = valueText(selectedValue),
-            style = typography.xs.semiBold.secondary
+            text = text,
+            style = typography.xs.semiBold.secondary.run { textStyle() }
         )
     }
+}
+
+@Composable
+fun SettingsEntryGroupText(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    val typography = LocalTypography.current
+
+    BasicText(
+        text = title.uppercase(),
+        style = typography.xs.semiBold,
+        modifier = modifier
+            .padding(start = 24.dp, top = 24.dp)
+            .padding(horizontal = 32.dp)
+    )
 }

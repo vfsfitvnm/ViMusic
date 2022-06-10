@@ -22,6 +22,7 @@ class Preferences(holder: SharedPreferences) : SharedPreferences by holder {
     var repeatMode by preference("repeatMode", Player.REPEAT_MODE_OFF)
     var homePageSongCollection by preference("homePageSongCollection", SongCollection.MostPlayed)
     var thumbnailRoundness by preference("thumbnailRoundness", ThumbnailRoundness.Light)
+    var coilDiskCacheMaxSizeBytes by preference("coilDiskCacheMaxSizeBytes", 512L * 1024 * 1024)
 }
 
 val Context.preferences: Preferences

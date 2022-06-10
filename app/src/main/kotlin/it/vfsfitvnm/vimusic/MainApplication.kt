@@ -5,6 +5,7 @@ import android.content.Context
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
+import it.vfsfitvnm.vimusic.utils.preferences
 
 
 class MainApplication : Application(), ImageLoaderFactory {
@@ -14,7 +15,7 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     override fun newImageLoader(): ImageLoader {
-        return defaultCoilImageLoader(1024 * 1024 * 1024)
+        return defaultCoilImageLoader(preferences.coilDiskCacheMaxSizeBytes)
     }
 }
 

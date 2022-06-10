@@ -18,6 +18,7 @@ data class ColorPalette(
     val red: Color,
     val green: Color,
     val orange: Color,
+    val magenta: Color,
 
     val primaryContainer: Color,
     val onPrimaryContainer: Color,
@@ -38,6 +39,7 @@ val DarkColorPalette = ColorPalette(
     red = Color(0xffbf4040),
     green = Color(0xff82b154),
     orange = Color(0xffe9a033),
+    magenta = Color(0xffbb4da4),
 
     primaryContainer = Color(0xff4046bf),
     onPrimaryContainer = Color.White,
@@ -64,6 +66,7 @@ val LightColorPalette = ColorPalette(
     red = Color(0xffbf4040),
     green = Color(0xff7fbf40),
     orange = Color(0xffe8730e),
+    magenta = Color(0xffbb4da4),
 
     primaryContainer = Color(0xff4046bf),
     onPrimaryContainer = Color.White,
