@@ -191,7 +191,9 @@ fun SearchResultScreen(
                         selectedTextStyle = typography.xs.medium.color(colorPalette.onPrimaryContainer),
                         unselectedTextStyle = typography.xs.medium,
                         shape = RoundedCornerShape(36.dp),
-                        onValueChanged = preferences.onSearchFilterChange,
+                        onValueChanged = {
+                             preferences.searchFilter = it
+                        },
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .padding(horizontal = 16.dp)
