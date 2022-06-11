@@ -73,12 +73,11 @@ fun IntentUriScreen(uri: Uri) {
             val coroutineScope = rememberCoroutineScope()
             val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
 
-
-            var items by remember {
+            var items by remember(uri) {
                 mutableStateOf<Outcome<List<YouTube.Item.Song>>>(Outcome.Loading)
             }
 
-            val onLoad = relaunchableEffect(Unit) {
+            val onLoad = relaunchableEffect(uri) {
                 items = withContext(Dispatchers.IO) {
                     uri.getQueryParameter("list")?.let { playlistId ->
                         YouTube.queue(playlistId).toNullable()?.map { songList ->
@@ -90,7 +89,7 @@ fun IntentUriScreen(uri: Uri) {
                 }
             }
 
-            var isImportingAsPlaylist by remember {
+            var isImportingAsPlaylist by remember(uri) {
                 mutableStateOf(false)
             }
 
@@ -246,7 +245,6 @@ fun IntentUriScreen(uri: Uri) {
                                                 YouTube.Item.Song::asMediaItem
                                             ), index
                                         )
-                                        pop()
                                     }
                                 )
                             }

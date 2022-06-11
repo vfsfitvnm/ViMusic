@@ -9,12 +9,12 @@ import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.Route1
 
 @Composable
-fun rememberIntentUriRoute(intentUri: Uri?): Route1<Uri?> {
+fun rememberIntentUriRoute(): Route1<Uri?> {
     val uri = rememberSaveable {
-        mutableStateOf(intentUri)
+        mutableStateOf<Uri?>(null)
     }
     return remember {
-        Route1("rememberIntentUriRoute", uri)
+        Route1("IntentUriRoute", uri)
     }
 }
 

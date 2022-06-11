@@ -1,7 +1,8 @@
 package it.vfsfitvnm.vimusic
 
 import android.content.ComponentName
-import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,7 +16,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
@@ -27,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.compose.ui.unit.dp
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -38,12 +39,14 @@ import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.services.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
+import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.styling.*
+import it.vfsfitvnm.vimusic.ui.views.PlayerView
 import it.vfsfitvnm.vimusic.utils.*
 
-private val Context.dataStore by preferencesDataStore(name = "preferences")
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -51,11 +54,15 @@ private val Context.dataStore by preferencesDataStore(name = "preferences")
 class MainActivity : ComponentActivity() {
     private lateinit var mediaControllerFuture: ListenableFuture<MediaController>
 
+    private var uri by mutableStateOf<Uri?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val sessionToken = SessionToken(this, ComponentName(this, PlayerService::class.java))
         mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+
+        uri = intent?.data
 
         setContent {
             val preferences = rememberPreferences()
@@ -119,16 +126,26 @@ class MainActivity : ComponentActivity() {
                 LocalTypography provides rememberTypography(colorPalette.text),
                 LocalYoutubePlayer provides rememberYoutubePlayer(mediaControllerFuture) {
                     it.repeatMode = preferences.repeatMode
-                 },
+                },
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()
             ) {
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(LocalColorPalette.current.background)
+                        .background(colorPalette.background)
                 ) {
-                    HomeScreen(intentUri = intent?.data)
+                    uri?.let {
+                        IntentUriScreen(uri = it)
+                    } ?: HomeScreen()
+
+                    PlayerView(
+                        layoutState = rememberBottomSheetState(
+                            lowerBound = 64.dp, upperBound = maxHeight
+                        ),
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                    )
 
                     BottomSheetMenu(
                         state = LocalMenuState.current,
@@ -140,9 +157,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        uri = intent?.data
+    }
+
     override fun onDestroy() {
         MediaController.releaseFuture(mediaControllerFuture)
         super.onDestroy()
     }
 }
-

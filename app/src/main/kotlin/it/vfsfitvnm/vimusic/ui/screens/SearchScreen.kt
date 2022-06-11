@@ -1,19 +1,17 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,6 +28,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
@@ -47,11 +46,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
 @ExperimentalAnimationApi
 @Composable
 fun SearchScreen(
     initialTextInput: String,
-    onSearch: (String) -> Unit
+    onSearch: (String) -> Unit,
+    onUri: (Uri) -> Unit,
 ) {
     var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -106,6 +107,10 @@ fun SearchScreen(
             val typography = LocalTypography.current
 
             val coroutineScope = rememberCoroutineScope()
+
+            val isOpenableUrl = remember(textFieldValue.text) {
+                Regex("""https://(music|www)\.youtube.com/(watch|playlist).*""").matches(textFieldValue.text)
+            }
 
             LaunchedEffect(Unit) {
                 delay(300)
@@ -182,6 +187,40 @@ fun SearchScreen(
                             .weight(1f)
                             .focusRequester(focusRequester)
                     )
+                }
+
+                if (isOpenableUrl) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable(
+                                indication = rememberRipple(bounded = true),
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    onUri(textFieldValue.text.toUri())
+                                }
+                            )
+                            .fillMaxWidth()
+                            .background(colorPalette.lightBackground)
+                            .padding(vertical = 16.dp, horizontal = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.link),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.darkGray),
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .size(20.dp)
+                        )
+
+                        BasicText(
+                            text = "Open URL",
+                            style = typography.s.secondary,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .weight(1f)
+                        )
+                    }
                 }
 
                 Column(
