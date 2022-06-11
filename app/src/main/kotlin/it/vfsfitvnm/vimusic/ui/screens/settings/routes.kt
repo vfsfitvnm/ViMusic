@@ -12,6 +12,13 @@ fun rememberAppearanceRoute(): Route0 {
 }
 
 @Composable
+fun rememberNotificationRoute(): Route0 {
+    return remember {
+        Route0("NotificationRoute")
+    }
+}
+
+@Composable
 fun rememberBackupAndRestoreRoute(): Route0 {
     return remember {
         Route0("BackupAndRestoreRoute")

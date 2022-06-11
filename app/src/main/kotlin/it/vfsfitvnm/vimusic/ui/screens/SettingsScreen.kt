@@ -11,8 +11,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -20,13 +19,11 @@ import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
+import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.disabled
-import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.*
 
 @ExperimentalAnimationApi
 @Composable
@@ -34,6 +31,7 @@ fun SettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
     val appearanceRoute = rememberAppearanceRoute()
+    val notificationRoute = rememberNotificationRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
     val otherRoute = rememberOtherRoute()
     val aboutRoute = rememberAboutRoute()
@@ -44,10 +42,11 @@ fun SettingsScreen() {
         listenToGlobalEmitter = true,
         transitionSpec = {
             when (targetState.route) {
-                appearanceRoute, backupAndRestoreRoute, otherRoute, aboutRoute -> leftSlide
+                albumRoute, artistRoute -> fastFade
                 else -> when (initialState.route) {
-                    appearanceRoute, backupAndRestoreRoute, otherRoute, aboutRoute -> rightSlide
-                    else -> fastFade
+                    albumRoute, artistRoute -> fastFade
+                    null -> leftSlide
+                    else -> rightSlide
                 }
             }
         }
@@ -66,6 +65,10 @@ fun SettingsScreen() {
 
         appearanceRoute {
             AppearanceScreen()
+        }
+
+        notificationRoute {
+            NotificationScreen()
         }
 
         backupAndRestoreRoute {
@@ -178,6 +181,14 @@ fun SettingsScreen() {
                 )
 
                 Entry(
+                    color = colorPalette.cyan,
+                    icon = R.drawable.notifications,
+                    title = "Notification",
+                    description = "Customize the notification appearance",
+                    route = notificationRoute
+                )
+
+                Entry(
                     color = colorPalette.orange,
                     icon = R.drawable.server,
                     title = "Backup & Restore",
@@ -213,8 +224,6 @@ inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
     modifier: Modifier = Modifier,
     crossinline valueText: (T) -> String = Enum<T>::name
 ) {
-    val typography = LocalTypography.current
-
     var isShowingDialog by remember {
         mutableStateOf(false)
     }
@@ -239,6 +248,53 @@ inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
             isShowingDialog = true
         }
     )
+}
+
+
+@Composable
+fun SwitchSettingEntry(
+    title: String,
+    text: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
+) {
+    val colorPalette = LocalColorPalette.current
+    val typography = LocalTypography.current
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .clickable(
+                indication = rememberRipple(bounded = true),
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { onCheckedChange(!isChecked) },
+                enabled = isEnabled
+            )
+            .padding(start = 24.dp)
+            .padding(horizontal = 32.dp, vertical = 16.dp)
+            .fillMaxWidth()
+    ) {
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            BasicText(
+                text = title,
+                style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.text else colorPalette.darkGray),
+            )
+
+            BasicText(
+                text = text,
+                style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.textSecondary else colorPalette.darkGray),
+            )
+        }
+
+        Switch(isChecked = isChecked)
+    }
 }
 
 @Composable

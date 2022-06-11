@@ -28,9 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.media3.common.Player
-import it.vfsfitvnm.route.Route
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.route.rememberRoute
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.SongCollection
@@ -86,13 +84,7 @@ fun HomeScreen(
         }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
-    RouteHandler(
-//        route = route,
-//        onRouteChanged = onRouteChanged,
-        listenToGlobalEmitter = true
-    ) {
-        println("route: ${this.route?.tag}")
-
+    RouteHandler(listenToGlobalEmitter = true) {
         settingsRoute {
             SettingsScreen()
         }
