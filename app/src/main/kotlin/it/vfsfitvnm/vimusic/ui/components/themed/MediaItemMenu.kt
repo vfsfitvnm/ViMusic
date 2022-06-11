@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
+import android.os.Bundle
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.with
@@ -13,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import it.vfsfitvnm.route.RouteHandler
@@ -23,6 +25,8 @@ import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.services.StartRadioCommand
+import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
@@ -145,13 +149,19 @@ fun NonQueuedMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
         onStartRadio = {
-            val playlistId = mediaItem.mediaMetadata.extras?.getString("playlistId")
-            YoutubePlayer.Radio.setup(playlistId = playlistId)
-            player?.mediaController?.forcePlay(mediaItem)
+            player?.mediaController?.run {
+                forcePlay(mediaItem)
+                sendCustomCommand(StartRadioCommand, bundleOf(
+                    "videoId" to mediaItem.mediaId,
+                    "playlistId" to mediaItem.mediaMetadata.extras?.getString("playlistId")
+                ))
+            }
         },
         onPlaySingle = {
-            YoutubePlayer.Radio.reset()
-            player?.mediaController?.forcePlay(mediaItem)
+            player?.mediaController?.run {
+                sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                forcePlay(mediaItem)
+            }
         },
         onPlayNext = if (player?.playbackState == Player.STATE_READY) ({
             player.mediaController.addNext(mediaItem)

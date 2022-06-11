@@ -157,50 +157,50 @@ fun CurrentPlaylistView(
             )
         }
 
-        if (YoutubePlayer.Radio.isActive && player != null) {
-            when (val nextContinuation = YoutubePlayer.Radio.nextContinuation) {
-                is Outcome.Loading, is Outcome.Success<*> -> {
-                    if (nextContinuation is Outcome.Success<*>) {
-                        item {
-                            SideEffect {
-                                coroutineScope.launch {
-                                    YoutubePlayer.Radio.process(
-                                        player.mediaController,
-                                        force = true
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    items(count = 3, key = { it }) { index ->
-                        SmallSongItemShimmer(
-                            shimmer = shimmer,
-                            thumbnailSizeDp = 54.dp,
-                            modifier = Modifier
-                                .alpha(1f - index * 0.125f)
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                        )
-                    }
-                }
-                is Outcome.Error -> item {
-                    Error(
-                        error = nextContinuation
-                    )
-                }
-                is Outcome.Recovered<*> -> item {
-                    Error(
-                        error = nextContinuation.error,
-                        onRetry = {
-                            coroutineScope.launch {
-                                YoutubePlayer.Radio.process(player.mediaController, force = true)
-                            }
-                        }
-                    )
-                }
-                else -> {}
-            }
-        }
+//        if (YoutubePlayer.Radio.isActive && player != null) {
+//            when (val nextContinuation = YoutubePlayer.Radio.nextContinuation) {
+//                is Outcome.Loading, is Outcome.Success<*> -> {
+//                    if (nextContinuation is Outcome.Success<*>) {
+//                        item {
+//                            SideEffect {
+//                                coroutineScope.launch {
+//                                    YoutubePlayer.Radio.process(
+//                                        player.mediaController,
+//                                        force = true
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    items(count = 3, key = { it }) { index ->
+//                        SmallSongItemShimmer(
+//                            shimmer = shimmer,
+//                            thumbnailSizeDp = 54.dp,
+//                            modifier = Modifier
+//                                .alpha(1f - index * 0.125f)
+//                                .fillMaxWidth()
+//                                .padding(vertical = 4.dp, horizontal = 16.dp)
+//                        )
+//                    }
+//                }
+//                is Outcome.Error -> item {
+//                    Error(
+//                        error = nextContinuation
+//                    )
+//                }
+//                is Outcome.Recovered<*> -> item {
+//                    Error(
+//                        error = nextContinuation.error,
+//                        onRetry = {
+//                            coroutineScope.launch {
+//                                YoutubePlayer.Radio.process(player.mediaController, force = true)
+//                            }
+//                        }
+//                    )
+//                }
+//                else -> {}
+//            }
+//        }
     }
 }

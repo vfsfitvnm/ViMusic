@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.Error
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.Message
@@ -238,13 +240,10 @@ fun IntentUriScreen(uri: Uri) {
                                     song = item,
                                     thumbnailSizePx = density.run { 54.dp.roundToPx() },
                                     onClick = {
-                                        YoutubePlayer.Radio.reset()
-
-                                        player?.mediaController?.forcePlayAtIndex(
-                                            currentItems.value.map(
-                                                YouTube.Item.Song::asMediaItem
-                                            ), index
-                                        )
+                                        player?.mediaController?.let {
+                                            it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                            it.forcePlayAtIndex(currentItems.value.map(YouTube.Item.Song::asMediaItem), index)
+                                        }
                                     }
                                 )
                             }

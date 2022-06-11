@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,6 +31,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
@@ -232,12 +234,10 @@ fun LocalPlaylistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        YoutubePlayer.Radio.reset()
-                                        player?.mediaController?.forcePlayFromBeginning(
-                                            playlistWithSongs.songs
-                                                .map(SongWithInfo::asMediaItem)
-                                                .shuffled()
-                                        )
+                                        player?.mediaController?.let {
+                                            it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                            it.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem).shuffled())
+                                        }
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -254,12 +254,10 @@ fun LocalPlaylistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        YoutubePlayer.Radio.reset()
-                                        player?.mediaController?.forcePlayFromBeginning(
-                                            playlistWithSongs.songs.map(
-                                                SongWithInfo::asMediaItem
-                                            )
-                                        )
+                                        player?.mediaController?.let {
+                                            it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                            it.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem))
+                                        }
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -282,12 +280,10 @@ fun LocalPlaylistScreen(
                         song = song,
                         thumbnailSize = thumbnailSize,
                         onClick = {
-                            YoutubePlayer.Radio.reset()
-                            player?.mediaController?.forcePlayAtIndex(
-                                playlistWithSongs.songs.map(
-                                    SongWithInfo::asMediaItem
-                                ), index
-                            )
+                            player?.mediaController?.let {
+                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                it.forcePlayAtIndex(playlistWithSongs.songs.map(SongWithInfo::asMediaItem), index)
+                            }
                         },
                         menuContent = {
                             InPlaylistMediaItemMenu(

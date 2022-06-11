@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,6 +37,7 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
@@ -331,11 +333,10 @@ fun HomeScreen(
                                                 enabled = songCollection.isNotEmpty(),
                                                 onClick = {
                                                     menuState.hide()
-                                                    YoutubePlayer.Radio.reset()
-                                                    player?.mediaController?.forcePlayFromBeginning(
-                                                        songCollection
-                                                            .map(SongWithInfo::asMediaItem)
-                                                    )
+                                                    player?.mediaController?.let {
+                                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                                        it.forcePlayFromBeginning(songCollection.map(SongWithInfo::asMediaItem))
+                                                    }
                                                 }
                                             )
 
@@ -345,12 +346,10 @@ fun HomeScreen(
                                                 enabled = songCollection.isNotEmpty(),
                                                 onClick = {
                                                     menuState.hide()
-                                                    YoutubePlayer.Radio.reset()
-                                                    player?.mediaController?.forcePlayFromBeginning(
-                                                        songCollection
-                                                            .shuffled()
-                                                            .map(SongWithInfo::asMediaItem)
-                                                    )
+                                                    player?.mediaController?.let {
+                                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                                        it.forcePlayFromBeginning(songCollection.shuffled().map(SongWithInfo::asMediaItem))
+                                                    }
                                                 }
                                             )
 
@@ -385,11 +384,10 @@ fun HomeScreen(
                         song = song,
                         thumbnailSize = thumbnailSize,
                         onClick = {
-                            YoutubePlayer.Radio.reset()
-                            player?.mediaController?.forcePlayAtIndex(
-                                songCollection.map(SongWithInfo::asMediaItem),
-                                index
-                            )
+                            player?.mediaController?.let {
+                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                it.forcePlayAtIndex(songCollection.map(SongWithInfo::asMediaItem), index)
+                            }
                         },
                         menuContent = {
                             when (preferences.homePageSongCollection) {

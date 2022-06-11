@@ -21,6 +21,7 @@ import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.services.StartArtistRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.ExpandableText
 import it.vfsfitvnm.vimusic.ui.components.Message
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
@@ -69,6 +70,7 @@ fun ArtistScreen(
         }
 
         host {
+            val player = LocalYoutubePlayer.current
             val density = LocalDensity.current
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
@@ -137,8 +139,7 @@ fun ArtistScreen(
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable {
-                                    YoutubePlayer.Radio.reset()
-                                    artist.shuffleEndpoint?.let(YoutubePlayer.Radio::setup)
+                                    player?.mediaController?.sendCustomCommand(StartArtistRadioCommand, artist.shuffleEndpoint.asBundle)
                                 }
                                 .shadow(elevation = 2.dp, shape = CircleShape)
                                 .background(color = colorPalette.elevatedBackground, shape = CircleShape)
@@ -152,8 +153,7 @@ fun ArtistScreen(
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable {
-                                    YoutubePlayer.Radio.reset()
-                                    artist.radioEndpoint?.let(YoutubePlayer.Radio::setup)
+                                    player?.mediaController?.sendCustomCommand(StartArtistRadioCommand, artist.radioEndpoint.asBundle)
                                 }
                                 .shadow(elevation = 2.dp, shape = CircleShape)
                                 .background(color = colorPalette.elevatedBackground, shape = CircleShape)

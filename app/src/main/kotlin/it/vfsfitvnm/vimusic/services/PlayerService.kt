@@ -32,29 +32,33 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.analytics.PlaybackStatsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.session.MediaController
-import androidx.media3.session.MediaNotification
+import androidx.media3.session.*
 import androidx.media3.session.MediaNotification.ActionFactory
-import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
 import coil.ImageLoader
 import coil.request.ImageRequest
+import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.utils.RingBuffer
 import it.vfsfitvnm.vimusic.utils.YoutubePlayer
+import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.insert
 import it.vfsfitvnm.youtubemusic.Outcome
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 
+val StartRadioCommand = SessionCommand("StartRadioCommand", Bundle.EMPTY)
+val StartArtistRadioCommand = SessionCommand("StartArtistRadioCommand", Bundle.EMPTY)
+val StopRadioCommand = SessionCommand("StopRadioCommand", Bundle.EMPTY)
+
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
     MediaNotification.Provider,
-    PlaybackStatsListener.Callback, Player.Listener,YoutubePlayer.Radio.Listener {
+    MediaSession.SessionCallback,
+    PlaybackStatsListener.Callback, Player.Listener {
 
     companion object {
         private const val NotificationId = 1001
@@ -73,6 +77,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     private var lastArtworkUri: Uri? = null
     private var lastBitmap: Bitmap? = null
+
+    private var radio: YoutubePlayer.Radio? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
@@ -101,11 +107,11 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
         mediaSession = MediaSession.Builder(this, player)
             .withSessionActivity()
+            .setSessionCallback(this)
             .setMediaItemFiller(this)
             .build()
 
         player.addListener(this)
-        YoutubePlayer.Radio.listener = this
     }
 
     override fun onDestroy() {
@@ -117,6 +123,49 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession {
         return mediaSession
+    }
+
+    override fun onConnect(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo
+    ): MediaSession.ConnectionResult {
+        val sessionCommands = SessionCommands.Builder()
+            .add(StartRadioCommand)
+            .add(StartArtistRadioCommand)
+            .add(StopRadioCommand)
+            .build()
+        val playerCommands = Player.Commands.Builder().addAllCommands().build()
+        return MediaSession.ConnectionResult.accept(sessionCommands,playerCommands)
+    }
+
+    override fun onCustomCommand(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        customCommand: SessionCommand,
+        args: Bundle
+    ): ListenableFuture<SessionResult> {
+        when (customCommand) {
+            StartRadioCommand, StartArtistRadioCommand -> {
+                radio = null
+                YoutubePlayer.Radio(
+                    videoId = args.getString("videoId"),
+                    playlistId = args.getString("playlistId"),
+                    playlistSetVideoId = args.getString("playlistSetVideoId"),
+                    parameters = args.getString("params"),
+                ).let {
+                    coroutineScope.launch(Dispatchers.Main) {
+                        when (customCommand) {
+                            StartRadioCommand -> mediaSession.player.addMediaItems(it.process().drop(1))
+                            StartArtistRadioCommand ->  mediaSession.player.forcePlayFromBeginning(it.process())
+                        }
+                        radio = it
+                    }
+                }
+            }
+            StopRadioCommand -> radio = null
+        }
+
+        return super.onCustomCommand(session, controller, customCommand, args)
     }
 
     override fun onPlaybackStatsReady(
@@ -132,18 +181,12 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         }
     }
 
-    override fun process(play: Boolean) {
-        if (YoutubePlayer.Radio.isActive) {
-            coroutineScope.launch {
-                YoutubePlayer.Radio.process(mediaSession.player, play = play)
-            }
-        }
-    }
-
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (YoutubePlayer.Radio.isActive) {
-            coroutineScope.launch {
-                YoutubePlayer.Radio.process(mediaSession.player)
+        radio?.let { radio ->
+            if (mediaSession.player.mediaItemCount - mediaSession.player.currentMediaItemIndex <= 3) {
+                coroutineScope.launch(Dispatchers.Main) {
+                    mediaSession.player.addMediaItems(radio.process())
+                }
             }
         }
     }

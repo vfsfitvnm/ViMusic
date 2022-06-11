@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
+import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.Shimmer
 import com.valentinilk.shimmer.ShimmerBounds
@@ -33,6 +35,7 @@ import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.services.StartRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
@@ -42,6 +45,7 @@ import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -214,17 +218,13 @@ fun SearchResultScreen(
                                 is YouTube.Item.Album -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Artist -> artistRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Playlist -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
-                                is YouTube.Item.Song -> {
-                                    player?.mediaController?.forcePlay(item.asMediaItem)
-                                    item.info.endpoint?.let {
-                                        YoutubePlayer.Radio.setup(it, false)
-                                    }
+                                is YouTube.Item.Song -> player?.mediaController?.let {
+                                    it.forcePlay(item.asMediaItem)
+                                    it.sendCustomCommand(StartRadioCommand, item.info.endpoint.asBundle)
                                 }
-                                is YouTube.Item.Video -> {
-                                    player?.mediaController?.forcePlay(item.asMediaItem)
-                                    item.info.endpoint?.let {
-                                        YoutubePlayer.Radio.setup(it, false)
-                                    }
+                                is YouTube.Item.Video -> player?.mediaController?.let {
+                                    it.forcePlay(item.asMediaItem)
+                                    it.sendCustomCommand(StartRadioCommand, item.info.endpoint.asBundle)
                                 }
                             }
                         }
@@ -573,3 +573,13 @@ fun SmallArtistItem(
         )
     }
 }
+
+val NavigationEndpoint.Endpoint.Watch?.asBundle: Bundle
+    get() = this?.let {
+        bundleOf(
+            "videoId" to videoId,
+            "playlistId" to playlistId,
+            "playlistSetVideoId" to playlistSetVideoId,
+            "params" to params,
+        )
+    } ?: Bundle.EMPTY

@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.content.Intent
+import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -22,21 +23,22 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
@@ -276,14 +278,16 @@ fun PlaylistOrAlbumScreen(
                                     colorFilter = ColorFilter.tint(colorPalette.text),
                                     modifier = Modifier
                                         .clickable {
-                                            YoutubePlayer.Radio.reset()
-                                            playlistOrAlbum.items
-                                                ?.shuffled()
-                                                ?.mapNotNull { song ->
-                                                    song.toMediaItem(browseId, playlistOrAlbum)
-                                                }?.let { mediaItems ->
-                                                    player?.mediaController?.forcePlayFromBeginning(mediaItems)
-                                                }
+                                            player?.mediaController?.let {
+                                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                                playlistOrAlbum.items
+                                                    ?.shuffled()
+                                                    ?.mapNotNull { song ->
+                                                        song.toMediaItem(browseId, playlistOrAlbum)
+                                                    }?.let { mediaItems ->
+                                                        it.forcePlayFromBeginning(mediaItems)
+                                                    }
+                                            }
                                         }
                                         .shadow(elevation = 2.dp, shape = CircleShape)
                                         .background(
@@ -300,12 +304,13 @@ fun PlaylistOrAlbumScreen(
                                     colorFilter = ColorFilter.tint(colorPalette.text),
                                     modifier = Modifier
                                         .clickable {
-                                            YoutubePlayer.Radio.reset()
-
-                                            playlistOrAlbum.items?.mapNotNull { song ->
-                                                song.toMediaItem(browseId, playlistOrAlbum)
-                                            }?.let { mediaItems ->
-                                                player?.mediaController?.forcePlayFromBeginning(mediaItems)
+                                            player?.mediaController?.let {
+                                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                                playlistOrAlbum.items?.mapNotNull { song ->
+                                                    song.toMediaItem(browseId, playlistOrAlbum)
+                                                }?.let { mediaItems ->
+                                                    it.forcePlayFromBeginning(mediaItems)
+                                                }
                                             }
                                         }
                                         .shadow(elevation = 2.dp, shape = CircleShape)
@@ -326,12 +331,13 @@ fun PlaylistOrAlbumScreen(
                             authors = (song.authors ?: playlistOrAlbum.authors)?.joinToString("") { it.name },
                             durationText = song.durationText,
                             onClick = {
-                                YoutubePlayer.Radio.reset()
-
-                                playlistOrAlbum.items?.mapNotNull { song ->
-                                    song.toMediaItem(browseId, playlistOrAlbum)
-                                }?.let { mediaItems ->
-                                    player?.mediaController?.forcePlayAtIndex(mediaItems, index)
+                                player?.mediaController?.let {
+                                    it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                    playlistOrAlbum.items?.mapNotNull { song ->
+                                        song.toMediaItem(browseId, playlistOrAlbum)
+                                    }?.let { mediaItems ->
+                                        it.forcePlayAtIndex(mediaItems, index)
+                                    }
                                 }
                             },
                             startContent = {
