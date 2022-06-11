@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -50,7 +49,6 @@ import it.vfsfitvnm.vimusic.utils.*
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
-@ExperimentalTextApi
 class MainActivity : ComponentActivity() {
     private lateinit var mediaControllerFuture: ListenableFuture<MediaController>
 

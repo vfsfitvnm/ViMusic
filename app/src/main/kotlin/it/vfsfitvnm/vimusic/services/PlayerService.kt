@@ -14,7 +14,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -53,7 +52,6 @@ import kotlin.math.roundToInt
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
-@ExperimentalTextApi
 class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
     MediaNotification.Provider,
     PlaybackStatsListener.Callback, Player.Listener,YoutubePlayer.Radio.Listener {
