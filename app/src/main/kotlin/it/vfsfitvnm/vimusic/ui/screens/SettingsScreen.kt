@@ -188,8 +188,8 @@ fun SettingsScreen() {
                 Entry(
                     color = colorPalette.magenta,
                     icon = R.drawable.play,
-                    title = "Player",
-                    description = "Tune the player behavior",
+                    title = "Player & Audio",
+                    description = "Player and audio settings",
                     route = playerSettingsRoute,
                 )
 
@@ -311,23 +311,38 @@ fun SwitchSettingEntry(
 }
 
 @Composable
-@NonRestartableComposable
 fun SettingsEntry(
     title: String,
     text: String,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isEnabled: Boolean = true
 ) {
-    BaseSettingsEntry(
-        title = title,
-        text = text,
+    val typography = LocalTypography.current
+    val colorPalette = LocalColorPalette.current
+
+    Column(
         modifier = modifier
             .clickable(
                 indication = rememberRipple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
-                onClick = onClick
+                onClick = onClick,
+                enabled = isEnabled
             )
-    )
+            .padding(start = 24.dp)
+            .padding(horizontal = 32.dp, vertical = 16.dp)
+            .fillMaxWidth()
+    ) {
+        BasicText(
+            text = title,
+            style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.text else colorPalette.darkGray),
+        )
+
+        BasicText(
+            text = text,
+            style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.textSecondary else colorPalette.darkGray),
+        )
+    }
 }
 
 @Composable

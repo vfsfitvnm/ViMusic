@@ -58,6 +58,8 @@ val DeleteSongCacheCommand = SessionCommand("DeleteSongCacheCommand", Bundle.EMP
 
 val SetSkipSilenceCommand = SessionCommand("SetSkipSilenceCommand", Bundle.EMPTY)
 
+val GetAudioSessionIdCommand = SessionCommand("GetAudioSessionIdCommand", Bundle.EMPTY)
+
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
@@ -106,6 +108,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 true
             )
             .build()
+
+
 
         player.repeatMode = preferences.repeatMode
         player.skipSilenceEnabled = preferences.skipSilence
@@ -189,6 +193,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .add(GetCacheSizeCommand)
             .add(DeleteSongCacheCommand)
             .add(SetSkipSilenceCommand)
+            .add(GetAudioSessionIdCommand)
             .build()
         val playerCommands = Player.Commands.Builder().addAllCommands().build()
         return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
@@ -229,6 +234,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             }
             SetSkipSilenceCommand -> {
                 player.skipSilenceEnabled = args.getBoolean("skipSilence")
+            }
+            GetAudioSessionIdCommand -> {
+                return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("audioSessionId" to player.audioSessionId)))
             }
         }
 
