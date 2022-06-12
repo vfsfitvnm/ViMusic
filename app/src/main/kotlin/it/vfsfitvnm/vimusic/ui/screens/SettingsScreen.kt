@@ -230,7 +230,7 @@ fun SettingsScreen() {
 }
 
 @Composable
-inline fun <reified T: Enum<T>>EnumValueSelectorEntry(
+inline fun <reified T : Enum<T>> EnumValueSelectorEntry(
     title: String,
     selectedValue: T,
     crossinline onValueSelected: (T) -> Unit,
@@ -388,4 +388,35 @@ fun SettingsEntryGroupText(
             .padding(start = 24.dp, top = 24.dp)
             .padding(horizontal = 32.dp)
     )
+}
+
+@Composable
+fun SettingsEntryGroupText(
+    @DrawableRes icon: Int,
+    title: String,
+    modifier: Modifier = Modifier,
+    iconColor: Color = LocalColorPalette.current.textSecondary
+) {
+    val typography = LocalTypography.current
+
+    Row(
+       verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .padding(top = 24.dp)
+            .padding(horizontal = 8.dp)
+    ) {
+        Image(
+            painter = painterResource(icon),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(iconColor),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .size(16.dp)
+        )
+
+        BasicText(
+            text = title.uppercase(),
+            style = typography.xs.semiBold,
+        )
+    }
 }

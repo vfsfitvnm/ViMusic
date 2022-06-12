@@ -107,6 +107,8 @@ fun OtherSettingsScreen() {
                     }
 
                     SettingsEntryGroupText(
+                        icon = R.drawable.image,
+                        iconColor = colorPalette.green,
                         title = "IMAGE CACHE",
                     )
 
@@ -176,6 +178,8 @@ fun OtherSettingsScreen() {
                     }
 
                     SettingsEntryGroupText(
+                        icon = R.drawable.musical_notes,
+                        iconColor = colorPalette.cyan,
                         title = "SONG CACHE",
                     )
 
