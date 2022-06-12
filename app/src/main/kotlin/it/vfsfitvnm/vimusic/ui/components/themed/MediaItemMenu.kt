@@ -25,6 +25,7 @@ import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.services.DeleteSongCacheCommand
 import it.vfsfitvnm.vimusic.services.StartRadioCommand
 import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -65,6 +66,8 @@ fun InHistoryMediaItemMenu(
     // https://issuetracker.google.com/issues/226410236
     onDismiss: () -> Unit = LocalMenuState.current.let { it::hide }
 ) {
+    val mediaController = LocalYoutubePlayer.current?.mediaController
+
     val coroutineScope = rememberCoroutineScope()
 
     var isDeletingFromDatabase by remember {
@@ -79,6 +82,7 @@ fun InHistoryMediaItemMenu(
             },
             onConfirm = {
                 onDismiss()
+                mediaController?.sendCustomCommand(DeleteSongCacheCommand, bundleOf("videoId" to song.song.id))
                 coroutineScope.launch(Dispatchers.IO) {
                     Database.delete(song.song)
                 }

@@ -54,6 +54,8 @@ val StopRadioCommand = SessionCommand("StopRadioCommand", Bundle.EMPTY)
 
 val GetCacheSizeCommand = SessionCommand("GetCacheSizeCommand", Bundle.EMPTY)
 
+val DeleteSongCacheCommand = SessionCommand("DeleteSongCacheCommand", Bundle.EMPTY)
+
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
@@ -180,6 +182,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .add(StartArtistRadioCommand)
             .add(StopRadioCommand)
             .add(GetCacheSizeCommand)
+            .add(DeleteSongCacheCommand)
             .build()
         val playerCommands = Player.Commands.Builder().addAllCommands().build()
         return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
@@ -212,6 +215,11 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             StopRadioCommand -> radio = null
             GetCacheSizeCommand -> {
                 return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("cacheSize" to cache.cacheSpace)))
+            }
+            DeleteSongCacheCommand -> {
+                args.getString("videoId")?.let { videoId ->
+                    cache.removeResource(videoId)
+                }
             }
         }
 
