@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -9,8 +10,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -20,7 +28,7 @@ fun MusicBars(
     color: Color,
     modifier: Modifier = Modifier,
     barWidth: Dp = 4.dp,
-    shape: Shape = CircleShape
+    cornerRadius: Dp = 16.dp
 ) {
     val animatablesWithSteps = remember {
         listOf(
@@ -48,12 +56,18 @@ fun MusicBars(
         modifier = modifier
     ) {
         animatablesWithSteps.forEach { (animatable) ->
-            Spacer(
+            Canvas(
                 modifier = Modifier
-                    .background(color = color, shape = shape)
-                    .fillMaxHeight(animatable.value)
+                    .fillMaxHeight()
                     .width(barWidth)
-            )
+            ) {
+                drawRoundRect(
+                    color = color,
+                    topLeft = Offset(x = 0f, y = size.height * (1 - animatable.value)),
+                    size = size.copy(height = animatable.value * size.height),
+                    cornerRadius = CornerRadius(cornerRadius.toPx())
+                )
+            }
         }
     }
 }
