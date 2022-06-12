@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.media3.common.Player
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.SongCollection
@@ -52,9 +53,7 @@ import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
 @Composable
-fun HomeScreen(
-//    uri: Uri?,
-) {
+fun HomeScreen() {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
 
@@ -70,8 +69,6 @@ fun HomeScreen(
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
-//    val (route, onRouteChanged) = rememberRoute(uri?.let { intentUriRoute })
-
     val playlistPreviews by remember {
         Database.playlistPreviews()
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
@@ -86,7 +83,15 @@ fun HomeScreen(
         }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
-    RouteHandler(listenToGlobalEmitter = true) {
+    RouteHandler(
+        listenToGlobalEmitter = true,
+        transitionSpec = {
+            when (targetState.route) {
+                settingsRoute -> scaleIn(initialScale = 0.9f) with fadeOut()
+                else -> fastFade
+            }
+        }
+    ) {
         settingsRoute {
             SettingsScreen()
         }
