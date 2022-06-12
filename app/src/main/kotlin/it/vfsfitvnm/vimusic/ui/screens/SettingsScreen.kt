@@ -31,6 +31,7 @@ fun SettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
     val appearanceRoute = rememberAppearanceRoute()
+    val playerSettingsRoute = rememberPlayerSettingsRoute()
     val notificationRoute = rememberNotificationRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
     val otherRoute = rememberOtherRoute()
@@ -65,6 +66,10 @@ fun SettingsScreen() {
 
         appearanceRoute {
             AppearanceScreen()
+        }
+
+        playerSettingsRoute {
+            PlayerSettingsScreen()
         }
 
         notificationRoute {
@@ -178,6 +183,14 @@ fun SettingsScreen() {
                     title = "Appearance",
                     description = "Change the colors and shapes of the app",
                     route = appearanceRoute,
+                )
+
+                Entry(
+                    color = colorPalette.magenta,
+                    icon = R.drawable.play,
+                    title = "Player",
+                    description = "Tune the player behavior",
+                    route = playerSettingsRoute,
                 )
 
                 Entry(

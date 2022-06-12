@@ -40,10 +40,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.utils.RingBuffer
-import it.vfsfitvnm.vimusic.utils.YoutubePlayer
-import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.insert
+import it.vfsfitvnm.vimusic.internal
+import it.vfsfitvnm.vimusic.models.QueuedMediaItem
+import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
@@ -112,9 +111,55 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .build()
 
         player.addListener(this)
+
+        if (preferences.persistentQueue) {
+            coroutineScope.launch(Dispatchers.IO) {
+                val queuedMediaItems = Database.queuedMediaItems()
+                Database.clearQueuedMediaItems()
+
+                if (queuedMediaItems.isEmpty()) return@launch
+
+                val index = queuedMediaItems.indexOfFirst { it.position != null }.coerceAtLeast(0)
+
+                withContext(Dispatchers.Main) {
+                    player.setMediaItems(
+                        queuedMediaItems
+                            .map(QueuedMediaItem::mediaItem)
+                            .map { mediaItem ->
+                                mediaItem.buildUpon()
+                                    .setUri(mediaItem.mediaId)
+                                    .setCustomCacheKey(mediaItem.mediaId)
+                                    .build()
+                            },
+                        true
+                    )
+                    player.seekTo(index, queuedMediaItems[index].position ?: 0)
+                    player.playWhenReady = false
+                    player.prepare()
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
+        if (preferences.persistentQueue) {
+            val mediaItems = mediaSession.player.currentTimeline.mediaItems
+            val mediaItemIndex = mediaSession.player.currentMediaItemIndex
+            val mediaItemPosition = mediaSession.player.currentPosition
+
+            Database.internal.queryExecutor.execute {
+                Database.clearQueuedMediaItems()
+                Database.insertQueuedMediaItems(
+                    mediaItems.mapIndexed { index, mediaItem ->
+                        QueuedMediaItem(
+                            mediaItem = mediaItem,
+                            position = if (index == mediaItemIndex) mediaItemPosition else null
+                        )
+                    }
+                )
+            }
+        }
+
         mediaSession.player.release()
         mediaSession.release()
         cache.release()
@@ -135,7 +180,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .add(StopRadioCommand)
             .build()
         val playerCommands = Player.Commands.Builder().addAllCommands().build()
-        return MediaSession.ConnectionResult.accept(sessionCommands,playerCommands)
+        return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
     }
 
     override fun onCustomCommand(
@@ -156,7 +201,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                     coroutineScope.launch(Dispatchers.Main) {
                         when (customCommand) {
                             StartRadioCommand -> mediaSession.player.addMediaItems(it.process().drop(1))
-                            StartArtistRadioCommand ->  mediaSession.player.forcePlayFromBeginning(it.process())
+                            StartArtistRadioCommand -> mediaSession.player.forcePlayFromBeginning(it.process())
                         }
                         radio = it
                     }
