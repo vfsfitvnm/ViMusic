@@ -50,11 +50,10 @@ val LocalYoutubePlayer = compositionLocalOf<YoutubePlayer?> { null }
 
 @Composable
 fun rememberYoutubePlayer(
-    mediaControllerFuture: ListenableFuture<MediaController>,
-    block: (MediaController) -> Unit,
+    mediaControllerFuture: ListenableFuture<MediaController>
 ): YoutubePlayer? {
     val mediaController by produceState<MediaController?>(initialValue = null) {
-        value = mediaControllerFuture.await().also(block)
+        value = mediaControllerFuture.await()
     }
 
     val playerState = remember(mediaController) {

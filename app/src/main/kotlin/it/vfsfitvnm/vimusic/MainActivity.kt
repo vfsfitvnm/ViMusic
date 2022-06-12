@@ -122,9 +122,7 @@ class MainActivity : ComponentActivity() {
                 LocalColorPalette provides colorPalette,
                 LocalShimmerTheme provides shimmerTheme,
                 LocalTypography provides rememberTypography(colorPalette.text),
-                LocalYoutubePlayer provides rememberYoutubePlayer(mediaControllerFuture) {
-                    it.repeatMode = preferences.repeatMode
-                },
+                LocalYoutubePlayer provides rememberYoutubePlayer(mediaControllerFuture),
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()
             ) {

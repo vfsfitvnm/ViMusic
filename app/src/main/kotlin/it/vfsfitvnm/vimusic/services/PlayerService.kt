@@ -56,6 +56,8 @@ val GetCacheSizeCommand = SessionCommand("GetCacheSizeCommand", Bundle.EMPTY)
 
 val DeleteSongCacheCommand = SessionCommand("DeleteSongCacheCommand", Bundle.EMPTY)
 
+val SetSkipSilenceCommand = SessionCommand("SetSkipSilenceCommand", Bundle.EMPTY)
+
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
@@ -69,6 +71,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
     }
 
     private lateinit var cache: SimpleCache
+
+    private lateinit var player: ExoPlayer
 
     private lateinit var mediaSession: MediaSession
 
@@ -90,7 +94,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
 
-        val player = ExoPlayer.Builder(this)
+        player = ExoPlayer.Builder(this)
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_LOCAL)
             .setMediaSourceFactory(DefaultMediaSourceFactory(createDataSourceFactory()))
@@ -102,10 +106,11 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 true
             )
             .build()
-            .also { player ->
-                player.playWhenReady = true
-                player.addAnalyticsListener(PlaybackStatsListener(false, this))
-            }
+
+        player.repeatMode = preferences.repeatMode
+        player.skipSilenceEnabled = preferences.skipSilence
+        player.playWhenReady = true
+        player.addAnalyticsListener(PlaybackStatsListener(false, this))
 
         mediaSession = MediaSession.Builder(this, player)
             .withSessionActivity()
@@ -146,9 +151,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     override fun onDestroy() {
         if (preferences.persistentQueue) {
-            val mediaItems = mediaSession.player.currentTimeline.mediaItems
-            val mediaItemIndex = mediaSession.player.currentMediaItemIndex
-            val mediaItemPosition = mediaSession.player.currentPosition
+            val mediaItems = player.currentTimeline.mediaItems
+            val mediaItemIndex = player.currentMediaItemIndex
+            val mediaItemPosition = player.currentPosition
 
             Database.internal.queryExecutor.execute {
                 Database.clearQueuedMediaItems()
@@ -163,7 +168,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             }
         }
 
-        mediaSession.player.release()
+        player.release()
         mediaSession.release()
         cache.release()
         super.onDestroy()
@@ -183,6 +188,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .add(StopRadioCommand)
             .add(GetCacheSizeCommand)
             .add(DeleteSongCacheCommand)
+            .add(SetSkipSilenceCommand)
             .build()
         val playerCommands = Player.Commands.Builder().addAllCommands().build()
         return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
@@ -205,8 +211,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 ).let {
                     coroutineScope.launch(Dispatchers.Main) {
                         when (customCommand) {
-                            StartRadioCommand -> mediaSession.player.addMediaItems(it.process().drop(1))
-                            StartArtistRadioCommand -> mediaSession.player.forcePlayFromBeginning(it.process())
+                            StartRadioCommand -> player.addMediaItems(it.process().drop(1))
+                            StartArtistRadioCommand -> player.forcePlayFromBeginning(it.process())
                         }
                         radio = it
                     }
@@ -220,6 +226,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 args.getString("videoId")?.let { videoId ->
                     cache.removeResource(videoId)
                 }
+            }
+            SetSkipSilenceCommand -> {
+                player.skipSilenceEnabled = args.getBoolean("skipSilence")
             }
         }
 
@@ -241,9 +250,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         radio?.let { radio ->
-            if (mediaSession.player.mediaItemCount - mediaSession.player.currentMediaItemIndex <= 3) {
+            if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                 coroutineScope.launch(Dispatchers.Main) {
-                    mediaSession.player.addMediaItems(radio.process())
+                    player.addMediaItems(radio.process())
                 }
             }
         }

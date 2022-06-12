@@ -26,6 +26,7 @@ class Preferences(holder: SharedPreferences) : SharedPreferences by holder {
     var exoPlayerDiskCacheMaxSizeBytes by preference("exoPlayerDiskCacheMaxSizeBytes", 512L * 1024 * 1024)
     var displayLikeButtonInNotification by preference("displayLikeButtonInNotification", false)
     var persistentQueue by preference("persistentQueue", false)
+    var skipSilence by preference("skipSilence", false)
 }
 
 val Context.preferences: Preferences

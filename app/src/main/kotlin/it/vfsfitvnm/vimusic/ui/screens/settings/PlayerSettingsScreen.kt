@@ -9,13 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.services.SetSkipSilenceCommand
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.LocalPreferences
+import it.vfsfitvnm.vimusic.utils.LocalYoutubePlayer
 import it.vfsfitvnm.vimusic.utils.semiBold
 
 @ExperimentalAnimationApi
@@ -43,6 +46,7 @@ fun PlayerSettingsScreen() {
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
             val preferences = LocalPreferences.current
+            val mediaController = LocalYoutubePlayer.current?.mediaController
 
             Column(
                 modifier = Modifier
@@ -85,6 +89,16 @@ fun PlayerSettingsScreen() {
                         preferences.persistentQueue = it
                     },
                     isEnabled = false
+                )
+
+                SwitchSettingEntry(
+                    title = "Skip silence",
+                    text = "Skip silent parts during playback",
+                    isChecked = preferences.skipSilence,
+                    onCheckedChange = {
+                        mediaController?.sendCustomCommand(SetSkipSilenceCommand, bundleOf("skipSilence" to it))
+                        preferences.skipSilence = it
+                    }
                 )
             }
         }
