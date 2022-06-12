@@ -64,15 +64,11 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         private const val NotificationChannelId = "default_channel_id"
     }
 
-    private val cache: SimpleCache by lazy(LazyThreadSafetyMode.NONE) {
-        SimpleCache(cacheDir, NoOpCacheEvictor(), StandaloneDatabaseProvider(this))
-    }
+    private lateinit var cache: SimpleCache
 
     private lateinit var mediaSession: MediaSession
 
-    private val notificationManager by lazy(LazyThreadSafetyMode.NONE) {
-        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    }
+    private lateinit var notificationManager: NotificationManager
 
     private var lastArtworkUri: Uri? = null
     private var lastBitmap: Bitmap? = null
@@ -86,6 +82,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
         createNotificationChannel()
         setMediaNotificationProvider(this)
+
+        cache = SimpleCache(cacheDir, NoOpCacheEvictor(), StandaloneDatabaseProvider(this))
 
         val player = ExoPlayer.Builder(this)
             .setHandleAudioBecomingNoisy(true)
@@ -351,6 +349,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
     ) = Unit
 
     private fun createNotificationChannel() {
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Util.SDK_INT >= 26 && notificationManager.getNotificationChannel(NotificationChannelId) == null) {
             notificationManager.createNotificationChannel(
                 NotificationChannel(
