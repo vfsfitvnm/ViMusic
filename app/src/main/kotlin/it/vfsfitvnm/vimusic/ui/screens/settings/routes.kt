@@ -5,9 +5,9 @@ import androidx.compose.runtime.remember
 import it.vfsfitvnm.route.Route0
 
 @Composable
-fun rememberAppearanceRoute(): Route0 {
+fun rememberAppearanceSettingsRoute(): Route0 {
     return remember {
-        Route0("AppearanceRoute")
+        Route0("AppearanceSettingsRoute")
     }
 }
 
@@ -19,9 +19,9 @@ fun rememberPlayerSettingsRoute(): Route0 {
 }
 
 @Composable
-fun rememberNotificationRoute(): Route0 {
+fun rememberNotificationSettingsRoute(): Route0 {
     return remember {
-        Route0("NotificationRoute")
+        Route0("NotificationSettingsRoute")
     }
 }
 
@@ -33,9 +33,9 @@ fun rememberBackupAndRestoreRoute(): Route0 {
 }
 
 @Composable
-fun rememberOtherRoute(): Route0 {
+fun rememberOtherSettingsRoute(): Route0 {
     return remember {
-        Route0("OtherRoute")
+        Route0("OtherSettingsRoute")
     }
 }
 

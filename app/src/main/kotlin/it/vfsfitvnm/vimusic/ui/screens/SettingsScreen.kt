@@ -30,11 +30,11 @@ import it.vfsfitvnm.vimusic.utils.*
 fun SettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
-    val appearanceRoute = rememberAppearanceRoute()
+    val appearanceSettingsRoute = rememberAppearanceSettingsRoute()
     val playerSettingsRoute = rememberPlayerSettingsRoute()
-    val notificationRoute = rememberNotificationRoute()
+    val notificationSettingsRoute = rememberNotificationSettingsRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
-    val otherRoute = rememberOtherRoute()
+    val otherSettingsRoute = rememberOtherSettingsRoute()
     val aboutRoute = rememberAboutRoute()
 
     val scrollState = rememberScrollState()
@@ -64,7 +64,7 @@ fun SettingsScreen() {
             )
         }
 
-        appearanceRoute {
+        appearanceSettingsRoute {
             AppearanceScreen()
         }
 
@@ -72,7 +72,7 @@ fun SettingsScreen() {
             PlayerSettingsScreen()
         }
 
-        notificationRoute {
+        notificationSettingsRoute {
             NotificationScreen()
         }
 
@@ -80,7 +80,7 @@ fun SettingsScreen() {
             BackupAndRestoreScreen()
         }
 
-        otherRoute {
+        otherSettingsRoute {
             OtherScreen()
         }
 
@@ -182,7 +182,7 @@ fun SettingsScreen() {
                     icon = R.drawable.color_palette,
                     title = "Appearance",
                     description = "Change the colors and shapes of the app",
-                    route = appearanceRoute,
+                    route = appearanceSettingsRoute,
                 )
 
                 Entry(
@@ -198,7 +198,7 @@ fun SettingsScreen() {
                     icon = R.drawable.notifications,
                     title = "Notification",
                     description = "Customize the notification appearance",
-                    route = notificationRoute
+                    route = notificationSettingsRoute
                 )
 
                 Entry(
@@ -214,7 +214,7 @@ fun SettingsScreen() {
                     icon = R.drawable.shapes,
                     title = "Other",
                     description = "Advanced options",
-                    route = otherRoute
+                    route = otherSettingsRoute
                 )
 
                 Entry(
