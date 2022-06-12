@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.media3.common.*
 import androidx.media3.common.util.Util
 import androidx.media3.database.StandaloneDatabaseProvider
@@ -25,7 +26,7 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.NoOpCacheEvictor
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
@@ -36,11 +37,10 @@ import androidx.media3.session.*
 import androidx.media3.session.MediaNotification.ActionFactory
 import coil.ImageLoader
 import coil.request.ImageRequest
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.MainActivity
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
@@ -51,6 +51,8 @@ import kotlin.math.roundToInt
 val StartRadioCommand = SessionCommand("StartRadioCommand", Bundle.EMPTY)
 val StartArtistRadioCommand = SessionCommand("StartArtistRadioCommand", Bundle.EMPTY)
 val StopRadioCommand = SessionCommand("StopRadioCommand", Bundle.EMPTY)
+
+val GetCacheSizeCommand = SessionCommand("GetCacheSizeCommand", Bundle.EMPTY)
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -83,7 +85,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         createNotificationChannel()
         setMediaNotificationProvider(this)
 
-        cache = SimpleCache(cacheDir, NoOpCacheEvictor(), StandaloneDatabaseProvider(this))
+        val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
+        cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
 
         val player = ExoPlayer.Builder(this)
             .setHandleAudioBecomingNoisy(true)
@@ -176,6 +179,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .add(StartRadioCommand)
             .add(StartArtistRadioCommand)
             .add(StopRadioCommand)
+            .add(GetCacheSizeCommand)
             .build()
         val playerCommands = Player.Commands.Builder().addAllCommands().build()
         return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
@@ -206,6 +210,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 }
             }
             StopRadioCommand -> radio = null
+            GetCacheSizeCommand -> {
+                return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("cacheSize" to cache.cacheSpace)))
+            }
         }
 
         return super.onCustomCommand(session, controller, customCommand, args)

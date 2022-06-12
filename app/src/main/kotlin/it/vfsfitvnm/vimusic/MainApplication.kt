@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic
 
 import android.app.Application
-import android.content.Context
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -15,18 +14,14 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     override fun newImageLoader(): ImageLoader {
-        return defaultCoilImageLoader(preferences.coilDiskCacheMaxSizeBytes)
+        return ImageLoader.Builder(this)
+            .crossfade(true)
+            .diskCache(
+                DiskCache.Builder()
+                    .directory(filesDir.resolve("coil"))
+                    .maxSizeBytes(preferences.coilDiskCacheMaxSizeBytes)
+                    .build()
+            )
+            .build()
     }
-}
-
-fun Context.defaultCoilImageLoader(diskCacheMaxSize: Long): ImageLoader {
-    return ImageLoader.Builder(this)
-        .crossfade(true)
-        .diskCache(
-            DiskCache.Builder()
-                .directory(filesDir.resolve("coil"))
-                .maxSizeBytes(diskCacheMaxSize)
-                .build()
-        )
-        .build()
 }
