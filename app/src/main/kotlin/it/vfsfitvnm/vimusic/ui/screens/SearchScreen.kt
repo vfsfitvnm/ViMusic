@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -143,10 +144,7 @@ fun SearchScreen(
                         ),
                         cursorBrush = SolidColor(colorPalette.text),
                         decorationBox = { innerTextField ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                            ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Image(
                                     painter = painterResource(R.drawable.chevron_back),
                                     contentDescription = null,
@@ -180,10 +178,28 @@ fun SearchScreen(
 
                                     innerTextField()
                                 }
+
+                                Box(
+                                    modifier = Modifier
+                                        .clickable {
+                                            textFieldValue = TextFieldValue()
+                                        }
+                                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                                        .background(color = colorPalette.lightBackground, shape = CircleShape)
+                                        .size(28.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.close),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .size(14.dp)
+                                    )
+                                }
                             }
                         },
                         modifier = Modifier
-                            .padding(end = 16.dp)
                             .weight(1f)
                             .focusRequester(focusRequester)
                     )
