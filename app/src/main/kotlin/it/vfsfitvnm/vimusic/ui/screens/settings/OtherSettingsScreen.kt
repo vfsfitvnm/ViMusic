@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoilApi::class)
 @ExperimentalAnimationApi
 @Composable
-fun OtherScreen() {
+fun OtherSettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 

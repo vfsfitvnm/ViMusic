@@ -42,7 +42,6 @@ import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
-import it.vfsfitvnm.vimusic.ui.screens.settings.OtherScreen
 import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.ui.views.PlayerView
 import it.vfsfitvnm.vimusic.utils.*

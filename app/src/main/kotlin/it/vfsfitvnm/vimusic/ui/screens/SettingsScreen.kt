@@ -65,7 +65,7 @@ fun SettingsScreen() {
         }
 
         appearanceSettingsRoute {
-            AppearanceScreen()
+            AppearanceSettingsScreen()
         }
 
         playerSettingsRoute {
@@ -73,7 +73,7 @@ fun SettingsScreen() {
         }
 
         notificationSettingsRoute {
-            NotificationScreen()
+            NotificationSettingsScreen()
         }
 
         backupAndRestoreRoute {
@@ -81,7 +81,7 @@ fun SettingsScreen() {
         }
 
         otherSettingsRoute {
-            OtherScreen()
+            OtherSettingsScreen()
         }
 
         aboutRoute {

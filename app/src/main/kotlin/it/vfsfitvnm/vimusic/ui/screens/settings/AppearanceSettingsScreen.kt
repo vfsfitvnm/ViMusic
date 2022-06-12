@@ -20,7 +20,7 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 
 @ExperimentalAnimationApi
 @Composable
-fun AppearanceScreen() {
+fun AppearanceSettingsScreen() {
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
