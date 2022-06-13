@@ -14,6 +14,7 @@
   <img src="https://user-images.githubusercontent.com/46219656/171632005-f51cce3f-20d4-44e6-83dd-c1d27e9c63e0.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/172060638-b6c7b06f-a708-48e8-9d2a-97558a83676c.png" width="200" />
   <img src="https://user-images.githubusercontent.com/46219656/171632008-e66392c7-9462-4383-b7cf-8ec5f5701f9c.png" width="200" />
+  <img src="https://user-images.githubusercontent.com/46219656/173445468-ba428c96-e4fb-4134-b584-8aca23137b8f.png" width="200" />
 </p>
 
 ## Features
@@ -25,6 +26,7 @@
 - Local playlist management
 - Reorder songs in playlist or queue
 - Light/Dark theme
+- Skip silence
 - Open YouTube/YouTube Music links (`watch`, `playlist`)
 - ...
 
