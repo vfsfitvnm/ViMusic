@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
@@ -82,27 +83,23 @@ fun PlayerView(
                         .graphicsLayer {
                             alpha = 1f - (layoutState.progress * 16).coerceAtMost(1f)
                         }
-                        .drawWithCache {
-                            val offset = 64.dp.toPx()
-                            val x = ((size.width - offset) * player.progress) + offset
-
-                            onDrawWithContent {
-                                drawContent()
-                                drawLine(
-                                    color = colorPalette.text,
-                                    start = Offset(
-                                        x = offset,
-                                        y = 1.dp.toPx()
-                                    ),
-                                    end = Offset(
-                                        x = x,
-                                        y = 1.dp.toPx()
-                                    ),
-                                    strokeWidth = 2.dp.toPx()
-                                )
-                            }
-                        }
                         .background(colorPalette.elevatedBackground)
+                        .drawBehind {
+                            val offset = 64.dp.toPx()
+
+                            drawLine(
+                                color = colorPalette.text,
+                                start = Offset(
+                                    x = offset,
+                                    y = 1.dp.toPx()
+                                ),
+                                end = Offset(
+                                    x = ((size.width - offset) * player.progress) + offset,
+                                    y = 1.dp.toPx()
+                                ),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                        }
                 ) {
                     AsyncImage(
                         model = "${player.mediaMetadata.artworkUri}-w$smallThumbnailSize-h$smallThumbnailSize",
