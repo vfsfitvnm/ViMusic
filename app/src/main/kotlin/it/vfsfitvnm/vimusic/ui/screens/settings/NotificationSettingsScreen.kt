@@ -78,8 +78,8 @@ fun NotificationSettingsScreen() {
                 }
 
                 SwitchSettingEntry(
-                    title = "[SOON] Show Like button",
-                    text = "Mark a song as favorite",
+                    title = "Show Like button",
+                    text = "Coming soon!",
                     isChecked = preferences.displayLikeButtonInNotification,
                     onCheckedChange = {
                         preferences.displayLikeButtonInNotification = it

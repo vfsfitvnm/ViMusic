@@ -41,7 +41,6 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import kotlinx.coroutines.*
@@ -123,55 +122,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .build()
 
         player.addListener(this)
-
-        if (preferences.persistentQueue) {
-            coroutineScope.launch(Dispatchers.IO) {
-                val queuedMediaItems = Database.queuedMediaItems()
-                Database.clearQueuedMediaItems()
-
-                if (queuedMediaItems.isEmpty()) return@launch
-
-                val index = queuedMediaItems.indexOfFirst { it.position != null }.coerceAtLeast(0)
-
-                withContext(Dispatchers.Main) {
-                    player.setMediaItems(
-                        queuedMediaItems
-                            .map(QueuedMediaItem::mediaItem)
-                            .map { mediaItem ->
-                                mediaItem.buildUpon()
-                                    .setUri(mediaItem.mediaId)
-                                    .setCustomCacheKey(mediaItem.mediaId)
-                                    .build()
-                            },
-                        true
-                    )
-                    player.seekTo(index, queuedMediaItems[index].position ?: 0)
-                    player.playWhenReady = false
-                    player.prepare()
-                }
-            }
-        }
     }
 
     override fun onDestroy() {
-        if (preferences.persistentQueue) {
-            val mediaItems = player.currentTimeline.mediaItems
-            val mediaItemIndex = player.currentMediaItemIndex
-            val mediaItemPosition = player.currentPosition
-
-            Database.internal.queryExecutor.execute {
-                Database.clearQueuedMediaItems()
-                Database.insertQueuedMediaItems(
-                    mediaItems.mapIndexed { index, mediaItem ->
-                        QueuedMediaItem(
-                            mediaItem = mediaItem,
-                            position = if (index == mediaItemIndex) mediaItemPosition else null
-                        )
-                    }
-                )
-            }
-        }
-
         player.release()
         mediaSession.release()
         cache.release()

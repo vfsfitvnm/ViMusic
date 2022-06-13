@@ -2,9 +2,8 @@ package it.vfsfitvnm.vimusic
 
 import android.content.Context
 import android.database.Cursor
-import android.os.Parcel
-import androidx.media3.common.MediaItem
 import androidx.room.*
+import androidx.room.migration.AutoMigrationSpec
 import it.vfsfitvnm.vimusic.models.*
 import kotlinx.coroutines.flow.Flow
 
@@ -84,15 +83,6 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(song: Song): Long
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insertQueuedMediaItems(queuedMediaItems: List<QueuedMediaItem>)
-
-    @Query("SELECT * FROM QueuedMediaItem")
-    fun queuedMediaItems(): List<QueuedMediaItem>
-
-    @Query("DELETE FROM QueuedMediaItem")
-    fun clearQueuedMediaItems()
-
     @Update
     fun update(song: Song)
 
@@ -130,19 +120,18 @@ interface Database {
         Info::class,
         SongWithAuthors::class,
         SearchQuery::class,
-        QueuedMediaItem::class
     ],
     views = [
         SortedSongInPlaylist::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
-    ]
+        AutoMigration(from = 3, to = 4, spec = DatabaseInitializer.From3To4Migration::class),
+    ],
 )
-@TypeConverters(Converters::class)
 abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract val database: Database
 
@@ -158,37 +147,9 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             }
         }
     }
-}
 
-@TypeConverters
-object Converters {
-    // TODO: temporary
-    @TypeConverter
-    fun mediaItemFromByteArray(value: ByteArray?): MediaItem? {
-        return value?.let { byteArray ->
-            val parcel = Parcel.obtain()
-            parcel.unmarshall(byteArray, 0, byteArray.size)
-            parcel.setDataPosition(0)
-
-            val pb = parcel.readBundle(MediaItem::class.java.classLoader)
-            parcel.recycle()
-            pb?.let {
-                MediaItem.CREATOR.fromBundle(pb)
-            }
-        }
-    }
-
-    // TODO: temporary
-    @TypeConverter
-    fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
-        return mediaItem?.toBundle()?.let { persistableBundle ->
-            val parcel = Parcel.obtain()
-            parcel.writeBundle(persistableBundle)
-            parcel.marshall().also {
-                parcel.recycle()
-            }
-        }
-    }
+    @DeleteTable.Entries(DeleteTable(tableName = "QueuedMediaItem"))
+    class From3To4Migration : AutoMigrationSpec
 }
 
 val Database.internal: RoomDatabase
