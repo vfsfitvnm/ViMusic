@@ -114,15 +114,15 @@ fun PlayerSettingsScreen() {
                     )
                 }
 
-                SwitchSettingEntry(
-                    title = "[SOON] Persistent queue",
-                    text = "Save and restore playing songs",
-                    isChecked = preferences.persistentQueue,
-                    onCheckedChange = {
-                        preferences.persistentQueue = it
-                    },
-                    isEnabled = false
-                )
+//                SwitchSettingEntry(
+//                    title = "Persistent queue",
+//                    text = "Save and restore playing songs",
+//                    isChecked = preferences.persistentQueue,
+//                    onCheckedChange = {
+//                        preferences.persistentQueue = it
+//                    },
+//                    isEnabled = false
+//                )
 
                 SwitchSettingEntry(
                     title = "Skip silence",
