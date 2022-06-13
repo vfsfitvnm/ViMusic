@@ -26,7 +26,9 @@ import it.vfsfitvnm.route.Route
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.route.rememberRoute
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.Message
@@ -35,10 +37,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.rememberLyricsRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.LocalYoutubePlayer
-import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.color
-import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.isEvaluable
@@ -51,6 +50,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun PlayerBottomSheet(
     layoutState: BottomSheetState,
+    song: Song?,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,10 +67,6 @@ fun PlayerBottomSheet(
 
     var nextOutcome by remember(player.mediaItem!!.mediaId) {
         mutableStateOf<Outcome<YouTube.NextResult>>(Outcome.Initial)
-    }
-
-    var lyricsOutcome by remember(player.mediaItem!!.mediaId) {
-        mutableStateOf<Outcome<String?>>(Outcome.Initial)
     }
 
     BottomSheet(
@@ -91,7 +87,10 @@ fun PlayerBottomSheet(
                 Spacer(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .background(color = colorPalette.textDisabled, shape = RoundedCornerShape(16.dp))
+                        .background(
+                            color = colorPalette.textDisabled,
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .width(36.dp)
                         .height(4.dp)
                         .padding(top = 8.dp)
@@ -175,13 +174,18 @@ fun PlayerBottomSheet(
                 .background(colorPalette.elevatedBackground)
                 .fillMaxSize()
         ) {
+            var lyricsOutcome by remember(song) {
+                mutableStateOf(song?.lyrics?.let { Outcome.Success(it) } ?: Outcome.Initial)
+            }
+
             lyricsRoute {
                 OutcomeItem(
                     outcome = lyricsOutcome,
                     onInitialize = {
-                        lyricsOutcome = Outcome.Loading
-
+                        println("onInitialize!!")
                         coroutineScope.launch(Dispatchers.Main) {
+                            lyricsOutcome = Outcome.Loading
+
                             if (nextOutcome.isEvaluable) {
                                 nextOutcome = Outcome.Loading
                                 nextOutcome = withContext(Dispatchers.IO) {
@@ -195,6 +199,13 @@ fun PlayerBottomSheet(
 
                             lyricsOutcome = nextOutcome.flatMap {
                                 it.lyrics?.text().toNotNull()
+                            }.map {
+                                it ?: ""
+                            }.map {
+                                withContext(Dispatchers.IO) {
+                                    Database.update((song ?: Database.insert(player.mediaItem!!)).copy(lyrics = it))
+                                }
+                                it
                             }
                         }
                     },
@@ -205,7 +216,14 @@ fun PlayerBottomSheet(
                         )
                     }
                 ) { lyrics ->
-                    if (lyrics != null) {
+                    if (lyrics.isEmpty()) {
+                        Message(
+                            text = "Lyrics not available",
+                            icon = R.drawable.text,
+                            modifier = Modifier
+                                .padding(top = 64.dp)
+                        )
+                    } else {
                         BasicText(
                             text = lyrics,
                             style = typography.xs.center,
@@ -216,13 +234,6 @@ fun PlayerBottomSheet(
                                 .fillMaxWidth()
                                 .padding(vertical = 16.dp)
                                 .padding(horizontal = 48.dp)
-                        )
-                    } else {
-                        Message(
-                            text = "Lyrics not available",
-                            icon = R.drawable.text,
-                            modifier = Modifier
-                                .padding(top = 64.dp)
                         )
                     }
                 }

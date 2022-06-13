@@ -7,7 +7,6 @@ import androidx.media3.common.MediaItem
 import androidx.room.*
 import it.vfsfitvnm.vimusic.models.*
 import kotlinx.coroutines.flow.Flow
-import java.io.ByteArrayOutputStream
 
 
 @Dao
@@ -125,15 +124,22 @@ interface Database {
 
 @androidx.room.Database(
     entities = [
-        Song::class, SongInPlaylist::class, Playlist::class, Info::class, SongWithAuthors::class, SearchQuery::class, QueuedMediaItem::class
+        Song::class,
+        SongInPlaylist::class,
+        Playlist::class,
+        Info::class,
+        SongWithAuthors::class,
+        SearchQuery::class,
+        QueuedMediaItem::class
     ],
     views = [
         SortedSongInPlaylist::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
     ]
 )
 @TypeConverters(Converters::class)
@@ -162,7 +168,7 @@ object Converters {
         return value?.let { byteArray ->
             val parcel = Parcel.obtain()
             parcel.unmarshall(byteArray, 0, byteArray.size)
-            parcel.setDataPosition(0);
+            parcel.setDataPosition(0)
 
             val pb = parcel.readBundle(MediaItem::class.java.classLoader)
             parcel.recycle()

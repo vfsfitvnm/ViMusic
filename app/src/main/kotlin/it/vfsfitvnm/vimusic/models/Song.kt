@@ -10,8 +10,9 @@ data class Song(
     val albumInfoId: Long?,
     val durationText: String,
     val thumbnailUrl: String?,
+    val lyrics: String? = null,
     val likedAt: Long? = null,
-    val totalPlayTimeMs: Long = 0
+    val totalPlayTimeMs: Long = 0,
 ) {
     val formattedTotalPlayTime: String
         get() {

@@ -68,11 +68,6 @@ fun PlayerView(
         size to density.run { size.minus(64.dp).roundToPx() }
     }
 
-    val song by remember(player.mediaItem?.mediaId) {
-        player.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged() ?: flowOf(null)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-
     BottomSheet(
         state = layoutState,
         modifier = modifier,
@@ -169,6 +164,10 @@ fun PlayerView(
             }
         }
     ) {
+        val song by remember(player.mediaItem?.mediaId) {
+            player.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged() ?: flowOf(null)
+        }.collectAsState(initial = null, context = Dispatchers.IO)
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -440,6 +439,7 @@ fun PlayerView(
         PlayerBottomSheet(
             layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound - 128.dp),
             onGlobalRouteEmitted = layoutState.collapse,
+            song = song,
             modifier = Modifier
                 .padding(bottom = 128.dp)
                 .align(Alignment.BottomCenter)
