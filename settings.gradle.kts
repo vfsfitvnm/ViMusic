@@ -50,6 +50,8 @@ dependencyResolutionManagement {
             alias("brotli").to("org.brotli", "dec").version("0.1.2")
 
             alias("guava-coroutines").to("org.jetbrains.kotlinx", "kotlinx-coroutines-guava").version("1.6.2")
+
+            alias("desugaring").to("com.android.tools", "desugar_jdk_libs").version("1.1.5")
         }
 
         create("testLibs") {
