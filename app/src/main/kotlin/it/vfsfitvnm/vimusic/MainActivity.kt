@@ -52,7 +52,7 @@ import it.vfsfitvnm.vimusic.utils.*
 class MainActivity : ComponentActivity() {
     private lateinit var mediaControllerFuture: ListenableFuture<MediaController>
 
-    private var uri by mutableStateOf<Uri?>(null)
+    private var uri by mutableStateOf<Uri?>(null, neverEqualPolicy())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,17 +131,20 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(colorPalette.background)
                 ) {
-                    uri?.let {
-                        IntentUriScreen(uri = it)
-                    } ?: HomeScreen()
+                    when (val uri = uri) {
+                        null -> {
+                            HomeScreen()
 
-                    PlayerView(
-                        layoutState = rememberBottomSheetState(
-                            lowerBound = 64.dp, upperBound = maxHeight
-                        ),
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                    )
+                            PlayerView(
+                                layoutState = rememberBottomSheetState(
+                                    lowerBound = 64.dp, upperBound = maxHeight
+                                ),
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                            )
+                        }
+                        else -> IntentUriScreen(uri = uri)
+                    }
 
                     BottomSheetMenu(
                         state = LocalMenuState.current,
