@@ -35,11 +35,12 @@ import androidx.media3.exoplayer.analytics.PlaybackStatsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.*
 import androidx.media3.session.MediaNotification.ActionFactory
-import coil.ImageLoader
+import coil.Coil
 import coil.request.ImageRequest
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import it.vfsfitvnm.vimusic.*
+import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
@@ -79,6 +80,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     private lateinit var notificationManager: NotificationManager
 
+    private var notificationThumbnailSize: Int = 0
     private var lastArtworkUri: Uri? = null
     private var lastBitmap: Bitmap? = null
 
@@ -88,6 +90,8 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     override fun onCreate() {
         super.onCreate()
+
+        notificationThumbnailSize = (96 * resources.displayMetrics.density).roundToInt()
 
         createNotificationChannel()
         setMediaNotificationProvider(this)
@@ -178,7 +182,12 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             }
             StopRadioCommand -> radio = null
             GetCacheSizeCommand -> {
-                return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("cacheSize" to cache.cacheSpace)))
+                return Futures.immediateFuture(
+                    SessionResult(
+                        SessionResult.RESULT_SUCCESS,
+                        bundleOf("cacheSize" to cache.cacheSpace)
+                    )
+                )
             }
             DeleteSongCacheCommand -> {
                 args.getString("videoId")?.let { videoId ->
@@ -189,7 +198,12 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 player.skipSilenceEnabled = args.getBoolean("skipSilence")
             }
             GetAudioSessionIdCommand -> {
-                return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("audioSessionId" to player.audioSessionId)))
+                return Futures.immediateFuture(
+                    SessionResult(
+                        SessionResult.RESULT_SUCCESS,
+                        bundleOf("audioSessionId" to player.audioSessionId)
+                    )
+                )
             }
         }
 
@@ -235,6 +249,16 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         actionFactory: ActionFactory,
         onNotificationChangedCallback: MediaNotification.Provider.Callback
     ): MediaNotification {
+        fun invalidate() {
+            onNotificationChangedCallback.onNotificationChanged(
+                createNotification(
+                    mediaController,
+                    actionFactory,
+                    onNotificationChangedCallback
+                )
+            )
+        }
+
         fun NotificationCompat.Builder.addMediaAction(
             @DrawableRes resId: Int,
             @StringRes stringId: Int,
@@ -254,6 +278,20 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         val builder = NotificationCompat.Builder(applicationContext, NotificationChannelId)
             .setContentTitle(mediaMetadata.title)
             .setContentText(mediaMetadata.artist)
+            .setLargeIcon(lastBitmap)
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setShowWhen(false)
+            .setSmallIcon(R.drawable.app_icon)
+            .setOngoing(false)
+            .setContentIntent(mediaController.sessionActivity)
+            .setDeleteIntent(actionFactory.createMediaActionPendingIntent(ActionFactory.COMMAND_STOP))
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+                    .setMediaSession(mediaSession.sessionCompatToken as android.support.v4.media.session.MediaSessionCompat.Token)
+            )
             .addMediaAction(
                 R.drawable.play_skip_back,
                 R.string.media3_controls_seek_to_previous_description,
@@ -277,51 +315,23 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 R.string.media3_controls_seek_to_next_description,
                 ActionFactory.COMMAND_SKIP_TO_NEXT
             )
-            .setContentIntent(mediaController.sessionActivity)
-            .setDeleteIntent(
-                actionFactory.createMediaActionPendingIntent(
-                    ActionFactory.COMMAND_STOP
-                )
-            )
-            .setAutoCancel(true)
-            .setOnlyAlertOnce(true)
-            .setShowWhen(false)
-            .setSmallIcon(R.drawable.app_icon)
-            .setOngoing(false)
-            .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(0, 1, 2)
-                    .setMediaSession(mediaSession.sessionCompatToken as android.support.v4.media.session.MediaSessionCompat.Token)
-            )
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
-
-        if (lastArtworkUri == mediaMetadata.artworkUri) {
-            builder.setLargeIcon(lastBitmap)
-        } else {
-            val size = (96 * resources.displayMetrics.density).roundToInt()
-
-            builder.setLargeIcon(
-                resources.getDrawable(R.drawable.disc_placeholder, null)?.toBitmap(size, size)
-            )
-
-            ImageLoader(applicationContext)
-                .enqueue(
+        if (lastArtworkUri != mediaMetadata.artworkUri) {
+            coroutineScope.launch(Dispatchers.IO) {
+                lastBitmap = Coil.imageLoader(applicationContext).execute(
                     ImageRequest.Builder(applicationContext)
-                        .listener { _, result ->
-                            lastBitmap = (result.drawable as BitmapDrawable).bitmap
-                            lastArtworkUri = mediaMetadata.artworkUri
-
-                            onNotificationChangedCallback.onNotificationChanged(
-                                MediaNotification(
-                                    NotificationId,
-                                    builder.setLargeIcon(lastBitmap).build()
-                                )
-                            )
-                        }
-                        .data("${mediaMetadata.artworkUri}-w${size}-h${size}")
+                        .data("${mediaMetadata.artworkUri}-w${notificationThumbnailSize}-h${notificationThumbnailSize}")
                         .build()
-                )
+                ).drawable?.let {
+                    lastArtworkUri = mediaMetadata.artworkUri
+                    (it as BitmapDrawable).bitmap
+                } ?: resources.getDrawable(R.drawable.disc_placeholder, null)
+                    ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
+
+                withContext(Dispatchers.Main) {
+                    invalidate()
+                }
+            }
         }
 
         return MediaNotification(NotificationId, builder.build())
