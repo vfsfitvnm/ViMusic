@@ -237,21 +237,3 @@ fun PlayerBottomSheet(
         }
     }
 }
-
-@Composable
-fun LyricsShimmer(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        repeat(16) { index ->
-            TextPlaceholder(
-                modifier = Modifier
-                    .alpha(1f - index * 0.05f)
-            )
-        }
-    }
-}
