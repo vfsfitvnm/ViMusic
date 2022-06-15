@@ -24,13 +24,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.Velocity
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import kotlin.ranges.coerceAtMost
 
 
 @Composable
@@ -259,7 +257,7 @@ fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp): BottomSheetState {
 
     val animatable = remember(lowerBound, upperBound) {
         Animatable(if (wasExpanded) upperBound else lowerBound, Dp.VectorConverter).also {
-            it.updateBounds(lowerBound, upperBound)
+            it.updateBounds(lowerBound.coerceAtMost(upperBound), upperBound)
         }
     }
 
