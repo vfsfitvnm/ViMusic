@@ -16,6 +16,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -42,6 +44,8 @@ fun TextFieldDialog(
     cancelText: String = "Cancel",
     doneText: String = "Done",
     initialTextInput: String = "",
+    singleLine: Boolean = true,
+    maxLines: Int = 1,
     onCancel: () -> Unit = onDismiss,
     isTextInputValid: (String) -> Boolean = { it.isNotEmpty() }
 ) {
@@ -70,8 +74,8 @@ fun TextFieldDialog(
                 textFieldValue = it
             },
             textStyle = typography.xs.semiBold.center,
-            singleLine = true,
-            maxLines = 1,
+            singleLine = singleLine,
+            maxLines = maxLines,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
@@ -106,6 +110,7 @@ fun TextFieldDialog(
             },
             modifier = Modifier
                 .padding(all = 16.dp)
+                .weight(weight = 1f, fill = false)
                 .focusRequester(focusRequester)
         )
 
@@ -194,6 +199,7 @@ fun ConfirmationDialog(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 inline fun DefaultDialog(
     noinline onDismiss: () -> Unit,
@@ -201,7 +207,10 @@ inline fun DefaultDialog(
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     crossinline content: @Composable ColumnScope.() -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Column(
             horizontalAlignment = horizontalAlignment,
             modifier = modifier

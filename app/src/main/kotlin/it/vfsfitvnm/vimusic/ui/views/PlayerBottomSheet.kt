@@ -1,5 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.views
 
+import android.app.SearchManager
+import android.content.Intent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
@@ -9,30 +11,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.Route
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.route.rememberRoute
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
-import it.vfsfitvnm.vimusic.ui.components.Message
-import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.rememberLyricsRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
@@ -45,6 +41,7 @@ import it.vfsfitvnm.youtubemusic.toNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 @ExperimentalAnimationApi
 @Composable
@@ -153,6 +150,10 @@ fun PlayerBottomSheet(
             }
         }
     ) {
+        var lyricsOutcome by remember(song) {
+            mutableStateOf(song?.lyrics?.let { Outcome.Success(it) } ?: Outcome.Initial)
+        }
+
         RouteHandler(
             route = route,
             onRouteChanged = {
@@ -174,15 +175,13 @@ fun PlayerBottomSheet(
                 .background(colorPalette.elevatedBackground)
                 .fillMaxSize()
         ) {
-            var lyricsOutcome by remember(song) {
-                mutableStateOf(song?.lyrics?.let { Outcome.Success(it) } ?: Outcome.Initial)
-            }
-
             lyricsRoute {
-                OutcomeItem(
-                    outcome = lyricsOutcome,
+                val context = LocalContext.current
+
+                LyricsView(
+                    lyricsOutcome = lyricsOutcome,
+                    nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
                     onInitialize = {
-                        println("onInitialize!!")
                         coroutineScope.launch(Dispatchers.Main) {
                             lyricsOutcome = Outcome.Loading
 
@@ -209,34 +208,22 @@ fun PlayerBottomSheet(
                             }
                         }
                     },
-                    onLoading = {
-                        LyricsShimmer(
-                            modifier = Modifier
-                                .shimmer()
-                        )
+                    onSearchOnline = {
+                        player.mediaMetadata.let {
+                            context.startActivity(Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                putExtra(
+                                    SearchManager.QUERY,
+                                    "${it.title} ${it.artist} lyrics"
+                                )
+                            })
+                        }
+                    },
+                    onLyricsUpdate = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            Database.update((song ?: Database.insert(player.mediaItem!!)).copy(lyrics = it))
+                        }
                     }
-                ) { lyrics ->
-                    if (lyrics.isEmpty()) {
-                        Message(
-                            text = "Lyrics not available",
-                            icon = R.drawable.text,
-                            modifier = Modifier
-                                .padding(top = 64.dp)
-                        )
-                    } else {
-                        BasicText(
-                            text = lyrics,
-                            style = typography.xs.center,
-                            modifier = Modifier
-                                .padding(top = 64.dp)
-                                .nestedScroll(remember { layoutState.nestedScrollConnection() })
-                                .verticalScroll(rememberScrollState())
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp)
-                                .padding(horizontal = 48.dp)
-                        )
-                    }
-                }
+                )
             }
 
             host {
