@@ -44,7 +44,7 @@ fun LyricsView(
             hintText = "Enter the lyrics",
             initialTextInput = lyricsOutcome.valueOrNull ?: "",
             singleLine = false,
-            maxLines = Int.MAX_VALUE,
+            maxLines = 10,
             isTextInputValid = { true },
             onDismiss = {
                 isEditingLyrics = false
