@@ -22,19 +22,14 @@
 - Background playback
 - Cache audio chunks for offline playback
 - Search for songs, albums, artists videos and playlists
-- Display songs lyrics
+- Display and edit songs lyrics
 - Local playlist management
 - Reorder songs in playlist or queue
 - Light/Dark theme
 - Skip silence
+- Sleep timer
 - Open YouTube/YouTube Music links (`watch`, `playlist`)
 - ...
-
-## TODO
-- **Improve UI/UX** (help needed)
-- Download songs (not sure about this)
-- Play local songs (not sure about this, too)
-- Translation
 
 ## Installation
 [<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="80">](https://github.com/vfsfitvnm/ViMusic/releases/latest)
