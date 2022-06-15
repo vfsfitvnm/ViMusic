@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic
 
-import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -28,14 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.common.util.concurrent.ListenableFuture
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
-import it.vfsfitvnm.vimusic.services.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
@@ -50,15 +45,10 @@ import it.vfsfitvnm.vimusic.utils.*
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class MainActivity : ComponentActivity() {
-    private lateinit var mediaControllerFuture: ListenableFuture<MediaController>
-
     private var uri by mutableStateOf<Uri?>(null, neverEqualPolicy())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val sessionToken = SessionToken(this, ComponentName(this, PlayerService::class.java))
-        mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
 
         uri = intent?.data
 
@@ -122,7 +112,7 @@ class MainActivity : ComponentActivity() {
                 LocalColorPalette provides colorPalette,
                 LocalShimmerTheme provides shimmerTheme,
                 LocalTypography provides rememberTypography(colorPalette.text),
-                LocalYoutubePlayer provides rememberYoutubePlayer(mediaControllerFuture),
+                LocalYoutubePlayer provides rememberYoutubePlayer((application as MainApplication).mediaControllerFuture),
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()
             ) {
@@ -159,10 +149,5 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         uri = intent?.data
-    }
-
-    override fun onDestroy() {
-        MediaController.releaseFuture(mediaControllerFuture)
-        super.onDestroy()
     }
 }

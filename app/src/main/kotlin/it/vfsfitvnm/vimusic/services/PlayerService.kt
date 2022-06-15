@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -46,6 +47,7 @@ import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 
 
 val StartRadioCommand = SessionCommand("StartRadioCommand", Bundle.EMPTY)
@@ -60,6 +62,11 @@ val SetSkipSilenceCommand = SessionCommand("SetSkipSilenceCommand", Bundle.EMPTY
 
 val GetAudioSessionIdCommand = SessionCommand("GetAudioSessionIdCommand", Bundle.EMPTY)
 
+val SetSleepTimerCommand = SessionCommand("SetSleepTimerCommand", Bundle.EMPTY)
+val GetSleepTimerMillisLeftCommand = SessionCommand("GetSleepTimerMillisLeftCommand", Bundle.EMPTY)
+val CancelSleepTimerCommand = SessionCommand("CancelSleepTimerCommand", Bundle.EMPTY)
+
+
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
@@ -70,6 +77,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
     companion object {
         private const val NotificationId = 1001
         private const val NotificationChannelId = "default_channel_id"
+
+        private const val SleepTimerNotificationId = 1002
+        private const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
     }
 
     private lateinit var cache: SimpleCache
@@ -85,6 +95,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
     private var lastBitmap: Bitmap? = null
 
     private var radio: YoutubePlayer.Radio? = null
+
+    private var sleepTimerJob: Job? = null
+    private var sleepTimerRealtime: Long? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
@@ -111,8 +124,6 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                 true
             )
             .build()
-
-
 
         player.repeatMode = preferences.repeatMode
         player.skipSilenceEnabled = preferences.skipSilence
@@ -151,6 +162,9 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .add(DeleteSongCacheCommand)
             .add(SetSkipSilenceCommand)
             .add(GetAudioSessionIdCommand)
+            .add(SetSleepTimerCommand)
+            .add(GetSleepTimerMillisLeftCommand)
+            .add(CancelSleepTimerCommand)
             .build()
         val playerCommands = Player.Commands.Builder().addAllCommands().build()
         return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
@@ -204,6 +218,39 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                         bundleOf("audioSessionId" to player.audioSessionId)
                     )
                 )
+            }
+            SetSleepTimerCommand -> {
+                val delayMillis = args.getLong("delayMillis", 2000)
+
+                sleepTimerJob = coroutineScope.launch {
+                    sleepTimerRealtime = SystemClock.elapsedRealtime() + delayMillis
+                    delay(delayMillis)
+
+                    withContext(Dispatchers.Main) {
+                        val notification = NotificationCompat.Builder(this@PlayerService, SleepTimerNotificationChannelId)
+                            .setContentTitle("Sleep timer ended")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setAutoCancel(true)
+                            .setOnlyAlertOnce(true)
+                            .setShowWhen(true)
+                            .setSmallIcon(R.drawable.app_icon)
+                            .build()
+
+                        notificationManager.notify(SleepTimerNotificationId, notification)
+                    }
+
+                    exitProcess(0)
+                }
+            }
+            GetSleepTimerMillisLeftCommand -> {
+                return Futures.immediateFuture(sleepTimerRealtime?.let {
+                    (SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("millisLeft" to it - SystemClock.elapsedRealtime())))
+                } ?: SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE))
+            }
+            CancelSleepTimerCommand -> {
+                sleepTimerJob?.cancel()
+                sleepTimerJob = null
+                sleepTimerRealtime = null
             }
         }
 
@@ -345,14 +392,17 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
     private fun createNotificationChannel() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Util.SDK_INT >= 26 && notificationManager.getNotificationChannel(NotificationChannelId) == null) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    NotificationChannelId,
-                    getString(R.string.default_notification_channel_name),
-                    NotificationManager.IMPORTANCE_LOW
-                )
-            )
+
+        if (Util.SDK_INT < 26) return
+
+        with(notificationManager) {
+            if (getNotificationChannel(NotificationChannelId) == null) {
+                createNotificationChannel(NotificationChannel(NotificationChannelId, getString(R.string.default_notification_channel_name), NotificationManager.IMPORTANCE_LOW))
+            }
+
+            if (getNotificationChannel(SleepTimerNotificationChannelId) == null) {
+                createNotificationChannel(NotificationChannel(SleepTimerNotificationChannelId, "Sleep timer", NotificationManager.IMPORTANCE_DEFAULT))
+            }
         }
     }
 

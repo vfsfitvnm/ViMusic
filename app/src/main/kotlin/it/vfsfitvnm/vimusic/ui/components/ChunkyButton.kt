@@ -35,6 +35,7 @@ fun ChunkyButton(
     @DrawableRes icon: Int? = null,
     shape: Shape = RoundedCornerShape(16.dp),
     colorFilter: ColorFilter = ColorFilter.tint(rippleColor),
+    isEnabled: Boolean = true,
     onMore: (() -> Unit)? = null
 ) {
     Row(
@@ -46,6 +47,7 @@ fun ChunkyButton(
             .clickable(
                 indication = rememberRipple(bounded = true, color = rippleColor),
                 interactionSource = remember { MutableInteractionSource() },
+                enabled = isEnabled,
                 onClick = onClick
             )
             .padding(horizontal = 24.dp, vertical = 16.dp)
