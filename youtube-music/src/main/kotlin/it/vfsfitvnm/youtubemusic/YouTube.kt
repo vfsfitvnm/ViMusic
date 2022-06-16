@@ -144,14 +144,14 @@ object YouTube {
     }
 
     sealed class Item {
-        abstract val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail
+        abstract val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
 
         data class Song(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
             val album: Info<NavigationEndpoint.Endpoint.Browse>?,
-            val durationText: String,
-            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail
+            val durationText: String?,
+            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
             companion object : FromMusicShelfRendererContent<Song> {
                 val Filter = Filter("EgWKAQIIAWoKEAkQBRAKEAMQBA%3D%3D")
@@ -161,14 +161,19 @@ object YouTube {
 
                     return Song(
                         info = Info.from(mainRuns.first()),
-                        authors = otherRuns.getOrNull(otherRuns.lastIndex - 2)
-                            ?.map(Info.Companion::from) ?: emptyList(),
-                        album = otherRuns.getOrNull(otherRuns.lastIndex - 1)?.firstOrNull()?.let(
-                            Info.Companion::from
-                        ),
-                        durationText = otherRuns.getOrNull(otherRuns.lastIndex)?.first()?.text
-                            ?: "?",
-                        thumbnail = content.thumbnail
+                        authors = otherRuns
+                            .getOrNull(otherRuns.lastIndex - 2)
+                            ?.map(Info.Companion::from)
+                            ?: emptyList(),
+                        album = otherRuns
+                            .getOrNull(otherRuns.lastIndex - 1)
+                            ?.firstOrNull()
+                            ?.let(Info.Companion::from),
+                        durationText = otherRuns
+                            .getOrNull(otherRuns.lastIndex)
+                            ?.firstOrNull()?.text,
+                        thumbnail = content
+                            .thumbnail
                     )
                 }
             }
@@ -178,14 +183,22 @@ object YouTube {
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
             val views: List<Info<NavigationEndpoint.Endpoint.Browse>>,
-            val durationText: String,
-            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail
+            val durationText: String?,
+            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
             val isOfficialMusicVideo: Boolean
-                get() = info.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType == "MUSIC_VIDEO_TYPE_OMV"
+                get() = info
+                    .endpoint
+                    ?.watchEndpointMusicSupportedConfigs
+                    ?.watchEndpointMusicConfig
+                    ?.musicVideoType == "MUSIC_VIDEO_TYPE_OMV"
 
             val isUserGeneratedContent: Boolean
-                get() = info.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
+                get() = info
+                    .endpoint
+                    ?.watchEndpointMusicSupportedConfigs
+                    ?.watchEndpointMusicConfig
+                    ?.musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
 
             companion object : FromMusicShelfRendererContent<Video> {
                 val Filter = Filter("EgWKAQIQAWoKEAkQChAFEAMQBA%3D%3D")
@@ -195,13 +208,19 @@ object YouTube {
 
                     return Video(
                         info = Info.from(mainRuns.first()),
-                        authors = otherRuns.getOrNull(otherRuns.lastIndex - 2)
+                        authors = otherRuns
+                            .getOrNull(otherRuns.lastIndex - 2)
+                            ?.map(Info.Companion::from)
+                            ?: emptyList(),
+                        views = otherRuns
+                            .getOrNull(otherRuns.lastIndex - 1)
                             ?.map(Info.Companion::from) ?: emptyList(),
-                        views = otherRuns.getOrNull(otherRuns.lastIndex - 1)
-                            ?.map(Info.Companion::from) ?: emptyList(),
-                        durationText = otherRuns.getOrNull(otherRuns.lastIndex)?.first()?.text
-                            ?: "?",
-                        thumbnail = content.thumbnail
+                        durationText = otherRuns
+                            .getOrNull(otherRuns.lastIndex)
+                            ?.first()
+                            ?.text,
+                        thumbnail = content
+                            .thumbnail
                     )
                 }
             }
@@ -209,9 +228,9 @@ object YouTube {
 
         data class Album(
             val info: Info<NavigationEndpoint.Endpoint.Browse>,
-            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
-            val year: String,
-            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail
+            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
+            val year: String?,
+            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
             companion object : FromMusicShelfRendererContent<Album> {
                 val Filter = Filter("EgWKAQIYAWoKEAkQChAFEAMQBA%3D%3D")
@@ -221,12 +240,23 @@ object YouTube {
 
                     return Album(
                         info = Info(
-                            name = mainRuns.first().text,
-                            endpoint = content.musicResponsiveListItemRenderer.navigationEndpoint?.browseEndpoint
+                            name = mainRuns
+                                .first()
+                                .text,
+                            endpoint = content
+                                .musicResponsiveListItemRenderer
+                                .navigationEndpoint
+                                ?.browseEndpoint
                         ),
-                        authors = otherRuns[otherRuns.lastIndex - 1].map(Info.Companion::from),
-                        year = otherRuns[otherRuns.lastIndex].first().text,
-                        thumbnail = content.thumbnail
+                        authors = otherRuns
+                            .getOrNull(otherRuns.lastIndex - 1)
+                            ?.map(Info.Companion::from),
+                        year = otherRuns
+                            .getOrNull(otherRuns.lastIndex)
+                            ?.firstOrNull()
+                            ?.text,
+                        thumbnail = content
+                            .thumbnail
                     )
                 }
             }
@@ -234,7 +264,7 @@ object YouTube {
 
         data class Artist(
             val info: Info<NavigationEndpoint.Endpoint.Browse>,
-            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail
+            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
             companion object : FromMusicShelfRendererContent<Artist> {
                 val Filter = Filter("EgWKAQIgAWoKEAkQChAFEAMQBA%3D%3D")
@@ -244,10 +274,16 @@ object YouTube {
 
                     return Artist(
                         info = Info(
-                            name = mainRuns.first().text,
-                            endpoint = content.musicResponsiveListItemRenderer.navigationEndpoint?.browseEndpoint
+                            name = mainRuns
+                                .first()
+                                .text,
+                            endpoint = content
+                                .musicResponsiveListItemRenderer
+                                .navigationEndpoint
+                                ?.browseEndpoint
                         ),
-                        thumbnail = content.thumbnail
+                        thumbnail = content
+                            .thumbnail
                     )
                 }
             }
@@ -257,7 +293,7 @@ object YouTube {
             val info: Info<NavigationEndpoint.Endpoint.Browse>,
             val channel: Info<NavigationEndpoint.Endpoint.Browse>?,
             val songCount: Int?,
-            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail,
+            override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
             companion object : FromMusicShelfRendererContent<Playlist> {
                 override fun from(content: MusicShelfRenderer.Content): Playlist {
@@ -275,9 +311,8 @@ object YouTube {
                         ),
                         channel = otherRuns
                             .firstOrNull()
-                            ?.firstOrNull()?.let {
-                                Info.from(it)
-                            },
+                            ?.firstOrNull()
+                            ?.let { Info.from(it) },
                         songCount = otherRuns
                             .lastOrNull()
                             ?.firstOrNull()
@@ -285,7 +320,8 @@ object YouTube {
                             ?.split(' ')
                             ?.firstOrNull()
                             ?.toIntOrNull(),
-                        thumbnail = content.thumbnail
+                        thumbnail = content
+                            .thumbnail
                     )
                 }
             }
@@ -334,13 +370,13 @@ object YouTube {
                             .contents
                             .tabbedSearchResultsRenderer
                             .tabs
-                            .first()
-                            .tabRenderer
-                            .content!!
-                            .sectionListRenderer
-                            .contents
-                            .first()
-                            .musicShelfRenderer
+                            .firstOrNull()
+                            ?.tabRenderer
+                            ?.content
+                            ?.sectionListRenderer
+                            ?.contents
+                            ?.firstOrNull()
+                            ?.musicShelfRenderer
                     }
             } else {
                 response.bodyCatching<ContinuationResponse>().map { body ->
@@ -366,7 +402,7 @@ object YouTube {
                     ) ?: emptyList(),
                 continuation = musicShelfRenderer
                     ?.continuations
-                    ?.first()
+                    ?.firstOrNull()
                     ?.nextRadioContinuationData
                     ?.continuation
             )
@@ -385,10 +421,18 @@ object YouTube {
             parameter("key", Key)
             parameter("prettyPrint", false)
         }.bodyCatching<GetSearchSuggestionsResponse>().map { response ->
-            response.contents?.flatMap { content ->
-                content.searchSuggestionsSectionRenderer.contents.map {
-                    it.searchSuggestionRenderer.navigationEndpoint.searchEndpoint!!.query
-                }
+            response
+                .contents
+                ?.flatMap { content ->
+                    content
+                        .searchSuggestionsSectionRenderer
+                        .contents.mapNotNull {
+                            it
+                                .searchSuggestionRenderer
+                                .navigationEndpoint
+                                .searchEndpoint
+                                ?.query
+                        }
             }
         }
     }
@@ -432,15 +476,21 @@ object YouTube {
                                 .longBylineText
                                 ?.splitBySeparator()
                                 ?.getOrNull(0)
-                                ?.map { Info.from(it) } ?: emptyList(),
+                                ?.map { Info.from(it) }
+                                ?: emptyList(),
                             album = renderer
                                 .longBylineText
                                 ?.splitBySeparator()
                                 ?.getOrNull(1)
-                                ?.get(0)
+                                ?.getOrNull(0)
                                 ?.let { Info.from(it) },
-                            thumbnail = renderer.thumbnail.thumbnails[0],
-                            durationText = renderer.lengthText.text
+                            thumbnail = renderer
+                                .thumbnail
+                                .thumbnails
+                                .getOrNull(0),
+                            durationText = renderer
+                                .lengthText
+                                .text
                         )
                     }
                 }
@@ -511,10 +561,11 @@ object YouTube {
                         ?.tabRenderer
                         ?.content
                         ?.musicQueueRenderer
-                        ?.content ?: body.continuationContents)
+                        ?.content
+                        ?: body.continuationContents)
                         ?.playlistPanelRenderer
                         ?.continuations
-                        ?.get(0)
+                        ?.getOrNull(0)
                         ?.nextRadioContinuationData
                         ?.continuation,
                     items = (tabs
@@ -522,25 +573,37 @@ object YouTube {
                         ?.tabRenderer
                         ?.content
                         ?.musicQueueRenderer
-                        ?.content ?: body.continuationContents)
+                        ?.content
+                        ?: body.continuationContents)
                         ?.playlistPanelRenderer
                         ?.contents
                         ?.mapNotNull { it.playlistPanelVideoRenderer }
                         ?.map { renderer ->
                             Item.Song(
                                 info = Info(
-                                    name = renderer.title.text,
-                                    endpoint = renderer.navigationEndpoint.watchEndpoint
+                                    name = renderer
+                                        .title
+                                        .text,
+                                    endpoint = renderer
+                                        .navigationEndpoint
+                                        .watchEndpoint
                                 ),
-                                authors = renderer.longBylineText?.splitBySeparator()?.get(0)
-                                    ?.map { run ->
-                                        Info.from(run)
-                                    } ?: emptyList(),
-                                album = renderer.longBylineText?.splitBySeparator()?.get(1)?.get(0)
-                                    ?.let { run ->
-                                        Info.from(run)
-                                    },
-                                thumbnail = renderer.thumbnail.thumbnails[0],
+                                authors = renderer
+                                    .longBylineText
+                                    ?.splitBySeparator()
+                                    ?.getOrNull(0)
+                                    ?.map { run -> Info.from(run) }
+                                    ?: emptyList(),
+                                album = renderer
+                                    .longBylineText
+                                    ?.splitBySeparator()
+                                    ?.getOrNull(1)
+                                    ?.getOrNull(0)
+                                    ?.let { run -> Info.from(run) },
+                                thumbnail = renderer
+                                    .thumbnail
+                                    .thumbnails
+                                    .getOrNull(0),
                                 durationText = renderer.lengthText.text
                             )
                         },

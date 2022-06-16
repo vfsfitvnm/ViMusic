@@ -14,10 +14,28 @@ data class MusicShelfRenderer(
         val musicResponsiveListItemRenderer: MusicResponsiveListItemRenderer,
     ) {
         val runs: Pair<List<Runs.Run>, List<List<Runs.Run>>>
-            get() = (musicResponsiveListItemRenderer.flexColumns.first().musicResponsiveListItemFlexColumnRenderer.text?.runs ?: emptyList()) to
-                    (musicResponsiveListItemRenderer.flexColumns.last().musicResponsiveListItemFlexColumnRenderer.text?.splitBySeparator() ?: emptyList())
+            get() = (musicResponsiveListItemRenderer
+                .flexColumns
+                .firstOrNull()
+                ?.musicResponsiveListItemFlexColumnRenderer
+                ?.text
+                ?.runs
+                ?: emptyList()) to
+                    (musicResponsiveListItemRenderer
+                        .flexColumns
+                        .lastOrNull()
+                        ?.musicResponsiveListItemFlexColumnRenderer
+                        ?.text
+                        ?.splitBySeparator()
+                        ?: emptyList()
+                            )
 
-        val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail
-            get() = musicResponsiveListItemRenderer.thumbnail!!.musicThumbnailRenderer.thumbnail.thumbnails.first()
+        val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
+            get() = musicResponsiveListItemRenderer
+                .thumbnail
+                ?.musicThumbnailRenderer
+                ?.thumbnail
+                ?.thumbnails
+                ?.firstOrNull()
     }
 }

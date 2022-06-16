@@ -415,7 +415,7 @@ fun SmallSongItem(
     modifier: Modifier = Modifier
 ) {
     SongItem(
-        thumbnailModel = song.thumbnail.size(thumbnailSizePx),
+        thumbnailModel = song.thumbnail?.size(thumbnailSizePx),
         title = song.info.name,
         authors = song.authors.joinToString("") { it.name },
         durationText = song.durationText,
@@ -436,7 +436,7 @@ fun SmallVideoItem(
     modifier: Modifier = Modifier
 ) {
     SongItem(
-        thumbnailModel = video.thumbnail.size(thumbnailSizePx),
+        thumbnailModel = video.thumbnail?.size(thumbnailSizePx),
         title = video.info.name,
         authors = video.views.joinToString("") { it.name },
         durationText = video.durationText,
@@ -464,7 +464,7 @@ fun SmallPlaylistItem(
         modifier = modifier
     ) {
         AsyncImage(
-            model = playlist.thumbnail.size(thumbnailSizePx),
+            model = playlist.thumbnail?.size(thumbnailSizePx),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -513,7 +513,7 @@ fun SmallAlbumItem(
         modifier = modifier
     ) {
         AsyncImage(
-            model = album.thumbnail.size(thumbnailSizePx),
+            model = album.thumbnail?.size(thumbnailSizePx),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -532,7 +532,7 @@ fun SmallAlbumItem(
                 overflow = TextOverflow.Ellipsis,
             )
             BasicText(
-                text = "${album.authors.joinToString("") { it.name }} • ${album.year}",
+                text = "${album.authors?.joinToString("") { it.name }} • ${album.year}",
                 style = typography.xs,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -556,7 +556,7 @@ fun SmallArtistItem(
         modifier = modifier
     ) {
         AsyncImage(
-            model = artist.thumbnail.size(thumbnailSizePx),
+            model = artist.thumbnail?.size(thumbnailSizePx),
             contentDescription = null,
             modifier = Modifier
                 .clip(CircleShape)

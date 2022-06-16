@@ -95,7 +95,7 @@ fun SongItem(
     thumbnailModel: Any?,
     title: String,
     authors: String,
-    durationText: String,
+    durationText: String?,
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,

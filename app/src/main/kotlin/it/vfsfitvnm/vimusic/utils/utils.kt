@@ -86,7 +86,7 @@ val YouTube.Item.Song.asMediaItem: MediaItem
                 .setTitle(info.name)
                 .setArtist(authors.joinToString("") { it.name })
                 .setAlbumTitle(album?.name)
-                .setArtworkUri(thumbnail.url.toUri())
+                .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         "videoId" to info.endpoint!!.videoId,
@@ -109,7 +109,7 @@ val YouTube.Item.Video.asMediaItem: MediaItem
             MediaMetadata.Builder()
                 .setTitle(info.name)
                 .setArtist(authors.joinToString("") { it.name })
-                .setArtworkUri(thumbnail.url.toUri())
+                .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         "videoId" to info.endpoint!!.videoId,
