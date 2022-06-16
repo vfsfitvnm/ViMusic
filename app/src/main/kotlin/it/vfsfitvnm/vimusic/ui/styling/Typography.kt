@@ -5,6 +5,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -24,6 +26,7 @@ data class Typography(
 
 val LocalTypography = staticCompositionLocalOf<Typography> { TODO() }
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun rememberTypography(color: Color): Typography {
     return remember(color) {
@@ -56,7 +59,8 @@ fun rememberTypography(color: Color): Typography {
                 ),
             ),
             fontWeight = FontWeight.Normal,
-            color = color
+            color = color,
+            platformStyle = PlatformTextStyle(includeFontPadding = false)
         ).run {
             Typography(
                 xxs = copy(fontSize = 12.sp),
