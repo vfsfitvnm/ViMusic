@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.utils
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
@@ -171,4 +172,16 @@ fun YouTube.PlaylistOrAlbum.Item.toMediaItem(
         )
         .setMediaId(info.endpoint?.videoId ?: return null)
         .build()
+}
+
+fun String?.thumbnail(size: Int): String? {
+    return when {
+        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
+        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-s$size"
+        else -> this
+    }
+}
+
+fun Uri?.thumbnail(size: Int): Uri? {
+    return toString().thumbnail(size)?.toUri()
 }

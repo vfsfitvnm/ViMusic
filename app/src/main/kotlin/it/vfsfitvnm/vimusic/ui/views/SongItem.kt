@@ -32,6 +32,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.thumbnail
 
 
 @ExperimentalAnimationApi
@@ -49,7 +50,7 @@ fun SongItem(
     SongItem(
         thumbnailModel = ImageRequest.Builder(LocalContext.current)
             .diskCacheKey(mediaItem.mediaId)
-            .data("${mediaItem.mediaMetadata.artworkUri}-w$thumbnailSize-h$thumbnailSize")
+            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSize))
             .build(),
         title = mediaItem.mediaMetadata.title!!.toString(),
         authors = mediaItem.mediaMetadata.artist.toString(),
@@ -75,7 +76,7 @@ fun SongItem(
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     SongItem(
-        thumbnailModel = "${song.song.thumbnailUrl}-w$thumbnailSize-h$thumbnailSize",
+        thumbnailModel = song.song.thumbnailUrl?.thumbnail(thumbnailSize),
         title = song.song.title,
         authors = song.authors?.joinToString("") { it.text } ?: "",
         durationText = song.song.durationText,

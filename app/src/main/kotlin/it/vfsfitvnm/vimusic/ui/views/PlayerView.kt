@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
@@ -102,7 +101,7 @@ fun PlayerView(
                         }
                 ) {
                     AsyncImage(
-                        model = "${player.mediaMetadata.artworkUri}-w$smallThumbnailSize-h$smallThumbnailSize",
+                        model = player.mediaMetadata.artworkUri.thumbnail(smallThumbnailSize),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -220,11 +219,11 @@ fun PlayerView(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     val artworkUri = remember(it) {
-                        player.mediaController.getMediaItemAt(it).mediaMetadata.artworkUri
+                        player.mediaController.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)
                     }
 
                     AsyncImage(
-                        model = "$artworkUri-w$thumbnailSizePx-h$thumbnailSizePx",
+                        model = artworkUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

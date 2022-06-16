@@ -56,10 +56,8 @@ data class NavigationEndpoint(
     val endpoint: Endpoint?
         get() = watchEndpoint ?: browseEndpoint ?: watchPlaylistEndpoint ?: searchEndpoint
 
-
     @Serializable
     sealed class Endpoint {
-
         @Serializable
         data class Watch(
             val params: String? = null,
@@ -69,6 +67,10 @@ data class NavigationEndpoint(
             val playlistSetVideoId: String? = null,
             val watchEndpointMusicSupportedConfigs: WatchEndpointMusicSupportedConfigs? = null,
         ) : Endpoint() {
+            val type: String?
+                get() = watchEndpointMusicSupportedConfigs
+                    ?.watchEndpointMusicConfig
+                    ?.musicVideoType
 
             @Serializable
             data class WatchEndpointMusicSupportedConfigs(
@@ -81,7 +83,6 @@ data class NavigationEndpoint(
                 )
             }
         }
-
 
         @Serializable
         data class WatchPlaylist(
@@ -96,6 +97,10 @@ data class NavigationEndpoint(
             val browseId: String,
             val browseEndpointContextSupportedConfigs: BrowseEndpointContextSupportedConfigs?,
         ) : Endpoint() {
+            val type: String?
+                get() = browseEndpointContextSupportedConfigs
+                    ?.browseEndpointContextMusicConfig
+                    ?.pageType
 
             @Serializable
             data class BrowseEndpointContextSupportedConfigs(

@@ -367,7 +367,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             coroutineScope.launch(Dispatchers.IO) {
                 lastBitmap = Coil.imageLoader(applicationContext).execute(
                     ImageRequest.Builder(applicationContext)
-                        .data("${mediaMetadata.artworkUri}-w${notificationThumbnailSize}-h${notificationThumbnailSize}")
+                        .data(mediaMetadata.artworkUri.thumbnail(notificationThumbnailSize))
                         .build()
                 ).drawable?.let {
                     lastArtworkUri = mediaMetadata.artworkUri

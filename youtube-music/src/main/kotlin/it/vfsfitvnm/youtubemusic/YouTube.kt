@@ -159,18 +159,32 @@ object YouTube {
                 override fun from(content: MusicShelfRenderer.Content): Song {
                     val (mainRuns, otherRuns) = content.runs
 
+                    // Possible configurations:
+                    // "song" • author(s) • album • duration
+                    // "song" • author(s) • duration
+                    // author(s) • album • duration
+                    // author(s) • duration
+
+                    val album: Info<NavigationEndpoint.Endpoint.Browse>? = otherRuns
+                        .getOrNull(otherRuns.lastIndex - 1)
+                        ?.firstOrNull()
+                        ?.takeIf { run ->
+                            run
+                                .navigationEndpoint
+                                ?.browseEndpoint
+                                ?.type == "MUSIC_PAGE_TYPE_ALBUM"
+                        }
+                        ?.let(Info.Companion::from)
+
                     return Song(
                         info = Info.from(mainRuns.first()),
                         authors = otherRuns
-                            .getOrNull(otherRuns.lastIndex - 2)
+                            .getOrNull(otherRuns.lastIndex - if (album == null) 1 else 2)
                             ?.map(Info.Companion::from)
                             ?: emptyList(),
-                        album = otherRuns
-                            .getOrNull(otherRuns.lastIndex - 1)
-                            ?.firstOrNull()
-                            ?.let(Info.Companion::from),
+                        album = album,
                         durationText = otherRuns
-                            .getOrNull(otherRuns.lastIndex)
+                            .lastOrNull()
                             ?.firstOrNull()?.text,
                         thumbnail = content
                             .thumbnail
@@ -603,8 +617,13 @@ object YouTube {
                                 thumbnail = renderer
                                     .thumbnail
                                     .thumbnails
-                                    .getOrNull(0),
-                                durationText = renderer.lengthText.text
+                                    .also {
+                                        println(it)
+                                    }
+                                    .firstOrNull(),
+                                durationText = renderer
+                                    .lengthText
+                                    .text
                             )
                         },
                     lyrics = NextResult.Lyrics(

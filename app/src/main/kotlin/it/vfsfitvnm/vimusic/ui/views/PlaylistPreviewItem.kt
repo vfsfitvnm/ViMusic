@@ -26,6 +26,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -54,7 +55,7 @@ fun PlaylistPreviewItem(
     ) {
         if (thumbnails.toSet().size == 1) {
             AsyncImage(
-                model = "${thumbnails.first()}-w${thumbnailSizePx * 2}-h${thumbnailSizePx * 2}",
+                model = thumbnails.first().thumbnail(thumbnailSizePx * 2),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -68,7 +69,7 @@ fun PlaylistPreviewItem(
                 Alignment.BottomEnd
             ).forEachIndexed { index, alignment ->
                 AsyncImage(
-                    model = "${thumbnails.getOrNull(index)}-w$thumbnailSizePx-h$thumbnailSizePx",
+                    model = thumbnails.getOrNull(index).thumbnail(thumbnailSizePx),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

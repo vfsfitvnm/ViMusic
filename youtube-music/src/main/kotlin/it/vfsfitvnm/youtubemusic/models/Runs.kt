@@ -16,7 +16,11 @@ data class Runs(
                 run.text == " • " -> listOf(index - 1, index + 1)
                 else -> emptyList()
             }
-        }.windowed(size = 2, step = 2) { (from, to) -> runs.slice(from..to) }
+        }.windowed(size = 2, step = 2) { (from, to) -> runs.slice(from..to) }.let {
+            it.ifEmpty {
+                listOf(runs)
+            }
+        }
     }
 
     @Serializable
