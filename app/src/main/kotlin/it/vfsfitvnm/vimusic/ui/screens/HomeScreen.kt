@@ -28,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.media3.common.Player
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.Database
@@ -39,7 +38,6 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.models.SongWithInfo
 import it.vfsfitvnm.vimusic.services.StopRadioCommand
-import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
@@ -145,7 +143,6 @@ fun HomeScreen() {
 
         host {
             val player = LocalYoutubePlayer.current
-            val menuState = LocalMenuState.current
             val density = LocalDensity.current
 
             val thumbnailSize = remember {
@@ -297,6 +294,7 @@ fun HomeScreen() {
                                 },
                                 style = typography.m.semiBold,
                                 modifier = Modifier
+                                    .alignByBaseline()
                                     .animateContentSize()
                             )
 
@@ -318,58 +316,21 @@ fun HomeScreen() {
                                             preferences.homePageSongCollection = nextSongCollection
                                         }
                                     )
-//                                        .alignByBaseline()
+                                    .alignByBaseline()
                                     .padding(horizontal = 16.dp)
                                     .animateContentSize()
                             )
                         }
 
                         Image(
-                            painter = painterResource(R.drawable.ellipsis_horizontal),
+                            painter = painterResource(R.drawable.shuffle),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
-                                .clickable {
-                                    menuState.display {
-                                        BasicMenu(onDismiss = menuState::hide) {
-                                            MenuEntry(
-                                                icon = R.drawable.play,
-                                                text = "Play",
-                                                enabled = songCollection.isNotEmpty(),
-                                                onClick = {
-                                                    menuState.hide()
-                                                    player?.mediaController?.let {
-                                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                                        it.forcePlayFromBeginning(songCollection.map(SongWithInfo::asMediaItem))
-                                                    }
-                                                }
-                                            )
-
-                                            MenuEntry(
-                                                icon = R.drawable.shuffle,
-                                                text = "Shuffle",
-                                                enabled = songCollection.isNotEmpty(),
-                                                onClick = {
-                                                    menuState.hide()
-                                                    player?.mediaController?.let {
-                                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                                        it.forcePlayFromBeginning(songCollection.shuffled().map(SongWithInfo::asMediaItem))
-                                                    }
-                                                }
-                                            )
-
-                                            MenuEntry(
-                                                icon = R.drawable.time,
-                                                text = "Enqueue",
-                                                enabled = songCollection.isNotEmpty() && player?.playbackState == Player.STATE_READY,
-                                                onClick = {
-                                                    menuState.hide()
-                                                    player?.mediaController?.enqueue(
-                                                        songCollection.map(SongWithInfo::asMediaItem)
-                                                    )
-                                                }
-                                            )
-                                        }
+                                .clickable(enabled = songCollection.isNotEmpty()) {
+                                    player?.mediaController?.let {
+                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
+                                        it.forcePlayFromBeginning(songCollection.shuffled().map(SongWithInfo::asMediaItem))
                                     }
                                 }
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
