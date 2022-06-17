@@ -1,7 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.EnumValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
+import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -230,24 +230,44 @@ fun SettingsScreen() {
 }
 
 @Composable
-inline fun <reified T : Enum<T>> EnumValueSelectorEntry(
+inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
     title: String,
     selectedValue: T,
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     crossinline valueText: (T) -> String = Enum<T>::name
 ) {
+    ValueSelectorSettingsEntry(
+        title = title,
+        selectedValue = selectedValue,
+        values = enumValues<T>().toList(),
+        onValueSelected =onValueSelected,
+        modifier = modifier,
+        valueText = valueText
+    )
+}
+
+@Composable
+inline fun <T> ValueSelectorSettingsEntry(
+    title: String,
+    selectedValue: T,
+    values: List<T>,
+    crossinline onValueSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    crossinline valueText: (T) -> String = { it.toString() }
+) {
     var isShowingDialog by remember {
         mutableStateOf(false)
     }
 
     if (isShowingDialog) {
-        EnumValueSelectorDialog(
+        ValueSelectorDialog(
             onDismiss = {
                 isShowingDialog = false
             },
             title = title,
             selectedValue = selectedValue,
+            values = values,
             onValueSelected = onValueSelected,
             valueText = valueText
         )

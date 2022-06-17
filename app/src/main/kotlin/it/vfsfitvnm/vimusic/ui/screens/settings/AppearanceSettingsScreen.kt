@@ -77,7 +77,7 @@ fun AppearanceSettingsScreen() {
                     )
                 }
 
-                EnumValueSelectorEntry(
+                EnumValueSelectorSettingsEntry(
                     title = "Theme mode",
                     selectedValue = preferences.colorPaletteMode,
                     onValueSelected = {
@@ -85,11 +85,20 @@ fun AppearanceSettingsScreen() {
                     }
                 )
 
-                EnumValueSelectorEntry(
+                EnumValueSelectorSettingsEntry(
                     title = "Thumbnail roundness",
                     selectedValue = preferences.thumbnailRoundness,
                     onValueSelected = {
                         preferences.thumbnailRoundness = it
+                    }
+                )
+
+                ValueSelectorSettingsEntry(
+                    title = "\"Your playlists\" grid row count",
+                    selectedValue = preferences.yourPlaylistsGridRowCount,
+                    values = listOf(1, 2, 3),
+                    onValueSelected = {
+                        preferences.yourPlaylistsGridRowCount = it
                     }
                 )
             }

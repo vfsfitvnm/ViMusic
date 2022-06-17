@@ -221,10 +221,10 @@ fun HomeScreen() {
 
                 item {
                     LazyHorizontalGrid(
-                        rows = GridCells.Fixed(2),
+                        rows = GridCells.Fixed(preferences.yourPlaylistsGridRowCount),
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier
-                            .height(248.dp)
+                            .height(124.dp * preferences.yourPlaylistsGridRowCount)
                     ) {
                         item {
                             Column(

@@ -27,6 +27,7 @@ class Preferences(holder: SharedPreferences) : SharedPreferences by holder {
     var displayLikeButtonInNotification by preference("displayLikeButtonInNotification", false)
     var persistentQueue by preference("persistentQueue", false)
     var skipSilence by preference("skipSilence", false)
+    var yourPlaylistsGridRowCount by preference("yourPlaylistsGridRowCount", 2)
 }
 
 val Context.preferences: Preferences

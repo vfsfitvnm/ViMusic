@@ -225,14 +225,16 @@ inline fun DefaultDialog(
     }
 }
 
+
 @Composable
-inline fun <reified T : Enum<T>> EnumValueSelectorDialog(
+inline fun <T> ValueSelectorDialog(
     noinline onDismiss: () -> Unit,
     title: String,
     selectedValue: T,
+    values: List<T>,
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
-    crossinline valueText: (T) -> String = Enum<T>::name
+    crossinline valueText: (T) -> String = { it.toString() }
 ) {
     val typography = LocalTypography.current
     val colorPalette = LocalColorPalette.current
@@ -258,7 +260,7 @@ inline fun <reified T : Enum<T>> EnumValueSelectorDialog(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
             ) {
-                enumValues<T>().forEach { value ->
+                values.forEach { value ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
