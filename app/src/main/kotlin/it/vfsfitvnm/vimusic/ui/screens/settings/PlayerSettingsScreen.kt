@@ -90,7 +90,6 @@ fun PlayerSettingsScreen() {
 
             LaunchedEffect(mediaController) {
                 while (isActive) {
-                    println("mediaController: $mediaController")
                     sleepTimerMillisLeft =
                         mediaController?.syncCommand(GetSleepTimerMillisLeftCommand)
                             ?.takeIf { it.resultCode == SessionResult.RESULT_SUCCESS }

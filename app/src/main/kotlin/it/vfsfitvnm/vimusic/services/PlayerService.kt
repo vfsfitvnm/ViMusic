@@ -103,7 +103,7 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
     override fun onCreate() {
         super.onCreate()
 
-        notificationThumbnailSize = (96 * resources.displayMetrics.density).roundToInt()
+        notificationThumbnailSize = (256 * resources.displayMetrics.density).roundToInt()
 
         createNotificationChannel()
         setMediaNotificationProvider(this)
@@ -288,15 +288,15 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
     override fun onAddMediaItems(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
-        mediaItems: MutableList<MediaItem>
-    ): ListenableFuture<MutableList<MediaItem>> {
+        mediaItems: List<MediaItem>
+    ): ListenableFuture<List<MediaItem>> {
         return Futures.immediateFuture(
             mediaItems.map { mediaItem ->
                 mediaItem.buildUpon()
                     .setUri(mediaItem.mediaId)
                     .setCustomCacheKey(mediaItem.mediaId)
                     .build()
-            }.toMutableList()
+            }
         )
     }
 
@@ -360,21 +360,12 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
                 R.drawable.play_skip_back,
                 R.string.media3_controls_seek_to_previous_description,
                 Player.COMMAND_SEEK_TO_PREVIOUS
-            ).run {
-                if (mediaSession.player.playbackState == Player.STATE_ENDED || !mediaSession.player.playWhenReady) {
-                    addMediaAction(
-                        R.drawable.play,
-                        R.string.media3_controls_play_description,
-                        Player.COMMAND_PLAY_PAUSE
-                    )
-                } else {
-                    addMediaAction(
-                        R.drawable.pause,
-                        R.string.media3_controls_pause_description,
-                        Player.COMMAND_PLAY_PAUSE
-                    )
-                }
-            }.addMediaAction(
+            ).addMediaAction(
+                if (mediaSession.player.playbackState == Player.STATE_ENDED || !mediaSession.player.playWhenReady) R.drawable.play else R.drawable.pause,
+                if (mediaSession.player.playbackState == Player.STATE_ENDED || !mediaSession.player.playWhenReady) R.string.media3_controls_play_description else R.string.media3_controls_pause_description,
+                Player.COMMAND_PLAY_PAUSE
+            )
+            .addMediaAction(
                 R.drawable.play_skip_forward,
                 R.string.media3_controls_seek_to_next_description,
                 Player.COMMAND_SEEK_TO_NEXT
@@ -405,9 +396,7 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
         session: MediaSession,
         action: String,
         extras: Bundle
-    ): Boolean {
-        return false
-    }
+    ): Boolean = false
 
     private fun createNotificationChannel() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

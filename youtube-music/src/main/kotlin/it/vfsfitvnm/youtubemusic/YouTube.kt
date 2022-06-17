@@ -617,9 +617,6 @@ object YouTube {
                                 thumbnail = renderer
                                     .thumbnail
                                     .thumbnails
-                                    .also {
-                                        println(it)
-                                    }
                                     .firstOrNull(),
                                 durationText = renderer
                                     .lengthText

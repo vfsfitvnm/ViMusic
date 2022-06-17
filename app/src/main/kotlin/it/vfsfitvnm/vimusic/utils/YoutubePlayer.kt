@@ -20,7 +20,6 @@ class YoutubePlayer(mediaController: MediaController) : PlayerState(mediaControl
         var nextContinuation by mutableStateOf<Outcome<String?>>(Outcome.Initial)
 
         suspend fun process(): List<MediaItem> {
-            println("process: ${nextContinuation.valueOrNull}")
             val token = nextContinuation.valueOrNull
 
             nextContinuation = Outcome.Loading
