@@ -13,7 +13,6 @@
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher_round"
         android:label="${appName}"
-        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ViMusic.NoActionBar">
