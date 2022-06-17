@@ -19,13 +19,6 @@ fun rememberPlayerSettingsRoute(): Route0 {
 }
 
 @Composable
-fun rememberNotificationSettingsRoute(): Route0 {
-    return remember {
-        Route0("NotificationSettingsRoute")
-    }
-}
-
-@Composable
 fun rememberBackupAndRestoreRoute(): Route0 {
     return remember {
         Route0("BackupAndRestoreRoute")

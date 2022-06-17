@@ -24,8 +24,6 @@ class Preferences(holder: SharedPreferences) : SharedPreferences by holder {
     var thumbnailRoundness by preference("thumbnailRoundness", ThumbnailRoundness.Light)
     var coilDiskCacheMaxSizeBytes by preference("coilDiskCacheMaxSizeBytes", 512L * 1024 * 1024)
     var exoPlayerDiskCacheMaxSizeBytes by preference("exoPlayerDiskCacheMaxSizeBytes", 512L * 1024 * 1024)
-    var displayLikeButtonInNotification by preference("displayLikeButtonInNotification", false)
-    var persistentQueue by preference("persistentQueue", false)
     var skipSilence by preference("skipSilence", false)
     var yourPlaylistsGridRowCount by preference("yourPlaylistsGridRowCount", 2)
 }
