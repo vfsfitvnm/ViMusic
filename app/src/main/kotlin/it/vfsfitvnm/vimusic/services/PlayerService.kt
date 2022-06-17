@@ -38,6 +38,7 @@ import androidx.media3.session.*
 import androidx.media3.session.MediaNotification.ActionFactory
 import coil.Coil
 import coil.request.ImageRequest
+import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.vimusic.Database
@@ -69,9 +70,7 @@ val CancelSleepTimerCommand = SessionCommand("CancelSleepTimerCommand", Bundle.E
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
-class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
-    MediaNotification.Provider,
-    MediaSession.SessionCallback,
+class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotification.Provider,
     PlaybackStatsListener.Callback, Player.Listener {
 
     companion object {
@@ -119,10 +118,11 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.CONTENT_TYPE_MUSIC)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                     .build(),
                 true
             )
+            .setUsePlatformDiagnostics(false)
             .build()
 
         player.repeatMode = preferences.repeatMode
@@ -132,8 +132,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
         mediaSession = MediaSession.Builder(this, player)
             .withSessionActivity()
-            .setSessionCallback(this)
-            .setMediaItemFiller(this)
+            .setCallback(this)
             .build()
 
         player.addListener(this)
@@ -227,7 +226,10 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
                     delay(delayMillis)
 
                     withContext(Dispatchers.Main) {
-                        val notification = NotificationCompat.Builder(this@PlayerService, SleepTimerNotificationChannelId)
+                        val notification = NotificationCompat.Builder(
+                            this@PlayerService,
+                            SleepTimerNotificationChannelId
+                        )
                             .setContentTitle("Sleep timer ended")
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                             .setAutoCancel(true)
@@ -244,7 +246,10 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             }
             GetSleepTimerMillisLeftCommand -> {
                 return Futures.immediateFuture(sleepTimerRealtime?.let {
-                    (SessionResult(SessionResult.RESULT_SUCCESS, bundleOf("millisLeft" to it - SystemClock.elapsedRealtime())))
+                    (SessionResult(
+                        SessionResult.RESULT_SUCCESS,
+                        bundleOf("millisLeft" to it - SystemClock.elapsedRealtime())
+                    ))
                 } ?: SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE))
             }
             CancelSleepTimerCommand -> {
@@ -280,26 +285,32 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         }
     }
 
-    override fun fillInLocalConfiguration(
-        session: MediaSession,
+    override fun onAddMediaItems(
+        mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
-        mediaItem: MediaItem
-    ): MediaItem {
-        return mediaItem.buildUpon()
-            .setUri(mediaItem.mediaId)
-            .setCustomCacheKey(mediaItem.mediaId)
-            .build()
+        mediaItems: MutableList<MediaItem>
+    ): ListenableFuture<MutableList<MediaItem>> {
+        return Futures.immediateFuture(
+            mediaItems.map { mediaItem ->
+                mediaItem.buildUpon()
+                    .setUri(mediaItem.mediaId)
+                    .setCustomCacheKey(mediaItem.mediaId)
+                    .build()
+            }.toMutableList()
+        )
     }
 
     override fun createNotification(
-        mediaController: MediaController,
+        session: MediaSession,
+        customLayout: ImmutableList<CommandButton>,
         actionFactory: ActionFactory,
         onNotificationChangedCallback: MediaNotification.Provider.Callback
     ): MediaNotification {
         fun invalidate() {
             onNotificationChangedCallback.onNotificationChanged(
                 createNotification(
-                    mediaController,
+                    session,
+                    customLayout,
                     actionFactory,
                     onNotificationChangedCallback
                 )
@@ -309,10 +320,11 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         fun NotificationCompat.Builder.addMediaAction(
             @DrawableRes resId: Int,
             @StringRes stringId: Int,
-            @Player.Command command: Long
+            @Player.Command command: Int
         ): NotificationCompat.Builder {
             return addAction(
                 actionFactory.createMediaAction(
+                    mediaSession,
                     IconCompat.createWithResource(this@PlayerService, resId),
                     getString(stringId),
                     command
@@ -320,7 +332,7 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             )
         }
 
-        val mediaMetadata = mediaController.mediaMetadata
+        val mediaMetadata = mediaSession.player.mediaMetadata
 
         val builder = NotificationCompat.Builder(applicationContext, NotificationChannelId)
             .setContentTitle(mediaMetadata.title)
@@ -331,8 +343,13 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .setShowWhen(false)
             .setSmallIcon(R.drawable.app_icon)
             .setOngoing(false)
-            .setContentIntent(mediaController.sessionActivity)
-            .setDeleteIntent(actionFactory.createMediaActionPendingIntent(ActionFactory.COMMAND_STOP))
+            .setContentIntent(mediaSession.sessionActivity)
+            .setDeleteIntent(
+                actionFactory.createMediaActionPendingIntent(
+                    mediaSession,
+                    Player.COMMAND_STOP.toLong()
+                )
+            )
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
@@ -342,25 +359,25 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
             .addMediaAction(
                 R.drawable.play_skip_back,
                 R.string.media3_controls_seek_to_previous_description,
-                ActionFactory.COMMAND_SKIP_TO_PREVIOUS
+                Player.COMMAND_SEEK_TO_PREVIOUS
             ).run {
-                if (mediaController.playbackState == Player.STATE_ENDED || !mediaController.playWhenReady) {
+                if (mediaSession.player.playbackState == Player.STATE_ENDED || !mediaSession.player.playWhenReady) {
                     addMediaAction(
                         R.drawable.play,
                         R.string.media3_controls_play_description,
-                        ActionFactory.COMMAND_PLAY
+                        Player.COMMAND_PLAY_PAUSE
                     )
                 } else {
                     addMediaAction(
                         R.drawable.pause,
                         R.string.media3_controls_pause_description,
-                        ActionFactory.COMMAND_PAUSE
+                        Player.COMMAND_PLAY_PAUSE
                     )
                 }
             }.addMediaAction(
                 R.drawable.play_skip_forward,
                 R.string.media3_controls_seek_to_next_description,
-                ActionFactory.COMMAND_SKIP_TO_NEXT
+                Player.COMMAND_SEEK_TO_NEXT
             )
 
         if (lastArtworkUri != mediaMetadata.artworkUri) {
@@ -384,11 +401,13 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
         return MediaNotification(NotificationId, builder.build())
     }
 
-    override fun handleCustomAction(
-        mediaController: MediaController,
+    override fun handleCustomCommand(
+        session: MediaSession,
         action: String,
         extras: Bundle
-    ) = Unit
+    ): Boolean {
+        return false
+    }
 
     private fun createNotificationChannel() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -397,11 +416,23 @@ class PlayerService : MediaSessionService(), MediaSession.MediaItemFiller,
 
         with(notificationManager) {
             if (getNotificationChannel(NotificationChannelId) == null) {
-                createNotificationChannel(NotificationChannel(NotificationChannelId, getString(R.string.default_notification_channel_name), NotificationManager.IMPORTANCE_LOW))
+                createNotificationChannel(
+                    NotificationChannel(
+                        NotificationChannelId,
+                        getString(R.string.default_notification_channel_name),
+                        NotificationManager.IMPORTANCE_LOW
+                    )
+                )
             }
 
             if (getNotificationChannel(SleepTimerNotificationChannelId) == null) {
-                createNotificationChannel(NotificationChannel(SleepTimerNotificationChannelId, "Sleep timer", NotificationManager.IMPORTANCE_DEFAULT))
+                createNotificationChannel(
+                    NotificationChannel(
+                        SleepTimerNotificationChannelId,
+                        "Sleep timer",
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    )
+                )
             }
         }
     }

@@ -35,7 +35,7 @@ dependencyResolutionManagement {
             alias("room").to("androidx.room", "room-ktx").versionRef("room")
             alias("room-compiler").to("androidx.room", "room-compiler").versionRef("room")
 
-            version("media3", "1.0.0-alpha03")
+            version("media3", "1.0.0-beta01")
             alias("media3-session").to("androidx.media3", "media3-session").versionRef("media3")
             alias("media3-exoplayer").to("androidx.media3", "media3-exoplayer").versionRef("media3")
 
