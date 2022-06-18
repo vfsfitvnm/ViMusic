@@ -820,7 +820,8 @@ object YouTube {
                     .header
                     ?.musicImmersiveHeaderRenderer
                     ?.description
-                    ?.text,
+                    ?.text
+                    ?.substringBeforeLast("\n\nFrom Wikipedia"),
                 thumbnail = body
                     .header
                     ?.musicImmersiveHeaderRenderer
