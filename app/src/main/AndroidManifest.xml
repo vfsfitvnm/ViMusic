@@ -43,11 +43,19 @@
                     android:pathPrefix="/playlist"
                     android:scheme="https" />
                 <data
+                    android:host="m.youtube.com"
+                    android:pathPrefix="/playlist"
+                    android:scheme="https" />
+                <data
                     android:host="music.youtube.com"
                     android:pathPrefix="/watch"
                     android:scheme="https" />
                 <data
                     android:host="www.youtube.com"
+                    android:pathPrefix="/watch"
+                    android:scheme="https" />
+                <data
+                    android:host="m.youtube.com"
                     android:pathPrefix="/watch"
                     android:scheme="https" />
             </intent-filter>

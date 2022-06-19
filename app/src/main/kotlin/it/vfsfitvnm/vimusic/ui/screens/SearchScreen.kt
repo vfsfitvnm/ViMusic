@@ -110,7 +110,7 @@ fun SearchScreen(
             val coroutineScope = rememberCoroutineScope()
 
             val isOpenableUrl = remember(textFieldValue.text) {
-                Regex("""https://(music|www)\.youtube.com/(watch|playlist).*""").matches(textFieldValue.text)
+                Regex("""https://(music|www|m)\.youtube.com/(watch|playlist).*""").matches(textFieldValue.text)
             }
 
             LaunchedEffect(Unit) {
