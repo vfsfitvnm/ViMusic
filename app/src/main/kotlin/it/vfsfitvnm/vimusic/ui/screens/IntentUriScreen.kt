@@ -87,7 +87,7 @@ fun IntentUriScreen(uri: Uri) {
                         }
                     } ?: uri.getQueryParameter("v")?.let { videoId ->
                         YouTube.song(videoId).toNullable()?.map { listOf(it) }
-                    } ?: Outcome.Error.Network
+                    } ?: Outcome.Error.Unhandled(Error("Missing URL parameters"))
                 }
             }
 

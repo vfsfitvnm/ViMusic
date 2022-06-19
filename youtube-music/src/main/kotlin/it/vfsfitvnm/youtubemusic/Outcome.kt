@@ -57,9 +57,13 @@ fun <T> Outcome<T>?.toNotNull(): Outcome<T?> {
     }
 }
 
-fun <T> Outcome<T?>.toNullable(): Outcome<T>? {
-    return valueOrNull?.let {
-        Outcome.Success(it)
+fun <T> Outcome<T?>.toNullable(error: Outcome.Error? = null): Outcome<T>? {
+    return when (this) {
+        is Outcome.Success -> value?.let { Outcome.Success(it) } ?: error
+        is Outcome.Recovered -> value?.let { Outcome.Success(it) } ?: error
+        is Outcome.Initial -> this
+        is Outcome.Loading -> this
+        is Outcome.Error -> this
     }
 }
 
