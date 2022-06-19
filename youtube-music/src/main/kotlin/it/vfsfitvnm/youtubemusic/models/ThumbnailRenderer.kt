@@ -20,19 +20,11 @@ data class ThumbnailRenderer(
             @Serializable
             data class Thumbnail(
                 val url: String,
-                val height: Int,
-                val width: Int
+                val height: Int?,
+                val width: Int?
             ) {
                 val isResizable: Boolean
                     get() = !url.startsWith("https://i.ytimg.com")
-
-                fun width(width: Int): String {
-                    return when {
-                        url.startsWith("https://lh3.googleusercontent.com") -> "$url-w$width-h${width * height / this.width}"
-                        url.startsWith("https://yt3.ggpht.com") -> "$url-s$width"
-                        else -> url
-                    }
-                }
 
                 fun size(size: Int): String {
                     return when {

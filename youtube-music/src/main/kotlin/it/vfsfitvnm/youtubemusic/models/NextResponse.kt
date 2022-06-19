@@ -30,10 +30,10 @@ data class NextResponse(
                 ) {
                     @Serializable
                     data class PlaylistPanelVideoRenderer(
-                        val title: Runs,
+                        val title: Runs?,
                         val longBylineText: Runs?,
-                        val shortBylineText: Runs,
-                        val lengthText: Runs,
+                        val shortBylineText: Runs?,
+                        val lengthText: Runs?,
                         val navigationEndpoint: NavigationEndpoint,
                         val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail,
                         val videoId: String,

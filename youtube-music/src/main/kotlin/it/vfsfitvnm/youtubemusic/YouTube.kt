@@ -481,7 +481,7 @@ object YouTube {
                             info = Info(
                                 name = renderer
                                     .title
-                                    .text,
+                                    ?.text ?: return@let null,
                                 endpoint = renderer
                                     .navigationEndpoint
                                     .watchEndpoint
@@ -504,7 +504,7 @@ object YouTube {
                                 .getOrNull(0),
                             durationText = renderer
                                 .lengthText
-                                .text
+                                ?.text
                         )
                     }
                 }
@@ -592,12 +592,12 @@ object YouTube {
                         ?.playlistPanelRenderer
                         ?.contents
                         ?.mapNotNull { it.playlistPanelVideoRenderer }
-                        ?.map { renderer ->
+                        ?.mapNotNull { renderer ->
                             Item.Song(
                                 info = Info(
                                     name = renderer
                                         .title
-                                        .text,
+                                        ?.text ?: return@mapNotNull null,
                                     endpoint = renderer
                                         .navigationEndpoint
                                         .watchEndpoint
@@ -620,7 +620,7 @@ object YouTube {
                                     .firstOrNull(),
                                 durationText = renderer
                                     .lengthText
-                                    .text
+                                    ?.text
                             )
                         },
                     lyrics = NextResult.Lyrics(
