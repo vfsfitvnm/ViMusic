@@ -248,16 +248,6 @@ fun PlayerSettingsScreen() {
                     )
                 }
 
-//                SwitchSettingEntry(
-//                    title = "Persistent queue",
-//                    text = "Save and restore playing songs",
-//                    isChecked = preferences.persistentQueue,
-//                    onCheckedChange = {
-//                        preferences.persistentQueue = it
-//                    },
-//                    isEnabled = false
-//                )
-
                 SwitchSettingEntry(
                     title = "Skip silence",
                     text = "Skip silent parts during playback",
@@ -268,6 +258,15 @@ fun PlayerSettingsScreen() {
                             bundleOf("skipSilence" to it)
                         )
                         preferences.skipSilence = it
+                    }
+                )
+
+                SwitchSettingEntry(
+                    title = "Loudness normalization",
+                    text = "Lower the volume to a standard level",
+                    isChecked = preferences.volumeNormalization,
+                    onCheckedChange = {
+                        preferences.volumeNormalization = it
                     }
                 )
 

@@ -304,15 +304,17 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
     }
 
     private fun normalizeVolume() {
-        player.volume = player.currentMediaItem?.mediaId?.let { mediaId ->
-            songPendingLoudnessDb.getOrElse(mediaId) {
-                player.currentMediaItem?.mediaMetadata?.extras?.getFloat("loudnessDb")
-            }
-                ?.takeIf { it > 0 }
-                ?.let { loudnessDb ->
-                    (1f - (0.01f + loudnessDb / 15)).coerceIn(0.1f, 1f)
+        if (preferences.volumeNormalization) {
+            player.volume = player.currentMediaItem?.mediaId?.let { mediaId ->
+                songPendingLoudnessDb.getOrElse(mediaId) {
+                    player.currentMediaItem?.mediaMetadata?.extras?.getFloat("loudnessDb")
                 }
-        } ?: 1f
+                    ?.takeIf { it > 0 }
+                    ?.let { loudnessDb ->
+                        (1f - (0.01f + loudnessDb / 15)).coerceIn(0.1f, 1f)
+                    }
+            } ?: 1f
+        }
     }
 
     override fun onAddMediaItems(
