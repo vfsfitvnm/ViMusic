@@ -17,7 +17,6 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -29,7 +28,6 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
-import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.rememberLyricsRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -198,13 +196,15 @@ fun PlayerBottomSheet(
 
                             lyricsOutcome = nextOutcome.flatMap {
                                 it.lyrics?.text().toNotNull()
-                            }.map {
-                                it ?: ""
-                            }.map {
+                            }.map { lyrics ->
+                                lyrics ?: ""
+                            }.map { lyrics ->
                                 withContext(Dispatchers.IO) {
-                                    Database.update((song ?: Database.insert(player.mediaItem!!)).copy(lyrics = it))
+                                    (song ?: player.mediaItem?.let(Database::insert))?.let {
+                                        Database.update(it.copy(lyrics = lyrics))
+                                    }
                                 }
-                                it
+                                lyrics
                             }
                         }
                     },
@@ -218,9 +218,11 @@ fun PlayerBottomSheet(
                             })
                         }
                     },
-                    onLyricsUpdate = {
+                    onLyricsUpdate = { lyrics ->
                         coroutineScope.launch(Dispatchers.IO) {
-                            Database.update((song ?: Database.insert(player.mediaItem!!)).copy(lyrics = it))
+                            (song ?: player.mediaItem?.let(Database::insert))?.let {
+                                Database.update(it.copy(lyrics = lyrics))
+                            }
                         }
                     }
                 )

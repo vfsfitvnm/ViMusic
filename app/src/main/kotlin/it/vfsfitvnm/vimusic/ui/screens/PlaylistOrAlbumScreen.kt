@@ -175,11 +175,7 @@ fun PlaylistOrAlbumScreen(
                                                                     song
                                                                         .toMediaItem(browseId, album)
                                                                         ?.let { mediaItem ->
-                                                                            if (Database.song(mediaItem.mediaId) == null) {
-                                                                                Database.insert(
-                                                                                    mediaItem
-                                                                                )
-                                                                            }
+                                                                            Database.insert(mediaItem)
 
                                                                             Database.insert(
                                                                                 SongInPlaylist(

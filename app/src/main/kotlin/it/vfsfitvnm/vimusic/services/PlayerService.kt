@@ -44,6 +44,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import kotlinx.coroutines.*
@@ -100,6 +101,8 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
+    private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
+
     override fun onCreate() {
         super.onCreate()
 
@@ -136,6 +139,18 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
             .build()
 
         player.addListener(this)
+
+        coroutineScope.launch(Dispatchers.IO) {
+            while (true) {
+                delay(1000)
+                withContext(Dispatchers.Main) {
+                    println("volume: ${player.volume}")
+                }
+                songPendingLoudnessDb.forEach { (key, value) ->
+                    println("     $key = $value")
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -269,13 +284,14 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
 
-        coroutineScope.launch(Dispatchers.IO) {
-            Database.insert(mediaItem)
+        Database.internal.queryExecutor.execute {
             Database.incrementTotalPlayTimeMs(mediaItem.mediaId, playbackStats.totalPlayTimeMs)
         }
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        normalizeVolume()
+
         radio?.let { radio ->
             if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                 coroutineScope.launch(Dispatchers.Main) {
@@ -283,6 +299,18 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
                 }
             }
         }
+    }
+
+    private fun normalizeVolume() {
+        player.volume = player.currentMediaItem?.mediaId?.let { mediaId ->
+            songPendingLoudnessDb.getOrElse(mediaId) {
+                player.currentMediaItem?.mediaMetadata?.extras?.getFloat("loudnessDb")
+            }
+                ?.takeIf { it > 0 }
+                ?.let { loudnessDb ->
+                    (1f - (0.01f + loudnessDb / 15)).coerceIn(0.1f, 1f)
+                }
+        } ?: 1f
     }
 
     override fun onAddMediaItems(
@@ -454,10 +482,33 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
                         val url = runBlocking(Dispatchers.IO) {
                             it.vfsfitvnm.youtubemusic.YouTube.player(videoId)
                         }.flatMap { body ->
+                            val loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()
+
+                            songPendingLoudnessDb[videoId] = loudnessDb
+
+                            runBlocking(Dispatchers.Main) {
+                                normalizeVolume()
+                            }
+
                             when (val status = body.playabilityStatus.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
                                     format.itag == 251 || format.itag == 140
-                                }?.url?.let { Outcome.Success(it) } ?: Outcome.Error.Unhandled(
+                                }?.let { format ->
+                                    val mediaItem = runBlocking(Dispatchers.Main) {
+                                        player.currentMediaItem
+                                    }
+
+                                    if (mediaItem?.mediaId == videoId) {
+                                        Database.internal.queryExecutor.execute {
+                                            Database.update(Database.insert(mediaItem).copy(
+                                                loudnessDb = loudnessDb,
+                                                contentLength = format.contentLength
+                                            ))
+                                        }
+                                    }
+
+                                    Outcome.Success(format.url)
+                                } ?: Outcome.Error.Unhandled(
                                     PlaybackException(
                                         "Couldn't find a playable audio format",
                                         null,

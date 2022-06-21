@@ -13,6 +13,8 @@ data class Song(
     val lyrics: String? = null,
     val likedAt: Long? = null,
     val totalPlayTimeMs: Long = 0,
+    val loudnessDb: Float? = null,
+    val contentLength: Long? = null,
 ) {
     val formattedTotalPlayTime: String
         get() {

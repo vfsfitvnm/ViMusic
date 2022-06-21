@@ -342,9 +342,9 @@ fun PlayerView(
                     modifier = Modifier
                         .clickable {
                             coroutineScope.launch(Dispatchers.IO) {
-                                Database.update(
-                                    (song ?: Database.insert(player.mediaItem!!)).toggleLike()
-                                )
+                                (song ?: player.mediaItem?.let(Database::insert))?.let {
+                                    Database.update(it.toggleLike())
+                                }
                             }
                         }
                         .padding(horizontal = 16.dp)

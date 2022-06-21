@@ -111,9 +111,7 @@ fun IntentUriScreen(uri: Uri) {
                                 items.valueOrNull
                                     ?.map(YouTube.Item.Song::asMediaItem)
                                     ?.forEachIndexed { index, mediaItem ->
-                                        if (Database.song(mediaItem.mediaId) == null) {
-                                            Database.insert(mediaItem)
-                                        }
+                                        Database.insert(mediaItem)
 
                                         Database.insert(
                                             SongInPlaylist(

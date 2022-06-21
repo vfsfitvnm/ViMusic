@@ -236,9 +236,7 @@ fun BaseMediaItemMenu(
             coroutineScope.launch(Dispatchers.IO) {
                 val playlistId = Database.playlist(playlist.id)?.id ?: Database.insert(playlist)
 
-                if (Database.song(mediaItem.mediaId) == null) {
-                    Database.insert(mediaItem)
-                }
+                Database.insert(mediaItem)
 
                 Database.insert(
                     SongInPlaylist(
