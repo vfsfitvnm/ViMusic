@@ -11,6 +11,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -293,6 +294,7 @@ fun SwitchSettingEntry(
                 onClick = { onCheckedChange(!isChecked) },
                 enabled = isEnabled
             )
+            .alpha(if (isEnabled) 1f else 0.5f)
             .padding(start = 24.dp)
             .padding(horizontal = 32.dp, vertical = 16.dp)
             .fillMaxWidth()
@@ -304,12 +306,12 @@ fun SwitchSettingEntry(
         ) {
             BasicText(
                 text = title,
-                style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.text else colorPalette.darkGray),
+                style = typography.xs.semiBold.copy(color = colorPalette.text),
             )
 
             BasicText(
                 text = text,
-                style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.textSecondary else colorPalette.darkGray),
+                style = typography.xs.semiBold.copy(color = colorPalette.textSecondary),
             )
         }
 
@@ -336,18 +338,19 @@ fun SettingsEntry(
                 onClick = onClick,
                 enabled = isEnabled
             )
+            .alpha(if (isEnabled) 1f else 0.5f)
             .padding(start = 24.dp)
             .padding(horizontal = 32.dp, vertical = 16.dp)
             .fillMaxWidth()
     ) {
         BasicText(
             text = title,
-            style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.text else colorPalette.darkGray),
+            style = typography.xs.semiBold.copy(color = colorPalette.text),
         )
 
         BasicText(
             text = text,
-            style = typography.xs.semiBold.copy(color = if (isEnabled) colorPalette.textSecondary else colorPalette.darkGray),
+            style = typography.xs.semiBold.copy(color = colorPalette.text),
         )
     }
 }
