@@ -47,7 +47,7 @@ interface Database {
     fun songWithInfo(id: String): SongWithInfo?
 
     @Transaction
-    @Query("SELECT * FROM Song WHERE totalPlayTimeMs >= 15000 ORDER BY ROWID DESC")
+    @Query("SELECT * FROM Song ORDER BY ROWID DESC")
     fun history(): Flow<List<SongWithInfo>>
 
     @Transaction

@@ -46,6 +46,9 @@ open class PlayerState(val mediaController: MediaController) : Player.Listener {
     var mediaItems by mutableStateOf(mediaController.currentTimeline.mediaItems)
         private set
 
+    var volume by mutableStateOf(mediaController.volume)
+        private set
+
     init {
         handler.post(object : Runnable {
             override fun run() {
@@ -54,6 +57,10 @@ open class PlayerState(val mediaController: MediaController) : Player.Listener {
                 handler.postDelayed(this, 500)
             }
         })
+    }
+
+    override fun onVolumeChanged(volume: Float) {
+        this.volume = volume
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {

@@ -1,27 +1,36 @@
 package it.vfsfitvnm.vimusic.ui.views
 
 import android.text.format.DateUtils
+import android.text.format.Formatter
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -29,16 +38,21 @@ import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.services.GetSongCacheSizeCommand
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
+import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.models.PlayerResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 
 @ExperimentalAnimationApi
@@ -54,6 +68,7 @@ fun PlayerView(
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
     val player = LocalYoutubePlayer.current
+    val context = LocalContext.current
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -161,8 +176,14 @@ fun PlayerView(
         }
     ) {
         val song by remember(player.mediaItem?.mediaId) {
-            player.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged() ?: flowOf(null)
+            player.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged() ?: flowOf(
+                null
+            )
         }.collectAsState(initial = null, context = Dispatchers.IO)
+
+        var isShowingStatsForNerds by rememberSaveable {
+            mutableStateOf(false)
+        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -219,20 +240,141 @@ fun PlayerView(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     val artworkUri = remember(it) {
-                        player.mediaController.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)
+                        player.mediaController.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
+                            thumbnailSizePx
+                        )
                     }
 
-                    AsyncImage(
-                        model = artworkUri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                    Box(
                         modifier = Modifier
                             .padding(bottom = 32.dp)
                             .padding(horizontal = 32.dp)
                             .aspectRatio(1f)
                             .clip(ThumbnailRoundness.shape)
                             .size(thumbnailSizeDp)
-                    )
+                    ) {
+                        AsyncImage(
+                            model = artworkUri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            isShowingStatsForNerds = true
+                                        }
+                                    )
+                                }
+                                .fillMaxSize()
+                        )
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = isShowingStatsForNerds,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            val cachedPercentage = remember(song?.contentLength) {
+                                song?.contentLength?.let { contentLength ->
+                                    player.mediaController.syncCommand(
+                                        GetSongCacheSizeCommand,
+                                        bundleOf("videoId" to song?.id)
+                                    ).extras.getLong("cacheSize").toFloat() / contentLength * 100
+                                }?.roundToInt() ?: 0
+                            }
+
+                            Column(
+                                verticalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onPress = {
+                                                isShowingStatsForNerds = false
+                                            }
+                                        )
+                                    }
+                                    .background(Color.Black.copy(alpha = 0.8f))
+                                    .fillMaxSize()
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier
+                                        .padding(all = 16.dp)
+                                ) {
+                                    Column {
+                                        BasicText(
+                                            text = "Volume",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
+                                            text = "Loudness",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
+                                            text = "Size",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
+                                            text = "Cached",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                    }
+
+                                    Column {
+                                        BasicText(
+                                            text = "${player.volume.times(100).roundToInt()}%",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
+                                            text = song?.loudnessDb?.let { loudnessDb ->
+                                                "%.2f dB".format(loudnessDb)
+                                            } ?: "Unknown",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
+                                            text = song?.contentLength?.let { contentLength ->
+                                                Formatter.formatShortFileSize(context, contentLength)
+                                            } ?: "Unknown",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
+                                            text = "$cachedPercentage%",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                    }
+                                }
+
+                                if (song != null && (song?.contentLength == null || song?.loudnessDb == null)) {
+                                    BasicText(
+                                        text = "FILL MISSING DATA",
+                                        style = typography.xxs.semiBold.color(BlackColorPalette.text),
+                                        modifier = Modifier
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = {
+                                                    song?.let { song ->
+                                                        coroutineScope.launch(Dispatchers.IO) {
+                                                            YouTube.player(song.id).map { body ->
+                                                                Database.update(
+                                                                    song.copy(
+                                                                        loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
+                                                                        contentLength = body.streamingData?.adaptiveFormats?.findLast { format ->
+                                                                            format.itag == 251 || format.itag == 140
+                                                                        }?.let(PlayerResponse.StreamingData.AdaptiveFormat::contentLength)
+                                                                    )
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            )
+                                            .padding(all = 16.dp)
+                                            .align(Alignment.End)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             } else {
                 Box(
@@ -289,7 +431,9 @@ fun PlayerView(
                     }
                 },
                 onDragEnd = {
-                    player.mediaController.seekTo(scrubbingPosition ?: player.mediaController.currentPosition)
+                    player.mediaController.seekTo(
+                        scrubbingPosition ?: player.mediaController.currentPosition
+                    )
                     player.currentPosition = player.mediaController.currentPosition
                     scrubbingPosition = null
                 },
@@ -311,7 +455,9 @@ fun PlayerView(
                     .padding(bottom = 16.dp)
             ) {
                 BasicText(
-                    text = DateUtils.formatElapsedTime((scrubbingPosition ?: player.currentPosition) / 1000),
+                    text = DateUtils.formatElapsedTime(
+                        (scrubbingPosition ?: player.currentPosition) / 1000
+                    ),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

@@ -57,6 +57,7 @@ val StartArtistRadioCommand = SessionCommand("StartArtistRadioCommand", Bundle.E
 val StopRadioCommand = SessionCommand("StopRadioCommand", Bundle.EMPTY)
 
 val GetCacheSizeCommand = SessionCommand("GetCacheSizeCommand", Bundle.EMPTY)
+val GetSongCacheSizeCommand = SessionCommand("GetSongCacheSizeCommand", Bundle.EMPTY)
 
 val DeleteSongCacheCommand = SessionCommand("DeleteSongCacheCommand", Bundle.EMPTY)
 
@@ -139,18 +140,6 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
             .build()
 
         player.addListener(this)
-
-        coroutineScope.launch(Dispatchers.IO) {
-            while (true) {
-                delay(1000)
-                withContext(Dispatchers.Main) {
-                    println("volume: ${player.volume}")
-                }
-                songPendingLoudnessDb.forEach { (key, value) ->
-                    println("     $key = $value")
-                }
-            }
-        }
     }
 
     override fun onDestroy() {
@@ -173,6 +162,7 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
             .add(StartArtistRadioCommand)
             .add(StopRadioCommand)
             .add(GetCacheSizeCommand)
+            .add(GetSongCacheSizeCommand)
             .add(DeleteSongCacheCommand)
             .add(SetSkipSilenceCommand)
             .add(GetAudioSessionIdCommand)
@@ -214,6 +204,18 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
                     SessionResult(
                         SessionResult.RESULT_SUCCESS,
                         bundleOf("cacheSize" to cache.cacheSpace)
+                    )
+                )
+            }
+            GetSongCacheSizeCommand -> {
+                return Futures.immediateFuture(
+                    SessionResult(
+                        SessionResult.RESULT_SUCCESS,
+                        bundleOf("cacheSize" to cache.getCachedBytes(
+                            args.getString("videoId") ?: "",
+                            0,
+                            C.LENGTH_UNSET.toLong()
+                        ))
                     )
                 )
             }
