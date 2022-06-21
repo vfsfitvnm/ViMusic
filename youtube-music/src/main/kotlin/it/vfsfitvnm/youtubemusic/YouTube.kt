@@ -694,7 +694,8 @@ object YouTube {
         val year: String?,
         val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
         val items: List<Item>?,
-        val url: String?
+        val url: String?,
+        val continuation: String?,
     ) {
         open class Item(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
@@ -795,7 +796,19 @@ object YouTube {
                 url = body
                     .microformat
                     ?.microformatDataRenderer
-                    ?.urlCanonical
+                    ?.urlCanonical,
+                continuation = body
+                    .contents
+                    .singleColumnBrowseResultsRenderer
+                    ?.tabs
+                    ?.firstOrNull()
+                    ?.tabRenderer
+                    ?.content
+                    ?.sectionListRenderer
+                    ?.continuations
+                    ?.firstOrNull()
+                    ?.nextRadioContinuationData
+                    ?.continuation
             )
         }
     }
