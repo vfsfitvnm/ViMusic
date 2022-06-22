@@ -1,0 +1,22 @@
+A Jetpack Compose Android application for streaming music from YouTube Music.
+
+<b>Features</b>
+
+<ul>
+<li>ExoPlayer based playback</li>
+<li>Snappy UI derived from the latest Material Design guidelines</li>
+<li>Opinionated UX that prioritizes ease of use over edge cases</li>
+<li>Customizable behavior</li>
+<li>Advanced media indexer that prioritizes correct metadata</li>
+<li>SD Card-aware folder management</li>
+<li>Reliable playback state persistence</li>
+<li>Full ReplayGain support (On MP3, MP4, FLAC, OGG, and OPUS)</li>
+<li>Edge-to-edge</li>
+<li>Embedded covers support</li>
+<li>Search Functionality</li>
+<li>Headset autoplay</li>
+<li>Stylish widgets that automatically adapt to their size</li>
+<li>Completely private and offline</li>
+<li>No rounded album covers (Unless you want them. Then you can.)</li>
+</ul>
+
