@@ -92,15 +92,6 @@ fun AppearanceSettingsScreen() {
                         preferences.thumbnailRoundness = it
                     }
                 )
-
-                ValueSelectorSettingsEntry(
-                    title = "\"Your playlists\" grid row count",
-                    selectedValue = preferences.yourPlaylistsGridRowCount,
-                    values = listOf(1, 2, 3),
-                    onValueSelected = {
-                        preferences.yourPlaylistsGridRowCount = it
-                    }
-                )
             }
         }
     }

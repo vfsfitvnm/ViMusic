@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.screens
 import android.net.Uri
 import android.os.Bundle
 import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun HomeScreen() {
@@ -151,6 +153,10 @@ fun HomeScreen() {
                 }
             }
 
+            var isGridExpanded by remember {
+                mutableStateOf(false)
+            }
+
             var isCreatingANewPlaylist by rememberSaveable {
                 mutableStateOf(false)
             }
@@ -208,20 +214,41 @@ fun HomeScreen() {
                 }
 
                 item {
-                    BasicText(
-                        text = "Your playlists",
-                        style = typography.m.semiBold,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
+                            .zIndex(1f)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        BasicText(
+                            text = "Your playlists",
+                            style = typography.m.semiBold,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        )
+
+                        Image(
+                            painter = painterResource(if (isGridExpanded) R.drawable.grid else R.drawable.grid_single),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                            modifier = Modifier
+                                .clickable {
+                                    isGridExpanded = !isGridExpanded
+                                }
+                                .padding(all = 10.dp)
+                                .size(16.dp)
+                        )
+                    }
                 }
 
                 item {
                     LazyHorizontalGrid(
-                        rows = GridCells.Fixed(preferences.yourPlaylistsGridRowCount),
+                        rows = GridCells.Fixed(if (isGridExpanded) 3 else 1),
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier
-                            .height(124.dp * preferences.yourPlaylistsGridRowCount)
+                            .animateContentSize()
+                            .height(124.dp * (if (isGridExpanded) 3 else 1))
                     ) {
                         item {
                             Column(
@@ -260,6 +287,7 @@ fun HomeScreen() {
                             PlaylistPreviewItem(
                                 playlistPreview = playlistPreview,
                                 modifier = Modifier
+                                    .animateItemPlacement()
                                     .padding(all = 8.dp)
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
@@ -274,14 +302,14 @@ fun HomeScreen() {
 
                 item {
                     Row(
-                        verticalAlignment = Alignment.Bottom,
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .zIndex(1f)
                             .padding(horizontal = 8.dp)
                             .padding(top = 32.dp)
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalAlignment = Alignment.Bottom,
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 8.dp)
