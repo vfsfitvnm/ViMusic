@@ -74,8 +74,6 @@ fun BottomSheet(
         mutableStateOf(state.value)
     }
 
-    BackHandler(enabled = !state.isCollapsed, onBack = state.collapse)
-
     Box {
         if (handleOutsideInteractionsWhenExpanded && !state.isCollapsed) {
             Spacer(
@@ -157,6 +155,7 @@ fun BottomSheet(
                 .fillMaxSize()
         ) {
             if (!state.isCollapsed) {
+                BackHandler(onBack = state.collapse)
                 content()
             }
 
