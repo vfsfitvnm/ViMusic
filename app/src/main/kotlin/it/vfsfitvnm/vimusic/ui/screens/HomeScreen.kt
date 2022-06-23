@@ -248,6 +248,7 @@ fun HomeScreen() {
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier
                             .animateContentSize()
+                            .fillMaxWidth()
                             .height(124.dp * (if (isGridExpanded) 3 else 1))
                     ) {
                         item {
