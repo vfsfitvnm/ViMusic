@@ -389,7 +389,7 @@ object YouTube {
                             ?.content
                             ?.sectionListRenderer
                             ?.contents
-                            ?.firstOrNull()
+                            ?.lastOrNull()
                             ?.musicShelfRenderer
                     }
             } else {
