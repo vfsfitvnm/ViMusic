@@ -29,6 +29,7 @@
 - Light/Dark theme
 - Skip silence
 - Sleep timer
+- Audio normalization
 - Open YouTube/YouTube Music links (`watch`, `playlist`)
 - ...
 
