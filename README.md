@@ -41,12 +41,6 @@ After installing, I recommend executing the following ADB command to neutralize 
 adb shell cmd package compile -r bg-dexopt it.vfsfitvnm.vimusic
 ```
 
-## Known problems
-The application is using `androidx.media3`, which is unstable. Expect random crashes or buggy notification behaviours. Hopefully, they will be fixed within the next alpha release.
-
-## Contributions
-There's a huge room for improvements! Please open an issue to report bugs, discuss ideas and so on.
-
 ## Similar projects, inspirations and acknowledgments
 - [**Beatbump**](https://github.com/snuffyDev/Beatbump): Alternative YouTube Music frontend built with Svelte/SvelteKit.
 - [**music**](https://github.com/z-huang/music): A material design music player with music from YouTube/YouTube Music.
