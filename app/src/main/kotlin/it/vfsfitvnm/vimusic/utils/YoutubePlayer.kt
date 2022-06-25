@@ -8,7 +8,7 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class YoutubePlayer(mediaController: Player) : PlayerState(mediaController) {
+class YoutubePlayer(player: Player) : PlayerState(player) {
     data class Radio(
         private val videoId: String? = null,
         private val playlistId: String? = null,
