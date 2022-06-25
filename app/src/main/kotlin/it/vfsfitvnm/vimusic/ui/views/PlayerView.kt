@@ -331,6 +331,10 @@ fun PlayerView(
                                 ) {
                                     Column {
                                         BasicText(
+                                            text = "Id",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
+                                        BasicText(
                                             text = "Volume",
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
@@ -349,6 +353,10 @@ fun PlayerView(
                                     }
 
                                     Column {
+                                        BasicText(
+                                            text = playerState.mediaItem?.mediaId ?: "Unknown",
+                                            style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                        )
                                         BasicText(
                                             text = "${playerState.volume.times(100).roundToInt()}%",
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
