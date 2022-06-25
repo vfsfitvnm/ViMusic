@@ -2,7 +2,6 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import android.os.Bundle
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,12 +17,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
-import androidx.media3.common.C
-import androidx.media3.session.SessionResult
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.services.*
 import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.components.Pager
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
@@ -32,10 +28,10 @@ import it.vfsfitvnm.vimusic.ui.components.themed.DefaultDialog
 import it.vfsfitvnm.vimusic.ui.screens.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.guava.await
-import kotlinx.coroutines.isActive
+import it.vfsfitvnm.vimusic.utils.LocalPreferences
+import it.vfsfitvnm.vimusic.utils.color
+import it.vfsfitvnm.vimusic.utils.semiBold
+import kotlinx.coroutines.flow.flowOf
 
 
 @ExperimentalAnimationApi
@@ -64,39 +60,23 @@ fun PlayerSettingsScreen() {
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
             val preferences = LocalPreferences.current
-            val mediaController = LocalYoutubePlayer.current?.mediaController
+            val binder = LocalPlayerServiceBinder.current
 
             val activityResultLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 }
 
-            val audioSessionId by produceState(initialValue = C.AUDIO_SESSION_ID_UNSET, mediaController) {
+            val audioSessionId = remember(binder) {
                 val hasEqualizer = context.packageManager.resolveActivity(
                     Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL),
                     0
                 ) != null
 
-                if (hasEqualizer) {
-                    value =
-                        mediaController?.sendCustomCommand(GetAudioSessionIdCommand, Bundle.EMPTY)
-                            ?.await()?.extras?.getInt("audioSessionId", C.AUDIO_SESSION_ID_UNSET)
-                            ?: C.AUDIO_SESSION_ID_UNSET
-                }
+                if (hasEqualizer) binder?.player?.audioSessionId else null
             }
 
-            var sleepTimerMillisLeft by remember {
-                mutableStateOf<Long?>(null)
-            }
-
-            LaunchedEffect(mediaController) {
-                while (isActive) {
-                    sleepTimerMillisLeft =
-                        mediaController?.syncCommand(GetSleepTimerMillisLeftCommand)
-                            ?.takeIf { it.resultCode == SessionResult.RESULT_SUCCESS }
-                            ?.extras?.getLong("millisLeft")
-                    delay(1000)
-                }
-            }
+            val sleepTimerMillisLeft by (binder?.sleepTimerMillisLeft
+                ?: flowOf(null)).collectAsState(initial = null)
 
             var isShowingSleepTimerDialog by remember {
                 mutableStateOf(false)
@@ -112,8 +92,7 @@ fun PlayerSettingsScreen() {
                             isShowingSleepTimerDialog = false
                         },
                         onConfirm = {
-                            mediaController?.syncCommand(CancelSleepTimerCommand)
-                            sleepTimerMillisLeft = null
+                            binder?.cancelSleepTimer()
                         }
                     )
                 } else {
@@ -199,14 +178,7 @@ fun PlayerSettingsScreen() {
                                 shape = RoundedCornerShape(36.dp),
                                 isEnabled = hours > 0 || minutes > 0,
                                 onClick = {
-                                    mediaController?.syncCommand(
-                                        SetSleepTimerCommand,
-                                        bundleOf("delayMillis" to (hours * 60 + minutes * 15) * 60 * 1000L)
-                                    )
-                                    sleepTimerMillisLeft =
-                                        mediaController?.syncCommand(GetSleepTimerMillisLeftCommand)?.extras?.getLong(
-                                            "millisLeft"
-                                        )
+                                    binder?.startSleepTimer((hours * 60 + minutes * 15) * 60 * 1000L)
                                     isShowingSleepTimerDialog = false
                                 }
                             )
@@ -253,10 +225,7 @@ fun PlayerSettingsScreen() {
                     text = "Skip silent parts during playback",
                     isChecked = preferences.skipSilence,
                     onCheckedChange = {
-                        mediaController?.sendCustomCommand(
-                            SetSkipSilenceCommand,
-                            bundleOf("skipSilence" to it)
-                        )
+                        binder?.player?.skipSilenceEnabled = it
                         preferences.skipSilence = it
                     }
                 )
@@ -284,7 +253,7 @@ fun PlayerSettingsScreen() {
                             }
                         )
                     },
-                    isEnabled = audioSessionId != C.AUDIO_SESSION_ID_UNSET && audioSessionId != AudioEffect.ERROR_BAD_VALUE
+                    isEnabled = audioSessionId != null
                 )
 
                 SettingsEntry(

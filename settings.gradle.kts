@@ -36,8 +36,7 @@ dependencyResolutionManagement {
             alias("room-compiler").to("androidx.room", "room-compiler").versionRef("room")
 
             version("media3", "1.0.0-beta01")
-            alias("media3-session").to("androidx.media3", "media3-session").versionRef("media3")
-            alias("media3-exoplayer").to("androidx.media3", "media3-exoplayer").versionRef("media3")
+            alias("exoplayer").to("androidx.media3", "media3-exoplayer").versionRef("media3")
 
             version("ktor", "2.0.2")
             alias("ktor-client-core").to("io.ktor", "ktor-client-core").versionRef("ktor")
@@ -48,8 +47,6 @@ dependencyResolutionManagement {
             alias("ktor-serialization-json").to("io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
 
             alias("brotli").to("org.brotli", "dec").version("0.1.2")
-
-            alias("guava-coroutines").to("org.jetbrains.kotlinx", "kotlinx-coroutines-guava").version("1.6.2")
 
             alias("desugaring").to("com.android.tools", "desugar_jdk_libs").version("1.1.5")
         }

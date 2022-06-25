@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.Player
 import it.vfsfitvnm.route.Route
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
@@ -44,13 +45,13 @@ import kotlinx.coroutines.withContext
 @ExperimentalAnimationApi
 @Composable
 fun PlayerBottomSheet(
+    player: Player?,
+    playerState: PlayerState?,
     layoutState: BottomSheetState,
     song: Song?,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val player = LocalYoutubePlayer.current ?: return
-
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
 
@@ -60,7 +61,7 @@ fun PlayerBottomSheet(
 
     var route by rememberRoute()
 
-    var nextOutcome by remember(player.mediaItem!!.mediaId) {
+    var nextOutcome by remember(playerState?.mediaItem?.mediaId) {
         mutableStateOf<Outcome<YouTube.NextResult>>(Outcome.Initial)
     }
 
@@ -183,13 +184,19 @@ fun PlayerBottomSheet(
                         coroutineScope.launch(Dispatchers.Main) {
                             lyricsOutcome = Outcome.Loading
 
+                            val mediaItem = player?.currentMediaItem!!
+
                             if (nextOutcome.isEvaluable) {
                                 nextOutcome = Outcome.Loading
+
+
+                                val mediaItemIndex = player.currentMediaItemIndex
+
                                 nextOutcome = withContext(Dispatchers.IO) {
                                     YouTube.next(
-                                        player.mediaItem!!.mediaId,
-                                        player.mediaItem!!.mediaMetadata.extras?.getString("playlistId"),
-                                        player.mediaItemIndex
+                                        mediaItem.mediaId,
+                                        mediaItem.mediaMetadata.extras?.getString("playlistId"),
+                                        mediaItemIndex
                                     )
                                 }
                             }
@@ -200,7 +207,7 @@ fun PlayerBottomSheet(
                                 lyrics ?: ""
                             }.map { lyrics ->
                                 withContext(Dispatchers.IO) {
-                                    (song ?: player.mediaItem?.let(Database::insert))?.let {
+                                    (song ?: mediaItem.let(Database::insert)).let {
                                         Database.update(it.copy(lyrics = lyrics))
                                     }
                                 }
@@ -209,7 +216,7 @@ fun PlayerBottomSheet(
                         }
                     },
                     onSearchOnline = {
-                        player.mediaMetadata.let {
+                        player?.mediaMetadata?.let {
                             context.startActivity(Intent(Intent.ACTION_WEB_SEARCH).apply {
                                 putExtra(
                                     SearchManager.QUERY,
@@ -219,8 +226,9 @@ fun PlayerBottomSheet(
                         }
                     },
                     onLyricsUpdate = { lyrics ->
+                        val mediaItem = player?.currentMediaItem
                         coroutineScope.launch(Dispatchers.IO) {
-                            (song ?: player.mediaItem?.let(Database::insert))?.let {
+                            (song ?: mediaItem?.let(Database::insert))?.let {
                                 Database.update(it.copy(lyrics = lyrics))
                             }
                         }
@@ -230,6 +238,8 @@ fun PlayerBottomSheet(
 
             host {
                 CurrentPlaylistView(
+                    player = player,
+                    playerState = playerState,
                     layoutState = layoutState,
                     onGlobalRouteEmitted = onGlobalRouteEmitted,
                     modifier = Modifier

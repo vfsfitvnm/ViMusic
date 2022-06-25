@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
-import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,10 +26,9 @@ import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SongWithInfo
-import it.vfsfitvnm.vimusic.services.StartArtistRadioCommand
-import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
@@ -79,7 +77,8 @@ fun ArtistScreen(
         }
 
         host {
-            val player = LocalYoutubePlayer.current
+            val binder = LocalPlayerServiceBinder.current
+
             val density = LocalDensity.current
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
@@ -160,10 +159,7 @@ fun ArtistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        player?.mediaController?.sendCustomCommand(
-                                            StartArtistRadioCommand,
-                                            artist.shuffleEndpoint.asBundle
-                                        )
+                                        binder?.startRadio(artist.shuffleEndpoint)
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -180,10 +176,7 @@ fun ArtistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        player?.mediaController?.sendCustomCommand(
-                                            StartArtistRadioCommand,
-                                            artist.radioEndpoint.asBundle
-                                        )
+                                        binder?.startRadio(artist.radioEndpoint)
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -224,14 +217,8 @@ fun ArtistScreen(
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable(enabled = songs.isNotEmpty()) {
-                                    player?.mediaController?.let {
-                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                        it.forcePlayFromBeginning(
-                                            songs
-                                                .shuffled()
-                                                .map(SongWithInfo::asMediaItem)
-                                        )
-                                    }
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayFromBeginning(songs.shuffled().map(SongWithInfo::asMediaItem))
                                 }
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(20.dp)
@@ -248,10 +235,8 @@ fun ArtistScreen(
                         song = song,
                         thumbnailSize = songThumbnailSizePx,
                         onClick = {
-                            player?.mediaController?.let {
-                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                it.forcePlayAtIndex(songs.map(SongWithInfo::asMediaItem), index)
-                            }
+                            binder?.stopRadio()
+                            binder?.player?.forcePlayAtIndex(songs.map(SongWithInfo::asMediaItem), index)
                         },
                         menuContent = {
                             InHistoryMediaItemMenu(song = song)

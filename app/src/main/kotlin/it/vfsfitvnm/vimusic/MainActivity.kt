@@ -1,8 +1,12 @@
 package it.vfsfitvnm.vimusic
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -27,10 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.Player
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.services.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
@@ -42,11 +48,34 @@ import it.vfsfitvnm.vimusic.ui.views.PlayerView
 import it.vfsfitvnm.vimusic.utils.*
 
 
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
 class MainActivity : ComponentActivity() {
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            if (service is PlayerService.Binder) {
+                this@MainActivity.binder = service
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            binder = null
+        }
+    }
+
+    private var binder by mutableStateOf<PlayerService.Binder?>(null)
     private var uri by mutableStateOf<Uri?>(null, neverEqualPolicy())
 
+    override fun onStart() {
+        super.onStart()
+        bindService(intent<PlayerService>(), serviceConnection, Context.BIND_AUTO_CREATE)
+        startService(intent<PlayerService>())
+    }
+
+    override fun onStop() {
+        unbindService(serviceConnection)
+        super.onStop()
+    }
+
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -112,7 +141,7 @@ class MainActivity : ComponentActivity() {
                 LocalColorPalette provides colorPalette,
                 LocalShimmerTheme provides shimmerTheme,
                 LocalTypography provides rememberTypography(colorPalette.text),
-                LocalYoutubePlayer provides rememberYoutubePlayer((application as MainApplication).mediaControllerFuture),
+                LocalPlayerServiceBinder provides binder,
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()
             ) {
@@ -151,3 +180,5 @@ class MainActivity : ComponentActivity() {
         uri = intent?.data
     }
 }
+
+val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }

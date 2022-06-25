@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
-import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,16 +17,15 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
-import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.Error
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.Message
@@ -70,7 +68,7 @@ fun IntentUriScreen(uri: Uri) {
             val menuState = LocalMenuState.current
             val colorPalette = LocalColorPalette.current
             val density = LocalDensity.current
-            val player = LocalYoutubePlayer.current
+            val binder = LocalPlayerServiceBinder.current
 
             val coroutineScope = rememberCoroutineScope()
             val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
@@ -164,14 +162,13 @@ fun IntentUriScreen(uri: Uri) {
                                             MenuEntry(
                                                 icon = R.drawable.time,
                                                 text = "Enqueue",
-                                                enabled = player?.playbackState == Player.STATE_READY,
                                                 onClick = {
                                                     menuState.hide()
 
                                                     items.valueOrNull
                                                         ?.map(YouTube.Item.Song::asMediaItem)
                                                         ?.let { mediaItems ->
-                                                            player?.mediaController?.enqueue(
+                                                            binder?.player?.enqueue(
                                                                 mediaItems
                                                             )
                                                         }
@@ -238,10 +235,8 @@ fun IntentUriScreen(uri: Uri) {
                                     song = item,
                                     thumbnailSizePx = density.run { 54.dp.roundToPx() },
                                     onClick = {
-                                        player?.mediaController?.let {
-                                            it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                            it.forcePlayAtIndex(currentItems.value.map(YouTube.Item.Song::asMediaItem), index)
-                                        }
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayAtIndex(currentItems.value.map(YouTube.Item.Song::asMediaItem), index)
                                     }
                                 )
                             }

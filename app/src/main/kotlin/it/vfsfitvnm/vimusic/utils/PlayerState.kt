@@ -6,10 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.media3.common.*
-import androidx.media3.session.MediaController
 import kotlin.math.absoluteValue
 
-open class PlayerState(val mediaController: MediaController) : Player.Listener {
+open class PlayerState(val mediaController: Player) : Player.Listener {
     private val handler = Handler(Looper.getMainLooper())
 
     var currentPosition by mutableStateOf(mediaController.currentPosition)
@@ -52,7 +51,6 @@ open class PlayerState(val mediaController: MediaController) : Player.Listener {
     init {
         handler.post(object : Runnable {
             override fun run() {
-                duration = mediaController.duration
                 currentPosition = mediaController.currentPosition
                 handler.postDelayed(this, 500)
             }
@@ -64,6 +62,7 @@ open class PlayerState(val mediaController: MediaController) : Player.Listener {
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
+        duration = mediaController.duration
         this.playbackState = playbackState
     }
 

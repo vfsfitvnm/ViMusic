@@ -86,15 +86,12 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.android.media)
-    implementation(libs.media3.session)
-    implementation(libs.media3.exoplayer)
+    implementation(libs.exoplayer)
 
     implementation(libs.room)
     kapt(libs.room.compiler)
 
     implementation(projects.youtubeMusic)
-
-    implementation(libs.guava.coroutines)
 
     coreLibraryDesugaring(libs.desugaring)
 }

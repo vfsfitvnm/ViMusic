@@ -2,30 +2,28 @@ package it.vfsfitvnm.vimusic.services
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
-import android.os.SystemClock
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.core.app.NotificationCompat
-import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
+import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.*
-import androidx.media3.common.util.Util
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
+import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
@@ -34,62 +32,41 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.analytics.PlaybackStatsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.session.*
-import androidx.media3.session.MediaNotification.ActionFactory
 import coil.Coil
 import coil.request.ImageRequest
-import com.google.common.collect.ImmutableList
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
+import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 
-val StartRadioCommand = SessionCommand("StartRadioCommand", Bundle.EMPTY)
-val StartArtistRadioCommand = SessionCommand("StartArtistRadioCommand", Bundle.EMPTY)
-val StopRadioCommand = SessionCommand("StopRadioCommand", Bundle.EMPTY)
-
-val GetCacheSizeCommand = SessionCommand("GetCacheSizeCommand", Bundle.EMPTY)
-val GetSongCacheSizeCommand = SessionCommand("GetSongCacheSizeCommand", Bundle.EMPTY)
-
-val DeleteSongCacheCommand = SessionCommand("DeleteSongCacheCommand", Bundle.EMPTY)
-
-val SetSkipSilenceCommand = SessionCommand("SetSkipSilenceCommand", Bundle.EMPTY)
-
-val GetAudioSessionIdCommand = SessionCommand("GetAudioSessionIdCommand", Bundle.EMPTY)
-
-val SetSleepTimerCommand = SessionCommand("SetSleepTimerCommand", Bundle.EMPTY)
-val GetSleepTimerMillisLeftCommand = SessionCommand("GetSleepTimerMillisLeftCommand", Bundle.EMPTY)
-val CancelSleepTimerCommand = SessionCommand("CancelSleepTimerCommand", Bundle.EMPTY)
-
-
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
-class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotification.Provider,
-    PlaybackStatsListener.Callback, Player.Listener {
-
-    companion object {
-        private const val NotificationId = 1001
-        private const val NotificationChannelId = "default_channel_id"
-
-        private const val SleepTimerNotificationId = 1002
-        private const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
-    }
-
+class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback {
+    private lateinit var mediaSession: MediaSessionCompat
     private lateinit var cache: SimpleCache
-
     private lateinit var player: ExoPlayer
 
-    private lateinit var mediaSession: MediaSession
+    private val stateBuilder = PlaybackStateCompat.Builder()
+        .setActions(
+            PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PAUSE or
+                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                    PlaybackStateCompat.ACTION_SEEK_TO
+        )
+
+    private val metadataBuilder = MediaMetadataCompat.Builder()
 
     private lateinit var notificationManager: NotificationManager
+
+    private var timerJob: TimerJob? = null
 
     private var notificationThumbnailSize: Int = 0
     private var lastArtworkUri: Uri? = null
@@ -97,20 +74,21 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
 
     private var radio: YoutubePlayer.Radio? = null
 
-    private var sleepTimerJob: Job? = null
-    private var sleepTimerRealtime: Long? = null
-
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
     private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
+
+    override fun onBind(intent: Intent?) = Binder()
 
     override fun onCreate() {
         super.onCreate()
 
         notificationThumbnailSize = (256 * resources.displayMetrics.density).roundToInt()
 
+        lastBitmap = resources.getDrawable(R.drawable.disc_placeholder, null)
+            ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
+
         createNotificationChannel()
-        setMediaNotificationProvider(this)
 
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
@@ -132,151 +110,37 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
         player.repeatMode = preferences.repeatMode
         player.skipSilenceEnabled = preferences.skipSilence
         player.playWhenReady = true
+        player.addListener(this)
         player.addAnalyticsListener(PlaybackStatsListener(false, this))
 
-        mediaSession = MediaSession.Builder(this, player)
-            .withSessionActivity()
-            .setCallback(this)
-            .build()
+        mediaSession = MediaSessionCompat(this, "PlayerService")
+        mediaSession.setCallback(SessionCallback(player))
+        mediaSession.setPlaybackState(stateBuilder.build())
+        mediaSession.isActive = true
+    }
 
-        player.addListener(this)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        return START_NOT_STICKY
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        if (!player.playWhenReady) {
+            notificationManager.cancel(NotificationId)
+            stopSelf()
+        }
+
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {
+        player.removeListener(this)
+        player.stop()
         player.release()
+        mediaSession.isActive = false
         mediaSession.release()
         cache.release()
         super.onDestroy()
-    }
-
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession {
-        return mediaSession
-    }
-
-    override fun onConnect(
-        session: MediaSession,
-        controller: MediaSession.ControllerInfo
-    ): MediaSession.ConnectionResult {
-        val sessionCommands = SessionCommands.Builder()
-            .add(StartRadioCommand)
-            .add(StartArtistRadioCommand)
-            .add(StopRadioCommand)
-            .add(GetCacheSizeCommand)
-            .add(GetSongCacheSizeCommand)
-            .add(DeleteSongCacheCommand)
-            .add(SetSkipSilenceCommand)
-            .add(GetAudioSessionIdCommand)
-            .add(SetSleepTimerCommand)
-            .add(GetSleepTimerMillisLeftCommand)
-            .add(CancelSleepTimerCommand)
-            .build()
-        val playerCommands = Player.Commands.Builder().addAllCommands().build()
-        return MediaSession.ConnectionResult.accept(sessionCommands, playerCommands)
-    }
-
-    override fun onCustomCommand(
-        session: MediaSession,
-        controller: MediaSession.ControllerInfo,
-        customCommand: SessionCommand,
-        args: Bundle
-    ): ListenableFuture<SessionResult> {
-        when (customCommand) {
-            StartRadioCommand, StartArtistRadioCommand -> {
-                radio = null
-                YoutubePlayer.Radio(
-                    videoId = args.getString("videoId"),
-                    playlistId = args.getString("playlistId"),
-                    playlistSetVideoId = args.getString("playlistSetVideoId"),
-                    parameters = args.getString("params"),
-                ).let {
-                    coroutineScope.launch(Dispatchers.Main) {
-                        when (customCommand) {
-                            StartRadioCommand -> player.addMediaItems(it.process().drop(1))
-                            StartArtistRadioCommand -> player.forcePlayFromBeginning(it.process())
-                        }
-                        radio = it
-                    }
-                }
-            }
-            StopRadioCommand -> radio = null
-            GetCacheSizeCommand -> {
-                return Futures.immediateFuture(
-                    SessionResult(
-                        SessionResult.RESULT_SUCCESS,
-                        bundleOf("cacheSize" to cache.cacheSpace)
-                    )
-                )
-            }
-            GetSongCacheSizeCommand -> {
-                return Futures.immediateFuture(
-                    SessionResult(
-                        SessionResult.RESULT_SUCCESS,
-                        bundleOf("cacheSize" to cache.getCachedBytes(
-                            args.getString("videoId") ?: "",
-                            0,
-                            C.LENGTH_UNSET.toLong()
-                        ))
-                    )
-                )
-            }
-            DeleteSongCacheCommand -> {
-                args.getString("videoId")?.let { videoId ->
-                    cache.removeResource(videoId)
-                }
-            }
-            SetSkipSilenceCommand -> {
-                player.skipSilenceEnabled = args.getBoolean("skipSilence")
-            }
-            GetAudioSessionIdCommand -> {
-                return Futures.immediateFuture(
-                    SessionResult(
-                        SessionResult.RESULT_SUCCESS,
-                        bundleOf("audioSessionId" to player.audioSessionId)
-                    )
-                )
-            }
-            SetSleepTimerCommand -> {
-                val delayMillis = args.getLong("delayMillis", 2000)
-
-                sleepTimerJob = coroutineScope.launch {
-                    sleepTimerRealtime = SystemClock.elapsedRealtime() + delayMillis
-                    delay(delayMillis)
-
-                    withContext(Dispatchers.Main) {
-                        val notification = NotificationCompat.Builder(
-                            this@PlayerService,
-                            SleepTimerNotificationChannelId
-                        )
-                            .setContentTitle("Sleep timer ended")
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setAutoCancel(true)
-                            .setOnlyAlertOnce(true)
-                            .setShowWhen(true)
-                            .setSmallIcon(R.drawable.app_icon)
-                            .build()
-
-                        notificationManager.notify(SleepTimerNotificationId, notification)
-                    }
-
-                    exitProcess(0)
-                }
-            }
-            GetSleepTimerMillisLeftCommand -> {
-                return Futures.immediateFuture(sleepTimerRealtime?.let {
-                    (SessionResult(
-                        SessionResult.RESULT_SUCCESS,
-                        bundleOf("millisLeft" to it - SystemClock.elapsedRealtime())
-                    ))
-                } ?: SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE))
-            }
-            CancelSleepTimerCommand -> {
-                sleepTimerJob?.cancel()
-                sleepTimerJob = null
-                sleepTimerRealtime = null
-            }
-        }
-
-        return super.onCustomCommand(session, controller, customCommand, args)
     }
 
     override fun onPlaybackStatsReady(
@@ -308,63 +172,62 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
             player.volume = player.currentMediaItem?.mediaId?.let { mediaId ->
                 songPendingLoudnessDb.getOrElse(mediaId) {
                     player.currentMediaItem?.mediaMetadata?.extras?.getFloat("loudnessDb")
+                }?.takeIf { it > 0 }?.let { loudnessDb ->
+                    (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
                 }
-                    ?.takeIf { it > 0 }
-                    ?.let { loudnessDb ->
-                        (1f - (0.01f + loudnessDb / 15)).coerceIn(0.1f, 1f)
-                    }
             } ?: 1f
         }
     }
 
-    override fun onAddMediaItems(
-        mediaSession: MediaSession,
-        controller: MediaSession.ControllerInfo,
-        mediaItems: List<MediaItem>
-    ): ListenableFuture<List<MediaItem>> {
-        return Futures.immediateFuture(
-            mediaItems.map { mediaItem ->
-                mediaItem.buildUpon()
-                    .setUri(mediaItem.mediaId)
-                    .setCustomCacheKey(mediaItem.mediaId)
-                    .build()
-            }
-        )
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        @Player.DiscontinuityReason reason: Int
+    ) {
+        stateBuilder
+            .setState(PlaybackStateCompat.STATE_NONE, newPosition.positionMs, 1f)
+            .setBufferedPosition(player.bufferedPosition)
+
+        updateNotification()
     }
 
-    override fun createNotification(
-        session: MediaSession,
-        customLayout: ImmutableList<CommandButton>,
-        actionFactory: ActionFactory,
-        onNotificationChangedCallback: MediaNotification.Provider.Callback
-    ): MediaNotification {
-        fun invalidate() {
-            onNotificationChangedCallback.onNotificationChanged(
-                createNotification(
-                    session,
-                    customLayout,
-                    actionFactory,
-                    onNotificationChangedCallback
-                )
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        stateBuilder
+            .setState(
+                if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                player.currentPosition,
+                1f
             )
-        }
+            .setBufferedPosition(player.bufferedPosition)
 
+        updateNotification()
+    }
+
+    private fun updateNotification() {
+        if (player.duration != C.TIME_UNSET) {
+            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
+            mediaSession.setMetadata(metadataBuilder.build())
+        }
+        mediaSession.setPlaybackState(stateBuilder.build())
+        createNotification()
+    }
+
+    private fun createNotification() {
         fun NotificationCompat.Builder.addMediaAction(
             @DrawableRes resId: Int,
-            @StringRes stringId: Int,
-            @Player.Command command: Int
+            description: String,
+            @PlaybackStateCompat.MediaKeyAction command: Long
         ): NotificationCompat.Builder {
             return addAction(
-                actionFactory.createMediaAction(
-                    mediaSession,
-                    IconCompat.createWithResource(this@PlayerService, resId),
-                    getString(stringId),
-                    command
+                NotificationCompat.Action(
+                    resId,
+                    description,
+                    MediaButtonReceiver.buildMediaButtonPendingIntent(this@PlayerService, command)
                 )
             )
         }
 
-        val mediaMetadata = mediaSession.player.mediaMetadata
+        val mediaMetadata = player.mediaMetadata
 
         val builder = NotificationCompat.Builder(applicationContext, NotificationChannelId)
             .setContentTitle(mediaMetadata.title)
@@ -375,72 +238,75 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
             .setShowWhen(false)
             .setSmallIcon(R.drawable.app_icon)
             .setOngoing(false)
-            .setContentIntent(mediaSession.sessionActivity)
-            .setDeleteIntent(
-                actionFactory.createMediaActionPendingIntent(
-                    mediaSession,
-                    Player.COMMAND_STOP.toLong()
-                )
-            )
+            .setContentIntent(activityPendingIntent<MainActivity>())
+            .setDeleteIntent(broadCastPendingIntent<StopServiceBroadcastReceiver>())
+            .setChannelId(NotificationChannelId)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(0, 1, 2)
-                    .setMediaSession(mediaSession.sessionCompatToken as android.support.v4.media.session.MediaSessionCompat.Token)
+                    .setMediaSession(mediaSession.sessionToken)
             )
             .addMediaAction(
                 R.drawable.play_skip_back,
-                R.string.media3_controls_seek_to_previous_description,
-                Player.COMMAND_SEEK_TO_PREVIOUS
+                "Skip back",
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
             ).addMediaAction(
-                if (mediaSession.player.playbackState == Player.STATE_ENDED || !mediaSession.player.playWhenReady) R.drawable.play else R.drawable.pause,
-                if (mediaSession.player.playbackState == Player.STATE_ENDED || !mediaSession.player.playWhenReady) R.string.media3_controls_play_description else R.string.media3_controls_pause_description,
-                Player.COMMAND_PLAY_PAUSE
+                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) R.drawable.play else R.drawable.pause,
+                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) "Play" else "Pause",
+                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) PlaybackStateCompat.ACTION_PLAY else PlaybackStateCompat.ACTION_PAUSE
             )
             .addMediaAction(
                 R.drawable.play_skip_forward,
-                R.string.media3_controls_seek_to_next_description,
-                Player.COMMAND_SEEK_TO_NEXT
+                "Skip forward",
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT
             )
 
         if (lastArtworkUri != mediaMetadata.artworkUri) {
-            coroutineScope.launch(Dispatchers.IO) {
-                lastBitmap = Coil.imageLoader(applicationContext).execute(
-                    ImageRequest.Builder(applicationContext)
-                        .data(mediaMetadata.artworkUri.thumbnail(notificationThumbnailSize))
-                        .build()
-                ).drawable?.let {
-                    lastArtworkUri = mediaMetadata.artworkUri
-                    (it as BitmapDrawable).bitmap
-                } ?: resources.getDrawable(R.drawable.disc_placeholder, null)
-                    ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
+            lastArtworkUri = mediaMetadata.artworkUri
 
-                withContext(Dispatchers.Main) {
-                    invalidate()
-                }
-            }
+            Coil.imageLoader(applicationContext).enqueue(
+                ImageRequest.Builder(applicationContext)
+                    .data(mediaMetadata.artworkUri.thumbnail(notificationThumbnailSize))
+                    .listener(
+                        onError = { _, _ ->
+                            lastBitmap = resources.getDrawable(R.drawable.disc_placeholder, null)
+                                ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
+                            notificationManager.notify(NotificationId, builder.setLargeIcon(lastBitmap).build())
+                        },
+                        onSuccess = { _, result ->
+                            lastBitmap = (result.drawable as BitmapDrawable).bitmap
+                            notificationManager.notify(NotificationId, builder.setLargeIcon(lastBitmap).build())
+                        }
+                    )
+                    .build()
+            )
         }
 
-        return MediaNotification(NotificationId, builder.build())
-    }
+        val notificationCompat = builder.build()
+        startForeground(NotificationId, notificationCompat)
 
-    override fun handleCustomCommand(
-        session: MediaSession,
-        action: String,
-        extras: Bundle
-    ): Boolean = false
+        if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_DETACH)
+            } else {
+                stopForeground(false)
+            }
+            notificationManager.notify(NotificationId, notificationCompat)
+        }
+    }
 
     private fun createNotificationChannel() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (Util.SDK_INT < 26) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
         with(notificationManager) {
             if (getNotificationChannel(NotificationChannelId) == null) {
                 createNotificationChannel(
                     NotificationChannel(
                         NotificationChannelId,
-                        getString(R.string.default_notification_channel_name),
+                        "Now playing",
                         NotificationManager.IMPORTANCE_LOW
                     )
                 )
@@ -504,10 +370,12 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
 
                                     if (mediaItem?.mediaId == videoId) {
                                         Database.internal.queryExecutor.execute {
-                                            Database.update(Database.insert(mediaItem).copy(
-                                                loudnessDb = loudnessDb,
-                                                contentLength = format.contentLength
-                                            ))
+                                            Database.update(
+                                                Database.insert(mediaItem).copy(
+                                                    loudnessDb = loudnessDb,
+                                                    contentLength = format.contentLength
+                                                )
+                                            )
                                         }
                                     }
 
@@ -553,14 +421,99 @@ class PlayerService : MediaSessionService(), MediaSession.Callback, MediaNotific
         }
     }
 
-    private fun MediaSession.Builder.withSessionActivity(): MediaSession.Builder {
-        return setSessionActivity(
-            PendingIntent.getActivity(
-                this@PlayerService,
-                0,
-                Intent(this@PlayerService, MainActivity::class.java),
-                if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0
+    inner class Binder : android.os.Binder() {
+        val player: ExoPlayer
+            get() = this@PlayerService.player
+
+        val cache: Cache
+            get() = this@PlayerService.cache
+
+        val sleepTimerMillisLeft: StateFlow<Long?>?
+            get() = timerJob?.millisLeft
+
+        fun startSleepTimer(delayMillis: Long) {
+            timerJob?.cancel()
+
+            timerJob = coroutineScope.timer(delayMillis) {
+                val notification = NotificationCompat
+                    .Builder(this@PlayerService, SleepTimerNotificationChannelId)
+                    .setContentTitle("Sleep timer ended")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setShowWhen(true)
+                    .setSmallIcon(R.drawable.app_icon)
+                    .build()
+
+                notificationManager.notify(SleepTimerNotificationId, notification)
+
+                exitProcess(0)
+            }
+        }
+
+        fun cancelSleepTimer() {
+            timerJob?.cancel()
+            timerJob = null
+        }
+
+        fun startRadio(
+            endpoint: NavigationEndpoint.Endpoint.Watch?,
+        ) {
+            startRadio(
+                videoId = endpoint?.videoId,
+                playlistId = endpoint?.playlistId,
+                playlistSetVideoId = endpoint?.playlistSetVideoId,
+                parameters = endpoint?.params,
+                justAdd = false
             )
-        )
+        }
+
+        fun startRadio(
+            videoId: String?,
+            playlistId: String? = null,
+            playlistSetVideoId: String? = null,
+            parameters: String? = null,
+            justAdd: Boolean = true
+        ) {
+            radio = null
+            YoutubePlayer.Radio(
+                videoId, playlistId, playlistSetVideoId, parameters
+            ).let {
+                coroutineScope.launch(Dispatchers.Main) {
+                    if (justAdd) {
+                        player.addMediaItems(it.process().drop(1))
+                    } else {
+                        player.forcePlayFromBeginning(it.process())
+                    }
+                    radio = it
+                }
+            }
+        }
+
+        fun stopRadio() {
+            radio = null
+        }
+    }
+
+    private class SessionCallback(private val player: Player) : MediaSessionCompat.Callback() {
+        override fun onPlay() = player.play()
+        override fun onPause() = player.pause()
+        override fun onSkipToPrevious() = player.seekToPrevious()
+        override fun onSkipToNext() = player.seekToNext()
+        override fun onSeekTo(pos: Long) = player.seekTo(pos)
+    }
+
+    class StopServiceBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            context.stopService(context.intent<PlayerService>())
+        }
+    }
+
+    companion object {
+        private const val NotificationId = 1001
+        private const val NotificationChannelId = "default_channel_id"
+
+        private const val SleepTimerNotificationId = 1002
+        private const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
     }
 }

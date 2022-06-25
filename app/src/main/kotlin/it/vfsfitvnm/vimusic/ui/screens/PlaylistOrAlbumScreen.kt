@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.content.Intent
-import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,17 +24,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
-import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
@@ -87,7 +85,8 @@ fun PlaylistOrAlbumScreen(
         host {
             val context = LocalContext.current
             val density = LocalDensity.current
-            val player = LocalYoutubePlayer.current
+            val binder = LocalPlayerServiceBinder.current
+
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
             val menuState = LocalMenuState.current
@@ -142,7 +141,6 @@ fun PlaylistOrAlbumScreen(
                                             MenuEntry(
                                                 icon = R.drawable.time,
                                                 text = "Enqueue",
-                                                enabled = player?.playbackState == Player.STATE_READY,
                                                 onClick = {
                                                     menuState.hide()
                                                     playlistOrAlbum.valueOrNull?.let { album ->
@@ -151,7 +149,7 @@ fun PlaylistOrAlbumScreen(
                                                                 song.toMediaItem(browseId, album)
                                                             }
                                                             ?.let { mediaItems ->
-                                                                player?.mediaController?.enqueue(
+                                                                binder?.player?.enqueue(
                                                                     mediaItems
                                                                 )
                                                             }
@@ -282,16 +280,14 @@ fun PlaylistOrAlbumScreen(
                                         colorFilter = ColorFilter.tint(colorPalette.text),
                                         modifier = Modifier
                                             .clickable {
-                                                player?.mediaController?.let {
-                                                    it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                                    playlistOrAlbum.items
-                                                        ?.shuffled()
-                                                        ?.mapNotNull { song ->
-                                                            song.toMediaItem(browseId, playlistOrAlbum)
-                                                        }?.let { mediaItems ->
-                                                            it.forcePlayFromBeginning(mediaItems)
-                                                        }
-                                                }
+                                                binder?.stopRadio()
+                                                playlistOrAlbum.items
+                                                    ?.shuffled()
+                                                    ?.mapNotNull { song ->
+                                                        song.toMediaItem(browseId, playlistOrAlbum)
+                                                    }?.let { mediaItems ->
+                                                        binder?.player?.forcePlayFromBeginning(mediaItems)
+                                                    }
                                             }
                                             .shadow(elevation = 2.dp, shape = CircleShape)
                                             .background(
@@ -308,13 +304,11 @@ fun PlaylistOrAlbumScreen(
                                         colorFilter = ColorFilter.tint(colorPalette.text),
                                         modifier = Modifier
                                             .clickable {
-                                                player?.mediaController?.let {
-                                                    it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                                    playlistOrAlbum.items?.mapNotNull { song ->
-                                                        song.toMediaItem(browseId, playlistOrAlbum)
-                                                    }?.let { mediaItems ->
-                                                        it.forcePlayFromBeginning(mediaItems)
-                                                    }
+                                                binder?.stopRadio()
+                                                playlistOrAlbum.items?.mapNotNull { song ->
+                                                    song.toMediaItem(browseId, playlistOrAlbum)
+                                                }?.let { mediaItems ->
+                                                    binder?.player?.forcePlayFromBeginning(mediaItems)
                                                 }
                                             }
                                             .shadow(elevation = 2.dp, shape = CircleShape)
@@ -340,13 +334,11 @@ fun PlaylistOrAlbumScreen(
                         authors = (song.authors ?: playlistOrAlbum.valueOrNull?.authors)?.joinToString("") { it.name },
                         durationText = song.durationText,
                         onClick = {
-                            player?.mediaController?.let {
-                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                playlistOrAlbum.valueOrNull?.items?.mapNotNull { song ->
-                                    song.toMediaItem(browseId, playlistOrAlbum.valueOrNull!!)
-                                }?.let { mediaItems ->
-                                    it.forcePlayAtIndex(mediaItems, index)
-                                }
+                            binder?.stopRadio()
+                            playlistOrAlbum.valueOrNull?.items?.mapNotNull { song ->
+                                song.toMediaItem(browseId, playlistOrAlbum.valueOrNull!!)
+                            }?.let { mediaItems ->
+                                binder?.player?.forcePlayAtIndex(mediaItems, index)
                             }
                         },
                         startContent = {

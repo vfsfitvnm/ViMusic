@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
-import android.os.Bundle
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -32,15 +31,18 @@ import androidx.compose.ui.zIndex
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.SongCollection
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.models.SongWithInfo
-import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
@@ -144,7 +146,7 @@ fun HomeScreen() {
         }
 
         host {
-            val player = LocalYoutubePlayer.current
+            val binder = LocalPlayerServiceBinder.current
             val density = LocalDensity.current
 
             val thumbnailSize = remember {
@@ -357,10 +359,8 @@ fun HomeScreen() {
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable(enabled = songCollection.isNotEmpty()) {
-                                    player?.mediaController?.let {
-                                        it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                        it.forcePlayFromBeginning(songCollection.shuffled().map(SongWithInfo::asMediaItem))
-                                    }
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayFromBeginning(songCollection.shuffled().map(SongWithInfo::asMediaItem))
                                 }
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(20.dp)
@@ -379,10 +379,8 @@ fun HomeScreen() {
                         song = song,
                         thumbnailSize = thumbnailSize,
                         onClick = {
-                            player?.mediaController?.let {
-                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                it.forcePlayAtIndex(songCollection.map(SongWithInfo::asMediaItem), index)
-                            }
+                            binder?.stopRadio()
+                            binder?.player?.forcePlayAtIndex(songCollection.map(SongWithInfo::asMediaItem), index)
                         },
                         menuContent = {
                             when (preferences.homePageSongCollection) {

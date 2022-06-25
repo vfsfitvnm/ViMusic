@@ -30,15 +30,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.CacheSpan
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.services.GetSongCacheSizeCommand
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
@@ -67,12 +68,15 @@ fun PlayerView(
     val typography = LocalTypography.current
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-    val player = LocalYoutubePlayer.current
+    val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
+
+    val player = binder?.player
+    val playerState = rememberYoutubePlayer(player)
 
     val coroutineScope = rememberCoroutineScope()
 
-    player?.mediaItem ?: return
+    playerState?.mediaItem ?: return
 
     val smallThumbnailSize = remember {
         density.run { 64.dp.roundToPx() }
@@ -108,7 +112,7 @@ fun PlayerView(
                                     y = 1.dp.toPx()
                                 ),
                                 end = Offset(
-                                    x = ((size.width - offset) * player.progress) + offset,
+                                    x = ((size.width - offset) * playerState.progress) + offset,
                                     y = 1.dp.toPx()
                                 ),
                                 strokeWidth = 2.dp.toPx()
@@ -116,7 +120,7 @@ fun PlayerView(
                         }
                 ) {
                     AsyncImage(
-                        model = player.mediaMetadata.artworkUri.thumbnail(smallThumbnailSize),
+                        model = playerState.mediaMetadata.artworkUri.thumbnail(smallThumbnailSize),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -129,13 +133,13 @@ fun PlayerView(
                             .weight(1f)
                     ) {
                         BasicText(
-                            text = player.mediaMetadata.title?.toString() ?: "",
+                            text = playerState.mediaMetadata.title?.toString() ?: "",
                             style = typography.xs.semiBold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                         BasicText(
-                            text = player.mediaMetadata.artist?.toString() ?: "",
+                            text = playerState.mediaMetadata.artist?.toString() ?: "",
                             style = typography.xs,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -143,16 +147,16 @@ fun PlayerView(
                     }
 
                     when {
-                        player.playbackState == Player.STATE_ENDED || !player.playWhenReady -> Image(
+                        playerState.playbackState == Player.STATE_ENDED || !playerState.playWhenReady -> Image(
                             painter = painterResource(R.drawable.play),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable {
-                                    if (player.playbackState == Player.STATE_IDLE) {
-                                        player.mediaController.prepare()
+                                    if (playerState.playbackState == Player.STATE_IDLE) {
+                                        player?.prepare()
                                     }
-                                    player.mediaController.play()
+                                    player?.play()
                                 }
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
@@ -164,7 +168,7 @@ fun PlayerView(
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable {
-                                    player.mediaController.pause()
+                                    player?.pause()
                                 }
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
@@ -175,10 +179,11 @@ fun PlayerView(
             }
         }
     ) {
-        val song by remember(player.mediaItem?.mediaId) {
-            player.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged() ?: flowOf(
-                null
-            )
+        val song by remember(playerState.mediaItem?.mediaId) {
+            playerState.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged()
+                ?: flowOf(
+                    null
+                )
         }.collectAsState(initial = null, context = Dispatchers.IO)
 
         var isShowingStatsForNerds by rememberSaveable {
@@ -192,7 +197,7 @@ fun PlayerView(
                 .padding(bottom = 72.dp)
                 .fillMaxSize()
         ) {
-            var scrubbingPosition by remember(player.mediaItemIndex) {
+            var scrubbingPosition by remember(playerState.mediaItemIndex) {
                 mutableStateOf<Long?>(null)
             }
 
@@ -211,8 +216,8 @@ fun PlayerView(
                         .clickable {
                             menuState.display {
                                 QueuedMediaItemMenu(
-                                    mediaItem = player.mediaItem ?: MediaItem.EMPTY,
-                                    indexInQueue = player.mediaItemIndex,
+                                    mediaItem = playerState.mediaItem ?: MediaItem.EMPTY,
+                                    indexInQueue = playerState.mediaItemIndex,
                                     onDismiss = menuState::hide,
                                     onGlobalRouteEmitted = layoutState.collapse
                                 )
@@ -223,9 +228,9 @@ fun PlayerView(
                 )
             }
 
-            if (player.error == null) {
+            if (playerState.error == null) {
                 AnimatedContent(
-                    targetState = player.mediaItemIndex,
+                    targetState = playerState.mediaItemIndex,
                     transitionSpec = {
                         val slideDirection =
                             if (targetState > initialState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
@@ -240,7 +245,7 @@ fun PlayerView(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     val artworkUri = remember(it) {
-                        player.mediaController.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
+                        player?.getMediaItemAt(it)?.mediaMetadata?.artworkUri.thumbnail(
                             thumbnailSizePx
                         )
                     }
@@ -273,13 +278,37 @@ fun PlayerView(
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
-                            val cachedPercentage = remember(song?.contentLength) {
-                                song?.contentLength?.let { contentLength ->
-                                    player.mediaController.syncCommand(
-                                        GetSongCacheSizeCommand,
-                                        bundleOf("videoId" to song?.id)
-                                    ).extras.getLong("cacheSize").toFloat() / contentLength * 100
-                                }?.roundToInt() ?: 0
+                            var cachedBytes by remember(song?.id) {
+                                mutableStateOf(binder?.cache?.getCachedBytes(song?.id ?: "", 0, -1) ?: 0L)
+                            }
+
+                            DisposableEffect(song?.id) {
+                                val listener = object : Cache.Listener {
+                                    override fun onSpanAdded(cache: Cache, span: CacheSpan) {
+                                        cachedBytes += span.length
+                                    }
+
+                                    override fun onSpanRemoved(cache: Cache, span: CacheSpan) {
+                                        cachedBytes -= span.length
+                                    }
+
+                                    override fun onSpanTouched(
+                                        cache: Cache,
+                                        oldSpan: CacheSpan,
+                                        newSpan: CacheSpan
+                                    ) = Unit
+                                }
+
+                                song?.id?.let { key ->
+                                    binder?.cache?.addListener(key, listener)
+                                }
+
+
+                                onDispose {
+                                    song?.id?.let { key ->
+                                        binder?.cache?.removeListener(key, listener)
+                                    }
+                                }
                             }
 
                             Column(
@@ -321,7 +350,7 @@ fun PlayerView(
 
                                     Column {
                                         BasicText(
-                                            text = "${player.volume.times(100).roundToInt()}%",
+                                            text = "${playerState.volume.times(100).roundToInt()}%",
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
                                         BasicText(
@@ -332,12 +361,21 @@ fun PlayerView(
                                         )
                                         BasicText(
                                             text = song?.contentLength?.let { contentLength ->
-                                                Formatter.formatShortFileSize(context, contentLength)
+                                                Formatter.formatShortFileSize(
+                                                    context,
+                                                    contentLength
+                                                )
                                             } ?: "Unknown",
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
                                         BasicText(
-                                            text = "$cachedPercentage%",
+                                            text = buildString {
+                                                append(Formatter.formatShortFileSize(context, cachedBytes))
+
+                                                song?.contentLength?.let { contentLenght ->
+                                                    append(" (${(cachedBytes.toFloat() / contentLenght * 100).roundToInt()}%)")
+                                                }
+                                            },
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
                                     }
@@ -354,16 +392,20 @@ fun PlayerView(
                                                 onClick = {
                                                     song?.let { song ->
                                                         coroutineScope.launch(Dispatchers.IO) {
-                                                            YouTube.player(song.id).map { body ->
-                                                                Database.update(
-                                                                    song.copy(
-                                                                        loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
-                                                                        contentLength = body.streamingData?.adaptiveFormats?.findLast { format ->
-                                                                            format.itag == 251 || format.itag == 140
-                                                                        }?.let(PlayerResponse.StreamingData.AdaptiveFormat::contentLength)
+                                                            YouTube
+                                                                .player(song.id)
+                                                                .map { body ->
+                                                                    Database.update(
+                                                                        song.copy(
+                                                                            loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
+                                                                            contentLength = body.streamingData?.adaptiveFormats
+                                                                                ?.findLast { format ->
+                                                                                    format.itag == 251 || format.itag == 140
+                                                                                }
+                                                                                ?.let(PlayerResponse.StreamingData.AdaptiveFormat::contentLength)
+                                                                        )
                                                                     )
-                                                                )
-                                                            }
+                                                                }
                                                         }
                                                     }
                                                 }
@@ -387,18 +429,18 @@ fun PlayerView(
                         .size(thumbnailSizeDp)
                 ) {
                     Error(
-                        error = Outcome.Error.Unhandled(player.error!!),
+                        error = Outcome.Error.Unhandled(playerState.error!!),
                         onRetry = {
-                            player.mediaController.playWhenReady = true
-                            player.mediaController.prepare()
-                            player.error = null
+                            player?.playWhenReady = true
+                            player?.prepare()
+                            playerState.error = null
                         }
                     )
                 }
             }
 
             BasicText(
-                text = player.mediaMetadata.title?.toString() ?: "",
+                text = playerState.mediaMetadata.title?.toString() ?: "",
                 style = typography.l.bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -407,7 +449,7 @@ fun PlayerView(
             )
 
             BasicText(
-                text = player.mediaMetadata.extras?.getStringArrayList("artistNames")
+                text = playerState.mediaMetadata.extras?.getStringArrayList("artistNames")
                     ?.joinToString("") ?: "",
                 style = typography.s.semiBold.secondary,
                 maxLines = 1,
@@ -417,24 +459,24 @@ fun PlayerView(
             )
 
             SeekBar(
-                value = scrubbingPosition ?: player.currentPosition,
+                value = scrubbingPosition ?: playerState.currentPosition,
                 minimumValue = 0,
-                maximumValue = player.duration,
+                maximumValue = playerState.duration,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (player.duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, player.duration)
+                    scrubbingPosition = if (playerState.duration != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, playerState.duration)
                     } else {
                         null
                     }
                 },
                 onDragEnd = {
-                    player.mediaController.seekTo(
-                        scrubbingPosition ?: player.mediaController.currentPosition
-                    )
-                    player.currentPosition = player.mediaController.currentPosition
+                    scrubbingPosition?.let { scrubbingPosition ->
+                        player?.seekTo(scrubbingPosition)
+                        playerState.currentPosition = scrubbingPosition
+                    }
                     scrubbingPosition = null
                 },
                 color = colorPalette.text,
@@ -456,16 +498,16 @@ fun PlayerView(
             ) {
                 BasicText(
                     text = DateUtils.formatElapsedTime(
-                        (scrubbingPosition ?: player.currentPosition) / 1000
+                        (scrubbingPosition ?: playerState.currentPosition) / 1000
                     ),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
 
-                if (player.duration != C.TIME_UNSET) {
+                if (playerState.duration != C.TIME_UNSET) {
                     BasicText(
-                        text = DateUtils.formatElapsedTime(player.duration / 1000),
+                        text = DateUtils.formatElapsedTime(playerState.duration / 1000),
                         style = typography.xxs.semiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -488,7 +530,7 @@ fun PlayerView(
                     modifier = Modifier
                         .clickable {
                             coroutineScope.launch(Dispatchers.IO) {
-                                (song ?: player.mediaItem?.let(Database::insert))?.let {
+                                (song ?: playerState.mediaItem?.let(Database::insert))?.let {
                                     Database.update(it.toggleLike())
                                 }
                             }
@@ -503,24 +545,24 @@ fun PlayerView(
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
                         .clickable {
-                            player.mediaController.seekToPrevious()
+                            player?.seekToPrevious()
                         }
                         .padding(horizontal = 16.dp)
                         .size(32.dp)
                 )
 
                 when {
-                    player.playbackState == Player.STATE_ENDED || !player.playWhenReady -> Image(
+                    playerState.playbackState == Player.STATE_ENDED || !playerState.playWhenReady -> Image(
                         painter = painterResource(R.drawable.play_circle),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette.text),
                         modifier = Modifier
                             .clickable {
-                                if (player.playbackState == Player.STATE_IDLE) {
-                                    player.mediaController.prepare()
+                                if (player?.playbackState == Player.STATE_IDLE) {
+                                    player.prepare()
                                 }
 
-                                player.mediaController.play()
+                                player?.play()
                             }
                             .size(64.dp)
                     )
@@ -530,7 +572,7 @@ fun PlayerView(
                         colorFilter = ColorFilter.tint(colorPalette.text),
                         modifier = Modifier
                             .clickable {
-                                player.mediaController.pause()
+                                player?.pause()
                             }
                             .size(64.dp)
                     )
@@ -542,7 +584,7 @@ fun PlayerView(
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
                         .clickable {
-                            player.mediaController.seekToNext()
+                            player?.seekToNext()
                         }
                         .padding(horizontal = 16.dp)
                         .size(32.dp)
@@ -551,7 +593,7 @@ fun PlayerView(
 
                 Image(
                     painter = painterResource(
-                        if (player.repeatMode == Player.REPEAT_MODE_ONE) {
+                        if (playerState.repeatMode == Player.REPEAT_MODE_ONE) {
                             R.drawable.repeat_one
                         } else {
                             R.drawable.repeat
@@ -559,7 +601,7 @@ fun PlayerView(
                     ),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(
-                        if (player.repeatMode == Player.REPEAT_MODE_OFF) {
+                        if (playerState.repeatMode == Player.REPEAT_MODE_OFF) {
                             colorPalette.textDisabled
                         } else {
                             colorPalette.text
@@ -567,10 +609,13 @@ fun PlayerView(
                     ),
                     modifier = Modifier
                         .clickable {
-                            player.mediaController.repeatMode =
-                                (player.mediaController.repeatMode + 2) % 3
-
-                            preferences.repeatMode = player.mediaController.repeatMode
+                            player?.repeatMode
+                                ?.plus(2)
+                                ?.mod(3)
+                                ?.let { repeatMode ->
+                                    player.repeatMode = repeatMode
+                                    preferences.repeatMode = repeatMode
+                                }
                         }
                         .padding(horizontal = 16.dp)
                         .size(28.dp)
@@ -579,6 +624,8 @@ fun PlayerView(
         }
 
         PlayerBottomSheet(
+            player = player,
+            playerState = playerState,
             layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound - 128.dp),
             onGlobalRouteEmitted = layoutState.collapse,
             song = song,

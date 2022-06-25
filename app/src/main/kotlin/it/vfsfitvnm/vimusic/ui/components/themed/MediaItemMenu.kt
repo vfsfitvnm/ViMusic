@@ -20,14 +20,12 @@ import androidx.media3.common.Player
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
-import it.vfsfitvnm.vimusic.services.DeleteSongCacheCommand
-import it.vfsfitvnm.vimusic.services.StartRadioCommand
-import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
@@ -66,7 +64,7 @@ fun InHistoryMediaItemMenu(
     // https://issuetracker.google.com/issues/226410236
     onDismiss: () -> Unit = LocalMenuState.current.let { it::hide }
 ) {
-    val mediaController = LocalYoutubePlayer.current?.mediaController
+    val binder = LocalPlayerServiceBinder.current
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -82,7 +80,7 @@ fun InHistoryMediaItemMenu(
             },
             onConfirm = {
                 onDismiss()
-                mediaController?.sendCustomCommand(DeleteSongCacheCommand, bundleOf("videoId" to song.song.id))
+                binder?.cache?.removeResource(song.song.id)
                 coroutineScope.launch(Dispatchers.IO) {
                     Database.delete(song.song)
                 }
@@ -147,32 +145,24 @@ fun NonQueuedMediaItemMenu(
     onDeleteFromDatabase: (() -> Unit)? = null,
     onRemoveFromFavorites: (() -> Unit)? = null,
 ) {
-    val player = LocalYoutubePlayer.current
+    val binder = LocalPlayerServiceBinder.current
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
         onStartRadio = {
-            player?.mediaController?.run {
-                forcePlay(mediaItem)
-                sendCustomCommand(StartRadioCommand, bundleOf(
-                    "videoId" to mediaItem.mediaId,
-                    "playlistId" to mediaItem.mediaMetadata.extras?.getString("playlistId")
-                ))
-            }
+            binder?.player?.forcePlay(mediaItem)
+            binder?.startRadio(videoId = mediaItem.mediaId, playlistId = mediaItem.mediaMetadata.extras?.getString("playlistId"))
         },
         onPlaySingle = {
-            player?.mediaController?.run {
-                sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                forcePlay(mediaItem)
-            }
+            binder?.player?.forcePlay(mediaItem)
         },
-        onPlayNext = if (player?.playbackState == Player.STATE_READY) ({
-            player.mediaController.addNext(mediaItem)
-        }) else null,
-        onEnqueue = if (player?.playbackState == Player.STATE_READY) ({
-            player.mediaController.enqueue(mediaItem)
-        }) else null,
+        onPlayNext = {
+            binder?.player?.addNext(mediaItem)
+        },
+        onEnqueue = {
+            binder?.player?.enqueue(mediaItem)
+        },
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onDeleteFromDatabase = onDeleteFromDatabase,
         onRemoveFromFavorites = onRemoveFromFavorites,
@@ -190,14 +180,14 @@ fun QueuedMediaItemMenu(
     onDismiss: () -> Unit = LocalMenuState.current.let { it::hide },
     onGlobalRouteEmitted: (() -> Unit)? = null
 ) {
-    val player = LocalYoutubePlayer.current
+    val player = LocalPlayerServiceBinder.current?.player
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
-        onRemoveFromQueue = if (player?.mediaItemIndex != indexInQueue) ({
-            player?.mediaController?.removeMediaItem(indexInQueue)
-        }) else null,
+        onRemoveFromQueue = {
+            player?.removeMediaItem(indexInQueue)
+        },
         onGlobalRouteEmitted = onGlobalRouteEmitted,
         modifier = modifier
     )

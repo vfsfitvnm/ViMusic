@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.screens.settings
 
-import android.os.Bundle
 import android.text.format.Formatter
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
@@ -16,19 +15,17 @@ import androidx.compose.ui.unit.dp
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.services.GetCacheSizeCommand
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.LocalPreferences
-import it.vfsfitvnm.vimusic.utils.LocalYoutubePlayer
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoilApi::class)
@@ -58,9 +55,7 @@ fun OtherSettingsScreen() {
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
             val preferences = LocalPreferences.current
-            val mediaController = LocalYoutubePlayer.current?.mediaController
-
-            val coilDiskCache = Coil.imageLoader(context).diskCache
+            val binder = LocalPlayerServiceBinder.current
 
             val coroutineScope = rememberCoroutineScope()
 
@@ -97,7 +92,7 @@ fun OtherSettingsScreen() {
                     )
                 }
 
-                coilDiskCache?.let { diskCache ->
+                Coil.imageLoader(context).diskCache?.let { diskCache ->
                     var diskCacheSize by remember(diskCache) {
                         mutableStateOf(diskCache.size)
                     }
@@ -168,9 +163,11 @@ fun OtherSettingsScreen() {
                     )
                 }
 
-                mediaController?.let { mediaController ->
-                    val diskCacheSize by produceState(initialValue = 0L) {
-                        value = mediaController.sendCustomCommand(GetCacheSizeCommand, Bundle.EMPTY).await().extras.getLong("cacheSize")
+                binder?.cache?.let { cache ->
+                    val diskCacheSize by remember {
+                        derivedStateOf {
+                            cache.cacheSpace
+                        }
                     }
 
                     var scrubbingDiskCacheMaxSize by remember {

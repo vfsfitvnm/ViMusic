@@ -144,6 +144,8 @@ val SongWithInfo.asMediaItem: MediaItem
                 .build()
         )
         .setMediaId(song.id)
+        .setUri(song.id)
+        .setCustomCacheKey(song.id)
         .build()
 
 fun YouTube.PlaylistOrAlbum.Item.toMediaItem(
@@ -172,6 +174,8 @@ fun YouTube.PlaylistOrAlbum.Item.toMediaItem(
                 .build()
         )
         .setMediaId(info.endpoint?.videoId ?: return null)
+        .setUri(info.endpoint?.videoId ?: return null)
+        .setCustomCacheKey(info.endpoint?.videoId ?: return null)
         .build()
 }
 

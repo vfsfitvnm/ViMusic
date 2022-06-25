@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
-import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,16 +21,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
-import it.vfsfitvnm.vimusic.services.StopRadioCommand
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
@@ -76,7 +74,7 @@ fun LocalPlaylistScreen(
             val hapticFeedback = LocalHapticFeedback.current
             val menuState = LocalMenuState.current
 
-            val player = LocalYoutubePlayer.current
+            val binder = LocalPlayerServiceBinder.current
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
 
@@ -163,14 +161,10 @@ fun LocalPlaylistScreen(
                                             MenuEntry(
                                                 icon = R.drawable.time,
                                                 text = "Enqueue",
-                                                enabled = playlistWithSongs.songs.isNotEmpty() && player?.playbackState == Player.STATE_READY,
+                                                enabled = playlistWithSongs.songs.isNotEmpty(),
                                                 onClick = {
                                                     menuState.hide()
-                                                    player?.mediaController?.enqueue(
-                                                        playlistWithSongs.songs.map(
-                                                            SongWithInfo::asMediaItem
-                                                        )
-                                                    )
+                                                    binder?.player?.enqueue(playlistWithSongs.songs.map(SongWithInfo::asMediaItem))
                                                 }
                                             )
 
@@ -234,10 +228,8 @@ fun LocalPlaylistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        player?.mediaController?.let {
-                                            it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                            it.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem).shuffled())
-                                        }
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem).shuffled())
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -254,10 +246,8 @@ fun LocalPlaylistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        player?.mediaController?.let {
-                                            it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                            it.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem))
-                                        }
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem))
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -280,10 +270,8 @@ fun LocalPlaylistScreen(
                         song = song,
                         thumbnailSize = thumbnailSize,
                         onClick = {
-                            player?.mediaController?.let {
-                                it.sendCustomCommand(StopRadioCommand, Bundle.EMPTY)
-                                it.forcePlayAtIndex(playlistWithSongs.songs.map(SongWithInfo::asMediaItem), index)
-                            }
+                            binder?.stopRadio()
+                            binder?.player?.forcePlayAtIndex(playlistWithSongs.songs.map(SongWithInfo::asMediaItem), index)
                         },
                         menuContent = {
                             InPlaylistMediaItemMenu(

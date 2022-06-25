@@ -2,15 +2,13 @@ package it.vfsfitvnm.vimusic.utils
 
 import androidx.compose.runtime.*
 import androidx.media3.common.MediaItem
-import androidx.media3.session.MediaController
-import com.google.common.util.concurrent.ListenableFuture
+import androidx.media3.common.Player
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.withContext
 
-class YoutubePlayer(mediaController: MediaController) : PlayerState(mediaController) {
+class YoutubePlayer(mediaController: Player) : PlayerState(mediaController) {
     data class Radio(
         private val videoId: String? = null,
         private val playlistId: String? = null,
@@ -45,22 +43,13 @@ class YoutubePlayer(mediaController: MediaController) : PlayerState(mediaControl
     }
 }
 
-val LocalYoutubePlayer = compositionLocalOf<YoutubePlayer?> { null }
-
 @Composable
 fun rememberYoutubePlayer(
-    mediaControllerFuture: ListenableFuture<MediaController>
+    player: Player?
 ): YoutubePlayer? {
-    val mediaController by produceState<MediaController?>(initialValue = null) {
-        value = mediaControllerFuture.await()
-    }
-
-    val playerState = remember(mediaController) {
-        YoutubePlayer(mediaController ?: return@remember null).also {
-            // TODO: should we remove the listener later on?
-            mediaController?.addListener(it)
+    return remember(player) {
+        YoutubePlayer(player ?: return@remember null).also {
+            player.addListener(it)
         }
     }
-
-    return playerState
 }

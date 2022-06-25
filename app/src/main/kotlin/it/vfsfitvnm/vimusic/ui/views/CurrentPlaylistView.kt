@@ -6,14 +6,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -25,33 +26,29 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
-import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
-import it.vfsfitvnm.vimusic.ui.components.Error
-import it.vfsfitvnm.vimusic.ui.components.MusicBars
-import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.screens.SmallSongItemShimmer
-import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.utils.LocalYoutubePlayer
-import it.vfsfitvnm.vimusic.utils.YoutubePlayer
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.youtubemusic.Outcome
-import kotlinx.coroutines.launch
+import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
+import it.vfsfitvnm.vimusic.ui.components.MusicBars
+import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.utils.PlayerState
 
 
 @ExperimentalAnimationApi
 @Composable
 fun CurrentPlaylistView(
+    player: Player?,
+    playerState: PlayerState?,
     layoutState: BottomSheetState,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     val density = LocalDensity.current
-    val player = LocalYoutubePlayer.current
     val colorPalette = LocalColorPalette.current
 
     val thumbnailSize = remember {
@@ -61,30 +58,26 @@ fun CurrentPlaylistView(
     }
 
     val isPaused by derivedStateOf {
-        player?.playbackState == Player.STATE_ENDED || player?.playWhenReady == false
+        playerState?.playbackState == Player.STATE_ENDED || playerState?.playWhenReady == false
     }
 
-    val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
-
-    val coroutineScope = rememberCoroutineScope()
-
     val lazyListState =
-        rememberLazyListState(initialFirstVisibleItemIndex = player?.mediaItemIndex ?: 0)
+        rememberLazyListState(initialFirstVisibleItemIndex = playerState?.mediaItemIndex ?: 0)
 
-    val reorderingState = rememberReorderingState(player?.mediaItems ?: emptyList())
+    val reorderingState = rememberReorderingState(playerState?.mediaItems ?: emptyList())
 
     LazyColumn(
         state = lazyListState,
         modifier = modifier
             .nestedScroll(remember {
-                layoutState.nestedScrollConnection(player?.mediaItemIndex == 0)
+                layoutState.nestedScrollConnection(playerState?.mediaItemIndex == 0)
             })
     ) {
         itemsIndexed(
-            items = player?.mediaItems ?: emptyList()
+            items = playerState?.mediaItems ?: emptyList()
         ) { index, mediaItem ->
             val isPlayingThisMediaItem by derivedStateOf {
-                player?.mediaItemIndex == index
+                playerState?.mediaItemIndex == index
             }
 
             SongItem(
@@ -93,13 +86,13 @@ fun CurrentPlaylistView(
                 onClick = {
                     if (isPlayingThisMediaItem) {
                         if (isPaused) {
-                            player?.mediaController?.play()
+                            player?.play()
                         } else {
-                            player?.mediaController?.pause()
+                            player?.pause()
                         }
                     } else {
-                        player?.mediaController?.playWhenReady = true
-                        player?.mediaController?.seekToDefaultPosition(index)
+                        player?.playWhenReady = true
+                        player?.seekToDefaultPosition(index)
                     }
                 },
                 menuContent = {
@@ -151,7 +144,7 @@ fun CurrentPlaylistView(
                             )
                         },
                         onDragEnd = { reachedIndex ->
-                            player?.mediaController?.moveMediaItem(index, reachedIndex)
+                            player?.moveMediaItem(index, reachedIndex)
                         }
                     )
             )
@@ -165,7 +158,7 @@ fun CurrentPlaylistView(
 //                            SideEffect {
 //                                coroutineScope.launch {
 //                                    YoutubePlayer.Radio.process(
-//                                        player.mediaController,
+//                                        playerState.mediaController,
 //                                        force = true
 //                                    )
 //                                }
@@ -194,7 +187,7 @@ fun CurrentPlaylistView(
 //                        error = nextContinuation.error,
 //                        onRetry = {
 //                            coroutineScope.launch {
-//                                YoutubePlayer.Radio.process(player.mediaController, force = true)
+//                                YoutubePlayer.Radio.process(playerState.mediaController, force = true)
 //                            }
 //                        }
 //                    )
