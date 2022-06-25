@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,10 +27,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
@@ -41,12 +43,12 @@ import it.vfsfitvnm.vimusic.utils.PlayerState
 @ExperimentalAnimationApi
 @Composable
 fun CurrentPlaylistView(
-    player: Player?,
     playerState: PlayerState?,
     layoutState: BottomSheetState,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val player = LocalPlayerServiceBinder.current?.player
     val hapticFeedback = LocalHapticFeedback.current
     val density = LocalDensity.current
     val colorPalette = LocalColorPalette.current

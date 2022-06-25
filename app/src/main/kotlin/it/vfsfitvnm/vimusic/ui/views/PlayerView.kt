@@ -624,7 +624,6 @@ fun PlayerView(
         }
 
         PlayerBottomSheet(
-            player = player,
             playerState = playerState,
             layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound - 128.dp),
             onGlobalRouteEmitted = layoutState.collapse,

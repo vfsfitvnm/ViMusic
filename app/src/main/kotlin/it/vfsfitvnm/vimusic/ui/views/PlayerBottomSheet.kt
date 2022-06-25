@@ -26,6 +26,7 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.route.rememberRoute
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
@@ -45,7 +46,6 @@ import kotlinx.coroutines.withContext
 @ExperimentalAnimationApi
 @Composable
 fun PlayerBottomSheet(
-    player: Player?,
     playerState: PlayerState?,
     layoutState: BottomSheetState,
     song: Song?,
@@ -54,6 +54,7 @@ fun PlayerBottomSheet(
 ) {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
+
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -175,6 +176,8 @@ fun PlayerBottomSheet(
                 .fillMaxSize()
         ) {
             lyricsRoute {
+                val player = LocalPlayerServiceBinder.current?.player
+
                 val context = LocalContext.current
 
                 LyricsView(
@@ -238,7 +241,6 @@ fun PlayerBottomSheet(
 
             host {
                 CurrentPlaylistView(
-                    player = player,
                     playerState = playerState,
                     layoutState = layoutState,
                     onGlobalRouteEmitted = onGlobalRouteEmitted,
