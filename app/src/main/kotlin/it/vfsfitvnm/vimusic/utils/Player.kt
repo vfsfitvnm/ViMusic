@@ -5,6 +5,12 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 
 
+val Timeline.mediaItems: List<MediaItem>
+    get() = (0 until windowCount).map { index ->
+        getWindow(index, Timeline.Window()).mediaItem
+    }
+
+
 fun Player.forcePlay(mediaItem: MediaItem) {
     setMediaItem(mediaItem, true)
     playWhenReady = true
@@ -23,22 +29,26 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
 fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
 
-val Player.lastMediaItem: MediaItem?
-    get() = mediaItemCount.takeIf { it > 0 }?.let { it - 1 }?.let(::getMediaItemAt)
-
-val Timeline.mediaItems: List<MediaItem>
-    get() = (0 until windowCount).map { index ->
-        getWindow(index, Timeline.Window()).mediaItem
-    }
-
 fun Player.addNext(mediaItem: MediaItem) {
-    addMediaItem(currentMediaItemIndex + 1, mediaItem)
+    if (playbackState == Player.STATE_IDLE) {
+        forcePlay(mediaItem)
+    } else {
+        addMediaItem(currentMediaItemIndex + 1, mediaItem)
+    }
 }
 
 fun Player.enqueue(mediaItem: MediaItem) {
-    addMediaItem(mediaItemCount, mediaItem)
+    if (playbackState == Player.STATE_IDLE) {
+        forcePlay(mediaItem)
+    } else {
+        addMediaItem(mediaItemCount, mediaItem)
+    }
 }
 
 fun Player.enqueue(mediaItems: List<MediaItem>) {
-    addMediaItems(mediaItemCount, mediaItems)
+    if (playbackState == Player.STATE_IDLE) {
+        forcePlayFromBeginning(mediaItems)
+    } else {
+        addMediaItems(mediaItemCount, mediaItems)
+    }
 }
