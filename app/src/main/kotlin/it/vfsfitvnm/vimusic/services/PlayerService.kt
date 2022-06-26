@@ -259,6 +259,8 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         if (playbackState == Player.STATE_READY) {
             if (player.duration != C.TIME_UNSET) {
                 metadataBuilder
+                    .putText(MediaMetadataCompat.METADATA_KEY_TITLE, player.currentMediaItem?.mediaMetadata?.title)
+                    .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, player.currentMediaItem?.mediaMetadata?.artist)
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
                 mediaSession.setMetadata(metadataBuilder.build())
             }
