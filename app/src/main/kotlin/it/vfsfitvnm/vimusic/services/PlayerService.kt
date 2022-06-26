@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.services
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -11,8 +12,10 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.support.v4.media.session.PlaybackStateCompat.*
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -52,14 +55,14 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     private lateinit var cache: SimpleCache
     private lateinit var player: ExoPlayer
 
-    private val stateBuilder = PlaybackStateCompat.Builder()
+    private val stateBuilder = Builder()
         .setActions(
-            PlaybackStateCompat.ACTION_PLAY or
-                    PlaybackStateCompat.ACTION_PAUSE or
-                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                    PlaybackStateCompat.ACTION_SEEK_TO
+            ACTION_PLAY
+                    or ACTION_PAUSE
+                    or ACTION_SKIP_TO_PREVIOUS
+                    or ACTION_SKIP_TO_NEXT
+                    or ACTION_PLAY_PAUSE
+                    or ACTION_SEEK_TO
         )
 
     private val metadataBuilder = MediaMetadataCompat.Builder()
@@ -77,6 +80,29 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
     private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
+
+    private val mediaControllerCallback = object : MediaControllerCompat.Callback() {
+        override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
+            when (state?.state) {
+                STATE_PLAYING -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent<PlayerService>())
+                    } else {
+                        startService(intent<PlayerService>())
+                    }
+
+                    startForeground(NotificationId, notification())
+                }
+                STATE_PAUSED -> {
+                    if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
+                        stopForeground(false)
+                        notificationManager.notify(NotificationId, notification())
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
 
     override fun onBind(intent: Intent?) = Binder()
 
@@ -117,6 +143,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         mediaSession.setCallback(SessionCallback(player))
         mediaSession.setPlaybackState(stateBuilder.build())
         mediaSession.isActive = true
+        mediaSession.controller.registerCallback(mediaControllerCallback)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -137,6 +164,8 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         player.removeListener(this)
         player.stop()
         player.release()
+
+        mediaSession.controller.unregisterCallback(mediaControllerCallback)
         mediaSession.isActive = false
         mediaSession.release()
         cache.release()
@@ -179,44 +208,41 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
+    override fun onPlaybackStateChanged(@Player.State playbackState: Int) {
+        if (playbackState == Player.STATE_READY) {
+            if (player.duration != C.TIME_UNSET) {
+                metadataBuilder
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
+                mediaSession.setMetadata(metadataBuilder.build())
+            }
+        }
+    }
+
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
         newPosition: Player.PositionInfo,
         @Player.DiscontinuityReason reason: Int
     ) {
         stateBuilder
-            .setState(PlaybackStateCompat.STATE_NONE, newPosition.positionMs, 1f)
+            .setState(STATE_NONE, newPosition.positionMs, 1f)
             .setBufferedPosition(player.bufferedPosition)
 
-        updateNotification()
+        mediaSession.setPlaybackState(stateBuilder.build())
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         stateBuilder
-            .setState(
-                if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                player.currentPosition,
-                1f
-            )
+            .setState(if (isPlaying) STATE_PLAYING else STATE_PAUSED, player.currentPosition, 1f)
             .setBufferedPosition(player.bufferedPosition)
 
-        updateNotification()
-    }
-
-    private fun updateNotification() {
-        if (player.duration != C.TIME_UNSET) {
-            metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
-            mediaSession.setMetadata(metadataBuilder.build())
-        }
         mediaSession.setPlaybackState(stateBuilder.build())
-        createNotification()
     }
 
-    private fun createNotification() {
+    private fun notification(): Notification {
         fun NotificationCompat.Builder.addMediaAction(
             @DrawableRes resId: Int,
             description: String,
-            @PlaybackStateCompat.MediaKeyAction command: Long
+            @MediaKeyAction command: Long
         ): NotificationCompat.Builder {
             return addAction(
                 NotificationCompat.Action(
@@ -247,20 +273,13 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     .setShowActionsInCompactView(0, 1, 2)
                     .setMediaSession(mediaSession.sessionToken)
             )
+            .addMediaAction(R.drawable.play_skip_back, "Skip back", ACTION_SKIP_TO_PREVIOUS)
             .addMediaAction(
-                R.drawable.play_skip_back,
-                "Skip back",
-                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-            ).addMediaAction(
                 if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) R.drawable.play else R.drawable.pause,
                 if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) "Play" else "Pause",
-                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) PlaybackStateCompat.ACTION_PLAY else PlaybackStateCompat.ACTION_PAUSE
+                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) ACTION_PLAY else ACTION_PAUSE
             )
-            .addMediaAction(
-                R.drawable.play_skip_forward,
-                "Skip forward",
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-            )
+            .addMediaAction(R.drawable.play_skip_forward, "Skip forward", ACTION_SKIP_TO_NEXT)
 
         if (lastArtworkUri != mediaMetadata.artworkUri) {
             lastArtworkUri = mediaMetadata.artworkUri
@@ -272,28 +291,24 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                         onError = { _, _ ->
                             lastBitmap = resources.getDrawable(R.drawable.disc_placeholder, null)
                                 ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
-                            notificationManager.notify(NotificationId, builder.setLargeIcon(lastBitmap).build())
+                            notificationManager.notify(
+                                NotificationId,
+                                builder.setLargeIcon(lastBitmap).build()
+                            )
                         },
                         onSuccess = { _, result ->
                             lastBitmap = (result.drawable as BitmapDrawable).bitmap
-                            notificationManager.notify(NotificationId, builder.setLargeIcon(lastBitmap).build())
+                            notificationManager.notify(
+                                NotificationId,
+                                builder.setLargeIcon(lastBitmap).build()
+                            )
                         }
                     )
                     .build()
             )
         }
 
-        val notificationCompat = builder.build()
-        startForeground(NotificationId, notificationCompat)
-
-        if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                stopForeground(STOP_FOREGROUND_DETACH)
-            } else {
-                stopForeground(false)
-            }
-            notificationManager.notify(NotificationId, notificationCompat)
-        }
+        return builder.build()
     }
 
     private fun createNotificationChannel() {

@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
@@ -45,7 +44,10 @@ import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.ui.views.PlayerView
-import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.vimusic.utils.LocalPreferences
+import it.vfsfitvnm.vimusic.utils.intent
+import it.vfsfitvnm.vimusic.utils.rememberHapticFeedback
+import it.vfsfitvnm.vimusic.utils.rememberPreferences
 
 
 class MainActivity : ComponentActivity() {
@@ -67,7 +69,6 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         bindService(intent<PlayerService>(), serviceConnection, Context.BIND_AUTO_CREATE)
-        startService(intent<PlayerService>())
     }
 
     override fun onStop() {
