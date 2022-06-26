@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.services
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -83,6 +84,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
 
     private val mediaControllerCallback = object : MediaControllerCompat.Callback() {
+        @SuppressLint("SwitchIntDef")
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             when (state?.state) {
                 STATE_PLAYING -> {
@@ -100,7 +102,14 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                         notificationManager.notify(NotificationId, notification())
                     }
                 }
-                else -> {}
+                STATE_NONE -> {
+                    if (player.duration != C.TIME_UNSET) {
+                        metadataBuilder
+                            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
+                        mediaSession.setMetadata(metadataBuilder.build())
+                    }
+                    notificationManager.notify(NotificationId, notification())
+                }
             }
         }
     }
@@ -252,16 +261,6 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
                 }
             } ?: 1f
-        }
-    }
-
-    override fun onPlaybackStateChanged(@Player.State playbackState: Int) {
-        if (playbackState == Player.STATE_READY) {
-            if (player.duration != C.TIME_UNSET) {
-                metadataBuilder
-                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
-                mediaSession.setMetadata(metadataBuilder.build())
-            }
         }
     }
 
