@@ -41,6 +41,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.internal
+import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
@@ -139,7 +140,35 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         player.addListener(this)
         player.addAnalyticsListener(PlaybackStatsListener(false, this))
 
-        mediaSession = MediaSessionCompat(this, "PlayerService")
+        if (preferences.persistentQueue) {
+            coroutineScope.launch(Dispatchers.IO) {
+                val queuedSong = Database.queue()
+                Database.clearQueue()
+
+                if (queuedSong.isEmpty()) return@launch
+
+                val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+
+                withContext(Dispatchers.Main) {
+                    player.setMediaItems(
+                        queuedSong
+                            .map(QueuedMediaItem::mediaItem)
+                            .map { mediaItem ->
+                                mediaItem.buildUpon()
+                                    .setUri(mediaItem.mediaId)
+                                    .setCustomCacheKey(mediaItem.mediaId)
+                                    .build()
+                            },
+                        true
+                    )
+                    player.seekTo(index, queuedSong[index].position ?: 0)
+                    player.playWhenReady = false
+                    player.prepare()
+                }
+            }
+        }
+
+        mediaSession = MediaSessionCompat(baseContext, "PlayerService")
         mediaSession.setCallback(SessionCallback(player))
         mediaSession.setPlaybackState(stateBuilder.build())
         mediaSession.isActive = true
@@ -161,6 +190,24 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     }
 
     override fun onDestroy() {
+        if (preferences.persistentQueue) {
+            val mediaItems = player.currentTimeline.mediaItems
+            val mediaItemIndex = player.currentMediaItemIndex
+            val mediaItemPosition = player.currentPosition
+
+            Database.internal.queryExecutor.execute {
+                Database.clearQueue()
+                Database.insertQueue(
+                    mediaItems.mapIndexed { index, mediaItem ->
+                        QueuedMediaItem(
+                            mediaItem = mediaItem,
+                            position = if (index == mediaItemIndex) mediaItemPosition else null
+                        )
+                    }
+                )
+            }
+        }
+
         player.removeListener(this)
         player.stop()
         player.release()

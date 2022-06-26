@@ -26,6 +26,7 @@ class Preferences(holder: SharedPreferences) : SharedPreferences by holder {
     var exoPlayerDiskCacheMaxSizeBytes by preference("exoPlayerDiskCacheMaxSizeBytes", 512L * 1024 * 1024)
     var skipSilence by preference("skipSilence", false)
     var volumeNormalization by preference("volumeNormalization", true)
+    var persistentQueue by preference("persistentQueue", false)
 }
 
 val Context.preferences: Preferences

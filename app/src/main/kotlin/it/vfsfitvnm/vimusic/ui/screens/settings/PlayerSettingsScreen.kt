@@ -239,6 +239,15 @@ fun PlayerSettingsScreen() {
                     }
                 )
 
+                SwitchSettingEntry(
+                    title = "Persistent queue",
+                    text = "Save and restore playing songs",
+                    isChecked = preferences.persistentQueue,
+                    onCheckedChange = {
+                        preferences.persistentQueue = it
+                    }
+                )
+
                 SettingsEntry(
                     title = "Equalizer",
                     text = "Interact with the system equalizer",

@@ -2,6 +2,8 @@ package it.vfsfitvnm.vimusic
 
 import android.content.Context
 import android.database.Cursor
+import android.os.Parcel
+import androidx.media3.common.MediaItem
 import androidx.room.*
 import androidx.room.migration.AutoMigrationSpec
 import it.vfsfitvnm.vimusic.models.*
@@ -115,6 +117,15 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId JOIN Song ON SongWithAuthors.songId = Song.id WHERE browseId = :artistId ORDER BY Song.ROWID DESC")
     fun artistSongs(artistId: String): Flow<List<SongWithInfo>>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insertQueue(queuedMediaItems: List<QueuedMediaItem>)
+
+    @Query("SELECT * FROM QueuedMediaItem")
+    fun queue(): List<QueuedMediaItem>
+
+    @Query("DELETE FROM QueuedMediaItem")
+    fun clearQueue()
 }
 
 @androidx.room.Database(
@@ -125,19 +136,22 @@ interface Database {
         Info::class,
         SongWithAuthors::class,
         SearchQuery::class,
+        QueuedMediaItem::class,
     ],
     views = [
         SortedSongInPlaylist::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4, spec = DatabaseInitializer.From3To4Migration::class),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ],
 )
+@TypeConverters(Converters::class)
 abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract val database: Database
 
@@ -145,7 +159,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         lateinit var Instance: DatabaseInitializer
 
         context(Context)
-        operator fun invoke() {
+                operator fun invoke() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
@@ -156,6 +170,38 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     @DeleteTable.Entries(DeleteTable(tableName = "QueuedMediaItem"))
     class From3To4Migration : AutoMigrationSpec
+}
+
+@TypeConverters
+object Converters {
+    @TypeConverter
+    fun mediaItemFromByteArray(value: ByteArray?): MediaItem? {
+        return value?.let { byteArray ->
+            runCatching {
+                val parcel = Parcel.obtain()
+                parcel.unmarshall(byteArray, 0, byteArray.size)
+                parcel.setDataPosition(0)
+
+                val bundle = parcel.readBundle(MediaItem::class.java.classLoader)
+                parcel.recycle()
+
+                bundle?.let(MediaItem.CREATOR::fromBundle)
+            }.getOrNull()
+        }
+    }
+
+    @TypeConverter
+    fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
+        return mediaItem?.toBundle()?.let { persistableBundle ->
+            val parcel = Parcel.obtain()
+            parcel.writeBundle(persistableBundle)
+
+            val bytes = parcel.marshall()
+            parcel.recycle()
+
+            bytes
+        }
+    }
 }
 
 val Database.internal: RoomDatabase
