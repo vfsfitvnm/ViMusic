@@ -9,10 +9,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.internal
-import it.vfsfitvnm.vimusic.models.Info
-import it.vfsfitvnm.vimusic.models.Song
-import it.vfsfitvnm.vimusic.models.SongWithAuthors
-import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.models.*
 import it.vfsfitvnm.youtubemusic.YouTube
 
 fun Context.shareAsYouTubeSong(mediaItem: MediaItem) {
@@ -57,7 +54,9 @@ fun Database.insert(mediaItem: MediaItem): Song {
             title = mediaItem.mediaMetadata.title!!.toString(),
             albumInfoId = albumInfoId,
             durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
-            thumbnailUrl = mediaItem.mediaMetadata.artworkUri!!.toString()
+            thumbnailUrl = mediaItem.mediaMetadata.artworkUri!!.toString(),
+            loudnessDb = mediaItem.mediaMetadata.extras?.getFloat("loudnessDb"),
+            contentLength = mediaItem.mediaMetadata.extras?.getLong("contentLength"),
         )
 
         insert(song)

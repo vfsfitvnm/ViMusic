@@ -169,9 +169,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     private fun normalizeVolume() {
         if (preferences.volumeNormalization) {
-            player.volume = player.currentMediaItem?.mediaId?.let { mediaId ->
-                songPendingLoudnessDb.getOrElse(mediaId) {
-                    player.currentMediaItem?.mediaMetadata?.extras?.getFloat("loudnessDb")
+            player.volume = player.currentMediaItem?.let { mediaItem ->
+                songPendingLoudnessDb.getOrElse(mediaItem.mediaId) {
+                    mediaItem.mediaMetadata.extras?.getFloat("loudnessDb")
                 }?.takeIf { it > 0 }?.let { loudnessDb ->
                     (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
                 }
@@ -365,17 +365,22 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                                     format.itag == 251 || format.itag == 140
                                 }?.let { format ->
                                     val mediaItem = runBlocking(Dispatchers.Main) {
-                                        player.currentMediaItem
+                                        player.findNextMediaItemById(videoId)
                                     }
 
-                                    if (mediaItem?.mediaId == videoId) {
+                                    loudnessDb?.let { loudnessDb ->
+                                        mediaItem?.mediaMetadata?.extras
+                                            ?.putFloat("loudnessDb", loudnessDb)
+                                    }
+
+                                    format.contentLength?.let { contentLength ->
+                                        mediaItem?.mediaMetadata?.extras
+                                            ?.putLong("contentLength", contentLength)
+                                    }
+
+                                    mediaItem?.let {
                                         Database.internal.queryExecutor.execute {
-                                            Database.update(
-                                                Database.insert(mediaItem).copy(
-                                                    loudnessDb = loudnessDb,
-                                                    contentLength = format.contentLength
-                                                )
-                                            )
+                                            Database.insert(it)
                                         }
                                     }
 
