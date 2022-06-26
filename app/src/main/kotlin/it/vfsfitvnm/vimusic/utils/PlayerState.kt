@@ -50,6 +50,7 @@ open class PlayerState(private val player: Player) : Player.Listener {
     init {
         handler.post(object : Runnable {
             override fun run() {
+                duration = player.duration
                 currentPosition = player.currentPosition
                 handler.postDelayed(this, 500)
             }
@@ -61,7 +62,6 @@ open class PlayerState(private val player: Player) : Player.Listener {
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
-        duration = player.duration
         this.playbackState = playbackState
     }
 
