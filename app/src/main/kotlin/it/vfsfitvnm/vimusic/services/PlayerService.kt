@@ -525,28 +525,19 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             timerJob = null
         }
 
-        fun startRadio(
-            endpoint: NavigationEndpoint.Endpoint.Watch?,
-        ) {
-            startRadio(
-                videoId = endpoint?.videoId,
-                playlistId = endpoint?.playlistId,
-                playlistSetVideoId = endpoint?.playlistSetVideoId,
-                parameters = endpoint?.params,
-                justAdd = false
-            )
-        }
+        fun setupRadio(endpoint: NavigationEndpoint.Endpoint.Watch?) =
+            startRadio(endpoint= endpoint, justAdd = true)
 
-        fun startRadio(
-            videoId: String?,
-            playlistId: String? = null,
-            playlistSetVideoId: String? = null,
-            parameters: String? = null,
-            justAdd: Boolean = true
-        ) {
+        fun playRadio(endpoint: NavigationEndpoint.Endpoint.Watch?) =
+            startRadio(endpoint= endpoint, justAdd = false)
+
+        private fun startRadio(endpoint: NavigationEndpoint.Endpoint.Watch?, justAdd: Boolean) {
             radio = null
             YoutubePlayer.Radio(
-                videoId, playlistId, playlistSetVideoId, parameters
+                endpoint?.videoId,
+                endpoint?.playlistId,
+                endpoint?.playlistSetVideoId,
+                endpoint?.params
             ).let {
                 coroutineScope.launch(Dispatchers.Main) {
                     if (justAdd) {

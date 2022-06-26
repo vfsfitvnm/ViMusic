@@ -159,7 +159,7 @@ fun ArtistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        binder?.startRadio(artist.shuffleEndpoint)
+                                        binder?.playRadio(artist.shuffleEndpoint)
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -176,7 +176,7 @@ fun ArtistScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        binder?.startRadio(artist.radioEndpoint)
+                                        binder?.playRadio(artist.radioEndpoint)
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(

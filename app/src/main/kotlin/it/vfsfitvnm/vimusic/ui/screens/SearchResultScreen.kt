@@ -217,11 +217,11 @@ fun SearchResultScreen(
                                 is YouTube.Item.Playlist -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Song -> {
                                     binder?.player?.forcePlay(item.asMediaItem)
-                                    binder?.startRadio(item.info.endpoint)
+                                    binder?.setupRadio(item.info.endpoint)
                                 }
                                 is YouTube.Item.Video -> {
                                     binder?.player?.forcePlay(item.asMediaItem)
-                                    binder?.startRadio(item.info.endpoint)
+                                    binder?.setupRadio(item.info.endpoint)
                                 }
                             }
                         }

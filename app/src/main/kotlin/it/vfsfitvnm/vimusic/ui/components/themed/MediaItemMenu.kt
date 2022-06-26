@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
-import android.os.Bundle
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.with
@@ -14,9 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.vimusic.Database
@@ -31,6 +28,7 @@ import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
 import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -152,7 +150,12 @@ fun NonQueuedMediaItemMenu(
         onDismiss = onDismiss,
         onStartRadio = {
             binder?.player?.forcePlay(mediaItem)
-            binder?.startRadio(videoId = mediaItem.mediaId, playlistId = mediaItem.mediaMetadata.extras?.getString("playlistId"))
+            binder?.setupRadio(
+                NavigationEndpoint.Endpoint.Watch(
+                    videoId = mediaItem.mediaId,
+                    playlistId = mediaItem.mediaMetadata.extras?.getString("playlistId")
+                )
+            )
         },
         onPlaySingle = {
             binder?.player?.forcePlay(mediaItem)
