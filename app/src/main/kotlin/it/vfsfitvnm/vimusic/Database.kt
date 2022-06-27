@@ -208,7 +208,7 @@ val Database.internal: RoomDatabase
     get() = DatabaseInitializer.Instance
 
 fun Database.checkpoint() {
-    internal.openHelper.writableDatabase.run {
+    internal.getOpenHelper().writableDatabase.run {
         query("PRAGMA journal_mode").use { cursor ->
             if (cursor.moveToFirst()) {
                 when (cursor.getString(0).lowercase()) {

@@ -77,7 +77,7 @@ fun BackupAndRestoreScreen() {
                         Database.checkpoint()
                         context.applicationContext.contentResolver.openOutputStream(uri)
                             ?.use { outputStream ->
-                                FileInputStream(Database.internal.openHelper.writableDatabase.path).use { inputStream ->
+                                FileInputStream(Database.internal.getOpenHelper().writableDatabase.path).use { inputStream ->
                                     inputStream.copyTo(outputStream)
                                 }
                             }
@@ -91,7 +91,7 @@ fun BackupAndRestoreScreen() {
                     coroutineScope.launch(Dispatchers.IO) {
                         Database.internal.close()
 
-                        FileOutputStream(Database.internal.openHelper.writableDatabase.path).use { outputStream ->
+                        FileOutputStream(Database.internal.getOpenHelper().writableDatabase.path).use { outputStream ->
                             context.applicationContext.contentResolver.openInputStream(uri)
                                 ?.use { inputStream ->
                                     inputStream.copyTo(outputStream)

@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -84,6 +85,8 @@ fun HomeScreen() {
             SongCollection.History -> Database.history()
         }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+
+    Log.d("HomeScreen", "songCollection: ${songCollection.size}")
 
     RouteHandler(
         listenToGlobalEmitter = true,

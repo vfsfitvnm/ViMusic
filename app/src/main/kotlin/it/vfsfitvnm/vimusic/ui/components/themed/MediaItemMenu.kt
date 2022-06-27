@@ -37,8 +37,7 @@ import kotlinx.coroutines.launch
 fun InFavoritesMediaItemMenu(
     song: SongWithInfo,
     modifier: Modifier = Modifier,
-    // https://issuetracker.google.com/issues/226410236
-    onDismiss: () -> Unit = LocalMenuState.current.let { it::hide }
+    onDismiss: (() -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -59,9 +58,9 @@ fun InFavoritesMediaItemMenu(
 fun InHistoryMediaItemMenu(
     song: SongWithInfo,
     modifier: Modifier = Modifier,
-    // https://issuetracker.google.com/issues/226410236
-    onDismiss: () -> Unit = LocalMenuState.current.let { it::hide }
+    onDismiss: (() -> Unit)? = null
 ) {
+    val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
     val coroutineScope = rememberCoroutineScope()
@@ -77,7 +76,7 @@ fun InHistoryMediaItemMenu(
                 isDeletingFromDatabase = false
             },
             onConfirm = {
-                onDismiss()
+                (onDismiss ?: menuState::hide).invoke()
                 binder?.cache?.removeResource(song.song.id)
                 coroutineScope.launch(Dispatchers.IO) {
                     Database.delete(song.song)
@@ -103,8 +102,7 @@ fun InPlaylistMediaItemMenu(
     positionInPlaylist: Int,
     song: SongWithInfo,
     modifier: Modifier = Modifier,
-    // https://issuetracker.google.com/issues/226410236
-    onDismiss: () -> Unit = LocalMenuState.current.let { it::hide }
+    onDismiss: (() -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -137,17 +135,17 @@ fun InPlaylistMediaItemMenu(
 fun NonQueuedMediaItemMenu(
     mediaItem: MediaItem,
     modifier: Modifier = Modifier,
-    // https://issuetracker.google.com/issues/226410236
-    onDismiss: () -> Unit = LocalMenuState.current.let { it::hide },
+    onDismiss: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
     onRemoveFromFavorites: (() -> Unit)? = null,
 ) {
+    val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
-        onDismiss = onDismiss,
+        onDismiss = onDismiss ?: menuState::hide,
         onStartRadio = {
             binder?.player?.forcePlay(mediaItem)
             binder?.setupRadio(
@@ -179,15 +177,15 @@ fun QueuedMediaItemMenu(
     mediaItem: MediaItem,
     indexInQueue: Int,
     modifier: Modifier = Modifier,
-    // https://issuetracker.google.com/issues/226410236
-    onDismiss: () -> Unit = LocalMenuState.current.let { it::hide },
+    onDismiss: (() -> Unit)? = null,
     onGlobalRouteEmitted: (() -> Unit)? = null
 ) {
+    val menuState = LocalMenuState.current
     val player = LocalPlayerServiceBinder.current?.player
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
-        onDismiss = onDismiss,
+        onDismiss = onDismiss ?: menuState::hide,
         onRemoveFromQueue = {
             player?.removeMediaItem(indexInQueue)
         },

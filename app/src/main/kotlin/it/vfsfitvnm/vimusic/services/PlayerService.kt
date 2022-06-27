@@ -195,7 +195,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             val mediaItemIndex = player.currentMediaItemIndex
             val mediaItemPosition = player.currentPosition
 
-            Database.internal.queryExecutor.execute {
+            Database.internal.getQueryExecutor().execute {
                 Database.clearQueue()
                 Database.insertQueue(
                     mediaItems.mapIndexed { index, mediaItem ->
@@ -226,7 +226,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
 
-        Database.internal.queryExecutor.execute {
+        Database.internal.getQueryExecutor().execute {
             Database.incrementTotalPlayTimeMs(mediaItem.mediaId, playbackStats.totalPlayTimeMs)
         }
     }
@@ -443,7 +443,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                                     }
 
                                     mediaItem?.let {
-                                        Database.internal.queryExecutor.execute {
+                                        Database.internal.getQueryExecutor().execute {
                                             Database.insert(it)
                                         }
                                     }

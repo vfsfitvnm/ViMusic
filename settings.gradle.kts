@@ -28,10 +28,10 @@ dependencyResolutionManagement {
 
             alias("compose-coil").to("io.coil-kt", "coil-compose").version("2.1.0")
 
-            version("accompanist", "0.24.10-beta")
+            version("accompanist", "0.24.12-rc")
             alias("accompanist-systemuicontroller").to("com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
 
-            version("room", "2.5.0-alpha01")
+            version("room", "2.5.0-alpha02")
             alias("room").to("androidx.room", "room-ktx").versionRef("room")
             alias("room-compiler").to("androidx.room", "room-compiler").versionRef("room")
 
