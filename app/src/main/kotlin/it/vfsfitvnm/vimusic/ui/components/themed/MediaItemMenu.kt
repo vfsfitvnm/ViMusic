@@ -28,7 +28,6 @@ import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
 @Composable
@@ -487,10 +486,7 @@ fun MediaItemMenu(
                         MenuEntry(
                             icon = R.drawable.trash,
                             text = "Delete",
-                            onClick = {
-                                onDismiss()
-                                onDeleteFromDatabase()
-                            }
+                            onClick = onDeleteFromDatabase
                         )
                     }
                 }
