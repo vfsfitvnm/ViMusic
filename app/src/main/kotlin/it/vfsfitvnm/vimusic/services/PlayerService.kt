@@ -500,6 +500,8 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
 
+        private var radioJob: Job? = null
+
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()
 
@@ -532,6 +534,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             startRadio(endpoint= endpoint, justAdd = false)
 
         private fun startRadio(endpoint: NavigationEndpoint.Endpoint.Watch?, justAdd: Boolean) {
+            radioJob?.cancel()
             radio = null
             YoutubePlayer.Radio(
                 endpoint?.videoId,
@@ -539,7 +542,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                 endpoint?.playlistSetVideoId,
                 endpoint?.params
             ).let {
-                coroutineScope.launch(Dispatchers.Main) {
+                radioJob = coroutineScope.launch(Dispatchers.Main) {
                     if (justAdd) {
                         player.addMediaItems(it.process().drop(1))
                     } else {
@@ -551,6 +554,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
 
         fun stopRadio() {
+            radioJob?.cancel()
             radio = null
         }
     }
