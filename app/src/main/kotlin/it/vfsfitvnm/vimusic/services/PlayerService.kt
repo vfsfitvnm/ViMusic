@@ -100,6 +100,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     onPlaybackStateChanged(Player.STATE_READY)
                     onIsPlayingChanged(player.playWhenReady)
                 }
+                STATE_ERROR -> {
+                    notificationManager.notify(NotificationId, notification())
+                }
                 else -> {}
             }
         }
@@ -267,6 +270,15 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
+    override fun onPlayerErrorChanged(error: PlaybackException?) {
+        if (error != null) {
+            stateBuilder
+                .setState(STATE_ERROR, player.currentPosition, 1f)
+
+            mediaSession.setPlaybackState(stateBuilder.build())
+        }
+    }
+
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
         newPosition: Player.PositionInfo,
@@ -307,11 +319,12 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         val builder = NotificationCompat.Builder(applicationContext, NotificationChannelId)
             .setContentTitle(mediaMetadata.title)
             .setContentText(mediaMetadata.artist)
+            .setSubText(player.playerError?.message)
             .setLargeIcon(lastBitmap)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
-            .setSmallIcon(R.drawable.app_icon)
+            .setSmallIcon(player.playerError?.let { R.drawable.alert_circle } ?: R.drawable.app_icon)
             .setOngoing(false)
             .setContentIntent(activityPendingIntent<MainActivity>())
             .setDeleteIntent(broadCastPendingIntent<StopServiceBroadcastReceiver>())
