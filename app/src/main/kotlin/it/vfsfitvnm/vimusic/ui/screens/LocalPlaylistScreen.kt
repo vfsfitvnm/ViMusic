@@ -24,8 +24,7 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
@@ -39,7 +38,6 @@ import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 
 @ExperimentalAnimationApi
@@ -84,8 +82,6 @@ fun LocalPlaylistScreen(
                 }
             }
 
-            val coroutineScope = rememberCoroutineScope()
-
             val reorderingState = rememberReorderingState(playlistWithSongs.songs)
 
             var isRenaming by rememberSaveable {
@@ -100,7 +96,7 @@ fun LocalPlaylistScreen(
                         isRenaming = false
                     },
                     onDone = { text ->
-                        coroutineScope.launch(Dispatchers.IO) {
+                        query {
                             Database.update(playlistWithSongs.playlist.copy(name = text))
                         }
                     }
@@ -118,7 +114,7 @@ fun LocalPlaylistScreen(
                         isDeleting = false
                     },
                     onConfirm = {
-                        coroutineScope.launch(Dispatchers.IO) {
+                        query {
                             Database.delete(playlistWithSongs.playlist)
                         }
                         pop()
@@ -290,7 +286,7 @@ fun LocalPlaylistScreen(
                                     )
                                 },
                                 onDragEnd = { reachedIndex ->
-                                    coroutineScope.launch(Dispatchers.IO) {
+                                    transaction {
                                         if (index > reachedIndex) {
                                             Database.incrementSongPositions(
                                                 playlistId = playlistWithSongs.playlist.id,

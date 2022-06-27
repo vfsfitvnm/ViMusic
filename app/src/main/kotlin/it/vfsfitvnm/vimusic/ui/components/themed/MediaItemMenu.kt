@@ -16,10 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
-import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
 import it.vfsfitvnm.vimusic.models.SongWithInfo
@@ -39,13 +37,11 @@ fun InFavoritesMediaItemMenu(
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     NonQueuedMediaItemMenu(
         mediaItem = song.asMediaItem,
         onDismiss = onDismiss,
         onRemoveFromFavorites = {
-            coroutineScope.launch(Dispatchers.IO) {
+            query {
                 Database.update(song.song.toggleLike())
             }
         },
@@ -63,8 +59,6 @@ fun InHistoryMediaItemMenu(
     val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
-    val coroutineScope = rememberCoroutineScope()
-
     var isDeletingFromDatabase by remember {
         mutableStateOf(false)
     }
@@ -77,8 +71,9 @@ fun InHistoryMediaItemMenu(
             },
             onConfirm = {
                 (onDismiss ?: menuState::hide).invoke()
-                binder?.cache?.removeResource(song.song.id)
-                coroutineScope.launch(Dispatchers.IO) {
+                query {
+                    // Not sure we can to this here
+                    binder?.cache?.removeResource(song.song.id)
                     Database.delete(song.song)
                 }
             }
@@ -104,26 +99,22 @@ fun InPlaylistMediaItemMenu(
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     NonQueuedMediaItemMenu(
         mediaItem = song.asMediaItem,
         onDismiss = onDismiss,
         onRemoveFromPlaylist = {
-            coroutineScope.launch(Dispatchers.IO) {
-                Database.internal.runInTransaction {
-                    Database.delete(
-                        SongInPlaylist(
-                            songId = song.song.id,
-                            playlistId = playlistId,
-                            position = positionInPlaylist
-                        )
-                    )
-                    Database.decrementSongPositions(
+            transaction {
+                Database.delete(
+                    SongInPlaylist(
+                        songId = song.song.id,
                         playlistId = playlistId,
-                        fromPosition = positionInPlaylist + 1
+                        position = positionInPlaylist
                     )
-                }
+                )
+                Database.decrementSongPositions(
+                    playlistId = playlistId,
+                    fromPosition = positionInPlaylist + 1
+                )
             }
         },
         modifier = modifier
@@ -211,7 +202,6 @@ fun BaseMediaItemMenu(
     onGlobalRouteEmitted: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     val albumRoute = rememberPlaylistOrAlbumRoute()
     val artistRoute = rememberArtistRoute()
@@ -224,7 +214,7 @@ fun BaseMediaItemMenu(
         onPlaySingle = onPlaySingle,
         onEnqueue = onEnqueue,
         onAddToPlaylist = { playlist, position ->
-            coroutineScope.launch(Dispatchers.IO) {
+            transaction {
                 val playlistId = Database.playlist(playlist.id)?.id ?: Database.insert(playlist)
 
                 Database.insert(mediaItem)
@@ -498,6 +488,7 @@ fun MediaItemMenu(
                             icon = R.drawable.trash,
                             text = "Delete",
                             onClick = {
+                                onDismiss()
                                 onDeleteFromDatabase()
                             }
                         )

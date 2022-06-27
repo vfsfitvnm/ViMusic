@@ -23,9 +23,9 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.Error
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.Message
@@ -40,7 +40,6 @@ import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.toNullable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
@@ -70,7 +69,6 @@ fun IntentUriScreen(uri: Uri) {
             val density = LocalDensity.current
             val binder = LocalPlayerServiceBinder.current
 
-            val coroutineScope = rememberCoroutineScope()
             val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
 
             var items by remember(uri) {
@@ -102,24 +100,22 @@ fun IntentUriScreen(uri: Uri) {
                     onDone = { text ->
                         menuState.hide()
 
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Database.internal.runInTransaction {
-                                val playlistId = Database.insert(Playlist(name = text))
+                        transaction {
+                            val playlistId = Database.insert(Playlist(name = text))
 
-                                items.valueOrNull
-                                    ?.map(YouTube.Item.Song::asMediaItem)
-                                    ?.forEachIndexed { index, mediaItem ->
-                                        Database.insert(mediaItem)
+                            items.valueOrNull
+                                ?.map(YouTube.Item.Song::asMediaItem)
+                                ?.forEachIndexed { index, mediaItem ->
+                                    Database.insert(mediaItem)
 
-                                        Database.insert(
-                                            SongInPlaylist(
-                                                songId = mediaItem.mediaId,
-                                                playlistId = playlistId,
-                                                position = index
-                                            )
+                                    Database.insert(
+                                        SongInPlaylist(
+                                            songId = mediaItem.mediaId,
+                                            playlistId = playlistId,
+                                            position = index
                                         )
-                                    }
-                            }
+                                    )
+                                }
                         }
                     }
                 )

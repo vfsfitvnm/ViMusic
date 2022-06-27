@@ -41,8 +41,8 @@ import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
@@ -195,7 +195,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             val mediaItemIndex = player.currentMediaItemIndex
             val mediaItemPosition = player.currentPosition
 
-            Database.internal.getQueryExecutor().execute {
+            query {
                 Database.clearQueue()
                 Database.insertQueue(
                     mediaItems.mapIndexed { index, mediaItem ->
@@ -226,7 +226,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
 
-        Database.internal.getQueryExecutor().execute {
+        query {
             Database.incrementTotalPlayTimeMs(mediaItem.mediaId, playbackStats.totalPlayTimeMs)
         }
     }
@@ -443,7 +443,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                                     }
 
                                     mediaItem?.let {
-                                        Database.internal.getQueryExecutor().execute {
+                                        query {
                                             Database.insert(it)
                                         }
                                     }

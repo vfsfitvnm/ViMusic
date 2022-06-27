@@ -33,6 +33,7 @@ import androidx.core.net.toUri
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
@@ -44,7 +45,6 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -106,8 +106,6 @@ fun SearchScreen(
         host {
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
-
-            val coroutineScope = rememberCoroutineScope()
 
             val isOpenableUrl = remember(textFieldValue.text) {
                 Regex("""https://(music|www|m)\.youtube.com/(watch|playlist).*""").matches(textFieldValue.text)
@@ -280,7 +278,7 @@ fun SearchScreen(
                                 colorFilter = ColorFilter.tint(colorPalette.darkGray),
                                 modifier = Modifier
                                     .clickable {
-                                        coroutineScope.launch(Dispatchers.IO) {
+                                        query {
                                             Database.delete(searchQuery)
                                         }
                                     }

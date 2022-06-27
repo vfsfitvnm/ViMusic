@@ -31,9 +31,9 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
@@ -45,7 +45,6 @@ import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -164,26 +163,24 @@ fun PlaylistOrAlbumScreen(
                                                     menuState.hide()
 
                                                     playlistOrAlbum.valueOrNull?.let { album ->
-                                                        coroutineScope.launch(Dispatchers.IO) {
-                                                            Database.internal.runInTransaction {
-                                                                val playlistId =
-                                                                    Database.insert(Playlist(name = album.title ?: "Unknown"))
+                                                        transaction {
+                                                            val playlistId =
+                                                                Database.insert(Playlist(name = album.title ?: "Unknown"))
 
-                                                                album.items?.forEachIndexed { index, song ->
-                                                                    song
-                                                                        .toMediaItem(browseId, album)
-                                                                        ?.let { mediaItem ->
-                                                                            Database.insert(mediaItem)
+                                                            album.items?.forEachIndexed { index, song ->
+                                                                song
+                                                                    .toMediaItem(browseId, album)
+                                                                    ?.let { mediaItem ->
+                                                                        Database.insert(mediaItem)
 
-                                                                            Database.insert(
-                                                                                SongInPlaylist(
-                                                                                    songId = mediaItem.mediaId,
-                                                                                    playlistId = playlistId,
-                                                                                    position = index
-                                                                                )
+                                                                        Database.insert(
+                                                                            SongInPlaylist(
+                                                                                songId = mediaItem.mediaId,
+                                                                                playlistId = playlistId,
+                                                                                position = index
                                                                             )
-                                                                        }
-                                                                }
+                                                                        )
+                                                                    }
                                                             }
                                                         }
                                                     }

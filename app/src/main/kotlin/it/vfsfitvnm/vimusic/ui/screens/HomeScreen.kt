@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -39,6 +38,7 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
@@ -50,7 +50,6 @@ import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 @ExperimentalFoundationApi
@@ -59,8 +58,6 @@ import kotlinx.coroutines.launch
 fun HomeScreen() {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
-
-    val coroutineScope = rememberCoroutineScope()
 
     val lazyListState = rememberLazyListState()
 
@@ -85,8 +82,6 @@ fun HomeScreen() {
             SongCollection.History -> Database.history()
         }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-
-    Log.d("HomeScreen", "songCollection: ${songCollection.size}")
 
     RouteHandler(
         listenToGlobalEmitter = true,
@@ -122,7 +117,7 @@ fun HomeScreen() {
                 onSearch = { query ->
                     searchResultRoute(query)
 
-                    coroutineScope.launch(Dispatchers.IO) {
+                    query {
                         Database.insert(SearchQuery(query = query))
                     }
                 },
@@ -173,7 +168,7 @@ fun HomeScreen() {
                         isCreatingANewPlaylist = false
                     },
                     onDone = { text ->
-                        coroutineScope.launch(Dispatchers.IO) {
+                        query {
                             Database.insert(Playlist(name = text))
                         }
                     }

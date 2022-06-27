@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import it.vfsfitvnm.route.Route
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
@@ -28,6 +27,7 @@ import it.vfsfitvnm.route.rememberRoute
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.Song
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.screens.rememberLyricsRoute
@@ -54,7 +54,6 @@ fun PlayerBottomSheet(
 ) {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
-
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -209,7 +208,7 @@ fun PlayerBottomSheet(
                             }.map { lyrics ->
                                 lyrics ?: ""
                             }.map { lyrics ->
-                                withContext(Dispatchers.IO) {
+                                query {
                                     (song ?: mediaItem.let(Database::insert)).let {
                                         Database.update(it.copy(lyrics = lyrics))
                                     }
@@ -230,7 +229,7 @@ fun PlayerBottomSheet(
                     },
                     onLyricsUpdate = { lyrics ->
                         val mediaItem = player?.currentMediaItem
-                        coroutineScope.launch(Dispatchers.IO) {
+                        query {
                             (song ?: mediaItem?.let(Database::insert))?.let {
                                 Database.update(it.copy(lyrics = lyrics))
                             }

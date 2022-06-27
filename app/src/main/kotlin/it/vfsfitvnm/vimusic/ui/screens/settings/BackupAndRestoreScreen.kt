@@ -8,8 +8,11 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -18,10 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.checkpoint
-import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
@@ -32,8 +33,6 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -67,17 +66,15 @@ fun BackupAndRestoreScreen() {
             val typography = LocalTypography.current
             val context = LocalContext.current
 
-            val coroutineScope = rememberCoroutineScope()
-
             val backupLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/vnd.sqlite3")) { uri ->
                     if (uri == null) return@rememberLauncherForActivityResult
 
-                    coroutineScope.launch(Dispatchers.IO) {
-                        Database.checkpoint()
+                    query {
+                        Database.internal.checkpoint()
                         context.applicationContext.contentResolver.openOutputStream(uri)
                             ?.use { outputStream ->
-                                FileInputStream(Database.internal.getOpenHelper().writableDatabase.path).use { inputStream ->
+                                FileInputStream(Database.internal.path).use { inputStream ->
                                     inputStream.copyTo(outputStream)
                                 }
                             }
@@ -88,10 +85,10 @@ fun BackupAndRestoreScreen() {
                 rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri == null) return@rememberLauncherForActivityResult
 
-                    coroutineScope.launch(Dispatchers.IO) {
+                    query {
                         Database.internal.close()
 
-                        FileOutputStream(Database.internal.getOpenHelper().writableDatabase.path).use { outputStream ->
+                        FileOutputStream(Database.internal.path).use { outputStream ->
                             context.applicationContext.contentResolver.openInputStream(uri)
                                 ?.use { inputStream ->
                                     inputStream.copyTo(outputStream)

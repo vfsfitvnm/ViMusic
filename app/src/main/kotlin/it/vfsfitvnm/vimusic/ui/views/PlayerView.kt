@@ -40,6 +40,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
@@ -537,7 +538,7 @@ fun PlayerView(
                     ),
                     modifier = Modifier
                         .clickable {
-                            coroutineScope.launch(Dispatchers.IO) {
+                            query {
                                 (song ?: playerState.mediaItem?.let(Database::insert))?.let {
                                     Database.update(it.toggleLike())
                                 }

@@ -207,8 +207,19 @@ object Converters {
 val Database.internal: RoomDatabase
     get() = DatabaseInitializer.Instance
 
-fun Database.checkpoint() {
-    internal.getOpenHelper().writableDatabase.run {
+fun query(block: () -> Unit) = DatabaseInitializer.Instance.getQueryExecutor().execute(block)
+
+fun transaction(block: () -> Unit) = with(DatabaseInitializer.Instance) {
+    getTransactionExecutor().execute {
+        runInTransaction(block)
+    }
+}
+
+val RoomDatabase.path: String
+    get() = getOpenHelper().writableDatabase.path
+
+fun RoomDatabase.checkpoint() {
+    getOpenHelper().writableDatabase.run {
         query("PRAGMA journal_mode").use { cursor ->
             if (cursor.moveToFirst()) {
                 when (cursor.getString(0).lowercase()) {
