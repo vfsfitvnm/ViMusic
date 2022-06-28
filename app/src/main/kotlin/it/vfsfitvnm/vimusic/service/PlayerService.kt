@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.services
+package it.vfsfitvnm.vimusic.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -7,8 +7,8 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
+import android.content.res.Configuration
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
@@ -19,7 +19,6 @@ import android.support.v4.media.session.PlaybackStateCompat.*
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.startForegroundService
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.*
@@ -36,8 +35,6 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.analytics.PlaybackStatsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import coil.Coil
-import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
@@ -73,11 +70,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     private var timerJob: TimerJob? = null
 
-    private var notificationThumbnailSize: Int = 0
-    private var lastArtworkUri: Uri? = null
-    private var lastBitmap: Bitmap? = null
-
     private var radio: YouTubeRadio? = null
+
+    private lateinit var bitmapProvider: BitmapProvider
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
@@ -113,10 +108,12 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     override fun onCreate() {
         super.onCreate()
 
-        notificationThumbnailSize = (256 * resources.displayMetrics.density).roundToInt()
-
-        lastBitmap = resources.getDrawable(R.drawable.disc_placeholder, null)
-            ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
+        bitmapProvider = BitmapProvider(
+            bitmapSize = (256 * resources.displayMetrics.density).roundToInt(),
+            colorProvider = { isSystemInDarkMode ->
+                if (isSystemInDarkMode) Color.BLACK else Color.WHITE
+            }
+        )
 
         createNotificationChannel()
 
@@ -222,6 +219,13 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         super.onDestroy()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        if (bitmapProvider.setDefaultBitmap()) {
+            notificationManager.notify(NotificationId, notification())
+        }
+        super.onConfigurationChanged(newConfig)
+    }
+
     override fun onPlaybackStatsReady(
         eventTime: AnalyticsListener.EventTime,
         playbackStats: PlaybackStats
@@ -320,7 +324,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             .setContentTitle(mediaMetadata.title)
             .setContentText(mediaMetadata.artist)
             .setSubText(player.playerError?.message)
-            .setLargeIcon(lastBitmap)
+            .setLargeIcon(bitmapProvider.bitmap)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
@@ -343,31 +347,8 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             )
             .addMediaAction(R.drawable.play_skip_forward, "Skip forward", ACTION_SKIP_TO_NEXT)
 
-        if (lastArtworkUri != mediaMetadata.artworkUri) {
-            lastArtworkUri = mediaMetadata.artworkUri
-
-            Coil.imageLoader(applicationContext).enqueue(
-                ImageRequest.Builder(applicationContext)
-                    .data(mediaMetadata.artworkUri.thumbnail(notificationThumbnailSize))
-                    .listener(
-                        onError = { _, _ ->
-                            lastBitmap = resources.getDrawable(R.drawable.disc_placeholder, null)
-                                ?.toBitmap(notificationThumbnailSize, notificationThumbnailSize)
-                            notificationManager.notify(
-                                NotificationId,
-                                builder.setLargeIcon(lastBitmap).build()
-                            )
-                        },
-                        onSuccess = { _, result ->
-                            lastBitmap = (result.drawable as BitmapDrawable).bitmap
-                            notificationManager.notify(
-                                NotificationId,
-                                builder.setLargeIcon(lastBitmap).build()
-                            )
-                        }
-                    )
-                    .build()
-            )
+        bitmapProvider.load(mediaMetadata.artworkUri) { bitmap ->
+            notificationManager.notify(NotificationId, builder.setLargeIcon(bitmap).build())
         }
 
         return builder.build()
@@ -400,6 +381,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             }
         }
     }
+
 
     private fun createCacheDataSource(): DataSource.Factory {
         return CacheDataSource.Factory().setCache(cache).apply {
