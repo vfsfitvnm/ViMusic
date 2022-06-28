@@ -382,7 +382,6 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-
     private fun createCacheDataSource(): DataSource.Factory {
         return CacheDataSource.Factory().setCache(cache).apply {
             setUpstreamDataSourceFactory(
