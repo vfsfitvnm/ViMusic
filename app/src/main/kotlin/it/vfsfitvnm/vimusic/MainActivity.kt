@@ -34,8 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
-import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
-import it.vfsfitvnm.vimusic.services.PlayerService
+import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
@@ -86,28 +85,20 @@ class MainActivity : ComponentActivity() {
             val preferences = rememberPreferences()
             val systemUiController = rememberSystemUiController()
 
-            val (isDarkTheme, colorPalette) = when (preferences.colorPaletteMode) {
-                ColorPaletteMode.Light -> false to LightColorPalette
-                ColorPaletteMode.Dark -> true to DarkColorPalette
-                ColorPaletteMode.Black -> true to BlackColorPalette
-                ColorPaletteMode.System -> when (isSystemInDarkTheme()) {
-                    true -> true to DarkColorPalette
-                    false -> false to LightColorPalette
-                }
-            }
+            val colorPalette = preferences.colorPaletteMode.palette(isSystemInDarkTheme())
 
-            val rippleTheme = remember(colorPalette.text, isDarkTheme) {
+            val rippleTheme = remember(colorPalette.text, colorPalette.isDark) {
                 object : RippleTheme {
                     @Composable
                     override fun defaultColor(): Color = RippleTheme.defaultRippleColor(
                         contentColor = colorPalette.text,
-                        lightTheme = !isDarkTheme
+                        lightTheme = !colorPalette.isDark
                     )
 
                     @Composable
                     override fun rippleAlpha(): RippleAlpha = RippleTheme.defaultRippleAlpha(
                         contentColor = colorPalette.text,
-                        lightTheme = !isDarkTheme
+                        lightTheme = !colorPalette.isDark
                     )
                 }
             }
@@ -131,7 +122,7 @@ class MainActivity : ComponentActivity() {
             }
 
             SideEffect {
-                systemUiController.setSystemBarsColor(colorPalette.background, !isDarkTheme)
+                systemUiController.setSystemBarsColor(colorPalette.background, !colorPalette.isDark)
             }
 
             CompositionLocalProvider(

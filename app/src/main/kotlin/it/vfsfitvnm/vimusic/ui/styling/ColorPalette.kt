@@ -24,6 +24,8 @@ data class ColorPalette(
     val primaryContainer: Color,
     val onPrimaryContainer: Color,
     val iconOnPrimaryContainer: Color,
+
+    val isDark: Boolean
 )
 
 val DarkColorPalette = ColorPalette(
@@ -46,6 +48,7 @@ val DarkColorPalette = ColorPalette(
     primaryContainer = Color(0xff4046bf),
     onPrimaryContainer = Color.White,
     iconOnPrimaryContainer = Color.White,
+    isDark = true
 )
 
 val BlackColorPalette = DarkColorPalette.copy(
@@ -77,6 +80,7 @@ val LightColorPalette = ColorPalette(
 //    primaryContainer = Color(0xffecedf9),
 //    onPrimaryContainer = Color(0xff121212),
 //    iconOnPrimaryContainer = Color(0xff2e30b8),
+    isDark = false
 )
 
 val LocalColorPalette = staticCompositionLocalOf { LightColorPalette }
