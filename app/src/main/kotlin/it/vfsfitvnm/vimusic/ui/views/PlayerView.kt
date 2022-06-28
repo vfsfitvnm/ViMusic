@@ -73,7 +73,7 @@ fun PlayerView(
     val context = LocalContext.current
 
     val player = binder?.player
-    val playerState = rememberYoutubePlayer(player)
+    val playerState = rememberPlayerState(player)
 
     val coroutineScope = rememberCoroutineScope()
 

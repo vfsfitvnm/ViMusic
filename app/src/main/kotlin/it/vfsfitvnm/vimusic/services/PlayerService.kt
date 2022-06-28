@@ -77,7 +77,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     private var lastArtworkUri: Uri? = null
     private var lastBitmap: Bitmap? = null
 
-    private var radio: YoutubePlayer.Radio? = null
+    private var radio: YouTubeRadio? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
@@ -549,7 +549,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         private fun startRadio(endpoint: NavigationEndpoint.Endpoint.Watch?, justAdd: Boolean) {
             radioJob?.cancel()
             radio = null
-            YoutubePlayer.Radio(
+            YouTubeRadio(
                 endpoint?.videoId,
                 endpoint?.playlistId,
                 endpoint?.playlistSetVideoId,

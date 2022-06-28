@@ -7,7 +7,7 @@ import androidx.media3.common.*
 import kotlin.math.absoluteValue
 
 @Stable
-open class PlayerState(private val player: Player) : Player.Listener {
+class PlayerState(private val player: Player) : Player.Listener, Runnable {
     private val handler = Handler(Looper.getMainLooper())
 
     var currentPosition by mutableStateOf(player.currentPosition)
@@ -30,9 +30,6 @@ open class PlayerState(private val player: Player) : Player.Listener {
     var mediaMetadata by mutableStateOf(player.mediaMetadata)
         private set
 
-    var isPlaying by mutableStateOf(player.isPlaying)
-        private set
-
     var playWhenReady by mutableStateOf(player.playWhenReady)
         private set
 
@@ -47,16 +44,6 @@ open class PlayerState(private val player: Player) : Player.Listener {
     var volume by mutableStateOf(player.volume)
         private set
 
-    init {
-        handler.post(object : Runnable {
-            override fun run() {
-                duration = player.duration
-                currentPosition = player.currentPosition
-                handler.postDelayed(this, 500)
-            }
-        })
-    }
-
     override fun onVolumeChanged(volume: Float) {
         this.volume = volume
     }
@@ -67,10 +54,6 @@ open class PlayerState(private val player: Player) : Player.Listener {
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         this.mediaMetadata = mediaMetadata
-    }
-
-    override fun onIsPlayingChanged(isPlaying: Boolean) {
-        this.isPlaying = isPlaying
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -94,4 +77,38 @@ open class PlayerState(private val player: Player) : Player.Listener {
         mediaItems = timeline.mediaItems
         mediaItemIndex = player.currentMediaItemIndex
     }
+
+    override fun run() {
+        duration = player.duration
+        currentPosition = player.currentPosition
+        handler.postDelayed(this, 500)
+    }
+
+    fun init() {
+        player.addListener(this)
+        handler.post(this)
+    }
+
+    fun dispose() {
+        player.removeListener(this)
+        handler.removeCallbacks(this)
+    }
+}
+
+@Composable
+fun rememberPlayerState(
+    player: Player?
+): PlayerState? {
+    val playerState = remember(player) {
+        player?.let(::PlayerState)
+    }
+
+    playerState?.let {
+        DisposableEffect(Unit) {
+            playerState.init()
+            onDispose(playerState::dispose)
+        }
+    }
+
+    return playerState
 }
