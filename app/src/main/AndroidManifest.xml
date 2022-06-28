@@ -63,8 +63,9 @@
         </activity>
 
         <service
-            android:name=".services.PlayerService"
+            android:name=".service.PlayerService"
             android:exported="false"
+
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
@@ -80,7 +81,7 @@
         </receiver>
 
         <receiver
-            android:name=".services.PlayerService$StopServiceBroadcastReceiver"
+            android:name=".service.PlayerService$StopServiceBroadcastReceiver"
             android:exported="false" />
     </application>
 </manifest>
