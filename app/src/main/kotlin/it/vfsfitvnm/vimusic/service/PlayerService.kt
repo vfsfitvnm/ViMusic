@@ -30,10 +30,17 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.analytics.PlaybackStatsListener
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain
+import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
+import androidx.media3.exoplayer.audio.SonicAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
@@ -131,6 +138,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     .build(),
                 true
             )
+            .setRenderersFactory(createRendersFactory())
             .setUsePlatformDiagnostics(false)
             .build()
 
@@ -266,8 +274,14 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         if (playbackState == Player.STATE_READY) {
             if (player.duration != C.TIME_UNSET) {
                 metadataBuilder
-                    .putText(MediaMetadataCompat.METADATA_KEY_TITLE, player.currentMediaItem?.mediaMetadata?.title)
-                    .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, player.currentMediaItem?.mediaMetadata?.artist)
+                    .putText(
+                        MediaMetadataCompat.METADATA_KEY_TITLE,
+                        player.currentMediaItem?.mediaMetadata?.title
+                    )
+                    .putText(
+                        MediaMetadataCompat.METADATA_KEY_ARTIST,
+                        player.currentMediaItem?.mediaMetadata?.artist
+                    )
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
                 mediaSession.setMetadata(metadataBuilder.build())
             }
@@ -328,7 +342,8 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
-            .setSmallIcon(player.playerError?.let { R.drawable.alert_circle } ?: R.drawable.app_icon)
+            .setSmallIcon(player.playerError?.let { R.drawable.alert_circle }
+                ?: R.drawable.app_icon)
             .setOngoing(false)
             .setContentIntent(activityPendingIntent<MainActivity>())
             .setDeleteIntent(broadCastPendingIntent<StopServiceBroadcastReceiver>())
@@ -484,6 +499,36 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
+    private fun createRendersFactory(): RenderersFactory {
+        return object : DefaultRenderersFactory(this) {
+            override fun buildAudioSink(
+                context: Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean,
+                enableOffload: Boolean
+            ): AudioSink {
+                return DefaultAudioSink.Builder()
+                    .setEnableFloatOutput(enableFloatOutput)
+                    .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                    .setOffloadMode(
+                        if (enableOffload) {
+                            DefaultAudioSink.OFFLOAD_MODE_ENABLED_GAPLESS_REQUIRED
+                        } else {
+                            DefaultAudioSink.OFFLOAD_MODE_DISABLED
+                        }
+                    )
+                    .setAudioProcessorChain(
+                        DefaultAudioProcessorChain(
+                            emptyArray(),
+                            SilenceSkippingAudioProcessor(1_000_000, 20_000, 256),
+                            SonicAudioProcessor()
+                        )
+                    )
+                    .build()
+            }
+        }
+    }
+
     inner class Binder : android.os.Binder() {
         val player: ExoPlayer
             get() = this@PlayerService.player
@@ -522,10 +567,10 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
 
         fun setupRadio(endpoint: NavigationEndpoint.Endpoint.Watch?) =
-            startRadio(endpoint= endpoint, justAdd = true)
+            startRadio(endpoint = endpoint, justAdd = true)
 
         fun playRadio(endpoint: NavigationEndpoint.Endpoint.Watch?) =
-            startRadio(endpoint= endpoint, justAdd = false)
+            startRadio(endpoint = endpoint, justAdd = false)
 
         private fun startRadio(endpoint: NavigationEndpoint.Endpoint.Watch?, justAdd: Boolean) {
             radioJob?.cancel()
@@ -575,3 +620,4 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         private const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
     }
 }
+
