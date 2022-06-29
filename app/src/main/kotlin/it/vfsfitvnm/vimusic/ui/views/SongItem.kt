@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -67,7 +67,7 @@ fun SongItem(
 @Composable
 @NonRestartableComposable
 fun SongItem(
-    song: SongWithInfo,
+    song: DetailedSong,
     thumbnailSize: Int,
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
@@ -78,7 +78,7 @@ fun SongItem(
     SongItem(
         thumbnailModel = song.song.thumbnailUrl?.thumbnail(thumbnailSize),
         title = song.song.title,
-        authors = song.authors?.joinToString("") { it.text } ?: "",
+        authors = song.song.artistsText ?: "",
         durationText = song.song.durationText,
         menuContent = menuContent,
         onClick = onClick,

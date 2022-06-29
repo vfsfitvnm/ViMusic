@@ -15,7 +15,7 @@ data class PlaylistWithSongs(
             entityColumn = "songId"
         )
     )
-    val songs: List<SongWithInfo>
+    val songs: List<DetailedSong>
 ) {
     companion object {
         val Empty = PlaylistWithSongs(Playlist(-1, ""), emptyList())

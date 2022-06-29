@@ -3,7 +3,16 @@ package it.vfsfitvnm.vimusic.models
 import androidx.room.*
 
 
-@Entity
+@Entity(
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = Album::class,
+//            parentColumns = ["id"],
+//            childColumns = ["albumId"],
+//            onDelete = ForeignKey.CASCADE
+//        ),
+//    ]
+)
 data class Song(
     @PrimaryKey val id: String,
     val title: String,

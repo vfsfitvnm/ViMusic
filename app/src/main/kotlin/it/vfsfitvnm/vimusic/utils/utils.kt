@@ -28,46 +28,43 @@ fun Database.insert(mediaItem: MediaItem): Song {
             return@runInTransaction it
         }
 
-        val albumInfo = mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
-            Info(
-                text = mediaItem.mediaMetadata.albumTitle!!.toString(),
-                browseId = albumId
-            )
+        val album = mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+            Album(
+                id = albumId,
+                title = mediaItem.mediaMetadata.albumTitle!!.toString(),
+                year = null,
+                authorsText = null,
+                thumbnailUrl = null
+            ).also(::insert)
         }
-
-        val albumInfoId = albumInfo?.let { insert(it) }
-
-        val authorsInfo =
-            mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
-                mediaItem.mediaMetadata.extras!!.getStringArrayList("artistIds")?.let { artistIds ->
-                    artistNames.mapIndexed { index, artistName ->
-                        Info(
-                            text = artistName,
-                            browseId = artistIds.getOrNull(index)
-                        )
-                    }
-                }
-            }
 
         val song = Song(
             id = mediaItem.mediaId,
             title = mediaItem.mediaMetadata.title!!.toString(),
-            albumId = albumInfoId.toString(),
+            artistsText = mediaItem.mediaMetadata.artist!!.toString(),
+            albumId = album?.id,
             durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
             thumbnailUrl = mediaItem.mediaMetadata.artworkUri!!.toString(),
             loudnessDb = mediaItem.mediaMetadata.extras?.getFloat("loudnessDb"),
             contentLength = mediaItem.mediaMetadata.extras?.getLong("contentLength"),
-        )
+        ).also(::insert)
 
-        insert(song)
-
-        val authorsInfoId = authorsInfo?.let { insert(authorsInfo) }
-
-        authorsInfoId?.forEach { authorInfoId ->
+        mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
+            mediaItem.mediaMetadata.extras!!.getStringArrayList("artistIds")?.let { artistIds ->
+                artistNames.mapIndexed { index, artistName ->
+                    Artist(
+                        id = artistIds[index],
+                        name = artistName,
+                        thumbnailUrl = null,
+                        info = null
+                    ).also(::insert)
+                }
+            }
+        }?.forEach { artist ->
             insert(
-                SongWithAuthors(
-                    songId = mediaItem.mediaId,
-                    authorInfoId = authorInfoId
+                SongArtistMap(
+                    songId = song.id,
+                    artistId = artist.id
                 )
             )
         }
@@ -92,8 +89,8 @@ val YouTube.Item.Song.asMediaItem: MediaItem
                         "videoId" to info.endpoint!!.videoId,
                         "albumId" to album?.endpoint?.browseId,
                         "durationText" to durationText,
-                        "artistNames" to authors.map { it.name },
-                        "artistIds" to authors.map { it.endpoint?.browseId },
+                        "artistNames" to authors.filter { it.endpoint != null }.map { it.name },
+                        "artistIds" to authors.mapNotNull { it.endpoint?.browseId },
                     )
                 )
                 .build()
@@ -114,28 +111,28 @@ val YouTube.Item.Video.asMediaItem: MediaItem
                     bundleOf(
                         "videoId" to info.endpoint!!.videoId,
                         "durationText" to durationText,
-                        "artistNames" to if (isOfficialMusicVideo) authors.map { it.name } else null,
-                        "artistIds" to if (isOfficialMusicVideo) authors.map { it.endpoint?.browseId } else null,
+                        "artistNames" to if (isOfficialMusicVideo) authors.filter { it.endpoint != null }.map { it.name } else null,
+                        "artistIds" to if (isOfficialMusicVideo) authors.mapNotNull { it.endpoint?.browseId } else null,
                     )
                 )
                 .build()
         )
         .build()
 
-val SongWithInfo.asMediaItem: MediaItem
+val DetailedSong.asMediaItem: MediaItem
     get() = MediaItem.Builder()
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(song.title)
-                .setArtist(authors?.joinToString("") { it.text })
-                .setAlbumTitle(album?.text)
+                .setArtist(song.artistsText)
+                .setAlbumTitle(album?.title)
                 .setArtworkUri(song.thumbnailUrl?.toUri())
                 .setExtras(
                     bundleOf(
                         "videoId" to song.id,
-                        "albumId" to album?.browseId,
-                        "artistNames" to authors?.map { it.text },
-                        "artistIds" to authors?.map { it.browseId },
+                        "albumId" to album?.id,
+                        "artistNames" to artists?.map { it.name },
+                        "artistIds" to artists?.map { it.id },
                         "durationText" to song.durationText,
                         "loudnessDb" to song.loudnessDb
                     )
@@ -166,8 +163,8 @@ fun YouTube.PlaylistOrAlbum.Item.toMediaItem(
                         "playlistId" to info.endpoint?.playlistId,
                         "albumId" to (if (isFromAlbum) albumId else album?.endpoint?.browseId),
                         "durationText" to durationText,
-                        "artistNames" to (authors ?: playlistOrAlbum.authors)?.map { it.name },
-                        "artistIds" to (authors ?: playlistOrAlbum.authors)?.map { it.endpoint?.browseId }
+                        "artistNames" to (authors ?: playlistOrAlbum.authors)?.filter { it.endpoint != null }?.map { it.name },
+                        "artistIds" to (authors ?: playlistOrAlbum.authors)?.mapNotNull { it.endpoint?.browseId }
                     )
                 )
                 .build()

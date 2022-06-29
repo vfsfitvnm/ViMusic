@@ -20,7 +20,7 @@ import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
-import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
@@ -32,7 +32,7 @@ import kotlinx.coroutines.Dispatchers
 @ExperimentalAnimationApi
 @Composable
 fun InFavoritesMediaItemMenu(
-    song: SongWithInfo,
+    song: DetailedSong,
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null
 ) {
@@ -51,7 +51,7 @@ fun InFavoritesMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun InHistoryMediaItemMenu(
-    song: SongWithInfo,
+    song: DetailedSong,
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null
 ) {
@@ -94,7 +94,7 @@ fun InHistoryMediaItemMenu(
 fun InPlaylistMediaItemMenu(
     playlistId: Long,
     positionInPlaylist: Int,
-    song: SongWithInfo,
+    song: DetailedSong,
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null
 ) {

@@ -28,7 +28,7 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
@@ -40,6 +40,7 @@ import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 
 
@@ -96,8 +97,9 @@ fun ArtistScreen(
             }
 
             val songs by remember(browseId) {
-                Database.artistSongs(browseId)
-            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+                flowOf(emptyList<DetailedSong>())
+//                Database.artistSongs(browseId)
+            }.collectAsState(initial = emptyList<DetailedSong>(), context = Dispatchers.IO)
 
             LazyColumn(
                 state = lazyListState,
@@ -218,7 +220,7 @@ fun ArtistScreen(
                             modifier = Modifier
                                 .clickable(enabled = songs.isNotEmpty()) {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(songs.shuffled().map(SongWithInfo::asMediaItem))
+                                    binder?.player?.forcePlayFromBeginning(songs.shuffled().map(DetailedSong::asMediaItem))
                                 }
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(20.dp)
@@ -236,7 +238,7 @@ fun ArtistScreen(
                         thumbnailSize = songThumbnailSizePx,
                         onClick = {
                             binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(songs.map(SongWithInfo::asMediaItem), index)
+                            binder?.player?.forcePlayAtIndex(songs.map(DetailedSong::asMediaItem), index)
                         },
                         menuContent = {
                             InHistoryMediaItemMenu(song = song)

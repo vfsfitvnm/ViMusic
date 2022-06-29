@@ -1,11 +1,14 @@
 package it.vfsfitvnm.vimusic
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.room.*
 import androidx.room.migration.AutoMigrationSpec
+import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import it.vfsfitvnm.vimusic.models.*
@@ -22,8 +25,11 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(searchQuery: SearchQuery)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(info: Info): Long
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(info: Artist)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(info: Album)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(playlist: Playlist): Long
@@ -32,7 +38,7 @@ interface Database {
     fun insert(info: SongInPlaylist): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(info: List<Info>): List<Long>
+    fun insert(info: List<Artist>): List<Long>
 
     @Query("SELECT * FROM Song WHERE id = :id")
     fun songFlow(id: String): Flow<Song?>
@@ -48,19 +54,19 @@ interface Database {
 
     @Transaction
     @Query("SELECT * FROM Song WHERE id = :id")
-    fun songWithInfo(id: String): SongWithInfo?
+    fun songWithInfo(id: String): DetailedSong?
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
-    fun history(): Flow<List<SongWithInfo>>
+    fun history(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE likedAt IS NOT NULL ORDER BY likedAt DESC")
-    fun favorites(): Flow<List<SongWithInfo>>
+    fun favorites(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs >= 60000 ORDER BY totalPlayTimeMs DESC LIMIT 20")
-    fun mostPlayed(): Flow<List<SongWithInfo>>
+    fun mostPlayed(): Flow<List<DetailedSong>>
 
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
@@ -82,7 +88,7 @@ interface Database {
     fun incrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(songWithAuthors: SongWithAuthors): Long
+    fun insert(songWithAuthors: SongArtistMap): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(song: Song): Long
@@ -115,10 +121,10 @@ interface Database {
     @Query("SELECT thumbnailUrl FROM Song JOIN SongInPlaylist ON id = songId WHERE playlistId = :id ORDER BY position LIMIT 4")
     fun playlistThumbnailUrls(id: Long): Flow<List<String?>>
 
-    @Transaction
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId JOIN Song ON SongWithAuthors.songId = Song.id WHERE browseId = :artistId ORDER BY Song.ROWID DESC")
-    fun artistSongs(artistId: String): Flow<List<SongWithInfo>>
+//    @Transaction
+//    @RewriteQueriesToDropUnusedColumns
+//    @Query("SELECT * FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId JOIN Song ON SongWithAuthors.songId = Song.id WHERE browseId = :artistId ORDER BY Song.ROWID DESC")
+//    fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertQueue(queuedMediaItems: List<QueuedMediaItem>)
@@ -135,11 +141,9 @@ interface Database {
         Song::class,
         SongInPlaylist::class,
         Playlist::class,
-        Info::class,
-        SongWithAuthors::class,
-        Album::class,
         Artist::class,
         SongArtistMap::class,
+        Album::class,
         SearchQuery::class,
         QueuedMediaItem::class,
     ],
@@ -166,7 +170,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         lateinit var Instance: DatabaseInitializer
 
         context(Context)
-                operator fun invoke() {
+        operator fun invoke() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
@@ -183,8 +187,42 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     class From7To8Migration : AutoMigrationSpec
 
     class From8To9Migration : Migration(8, 9) {
-        override fun migrate(database: SupportSQLiteDatabase) {
+        override fun migrate(it: SupportSQLiteDatabase) {
+            it.query(SimpleSQLiteQuery("SELECT DISTINCT browseId, text, Info.id FROM Info JOIN Song ON Info.id = Song.albumId;")).use { cursor ->
+                val albumValues = ContentValues(2)
+                while (cursor.moveToNext()) {
+                    albumValues.put("id", cursor.getString(0))
+                    albumValues.put("title", cursor.getString(1))
+                    it.insert("Album", CONFLICT_IGNORE, albumValues)
 
+                    it.execSQL("UPDATE Song SET albumId = '${cursor.getString(0)}' WHERE albumId = ${cursor.getLong(2)}")
+                }
+            }
+
+            it.query(SimpleSQLiteQuery("SELECT GROUP_CONCAT(text, ''), SongWithAuthors.songId FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId GROUP BY songId;")).use { cursor ->
+                val songValues = ContentValues(1)
+                while (cursor.moveToNext()) {
+                    println("artistsText: ${cursor.getString(0)} (cursor.getString(1))")
+                    songValues.put("artistsText", cursor.getString(0))
+                    it.update("Song", CONFLICT_IGNORE, songValues, "id = ?", arrayOf(cursor.getString(1)))
+                }
+            }
+
+            it.query(SimpleSQLiteQuery("SELECT browseId, text, Info.id FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId WHERE browseId NOT NULL;")).use { cursor ->
+                val artistValues = ContentValues(2)
+                while (cursor.moveToNext()) {
+                    artistValues.put("id", cursor.getString(0))
+                    artistValues.put("name", cursor.getString(1))
+                    it.insert("Artist", CONFLICT_IGNORE, artistValues)
+
+                    it.execSQL("UPDATE SongWithAuthors SET authorInfoId = '${cursor.getString(0)}' WHERE authorInfoId = ${cursor.getLong(2)}")
+                }
+            }
+
+            it.execSQL("INSERT INTO SongArtistMap(songId, artistId) SELECT songId, authorInfoId FROM SongWithAuthors")
+
+            it.execSQL("DROP TABLE Info;")
+            it.execSQL("DROP TABLE SongWithAuthors;")
         }
     }
 }

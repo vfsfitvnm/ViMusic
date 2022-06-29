@@ -37,7 +37,7 @@ import it.vfsfitvnm.vimusic.enums.SongCollection
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
-import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
@@ -358,7 +358,7 @@ fun HomeScreen() {
                             modifier = Modifier
                                 .clickable(enabled = songCollection.isNotEmpty()) {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(songCollection.shuffled().map(SongWithInfo::asMediaItem))
+                                    binder?.player?.forcePlayFromBeginning(songCollection.shuffled().map(DetailedSong::asMediaItem))
                                 }
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(20.dp)
@@ -378,7 +378,7 @@ fun HomeScreen() {
                         thumbnailSize = thumbnailSize,
                         onClick = {
                             binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(songCollection.map(SongWithInfo::asMediaItem), index)
+                            binder?.player?.forcePlayAtIndex(songCollection.map(DetailedSong::asMediaItem), index)
                         },
                         menuContent = {
                             when (preferences.homePageSongCollection) {

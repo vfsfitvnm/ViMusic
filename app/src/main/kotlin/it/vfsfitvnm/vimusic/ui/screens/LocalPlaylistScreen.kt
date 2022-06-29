@@ -28,7 +28,7 @@ import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
 import it.vfsfitvnm.vimusic.models.SongInPlaylist
-import it.vfsfitvnm.vimusic.models.SongWithInfo
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
@@ -160,7 +160,7 @@ fun LocalPlaylistScreen(
                                                 enabled = playlistWithSongs.songs.isNotEmpty(),
                                                 onClick = {
                                                     menuState.hide()
-                                                    binder?.player?.enqueue(playlistWithSongs.songs.map(SongWithInfo::asMediaItem))
+                                                    binder?.player?.enqueue(playlistWithSongs.songs.map(DetailedSong::asMediaItem))
                                                 }
                                             )
 
@@ -225,7 +225,7 @@ fun LocalPlaylistScreen(
                                 modifier = Modifier
                                     .clickable {
                                         binder?.stopRadio()
-                                        binder?.player?.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem).shuffled())
+                                        binder?.player?.forcePlayFromBeginning(playlistWithSongs.songs.map(DetailedSong::asMediaItem).shuffled())
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -243,7 +243,7 @@ fun LocalPlaylistScreen(
                                 modifier = Modifier
                                     .clickable {
                                         binder?.stopRadio()
-                                        binder?.player?.forcePlayFromBeginning(playlistWithSongs.songs.map(SongWithInfo::asMediaItem))
+                                        binder?.player?.forcePlayFromBeginning(playlistWithSongs.songs.map(DetailedSong::asMediaItem))
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -267,7 +267,7 @@ fun LocalPlaylistScreen(
                         thumbnailSize = thumbnailSize,
                         onClick = {
                             binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(playlistWithSongs.songs.map(SongWithInfo::asMediaItem), index)
+                            binder?.player?.forcePlayAtIndex(playlistWithSongs.songs.map(DetailedSong::asMediaItem), index)
                         },
                         menuContent = {
                             InPlaylistMediaItemMenu(
