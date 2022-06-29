@@ -4,14 +4,12 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,7 +22,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
@@ -38,6 +35,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -154,7 +152,11 @@ fun ArtistScreen(
                                 .clickable {
                                     query {
                                         runBlocking {
-                                            Database.artist(browseId).first()?.copy(shufflePlaylistId = null)?.let(Database::update)
+                                            Database
+                                                .artist(browseId)
+                                                .first()
+                                                ?.copy(shufflePlaylistId = null)
+                                                ?.let(Database::update)
                                         }
                                     }
                                 }
@@ -292,22 +294,9 @@ fun ArtistScreen(
 
                 artistResult?.getOrNull()?.info?.let { description ->
                     item {
-                        Column(
-                            modifier = Modifier
-                                .padding(top = 32.dp)
-                                .padding(horizontal = 16.dp, vertical = 16.dp)
-                                .background(colorPalette.lightBackground)
-                                .padding(horizontal = 16.dp, vertical = 16.dp)
-                        ) {
-                            BasicText(
-                                text = "Information",
-                                style = typography.xxs.semiBold
-                            )
-
-                            BasicText(
-                                text = description,
-                                style = typography.xxs.secondary.align(TextAlign.Justify)
-                            )
+                        TextCard {
+                            Title(text = "Information")
+                            Text(text = description)
                         }
                     }
                 }
@@ -321,7 +310,6 @@ private fun LoadingOrError(
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null
 ) {
-    val typography = LocalTypography.current
     val colorPalette = LocalColorPalette.current
 
     Box {
@@ -353,41 +341,14 @@ private fun LoadingOrError(
         }
 
         errorMessage?.let {
-            Column(
+            TextCard(
+                icon = R.drawable.alert_circle,
+                onClick = onRetry,
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(bounded = true),
-                        enabled = onRetry != null,
-                        onClick = onRetry ?: {}
-                    )
-                    .background(colorPalette.lightBackground)
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Image(
-                    painter = painterResource(R.drawable.alert_circle),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.red),
-                    modifier = Modifier
-                        .padding(bottom = 16.dp)
-                        .size(24.dp)
-                )
-
-                BasicText(
-                    text = onRetry?.let { "Tap to retry" } ?: "Error",
-                    style = typography.xxs.semiBold,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
-
-                BasicText(
-                    text = "An error has occurred:\n$errorMessage",
-                    style = typography.xxs.secondary,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
+                Title(text = onRetry?.let { "Tap to retry" } ?: "Error")
+                Text(text = "An error has occurred:\n$errorMessage")
             }
         }
     }

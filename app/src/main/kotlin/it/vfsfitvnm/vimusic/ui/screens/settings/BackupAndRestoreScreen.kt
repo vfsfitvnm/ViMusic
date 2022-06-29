@@ -25,6 +25,7 @@ import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
+import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.PlaylistOrAlbumScreen
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
@@ -194,7 +195,6 @@ fun BackupAndRestoreScreen() {
                         )
                     }
 
-
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -231,53 +231,19 @@ fun BackupAndRestoreScreen() {
                     }
                 }
 
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
-                        .background(colorPalette.lightBackground)
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                TextCard(
+                    icon = R.drawable.alert_circle,
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.alert_circle),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.red),
-                        modifier = Modifier
-                            .padding(bottom = 16.dp)
-                            .size(24.dp)
-                    )
-//
-                    BasicText(
-                        text = "Backup",
-                        style = typography.xxs.semiBold,
-                        modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                    )
-
-                    BasicText(
-                        text = "The backup consists in exporting the application database to your device storage.\nThis means playlists, song history, favorites songs will exported.\nThis operation excludes personal preferences such as the theme mode and everything you can set in the Settings page.",
-                        style = typography.xxs.secondary,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
+                    Title(text = "Backup")
+                    Text(text = "The backup consists in exporting the application database to your device storage.\nThis means playlists, song history, favorites songs will exported.\nThis operation excludes personal preferences such as the theme mode and everything you can set in the Settings page.")
 
                     Spacer(
                         modifier = Modifier
                             .height(32.dp)
                     )
 
-                    BasicText(
-                        text = "Restore",
-                        style = typography.xxs.semiBold,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
-
-                    BasicText(
-                        text = "The restore replaces the existing application database with the selected - previously exported - one.\nThis means every currently existing data will be wiped: THE TWO DATABASES WON'T BE MERGED.\nIt is recommended to restore the database immediately after the application is installed on a new device.",
-                        style = typography.xxs.secondary,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
+                    Title(text = "Restore")
+                    Text(text = "The restore replaces the existing application database with the selected - previously exported - one.\nThis means every currently existing data will be wiped: THE TWO DATABASES WON'T BE MERGED.\nIt is recommended to restore the database immediately after the application is installed on a new device.")
                 }
             }
         }

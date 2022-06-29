@@ -19,6 +19,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.screens.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -223,6 +224,11 @@ fun OtherSettingsScreen() {
                         title = "Space used",
                         text = "${Formatter.formatShortFileSize(context, diskCacheSize)} (${diskCacheSize * 100 / preferences.exoPlayerDiskCacheMaxSizeBytes.coerceAtLeast(1)}%)",
                     )
+                }
+
+                TextCard(icon = R.drawable.alert_circle) {
+                    Title(text = "Cache strategy")
+                    Text(text = "The cache follows the LRU (Least Recently Used) strategy: when it runs out of space, the resources that haven't been accessed for the longest time are cleared to accommodate the new resource.")
                 }
             }
         }
