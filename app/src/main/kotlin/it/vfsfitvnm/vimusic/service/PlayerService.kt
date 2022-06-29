@@ -262,7 +262,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         if (preferences.volumeNormalization) {
             player.volume = player.currentMediaItem?.let { mediaItem ->
                 songPendingLoudnessDb.getOrElse(mediaItem.mediaId) {
-                    mediaItem.mediaMetadata.extras?.getFloat("loudnessDb")
+                    mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
                 }?.takeIf { it > 0 }?.let { loudnessDb ->
                     (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
                 }

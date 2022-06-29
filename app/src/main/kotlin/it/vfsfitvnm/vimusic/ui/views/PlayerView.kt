@@ -283,6 +283,18 @@ fun PlayerView(
                                 mutableStateOf(binder?.cache?.getCachedBytes(song?.id ?: "", 0, -1) ?: 0L)
                             }
 
+                            val loudnessDb by remember {
+                                derivedStateOf {
+                                    song?.loudnessDb ?: playerState.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
+                                }
+                            }
+
+                            val contentLength by remember {
+                                derivedStateOf {
+                                    song?.contentLength ?: playerState.mediaMetadata.extras?.getLongOrNull("contentLength")
+                                }
+                            }
+
                             DisposableEffect(song?.id) {
                                 val listener = object : Cache.Listener {
                                     override fun onSpanAdded(cache: Cache, span: CacheSpan) {
@@ -363,13 +375,13 @@ fun PlayerView(
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
                                         BasicText(
-                                            text = song?.loudnessDb?.let { loudnessDb ->
+                                            text = loudnessDb?.let { loudnessDb ->
                                                 "%.2f dB".format(loudnessDb)
                                             } ?: "Unknown",
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
                                         BasicText(
-                                            text = song?.contentLength?.let { contentLength ->
+                                            text = contentLength?.let { contentLength ->
                                                 Formatter.formatShortFileSize(
                                                     context,
                                                     contentLength
@@ -381,7 +393,7 @@ fun PlayerView(
                                             text = buildString {
                                                 append(Formatter.formatShortFileSize(context, cachedBytes))
 
-                                                song?.contentLength?.let { contentLength ->
+                                                contentLength?.let { contentLength ->
                                                     append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
                                                 }
                                             },
@@ -390,7 +402,7 @@ fun PlayerView(
                                     }
                                 }
 
-                                if (song != null && (song?.contentLength == null || song?.loudnessDb == null)) {
+                                if (song != null && (contentLength == null || loudnessDb == null)) {
                                     BasicText(
                                         text = "FILL MISSING DATA",
                                         style = typography.xxs.semiBold.color(BlackColorPalette.text),

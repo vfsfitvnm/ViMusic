@@ -45,8 +45,8 @@ fun Database.insert(mediaItem: MediaItem): Song {
             albumId = album?.id,
             durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
             thumbnailUrl = mediaItem.mediaMetadata.artworkUri!!.toString(),
-            loudnessDb = mediaItem.mediaMetadata.extras?.getFloat("loudnessDb"),
-            contentLength = mediaItem.mediaMetadata.extras?.getLong("contentLength"),
+            loudnessDb = mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb"),
+            contentLength = mediaItem.mediaMetadata.extras?.getLongOrNull("contentLength"),
         ).also(::insert)
 
         mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
