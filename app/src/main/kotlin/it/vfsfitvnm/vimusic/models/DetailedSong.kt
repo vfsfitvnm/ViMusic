@@ -4,22 +4,23 @@ import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
 
-open class SongWithInfo(
+
+data class DetailedSong(
     @Embedded val song: Song,
     @Relation(
-        entity = Info::class,
+        entity = Album::class,
         parentColumn = "albumId",
         entityColumn = "id"
-    ) val album: Info?,
+    ) val album: Album?,
     @Relation(
-        entity = Info::class,
+        entity = Artist::class,
         parentColumn = "id",
         entityColumn = "id",
         associateBy = Junction(
-            value = SongWithAuthors::class,
+            value = SongArtistMap::class,
             parentColumn = "songId",
-            entityColumn = "authorInfoId"
+            entityColumn = "artistId"
         )
     )
-    val authors: List<Info>?
+    val artists: List<Artist>?
 )

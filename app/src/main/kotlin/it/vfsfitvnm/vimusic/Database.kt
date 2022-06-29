@@ -6,6 +6,8 @@ import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.room.*
 import androidx.room.migration.AutoMigrationSpec
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import it.vfsfitvnm.vimusic.models.*
 import kotlinx.coroutines.flow.Flow
 
@@ -135,13 +137,16 @@ interface Database {
         Playlist::class,
         Info::class,
         SongWithAuthors::class,
+        Album::class,
+        Artist::class,
+        SongArtistMap::class,
         SearchQuery::class,
         QueuedMediaItem::class,
     ],
     views = [
         SortedSongInPlaylist::class
     ],
-    version = 6,
+    version = 9,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -149,6 +154,8 @@ interface Database {
         AutoMigration(from = 3, to = 4, spec = DatabaseInitializer.From3To4Migration::class),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
     ],
 )
 @TypeConverters(Converters::class)
@@ -163,6 +170,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
+                    .addMigrations(From8To9Migration())
                     .build()
             }
         }
@@ -170,6 +178,15 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     @DeleteTable.Entries(DeleteTable(tableName = "QueuedMediaItem"))
     class From3To4Migration : AutoMigrationSpec
+
+    @RenameColumn.Entries(RenameColumn("Song", "albumInfoId", "albumId"))
+    class From7To8Migration : AutoMigrationSpec
+
+    class From8To9Migration : Migration(8, 9) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+
+        }
+    }
 }
 
 @TypeConverters

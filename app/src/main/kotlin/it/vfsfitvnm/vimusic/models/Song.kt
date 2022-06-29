@@ -7,7 +7,8 @@ import androidx.room.*
 data class Song(
     @PrimaryKey val id: String,
     val title: String,
-    val albumInfoId: Long?,
+    val albumId: String?,
+    val artistsText: String? = null,
     val durationText: String,
     val thumbnailUrl: String?,
     val lyrics: String? = null,
