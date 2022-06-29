@@ -228,7 +228,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
-        if (bitmapProvider.setDefaultBitmap()) {
+        if (bitmapProvider.setDefaultBitmap() && player.currentMediaItem != null) {
             notificationManager.notify(NotificationId, notification())
         }
         super.onConfigurationChanged(newConfig)
