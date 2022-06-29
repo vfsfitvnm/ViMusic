@@ -4,14 +4,14 @@ import androidx.room.*
 
 
 @Entity(
-//    foreignKeys = [
-//        ForeignKey(
-//            entity = Album::class,
-//            parentColumns = ["id"],
-//            childColumns = ["albumId"],
-//            onDelete = ForeignKey.CASCADE
-//        ),
-//    ]
+    foreignKeys = [
+        ForeignKey(
+            entity = Album::class,
+            parentColumns = ["id"],
+            childColumns = ["albumId"],
+            onDelete = ForeignKey.SET_NULL
+        ),
+    ]
 )
 data class Song(
     @PrimaryKey val id: String,

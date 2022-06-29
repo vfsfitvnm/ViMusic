@@ -150,7 +150,7 @@ interface Database {
     views = [
         SortedSongInPlaylist::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -160,6 +160,7 @@ interface Database {
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
+        AutoMigration(from = 9, to = 10),
     ],
 )
 @TypeConverters(Converters::class)
