@@ -210,7 +210,6 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             it.query(SimpleSQLiteQuery("SELECT GROUP_CONCAT(text, ''), SongWithAuthors.songId FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId GROUP BY songId;")).use { cursor ->
                 val songValues = ContentValues(1)
                 while (cursor.moveToNext()) {
-                    println("artistsText: ${cursor.getString(0)} (cursor.getString(1))")
                     songValues.put("artistsText", cursor.getString(0))
                     it.update("Song", CONFLICT_IGNORE, songValues, "id = ?", arrayOf(cursor.getString(1)))
                 }
