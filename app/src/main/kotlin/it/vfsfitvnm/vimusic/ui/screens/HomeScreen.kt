@@ -144,6 +144,10 @@ fun HomeScreen() {
         }
 
         host {
+            // This somehow prevents items to not be displayed sometimes...
+            @Suppress("UNUSED_EXPRESSION") playlistPreviews
+            @Suppress("UNUSED_EXPRESSION") songCollection
+
             val binder = LocalPlayerServiceBinder.current
             val density = LocalDensity.current
 
@@ -328,7 +332,8 @@ fun HomeScreen() {
                             )
 
                             val songCollections = enumValues<SongCollection>()
-                            val nextSongCollection = songCollections[(preferences.homePageSongCollection.ordinal + 1) % songCollections.size]
+                            val nextSongCollection =
+                                songCollections[(preferences.homePageSongCollection.ordinal + 1) % songCollections.size]
 
                             BasicText(
                                 text = when (nextSongCollection) {
@@ -358,7 +363,11 @@ fun HomeScreen() {
                             modifier = Modifier
                                 .clickable(enabled = songCollection.isNotEmpty()) {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(songCollection.shuffled().map(DetailedSong::asMediaItem))
+                                    binder?.player?.forcePlayFromBeginning(
+                                        songCollection
+                                            .shuffled()
+                                            .map(DetailedSong::asMediaItem)
+                                    )
                                 }
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(20.dp)
@@ -378,7 +387,10 @@ fun HomeScreen() {
                         thumbnailSize = thumbnailSize,
                         onClick = {
                             binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(songCollection.map(DetailedSong::asMediaItem), index)
+                            binder?.player?.forcePlayAtIndex(
+                                songCollection.map(DetailedSong::asMediaItem),
+                                index
+                            )
                         },
                         menuContent = {
                             when (preferences.homePageSongCollection) {
