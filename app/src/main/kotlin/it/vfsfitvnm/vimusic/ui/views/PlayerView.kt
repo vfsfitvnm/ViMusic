@@ -381,8 +381,8 @@ fun PlayerView(
                                             text = buildString {
                                                 append(Formatter.formatShortFileSize(context, cachedBytes))
 
-                                                song?.contentLength?.let { contentLenght ->
-                                                    append(" (${(cachedBytes.toFloat() / contentLenght * 100).roundToInt()}%)")
+                                                song?.contentLength?.let { contentLength ->
+                                                    append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
                                                 }
                                             },
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
