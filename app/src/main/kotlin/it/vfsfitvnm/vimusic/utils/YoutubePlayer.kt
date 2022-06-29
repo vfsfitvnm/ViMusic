@@ -24,7 +24,7 @@ data class YouTubeRadio(
 
         nextContinuation = withContext(Dispatchers.IO) {
             YouTube.next(
-                videoId = videoId ?: error("This should not happen"),
+                videoId = videoId,
                 playlistId = playlistId,
                 params = parameters,
                 playlistSetVideoId = playlistSetVideoId,

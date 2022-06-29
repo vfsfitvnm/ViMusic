@@ -62,7 +62,7 @@ data class NavigationEndpoint(
         data class Watch(
             val params: String? = null,
             val playlistId: String? = null,
-            val videoId: String,
+            val videoId: String? = null,
             val index: Int? = null,
             val playlistSetVideoId: String? = null,
             val watchEndpointMusicSupportedConfigs: WatchEndpointMusicSupportedConfigs? = null,

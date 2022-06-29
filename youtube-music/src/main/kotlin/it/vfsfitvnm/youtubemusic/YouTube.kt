@@ -1,6 +1,7 @@
 package it.vfsfitvnm.youtubemusic
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.compression.*
@@ -71,7 +72,7 @@ object YouTube {
     data class NextBody(
         val context: Context,
         val isAudioOnly: Boolean,
-        val videoId: String,
+        val videoId: String?,
         val playlistId: String?,
         val tunerSettingValue: String,
         val index: Int?,
@@ -532,7 +533,7 @@ object YouTube {
     }
 
     suspend fun next(
-        videoId: String,
+        videoId: String?,
         playlistId: String?,
         index: Int? = null,
         params: String? = null,
@@ -688,6 +689,22 @@ object YouTube {
         }.bodyCatching()
     }
 
+    suspend fun browse2(browseId: String): Result<BrowseResponse> {
+        return runCatching {
+            client.post("/youtubei/v1/browse") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    BrowseBody(
+                        browseId = browseId,
+                        context = Context.DefaultWeb
+                    )
+                )
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+            }.body()
+        }
+    }
+
     open class PlaylistOrAlbum(
         val title: String?,
         val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
@@ -821,8 +838,8 @@ object YouTube {
         val radioEndpoint: NavigationEndpoint.Endpoint.Watch?
     )
 
-    suspend fun artist(browseId: String): Outcome<Artist> {
-        return browse(browseId).map { body ->
+    suspend fun artist(browseId: String): Result<Artist> {
+        return browse2(browseId).map { body ->
             Artist(
                 name = body
                     .header

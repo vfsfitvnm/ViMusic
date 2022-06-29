@@ -75,7 +75,7 @@ fun Database.insert(mediaItem: MediaItem): Song {
 
 val YouTube.Item.Song.asMediaItem: MediaItem
     get() = MediaItem.Builder()
-        .setMediaId(info.endpoint!!.videoId)
+        .setMediaId(info.endpoint!!.videoId!!)
         .setUri(info.endpoint!!.videoId)
         .setCustomCacheKey(info.endpoint!!.videoId)
         .setMediaMetadata(
@@ -99,7 +99,7 @@ val YouTube.Item.Song.asMediaItem: MediaItem
 
 val YouTube.Item.Video.asMediaItem: MediaItem
     get() = MediaItem.Builder()
-        .setMediaId(info.endpoint!!.videoId)
+        .setMediaId(info.endpoint!!.videoId!!)
         .setUri(info.endpoint!!.videoId)
         .setCustomCacheKey(info.endpoint!!.videoId)
         .setMediaMetadata(
