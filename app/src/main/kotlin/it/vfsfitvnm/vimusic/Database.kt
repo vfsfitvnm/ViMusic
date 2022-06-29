@@ -52,6 +52,9 @@ interface Database {
     @Query("SELECT * FROM Song")
     fun songs(): Flow<List<Song>>
 
+    @Query("SELECT * FROM Artist WHERE id = :id")
+    fun artist(id: String): Flow<Artist?>
+
     @Transaction
     @Query("SELECT * FROM Song WHERE id = :id")
     fun songWithInfo(id: String): DetailedSong?
@@ -95,6 +98,9 @@ interface Database {
 
     @Update
     fun update(song: Song)
+
+    @Update
+    fun update(artist: Artist)
 
     @Update
     fun update(songInPlaylist: SongInPlaylist)
@@ -150,7 +156,7 @@ interface Database {
     views = [
         SortedSongInPlaylist::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -161,6 +167,7 @@ interface Database {
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
         AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 10, to = 11),
     ],
 )
 @TypeConverters(Converters::class)
