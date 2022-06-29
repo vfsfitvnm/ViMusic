@@ -458,8 +458,7 @@ fun PlayerView(
             )
 
             BasicText(
-                text = playerState.mediaMetadata.extras?.getStringArrayList("artistNames")
-                    ?.joinToString("") ?: "",
+                text = playerState.mediaMetadata.artist?.toString() ?: "",
                 style = typography.s.semiBold.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

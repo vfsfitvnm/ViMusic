@@ -97,9 +97,8 @@ fun ArtistScreen(
             }
 
             val songs by remember(browseId) {
-                flowOf(emptyList<DetailedSong>())
-//                Database.artistSongs(browseId)
-            }.collectAsState(initial = emptyList<DetailedSong>(), context = Dispatchers.IO)
+                Database.artistSongs(browseId)
+            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
             LazyColumn(
                 state = lazyListState,

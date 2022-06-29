@@ -121,10 +121,10 @@ interface Database {
     @Query("SELECT thumbnailUrl FROM Song JOIN SongInPlaylist ON id = songId WHERE playlistId = :id ORDER BY position LIMIT 4")
     fun playlistThumbnailUrls(id: Long): Flow<List<String?>>
 
-//    @Transaction
-//    @RewriteQueriesToDropUnusedColumns
-//    @Query("SELECT * FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId JOIN Song ON SongWithAuthors.songId = Song.id WHERE browseId = :artistId ORDER BY Song.ROWID DESC")
-//    fun artistSongs(artistId: String): Flow<List<DetailedSong>>
+    @Transaction
+    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
+    @RewriteQueriesToDropUnusedColumns
+    fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertQueue(queuedMediaItems: List<QueuedMediaItem>)
