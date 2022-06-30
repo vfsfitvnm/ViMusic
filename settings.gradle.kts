@@ -16,6 +16,8 @@ dependencyResolutionManagement {
 
             alias("android-media").to("androidx.media", "media").version("1.6.0")
 
+            version("compose-compiler", "1.2.0-beta03")
+
             version("compose", "1.2.0-beta03")
             alias("compose-foundation").to("androidx.compose.foundation", "foundation").versionRef("compose")
             alias("compose-ui").to("androidx.compose.ui", "ui").versionRef("compose")
