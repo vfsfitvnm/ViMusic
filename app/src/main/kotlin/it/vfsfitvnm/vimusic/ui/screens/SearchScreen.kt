@@ -87,12 +87,12 @@ fun SearchScreen(
         }
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            PlaylistOrAlbumScreen(
+            AlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }

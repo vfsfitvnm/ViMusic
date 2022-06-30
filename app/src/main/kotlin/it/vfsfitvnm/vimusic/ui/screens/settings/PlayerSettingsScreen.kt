@@ -37,14 +37,14 @@ import kotlinx.coroutines.flow.flowOf
 @ExperimentalAnimationApi
 @Composable
 fun PlayerSettingsScreen() {
-    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            PlaylistOrAlbumScreen(
+            AlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }

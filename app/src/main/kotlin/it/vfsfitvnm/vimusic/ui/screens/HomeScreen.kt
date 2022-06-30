@@ -66,7 +66,7 @@ fun HomeScreen() {
     val playlistRoute = rememberLocalPlaylistRoute()
     val searchRoute = rememberSearchRoute()
     val searchResultRoute = rememberSearchResultRoute()
-    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     val playlistPreviews by remember {
@@ -128,7 +128,7 @@ fun HomeScreen() {
         }
 
         albumRoute { browseId ->
-            PlaylistOrAlbumScreen(browseId = browseId ?: error("browseId cannot be null"))
+            AlbumScreen(browseId = browseId ?: error("browseId cannot be null"))
         }
 
         artistRoute { browseId ->

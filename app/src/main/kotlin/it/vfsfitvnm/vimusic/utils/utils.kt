@@ -28,26 +28,34 @@ fun Database.insert(mediaItem: MediaItem): Song {
             return@runInTransaction it
         }
 
-        val album = mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
-            Album(
-                id = albumId,
-                title = mediaItem.mediaMetadata.albumTitle!!.toString(),
-                year = null,
-                authorsText = null,
-                thumbnailUrl = null
-            ).also(::insert)
-        }
-
         val song = Song(
             id = mediaItem.mediaId,
             title = mediaItem.mediaMetadata.title!!.toString(),
             artistsText = mediaItem.mediaMetadata.artist!!.toString(),
-            albumId = album?.id,
             durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
             thumbnailUrl = mediaItem.mediaMetadata.artworkUri!!.toString(),
             loudnessDb = mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb"),
             contentLength = mediaItem.mediaMetadata.extras?.getLongOrNull("contentLength"),
         ).also(::insert)
+
+        mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+            Album(
+                id = albumId,
+                title = mediaItem.mediaMetadata.albumTitle!!.toString(),
+                year = null,
+                authorsText = null,
+                thumbnailUrl = null,
+                shareUrl = null,
+            ).also(::insert)
+
+            insert(
+                SongAlbumMap(
+                    songId = song.id,
+                    albumId = albumId,
+                    position = null
+                )
+            )
+        }
 
         mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
             mediaItem.mediaMetadata.extras!!.getStringArrayList("artistIds")?.let { artistIds ->
@@ -125,12 +133,11 @@ val DetailedSong.asMediaItem: MediaItem
             MediaMetadata.Builder()
                 .setTitle(song.title)
                 .setArtist(song.artistsText)
-                .setAlbumTitle(album?.title)
                 .setArtworkUri(song.thumbnailUrl?.toUri())
                 .setExtras(
                     bundleOf(
                         "videoId" to song.id,
-                        "albumId" to album?.id,
+                        "albumId" to albumId,
                         "artistNames" to artists?.map { it.name },
                         "artistIds" to artists?.map { it.id },
                         "durationText" to song.durationText,

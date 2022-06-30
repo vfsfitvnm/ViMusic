@@ -17,9 +17,9 @@ import it.vfsfitvnm.vimusic.BuildConfig
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
-import it.vfsfitvnm.vimusic.ui.screens.PlaylistOrAlbumScreen
+import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.bold
@@ -29,14 +29,14 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 @ExperimentalAnimationApi
 @Composable
 fun AboutScreen() {
-    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
-            PlaylistOrAlbumScreen(
+            AlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }

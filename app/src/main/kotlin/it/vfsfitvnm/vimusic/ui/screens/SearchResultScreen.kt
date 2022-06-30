@@ -90,14 +90,14 @@ fun SearchResultScreen(
         }
     }
 
-    val playlistOrAlbumRoute = rememberPlaylistOrAlbumRoute()
+    val playlistOrAlbumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(
         listenToGlobalEmitter = true
     ) {
         playlistOrAlbumRoute { browseId ->
-            PlaylistOrAlbumScreen(
+            AlbumScreen(
                 browseId = browseId ?: "browseId cannot be null"
             )
         }

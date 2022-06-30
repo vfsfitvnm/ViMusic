@@ -24,7 +24,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberPlaylistOrAlbumRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
@@ -202,7 +202,7 @@ fun BaseMediaItemMenu(
 ) {
     val context = LocalContext.current
 
-    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
     MediaItemMenu(

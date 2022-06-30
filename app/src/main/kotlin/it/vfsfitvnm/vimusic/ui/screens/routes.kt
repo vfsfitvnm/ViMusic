@@ -19,12 +19,22 @@ fun rememberIntentUriRoute(): Route1<Uri?> {
 }
 
 @Composable
-fun rememberPlaylistOrAlbumRoute(): Route1<String?> {
+fun rememberPlaylistRoute(): Route1<String?> {
     val browseId = rememberSaveable {
         mutableStateOf<String?>(null)
     }
     return remember {
-        Route1("PlaylistOrAlbumRoute", browseId)
+        Route1("PlaylistRoute", browseId)
+    }
+}
+
+@Composable
+fun rememberAlbumRoute(): Route1<String?> {
+    val browseId = rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+    return remember {
+        Route1("AlbumRoute", browseId)
     }
 }
 

@@ -29,7 +29,7 @@ import it.vfsfitvnm.vimusic.utils.*
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen() {
-    val albumRoute = rememberPlaylistOrAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
     val appearanceSettingsRoute = rememberAppearanceSettingsRoute()
     val playerSettingsRoute = rememberPlayerSettingsRoute()
@@ -53,7 +53,7 @@ fun SettingsScreen() {
         }
     ) {
         albumRoute { browseId ->
-            PlaylistOrAlbumScreen(
+            AlbumScreen(
                 browseId = browseId ?: error("browseId cannot be null")
             )
         }
