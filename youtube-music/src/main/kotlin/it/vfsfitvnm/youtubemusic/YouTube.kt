@@ -690,7 +690,7 @@ object YouTube {
     }
 
     suspend fun browse2(browseId: String): Result<BrowseResponse> {
-        return runCatching {
+        return runCatching<YouTube, BrowseResponse> {
             client.post("/youtubei/v1/browse") {
                 contentType(ContentType.Application.Json)
                 setBody(

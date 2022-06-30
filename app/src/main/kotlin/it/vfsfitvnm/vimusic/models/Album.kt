@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 data class Album(
     @PrimaryKey val id: String,
     val title: String?,
-    val thumbnailUrl: String?,
-    val year: String?,
-    val authorsText: String?,
-    val shareUrl: String?
+    val thumbnailUrl: String? = null,
+    val year: String? = null,
+    val authorsText: String? = null,
+    val shareUrl: String? = null
 )

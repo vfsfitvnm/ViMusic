@@ -46,9 +46,9 @@ fun Database.insert(mediaItem: MediaItem): Song {
                 authorsText = null,
                 thumbnailUrl = null,
                 shareUrl = null,
-            ).also(::insert)
+            ).also(::upsert)
 
-            insert(
+            upsert(
                 SongAlbumMap(
                     songId = song.id,
                     albumId = albumId,

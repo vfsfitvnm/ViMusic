@@ -10,7 +10,8 @@ data class DetailedSong(
     @Relation(
         entity = SongAlbumMap::class,
         entityColumn = "songId",
-        parentColumn = "id"
+        parentColumn = "id",
+        projection = ["albumId"]
     )
     val albumId: String?,
     @Relation(

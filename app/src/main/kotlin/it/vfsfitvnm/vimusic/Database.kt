@@ -29,7 +29,7 @@ interface Database {
     fun insert(info: Artist)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Album)
+    fun insert(info: Album): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(playlist: Playlist): Long
@@ -111,6 +111,21 @@ interface Database {
     @Update
     fun update(album: Album)
 
+    fun upsert(album: Album) {
+        if (insert(album) == -1L) {
+            update(album)
+        }
+    }
+
+    @Update
+    fun update(songAlbumMap: SongAlbumMap)
+
+    fun upsert(songAlbumMap: SongAlbumMap) {
+        if (insert(songAlbumMap) == -1L) {
+            update(songAlbumMap)
+        }
+    }
+
     @Update
     fun update(songInPlaylist: SongInPlaylist)
 
@@ -141,10 +156,10 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
-//    @Transaction
-//    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
-//    @RewriteQueriesToDropUnusedColumns
-//    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
+    @Transaction
+    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
+    @RewriteQueriesToDropUnusedColumns
+    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertQueue(queuedMediaItems: List<QueuedMediaItem>)
@@ -181,7 +196,7 @@ interface Database {
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
-        AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 9, to = 10)
     ],
 )
 @TypeConverters(Converters::class)
@@ -196,7 +211,6 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
-//                    .addMigrations(From8To9Migration())
                     .addMigrations(From8To9Migration(), From10To11Migration())
                     .build()
             }
