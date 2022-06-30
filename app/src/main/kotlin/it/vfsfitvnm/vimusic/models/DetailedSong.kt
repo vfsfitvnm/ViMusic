@@ -8,14 +8,15 @@ import androidx.room.Relation
 data class DetailedSong(
     @Embedded val song: Song,
     @Relation(
-        entity = Album::class,
-        parentColumn = "albumId",
-        entityColumn = "id"
-    ) val album: Album?,
+        entity = SongAlbumMap::class,
+        entityColumn = "songId",
+        parentColumn = "id"
+    )
+    val albumId: String?,
     @Relation(
         entity = Artist::class,
-        parentColumn = "id",
         entityColumn = "id",
+        parentColumn = "id",
         associateBy = Junction(
             value = SongArtistMap::class,
             parentColumn = "songId",

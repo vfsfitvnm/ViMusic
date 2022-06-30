@@ -37,6 +37,9 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(info: SongInPlaylist): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(songAlbumMap: SongAlbumMap): Long
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(info: List<Artist>): List<Long>
 
@@ -54,6 +57,9 @@ interface Database {
 
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
+
+    @Query("SELECT * FROM Album WHERE id = :id")
+    fun album(id: String): Flow<Album?>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE id = :id")
@@ -103,6 +109,9 @@ interface Database {
     fun update(artist: Artist)
 
     @Update
+    fun update(album: Album)
+
+    @Update
     fun update(songInPlaylist: SongInPlaylist)
 
     @Update
@@ -132,6 +141,11 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
+//    @Transaction
+//    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
+//    @RewriteQueriesToDropUnusedColumns
+//    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertQueue(queuedMediaItems: List<QueuedMediaItem>)
 
@@ -150,6 +164,7 @@ interface Database {
         Artist::class,
         SongArtistMap::class,
         Album::class,
+        SongAlbumMap::class,
         SearchQuery::class,
         QueuedMediaItem::class,
     ],
@@ -167,7 +182,6 @@ interface Database {
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
         AutoMigration(from = 9, to = 10),
-        AutoMigration(from = 10, to = 11),
     ],
 )
 @TypeConverters(Converters::class)
@@ -182,7 +196,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
-                    .addMigrations(From8To9Migration())
+//                    .addMigrations(From8To9Migration())
+                    .addMigrations(From8To9Migration(), From10To11Migration())
                     .build()
             }
         }
@@ -230,6 +245,25 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
             it.execSQL("DROP TABLE Info;")
             it.execSQL("DROP TABLE SongWithAuthors;")
+        }
+    }
+
+    class From10To11Migration : Migration(10, 11) {
+        override fun migrate(it: SupportSQLiteDatabase) {
+            it.query(SimpleSQLiteQuery("SELECT id, albumId FROM Song;")).use { cursor ->
+                val songAlbumMapValues = ContentValues(2)
+                while (cursor.moveToNext()) {
+                    songAlbumMapValues.put("songId", cursor.getString(0))
+                    songAlbumMapValues.put("albumId", cursor.getString(1))
+                    it.insert("SongAlbumMap", CONFLICT_IGNORE, songAlbumMapValues)
+                }
+            }
+
+            it.execSQL("CREATE TABLE IF NOT EXISTS `Song_new` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT NOT NULL, `thumbnailUrl` TEXT, `lyrics` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, `loudnessDb` REAL, `contentLength` INTEGER, PRIMARY KEY(`id`))")
+
+            it.execSQL("INSERT INTO Song_new(id, title, artistsText, durationText, thumbnailUrl, lyrics, likedAt, totalPlayTimeMs, loudnessDb, contentLength) SELECT id, title, artistsText, durationText, thumbnailUrl, lyrics, likedAt, totalPlayTimeMs, loudnessDb, contentLength FROM Song;")
+            it.execSQL("DROP TABLE Song;")
+            it.execSQL("ALTER TABLE Song_new RENAME TO Song;")
         }
     }
 }
