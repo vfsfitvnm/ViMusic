@@ -90,14 +90,21 @@ fun SearchResultScreen(
         }
     }
 
-    val playlistOrAlbumRoute = rememberAlbumRoute()
+    val albumRoute = rememberAlbumRoute()
+    val playlistRoute = rememberPlaylistRoute()
     val artistRoute = rememberArtistRoute()
 
     RouteHandler(
         listenToGlobalEmitter = true
     ) {
-        playlistOrAlbumRoute { browseId ->
+        albumRoute { browseId ->
             AlbumScreen(
+                browseId = browseId ?: "browseId cannot be null"
+            )
+        }
+
+        playlistRoute { browseId ->
+            PlaylistScreen(
                 browseId = browseId ?: "browseId cannot be null"
             )
         }
@@ -212,9 +219,9 @@ fun SearchResultScreen(
                         thumbnailSizePx = thumbnailSizePx,
                         onClick = {
                             when (item) {
-                                is YouTube.Item.Album -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
+                                is YouTube.Item.Album -> albumRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Artist -> artistRoute(item.info.endpoint!!.browseId)
-                                is YouTube.Item.Playlist -> playlistOrAlbumRoute(item.info.endpoint!!.browseId)
+                                is YouTube.Item.Playlist -> playlistRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Song -> {
                                     binder?.player?.forcePlay(item.asMediaItem)
                                     binder?.setupRadio(item.info.endpoint)
