@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.ui.views
 
 import android.app.SearchManager
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
@@ -218,13 +219,16 @@ fun PlayerBottomSheet(
                         }
                     },
                     onSearchOnline = {
-                        player?.mediaMetadata?.let {
-                            context.startActivity(Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                putExtra(
-                                    SearchManager.QUERY,
-                                    "${it.title} ${it.artist} lyrics"
-                                )
-                            })
+                        val mediaMetadata = player?.mediaMetadata ?: return@LyricsView
+
+                        val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
+                            putExtra(SearchManager.QUERY, "${mediaMetadata.title} ${mediaMetadata.artist} lyrics")
+                        }
+
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "No browser app found!", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onLyricsUpdate = { lyrics ->
