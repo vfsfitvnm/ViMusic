@@ -1,6 +1,8 @@
+
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization") version "1.6.21"
+    @Suppress("DSL_SCOPE_VIOLATION")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 sourceSets.all {
