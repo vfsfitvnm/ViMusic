@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.text.format.DateUtils
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -65,15 +66,6 @@ fun PlayerSettingsScreen() {
             val activityResultLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 }
-
-            val audioSessionId = remember(binder) {
-                val hasEqualizer = context.packageManager.resolveActivity(
-                    Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL),
-                    0
-                ) != null
-
-                if (hasEqualizer) binder?.player?.audioSessionId else null
-            }
 
             val sleepTimerMillisLeft by (binder?.sleepTimerMillisLeft
                 ?: flowOf(null)).collectAsState(initial = null)
@@ -252,17 +244,18 @@ fun PlayerSettingsScreen() {
                     title = "Equalizer",
                     text = "Interact with the system equalizer",
                     onClick = {
-                        activityResultLauncher.launch(
-                            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
-                                putExtra(
-                                    AudioEffect.EXTRA_CONTENT_TYPE,
-                                    AudioEffect.CONTENT_TYPE_MUSIC
-                                )
-                            }
-                        )
-                    },
-                    isEnabled = audioSessionId != null
+                        val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder?.player?.audioSessionId)
+                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                        }
+
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            activityResultLauncher.launch(intent)
+                        } else {
+                            Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
 
                 SettingsEntry(
