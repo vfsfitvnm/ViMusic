@@ -4,7 +4,7 @@ import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
-import it.vfsfitvnm.vimusic.utils.preferences
+import it.vfsfitvnm.vimusic.utils.Preferences
 
 
 class MainApplication : Application(), ImageLoaderFactory {
@@ -19,7 +19,7 @@ class MainApplication : Application(), ImageLoaderFactory {
             .diskCache(
                 DiskCache.Builder()
                     .directory(filesDir.resolve("coil"))
-                    .maxSizeBytes(preferences.coilDiskCacheMaxSizeBytes)
+                    .maxSizeBytes(Preferences().coilDiskCacheMaxSizeBytes)
                     .build()
             )
             .build()

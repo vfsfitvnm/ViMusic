@@ -127,6 +127,8 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
         createNotificationChannel()
 
+        val preferences = Preferences()
+
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
 
@@ -201,7 +203,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     }
 
     override fun onDestroy() {
-        if (preferences.persistentQueue) {
+        if (Preferences().persistentQueue) {
             val mediaItems = player.currentTimeline.mediaItems
             val mediaItemIndex = player.currentMediaItemIndex
             val mediaItemPosition = player.currentPosition
@@ -262,7 +264,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     }
 
     private fun normalizeVolume() {
-        if (preferences.volumeNormalization) {
+        if (Preferences().volumeNormalization) {
             player.volume = player.currentMediaItem?.let { mediaItem ->
                 songPendingLoudnessDb.getOrElse(mediaItem.mediaId) {
                     mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
