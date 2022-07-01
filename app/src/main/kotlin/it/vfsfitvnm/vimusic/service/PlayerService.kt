@@ -17,6 +17,9 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v4.media.session.PlaybackStateCompat.*
 import androidx.annotation.DrawableRes
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.core.net.toUri
@@ -541,6 +544,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
         private var radioJob: Job? = null
 
+        var isLoadingRadio by mutableStateOf(false)
+            private set
+
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()
 
@@ -581,6 +587,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                 endpoint?.playlistSetVideoId,
                 endpoint?.params
             ).let {
+                isLoadingRadio = true
                 radioJob = coroutineScope.launch(Dispatchers.Main) {
                     if (justAdd) {
                         player.addMediaItems(it.process().drop(1))
@@ -588,11 +595,13 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                         player.forcePlayFromBeginning(it.process())
                     }
                     radio = it
+                    isLoadingRadio = false
                 }
             }
         }
 
         fun stopRadio() {
+            isLoadingRadio = false
             radioJob?.cancel()
             radio = null
         }

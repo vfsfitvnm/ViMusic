@@ -1,8 +1,6 @@
 package it.vfsfitvnm.vimusic.utils
 
-import androidx.compose.runtime.*
 import androidx.media3.common.MediaItem
-import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,13 +11,9 @@ data class YouTubeRadio(
     private val playlistSetVideoId: String? = null,
     private val parameters: String? = null
 ) {
-    var nextContinuation by mutableStateOf<Outcome<String?>>(Outcome.Initial)
+    private var nextContinuation: String? = null
 
     suspend fun process(): List<MediaItem> {
-        val token = nextContinuation.valueOrNull
-
-        nextContinuation = Outcome.Loading
-
         var mediaItems: List<MediaItem>? = null
 
         nextContinuation = withContext(Dispatchers.IO) {
@@ -28,13 +22,12 @@ data class YouTubeRadio(
                 playlistId = playlistId,
                 params = parameters,
                 playlistSetVideoId = playlistSetVideoId,
-                continuation = token
+                continuation = nextContinuation
             )
         }.map { nextResult ->
             mediaItems = nextResult.items?.map(YouTube.Item.Song::asMediaItem)
-
-            nextResult.continuation?.takeUnless { token == nextResult.continuation }
-        }.recoverWith(token)
+            nextResult.continuation?.takeUnless { nextContinuation == nextResult.continuation }
+        }.recoverWith(nextContinuation).valueOrNull
 
         return mediaItems ?: emptyList()
     }
