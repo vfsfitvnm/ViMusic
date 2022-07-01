@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.utils.drawCircle
 
+
 @Composable
 fun Switch(
     isChecked: Boolean,
@@ -41,7 +42,7 @@ fun Switch(
                     radius = 8.dp.toPx(),
                     center = size.center.copy(x = offset.toPx()),
                     shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.4f),
+                        color = Color.Black.copy(alpha = if (isChecked) 0.4f else 0.1f),
                         blurRadius = 8.dp.toPx(),
                         offset = Offset(x = -1.dp.toPx(), y = 1.dp.toPx())
                     )
