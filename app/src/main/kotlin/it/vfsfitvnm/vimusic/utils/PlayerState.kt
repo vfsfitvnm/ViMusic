@@ -6,107 +6,131 @@ import androidx.compose.runtime.*
 import androidx.media3.common.*
 import kotlin.math.absoluteValue
 
+
 @Stable
-class PlayerState(private val player: Player) : Player.Listener, Runnable {
-    private val handler = Handler(Looper.getMainLooper())
-
-    var currentPosition by mutableStateOf(player.currentPosition)
-
-    var duration by mutableStateOf(player.duration)
-        private set
+data class PlayerState(
+    val currentPosition: Long,
+    val duration: Long,
+    val playbackState: Int,
+    val mediaItemIndex: Int,
+    val mediaItem: MediaItem?,
+    val mediaMetadata: MediaMetadata,
+    val playWhenReady: Boolean,
+    val repeatMode: Int,
+    val error: PlaybackException?,
+    val mediaItems: List<MediaItem>,
+    val volume: Float
+) {
+    constructor(player: Player) : this(
+        currentPosition = player.currentPosition,
+        duration = player.duration,
+        playbackState = player.playbackState,
+        mediaItemIndex = player.currentMediaItemIndex,
+        mediaItem = player.currentMediaItem,
+        mediaMetadata = player.mediaMetadata,
+        playWhenReady = player.playWhenReady,
+        repeatMode = player.repeatMode,
+        error = player.playerError,
+        mediaItems = player.currentTimeline.mediaItems,
+        volume = player.volume
+    )
 
     val progress: Float
         get() = currentPosition.toFloat() / duration.absoluteValue
-
-    var playbackState by mutableStateOf(player.playbackState)
-        private set
-
-    var mediaItemIndex by mutableStateOf(player.currentMediaItemIndex)
-        private set
-
-    var mediaItem by mutableStateOf(player.currentMediaItem)
-        private set
-
-    var mediaMetadata by mutableStateOf(player.mediaMetadata)
-        private set
-
-    var playWhenReady by mutableStateOf(player.playWhenReady)
-        private set
-
-    var repeatMode by mutableStateOf(player.repeatMode)
-        private set
-
-    var error by mutableStateOf(player.playerError)
-
-    var mediaItems by mutableStateOf(player.currentTimeline.mediaItems)
-        private set
-
-    var volume by mutableStateOf(player.volume)
-        private set
-
-    override fun onVolumeChanged(volume: Float) {
-        this.volume = volume
-    }
-
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        this.playbackState = playbackState
-    }
-
-    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-        this.mediaMetadata = mediaMetadata
-    }
-
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        this.playWhenReady = playWhenReady
-    }
-
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        this.mediaItem = mediaItem
-        mediaItemIndex = player.currentMediaItemIndex
-    }
-
-    override fun onRepeatModeChanged(repeatMode: Int) {
-        this.repeatMode = repeatMode
-    }
-
-    override fun onPlayerError(playbackException: PlaybackException) {
-        error = playbackException
-    }
-
-    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        mediaItems = timeline.mediaItems
-        mediaItemIndex = player.currentMediaItemIndex
-    }
-
-    override fun run() {
-        duration = player.duration
-        currentPosition = player.currentPosition
-        handler.postDelayed(this, 500)
-    }
-
-    fun init() {
-        player.addListener(this)
-        handler.post(this)
-    }
-
-    fun dispose() {
-        player.removeListener(this)
-        handler.removeCallbacks(this)
-    }
 }
+
 
 @Composable
 fun rememberPlayerState(
     player: Player?
 ): PlayerState? {
-    val playerState = remember(player) {
-        player?.let(::PlayerState)
+    var playerState by remember(player) {
+        mutableStateOf(player?.let(::PlayerState))
     }
 
-    playerState?.let {
-        DisposableEffect(Unit) {
-            playerState.init()
-            onDispose(playerState::dispose)
+    DisposableEffect(player) {
+        if (player == null) return@DisposableEffect onDispose { }
+
+        var isSeeking = false
+
+        val handler = Handler(Looper.getMainLooper())
+
+        val listener = object : Player.Listener, Runnable {
+            override fun onVolumeChanged(volume: Float) {
+                playerState = playerState?.copy(volume = volume)
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                playerState = playerState?.copy(playbackState = playbackState)
+
+                if (playbackState == Player.STATE_READY) {
+                    isSeeking = false
+                }
+            }
+
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                playerState = playerState?.copy(mediaMetadata = mediaMetadata)
+            }
+
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                playerState = playerState?.copy(playWhenReady = playWhenReady)
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                playerState = playerState?.copy(
+                    currentPosition = player.currentPosition,
+                    mediaItem = mediaItem,
+                    mediaItemIndex = player.currentMediaItemIndex
+                )
+            }
+
+            override fun onRepeatModeChanged(repeatMode: Int) {
+                playerState = playerState?.copy(repeatMode = repeatMode)
+            }
+
+            override fun onPlayerError(playbackException: PlaybackException) {
+                playerState = playerState?.copy(error = playbackException)
+            }
+
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                playerState = playerState?.copy(
+                    mediaItems = timeline.mediaItems,
+                    mediaItemIndex = player.currentMediaItemIndex
+                )
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
+                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+                    isSeeking = true
+                    playerState = playerState?.copy(
+                        duration = player.duration,
+                        currentPosition = player.currentPosition
+                    )
+                }
+            }
+
+            override fun run() {
+                if (!isSeeking) {
+                    playerState = playerState?.copy(
+                        duration = player.duration,
+                        currentPosition = player.currentPosition
+                    )
+                }
+
+                handler.postDelayed(this, 500)
+            }
+        }
+
+        player.addListener(listener)
+        handler.post(listener)
+
+        onDispose {
+            player.removeListener(listener)
+            handler.removeCallbacks(listener)
         }
     }
 

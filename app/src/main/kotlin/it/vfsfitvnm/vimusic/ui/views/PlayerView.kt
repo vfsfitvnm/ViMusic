@@ -31,7 +31,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
@@ -53,7 +52,6 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.PlayerResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -78,6 +76,7 @@ fun PlayerView(
 
     val coroutineScope = rememberCoroutineScope()
 
+    player ?: return
     playerState?.mediaItem ?: return
 
     val smallThumbnailSize = remember {
@@ -156,9 +155,9 @@ fun PlayerView(
                             modifier = Modifier
                                 .clickable {
                                     if (playerState.playbackState == Player.STATE_IDLE) {
-                                        player?.prepare()
+                                        player.prepare()
                                     }
-                                    player?.play()
+                                    player.play()
                                 }
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
@@ -169,9 +168,7 @@ fun PlayerView(
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
-                                .clickable {
-                                    player?.pause()
-                                }
+                                .clickable(onClick = player::pause)
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
                                 .size(24.dp)
@@ -181,11 +178,8 @@ fun PlayerView(
             }
         }
     ) {
-        val song by remember(playerState.mediaItem?.mediaId) {
-            playerState.mediaItem?.mediaId?.let(Database::song)?.distinctUntilChanged()
-                ?: flowOf(
-                    null
-                )
+        val song by remember(playerState.mediaItem.mediaId) {
+            playerState.mediaItem.mediaId.let(Database::song).distinctUntilChanged()
         }.collectAsState(initial = null, context = Dispatchers.IO)
 
         var isShowingStatsForNerds by rememberSaveable {
@@ -218,7 +212,7 @@ fun PlayerView(
                         .clickable {
                             menuState.display {
                                 QueuedMediaItemMenu(
-                                    mediaItem = playerState.mediaItem ?: MediaItem.EMPTY,
+                                    mediaItem = playerState.mediaItem,
                                     indexInQueue = null,
                                     onDismiss = menuState::hide,
                                     onGlobalRouteEmitted = layoutState.collapse
@@ -247,7 +241,7 @@ fun PlayerView(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     val artworkUri = remember(it) {
-                        player?.getMediaItemAt(it)?.mediaMetadata?.artworkUri.thumbnail(
+                        player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
                             thumbnailSizePx
                         )
                     }
@@ -281,7 +275,7 @@ fun PlayerView(
                             exit = fadeOut(),
                         ) {
                             var cachedBytes by remember(song?.id) {
-                                mutableStateOf(binder?.cache?.getCachedBytes(song?.id ?: "", 0, -1) ?: 0L)
+                                mutableStateOf(binder.cache.getCachedBytes(playerState.mediaItem.mediaId, 0, -1))
                             }
 
                             val loudnessDb by remember {
@@ -297,6 +291,8 @@ fun PlayerView(
                             }
 
                             DisposableEffect(song?.id) {
+                                val key = playerState.mediaItem.mediaId
+
                                 val listener = object : Cache.Listener {
                                     override fun onSpanAdded(cache: Cache, span: CacheSpan) {
                                         cachedBytes += span.length
@@ -313,15 +309,10 @@ fun PlayerView(
                                     ) = Unit
                                 }
 
-                                song?.id?.let { key ->
-                                    binder?.cache?.addListener(key, listener)
-                                }
-
+                                binder.cache.addListener(key, listener)
 
                                 onDispose {
-                                    song?.id?.let { key ->
-                                        binder?.cache?.removeListener(key, listener)
-                                    }
+                                    binder.cache.removeListener(key, listener)
                                 }
                             }
 
@@ -368,7 +359,7 @@ fun PlayerView(
 
                                     Column {
                                         BasicText(
-                                            text = playerState.mediaItem?.mediaId ?: "Unknown",
+                                            text = playerState.mediaItem.mediaId,
                                             style = typography.xs.semiBold.color(BlackColorPalette.text)
                                         )
                                         BasicText(
@@ -451,11 +442,10 @@ fun PlayerView(
                         .size(thumbnailSizeDp)
                 ) {
                     LoadingOrError(
-                        errorMessage = playerState.error?.javaClass?.canonicalName,
+                        errorMessage = playerState.error.javaClass.canonicalName,
                         onRetry = {
-                            player?.playWhenReady = true
-                            player?.prepare()
-                            playerState.error = null
+                            player.playWhenReady = true
+                            player.prepare()
                         }
                     ) {}
                 }
@@ -494,10 +484,7 @@ fun PlayerView(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let { scrubbingPosition ->
-                        player?.seekTo(scrubbingPosition)
-                        playerState.currentPosition = scrubbingPosition
-                    }
+                    scrubbingPosition?.let(player::seekTo)
                     scrubbingPosition = null
                 },
                 color = colorPalette.text,
@@ -553,9 +540,7 @@ fun PlayerView(
                             query {
                                 song?.let { song ->
                                     Database.update(song.toggleLike())
-                                } ?: playerState.mediaItem?.let { mediaItem ->
-                                    Database.insert(mediaItem, Song::toggleLike)
-                                }
+                                } ?: Database.insert(playerState.mediaItem, Song::toggleLike)
                             }
                         }
                         .padding(horizontal = 16.dp)
@@ -567,9 +552,7 @@ fun PlayerView(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
-                        .clickable {
-                            player?.seekToPrevious()
-                        }
+                        .clickable(onClick = player::seekToPrevious)
                         .padding(horizontal = 16.dp)
                         .size(32.dp)
                 )
@@ -581,11 +564,11 @@ fun PlayerView(
                         colorFilter = ColorFilter.tint(colorPalette.text),
                         modifier = Modifier
                             .clickable {
-                                if (player?.playbackState == Player.STATE_IDLE) {
+                                if (player.playbackState == Player.STATE_IDLE) {
                                     player.prepare()
                                 }
 
-                                player?.play()
+                                player.play()
                             }
                             .size(64.dp)
                     )
@@ -594,9 +577,7 @@ fun PlayerView(
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette.text),
                         modifier = Modifier
-                            .clickable {
-                                player?.pause()
-                            }
+                            .clickable(onClick = player::pause)
                             .size(64.dp)
                     )
                 }
@@ -606,13 +587,10 @@ fun PlayerView(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
-                        .clickable {
-                            player?.seekToNext()
-                        }
+                        .clickable(onClick = player::seekToNext)
                         .padding(horizontal = 16.dp)
                         .size(32.dp)
                 )
-
 
                 Image(
                     painter = painterResource(
@@ -632,10 +610,10 @@ fun PlayerView(
                     ),
                     modifier = Modifier
                         .clickable {
-                            player?.repeatMode
-                                ?.plus(2)
-                                ?.mod(3)
-                                ?.let { repeatMode ->
+                            player.repeatMode
+                                .plus(2)
+                                .mod(3)
+                                .let { repeatMode ->
                                     player.repeatMode = repeatMode
                                     preferences.repeatMode = repeatMode
                                 }
