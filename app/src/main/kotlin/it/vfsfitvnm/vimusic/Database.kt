@@ -26,7 +26,7 @@ interface Database {
     fun insert(searchQuery: SearchQuery)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Artist)
+    fun insert(info: Artist): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(info: Album): Long
@@ -39,9 +39,6 @@ interface Database {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(songAlbumMap: SongAlbumMap): Long
-
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(info: List<Artist>): List<Long>
 
     @Query("SELECT * FROM Song WHERE id = :id")
     fun songFlow(id: String): Flow<Song?>
@@ -107,6 +104,12 @@ interface Database {
 
     @Update
     fun update(artist: Artist)
+
+    fun upsert(artist: Artist) {
+        if (insert(artist) == -1L) {
+            update(artist)
+        }
+    }
 
     @Update
     fun update(album: Album)

@@ -95,7 +95,7 @@ fun ArtistScreen(
                                 shufflePlaylistId = youtubeArtist.shuffleEndpoint?.playlistId,
                                 radioVideoId = youtubeArtist.radioEndpoint?.videoId,
                                 radioPlaylistId = youtubeArtist.radioEndpoint?.playlistId,
-                            ).also(Database::update)
+                            ).also(Database::upsert)
                         }
                 }.distinctUntilChanged()
             }.collectAsState(initial = null, context = Dispatchers.IO)
