@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoilApi::class)
 @ExperimentalAnimationApi
 @Composable
-fun OtherSettingsScreen() {
+fun CacheSettingsScreen() {
     val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
@@ -82,7 +82,7 @@ fun OtherSettingsScreen() {
                     )
 
                     BasicText(
-                        text = "Other",
+                        text = "Cache",
                         style = typography.m.semiBold
                     )
 
@@ -102,11 +102,7 @@ fun OtherSettingsScreen() {
                         mutableStateOf<Long?>(null)
                     }
 
-                    SettingsEntryGroupText(
-                        icon = R.drawable.image,
-                        iconColor = colorPalette.green,
-                        title = "IMAGE CACHE",
-                    )
+                    SettingsEntryGroupText(title = "IMAGE CACHE")
 
                     Column(
                         modifier = Modifier
@@ -175,11 +171,7 @@ fun OtherSettingsScreen() {
                         mutableStateOf<Long?>(null)
                     }
 
-                    SettingsEntryGroupText(
-                        icon = R.drawable.musical_notes,
-                        iconColor = colorPalette.cyan,
-                        title = "SONG CACHE",
-                    )
+                    SettingsEntryGroupText(title = "SONG CACHE")
 
                     Column(
                         modifier = Modifier

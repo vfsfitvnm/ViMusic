@@ -26,9 +26,9 @@ fun rememberBackupAndRestoreRoute(): Route0 {
 }
 
 @Composable
-fun rememberOtherSettingsRoute(): Route0 {
+fun rememberCacheSettingsRoute(): Route0 {
     return remember {
-        Route0("OtherSettingsRoute")
+        Route0("CacheSettingsRoute")
     }
 }
 

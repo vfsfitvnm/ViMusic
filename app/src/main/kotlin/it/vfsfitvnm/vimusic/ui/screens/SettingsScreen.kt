@@ -34,7 +34,7 @@ fun SettingsScreen() {
     val appearanceSettingsRoute = rememberAppearanceSettingsRoute()
     val playerSettingsRoute = rememberPlayerSettingsRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
-    val otherSettingsRoute = rememberOtherSettingsRoute()
+    val cacheSettingsRoute = rememberCacheSettingsRoute()
     val aboutRoute = rememberAboutRoute()
 
     val scrollState = rememberScrollState()
@@ -76,8 +76,8 @@ fun SettingsScreen() {
             BackupAndRestoreScreen()
         }
 
-        otherSettingsRoute {
-            OtherSettingsScreen()
+        cacheSettingsRoute {
+            CacheSettingsScreen()
         }
 
         aboutRoute {
@@ -174,7 +174,7 @@ fun SettingsScreen() {
                 }
 
                 Entry(
-                    color = colorPalette.blue,
+                    color = colorPalette.magenta,
                     icon = R.drawable.color_palette,
                     title = "Appearance",
                     description = "Change the colors and shapes of the app",
@@ -182,7 +182,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.cyan,
+                    color = colorPalette.blue,
                     icon = R.drawable.play,
                     title = "Player & Audio",
                     description = "Player and audio settings",
@@ -190,19 +190,19 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.orange,
+                    color = colorPalette.cyan,
                     icon = R.drawable.server,
-                    title = "Backup & Restore",
-                    description = "Backup and restore the app database",
-                    route = backupAndRestoreRoute
+                    title = "Cache",
+                    description = "Manage the used space",
+                    route = cacheSettingsRoute
                 )
 
                 Entry(
-                    color = colorPalette.magenta,
-                    icon = R.drawable.shapes,
-                    title = "Other",
-                    description = "Advanced options",
-                    route = otherSettingsRoute
+                    color = colorPalette.orange,
+                    icon = R.drawable.save,
+                    title = "Backup & Restore",
+                    description = "Backup and restore the app database",
+                    route = backupAndRestoreRoute
                 )
 
                 Entry(
@@ -408,7 +408,7 @@ fun SettingsEntryGroupText(
 
     BasicText(
         text = title.uppercase(),
-        style = typography.xs.semiBold,
+        style = typography.xs.semiBold.copy(LocalColorPalette.current.blue),
         modifier = modifier
             .padding(start = 24.dp, top = 24.dp)
             .padding(horizontal = 32.dp)
