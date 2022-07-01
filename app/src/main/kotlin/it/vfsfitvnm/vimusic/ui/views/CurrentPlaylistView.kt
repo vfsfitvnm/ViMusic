@@ -26,8 +26,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
+import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -132,7 +131,6 @@ fun CurrentPlaylistView(
                             } else {
                                 MusicBars(
                                     color = LightColorPalette.background,
-//                                    shape = RectangleShape,
                                     modifier = Modifier
                                         .height(24.dp)
                                 )
@@ -159,12 +157,12 @@ fun CurrentPlaylistView(
 
         item {
             if (binder?.isLoadingRadio == true) {
-                val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
-
-                Column {
+                Column(
+                    modifier = Modifier
+                        .shimmer()
+                ) {
                     repeat(3) { index ->
                         SmallSongItemShimmer(
-                            shimmer = shimmer,
                             thumbnailSizeDp = 54.dp,
                             modifier = Modifier
                                 .alpha(1f - index * 0.125f)

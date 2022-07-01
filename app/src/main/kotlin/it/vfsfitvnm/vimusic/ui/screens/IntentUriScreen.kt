@@ -69,8 +69,6 @@ fun IntentUriScreen(uri: Uri) {
             val density = LocalDensity.current
             val binder = LocalPlayerServiceBinder.current
 
-            val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
-
             var items by remember(uri) {
                 mutableStateOf<Outcome<List<YouTube.Item.Song>>>(Outcome.Loading)
             }
@@ -206,7 +204,6 @@ fun IntentUriScreen(uri: Uri) {
                     }
                     is Outcome.Loading, is Outcome.Initial -> items(count = 5) { index ->
                         SmallSongItemShimmer(
-                            shimmer = shimmer,
                             thumbnailSizeDp = 54.dp,
                             modifier = Modifier
                                 .alpha(1f - index * 0.175f)

@@ -26,22 +26,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.valentinilk.shimmer.Shimmer
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
-import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.ui.components.*
+import it.vfsfitvnm.vimusic.ui.components.ChipGroup
+import it.vfsfitvnm.vimusic.ui.components.ChipItem
+import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -61,26 +60,26 @@ fun SearchResultScreen(
 
     val lazyListState = rememberLazyListState()
 
-    var continuation by remember(preferences.searchFilter) {
-        mutableStateOf<Outcome<String?>>(Outcome.Initial)
-    }
-
     val items = remember(preferences.searchFilter) {
         mutableStateListOf<YouTube.Item>()
     }
 
+    var continuationResult by remember(preferences.searchFilter) {
+        mutableStateOf<Result<String?>?>(null)
+    }
+
     val onLoad = relaunchableEffect(preferences.searchFilter) {
         withContext(Dispatchers.Main) {
-            val token = continuation.valueOrNull
+            val token = continuationResult?.getOrNull()
 
-            continuation = Outcome.Loading
+            continuationResult = null
 
-            continuation = withContext(Dispatchers.IO) {
+            continuationResult = withContext(Dispatchers.IO) {
                 YouTube.search(query, preferences.searchFilter, token)
-            }.map { searchResult ->
+            }?.map { searchResult ->
                 items.addAll(searchResult.items)
                 searchResult.continuation
-            }.recoverWith(token)
+            }
         }
     }
 
@@ -116,8 +115,6 @@ fun SearchResultScreen(
         }
 
         host {
-            val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window)
-
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -237,63 +234,35 @@ fun SearchResultScreen(
                     )
                 }
 
-                when (val currentResult = continuation) {
-                    is Outcome.Error -> item {
-                        Error(
-                            error = currentResult,
-                            onRetry = onLoad,
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                        )
-                    }
-                    is Outcome.Recovered -> item {
-                        Error(
-                            error = currentResult.error,
-                            onRetry = onLoad,
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                        )
-                    }
-                    is Outcome.Success -> {
-                        if (items.isEmpty()) {
-                            item {
-                                Message(
-                                    text = "No results found",
-                                    modifier = Modifier
-                                )
-                            }
+                continuationResult?.getOrNull()?.let {
+                    if (items.isNotEmpty()) {
+                        item {
+                            SideEffect(onLoad)
                         }
-
-                        if (currentResult.value != null) {
-                            item {
-                                SideEffect(onLoad)
+                    }
+                } ?: continuationResult?.exceptionOrNull()?.let { throwable ->
+                    item {
+                        LoadingOrError(
+                            errorMessage = throwable.javaClass.canonicalName,
+                            onRetry = onLoad
+                        )
+                    }
+                } ?: continuationResult?.let {
+                    if (items.isEmpty()) {
+                        item {
+                            TextCard(
+                                icon = R.drawable.sad
+                            ) {
+                                Title(text = "No results found")
+                                Text(text = "Please try a different query or category.")
                             }
                         }
                     }
-                    else -> {}
-                }
-
-                if (continuation is Outcome.Loading || (continuation is Outcome.Success && continuation.valueOrNull != null)) {
-                    items(count = if (items.isEmpty()) 8 else 3, key = { it }) { index ->
-                        when (preferences.searchFilter) {
-                            YouTube.Item.Artist.Filter.value -> SmallArtistItemShimmer(
-                                shimmer = shimmer,
-                                thumbnailSizeDp = 54.dp,
-                                modifier = Modifier
-                                    .alpha(1f - index * 0.125f)
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp, horizontal = 16.dp)
-                            )
-                            else -> SmallSongItemShimmer(
-                                shimmer = shimmer,
-                                thumbnailSizeDp = 54.dp,
-                                modifier = Modifier
-                                    .alpha(1f - index * 0.125f)
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp, horizontal = 16.dp)
-                            )
-                        }
-                    }
+                } ?: item(key = "loading") {
+                    LoadingOrError(
+                        itemCount = if (items.isEmpty()) 8 else 3,
+                        isLoadingArtists = preferences.searchFilter == YouTube.Item.Artist.Filter.value
+                    )
                 }
             }
         }
@@ -302,7 +271,6 @@ fun SearchResultScreen(
 
 @Composable
 fun SmallSongItemShimmer(
-    shimmer: Shimmer,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier
 ) {
@@ -312,7 +280,6 @@ fun SmallSongItemShimmer(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
-            .shimmer(shimmer)
     ) {
         Spacer(
             modifier = Modifier
@@ -329,7 +296,6 @@ fun SmallSongItemShimmer(
 
 @Composable
 fun SmallArtistItemShimmer(
-    shimmer: Shimmer,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier
 ) {
@@ -339,7 +305,6 @@ fun SmallArtistItemShimmer(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
-            .shimmer(shimmer)
     ) {
         Spacer(
             modifier = Modifier
@@ -577,5 +542,39 @@ fun SmallArtistItem(
             modifier = Modifier
                 .weight(1f)
         )
+    }
+}
+
+@Composable
+private fun LoadingOrError(
+    itemCount: Int = 0,
+    isLoadingArtists: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: (() -> Unit)? = null
+) {
+    LoadingOrError(
+        errorMessage = errorMessage,
+        onRetry = onRetry,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        repeat(itemCount) { index ->
+            if (isLoadingArtists) {
+                SmallArtistItemShimmer(
+                    thumbnailSizeDp = 54.dp,
+                    modifier = Modifier
+                        .alpha(1f - index * 0.125f)
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                )
+            } else {
+                SmallSongItemShimmer(
+                    thumbnailSizeDp = 54.dp,
+                    modifier = Modifier
+                        .alpha(1f - index * 0.125f)
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                )
+            }
+        }
     }
 }

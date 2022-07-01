@@ -364,43 +364,39 @@ object YouTube {
         query: String,
         filter: String,
         continuation: String?
-    ): Outcome<SearchResult> {
-        return client.postCatching("/youtubei/v1/search") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                SearchBody(
-                    context = Context.DefaultWeb,
-                    query = query,
-                    params = filter
+    ): Result<SearchResult>? {
+        return runCatching {
+            val musicShelfRenderer = client.post("/youtubei/v1/search") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    SearchBody(
+                        context = Context.DefaultWeb,
+                        query = query,
+                        params = filter
+                    )
                 )
-            )
-            parameter("key", Key)
-            parameter("prettyPrint", false)
-            parameter("continuation", continuation)
-        }.flatMap { response ->
-            if (continuation == null) {
-                response.bodyCatching<SearchResponse>()
-                    .map { body ->
-                        body
-                            .contents
-                            .tabbedSearchResultsRenderer
-                            .tabs
-                            .firstOrNull()
-                            ?.tabRenderer
-                            ?.content
-                            ?.sectionListRenderer
-                            ?.contents
-                            ?.lastOrNull()
-                            ?.musicShelfRenderer
-                    }
-            } else {
-                response.bodyCatching<ContinuationResponse>().map { body ->
-                    body
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+                parameter("continuation", continuation)
+            }.let { response ->
+                if (continuation == null) {
+                    response.body<SearchResponse>()
+                        .contents
+                        .tabbedSearchResultsRenderer
+                        .tabs
+                        .firstOrNull()
+                        ?.tabRenderer
+                        ?.content
+                        ?.sectionListRenderer
+                        ?.contents
+                        ?.lastOrNull()
+                        ?.musicShelfRenderer
+                } else {
+                    response.body<ContinuationResponse>()
                         .continuationContents
                         .musicShelfContinuation
                 }
             }
-        }.map { musicShelfRenderer ->
             SearchResult(
                 items = musicShelfRenderer
                     ?.contents
@@ -421,7 +417,7 @@ object YouTube {
                     ?.nextRadioContinuationData
                     ?.continuation
             )
-        }
+        }.recoverIfCancelled()
     }
 
     suspend fun getSearchSuggestions(input: String): Outcome<List<String>?> {
@@ -657,7 +653,7 @@ object YouTube {
                 return if (browseId == null) {
                     Result.success(null)
                 } else {
-                    browse2(browseId)?.map { body ->
+                    browse(browseId)?.map { body ->
                         body.contents
                             .sectionListRenderer
                             ?.contents
@@ -675,21 +671,7 @@ object YouTube {
         )
     }
 
-    suspend fun browse(browseId: String): Outcome<BrowseResponse> {
-        return client.postCatching("/youtubei/v1/browse") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                BrowseBody(
-                    browseId = browseId,
-                    context = Context.DefaultWeb
-                )
-            )
-            parameter("key", Key)
-            parameter("prettyPrint", false)
-        }.bodyCatching()
-    }
-
-    suspend fun browse2(browseId: String): Result<BrowseResponse>? {
+    suspend fun browse(browseId: String): Result<BrowseResponse>? {
         return runCatching<YouTube, BrowseResponse> {
             client.post("/youtubei/v1/browse") {
                 contentType(ContentType.Application.Json)
@@ -724,7 +706,7 @@ object YouTube {
     }
 
     suspend fun playlistOrAlbum(browseId: String): Result<PlaylistOrAlbum>? {
-        return browse2(browseId)?.map { body ->
+        return browse(browseId)?.map { body ->
             PlaylistOrAlbum(
                 title = body
                     .header
@@ -839,7 +821,7 @@ object YouTube {
     )
 
     suspend fun artist(browseId: String): Result<Artist>? {
-        return browse2(browseId)?.map { body ->
+        return browse(browseId)?.map { body ->
             Artist(
                 name = body
                     .header
