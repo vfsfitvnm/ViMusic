@@ -8,6 +8,13 @@ import io.ktor.util.network.*
 import io.ktor.utils.io.*
 
 
+fun <T> Result<T>.recoverIfCancelled(): Result<T>? {
+    return when (exceptionOrNull()) {
+        is CancellationException -> null
+        else -> this
+    }
+}
+
 suspend inline fun <reified T> Outcome<HttpResponse>.bodyCatching(): Outcome<T> {
     return when (this) {
         is Outcome.Success -> value.bodyCatching()

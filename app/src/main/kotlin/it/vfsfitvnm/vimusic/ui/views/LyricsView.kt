@@ -17,17 +17,16 @@ import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.Message
-import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.Outcome
+
 
 @Composable
 fun LyricsView(
-    lyricsOutcome: Outcome<String>,
+    lyrics: String?,
     onInitialize: () -> Unit,
     onSearchOnline: () -> Unit,
     onLyricsUpdate: (String) -> Unit,
@@ -42,7 +41,7 @@ fun LyricsView(
     if (isEditingLyrics) {
         TextFieldDialog(
             hintText = "Enter the lyrics",
-            initialTextInput = lyricsOutcome.valueOrNull ?: "",
+            initialTextInput = lyrics ?: "",
             singleLine = false,
             maxLines = 10,
             isTextInputValid = { true },
@@ -53,26 +52,7 @@ fun LyricsView(
         )
     }
 
-    OutcomeItem(
-        outcome = lyricsOutcome,
-        onInitialize = onInitialize,
-        onLoading = {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .shimmer()
-            ) {
-                repeat(16) { index ->
-                    TextPlaceholder(
-                        modifier = Modifier
-                            .alpha(1f - index * 0.05f)
-                    )
-                }
-            }
-        }
-    ) { lyrics ->
+    if (lyrics != null ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -122,6 +102,23 @@ fun LyricsView(
                             isEditingLyrics = true
                         }
                         .padding(horizontal = 8.dp)
+                )
+            }
+        }
+    } else {
+        SideEffect(onInitialize)
+
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .shimmer()
+        ) {
+            repeat(16) { index ->
+                TextPlaceholder(
+                    modifier = Modifier
+                        .alpha(1f - index * 0.05f)
                 )
             }
         }

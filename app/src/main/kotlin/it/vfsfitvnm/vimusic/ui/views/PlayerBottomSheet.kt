@@ -34,11 +34,11 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.screens.rememberLyricsRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Outcome
+import it.vfsfitvnm.vimusic.utils.PlayerState
+import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.color
+import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.youtubemusic.YouTube
-import it.vfsfitvnm.youtubemusic.isEvaluable
-import it.vfsfitvnm.youtubemusic.toNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,8 +62,8 @@ fun PlayerBottomSheet(
 
     var route by rememberRoute()
 
-    var nextOutcome by remember(playerState?.mediaItem?.mediaId) {
-        mutableStateOf<Outcome<YouTube.NextResult>>(Outcome.Initial)
+    var nextResult by remember(playerState?.mediaItem?.mediaId) {
+        mutableStateOf<Result<YouTube.NextResult>?>(null)
     }
 
     BottomSheet(
@@ -150,8 +150,8 @@ fun PlayerBottomSheet(
             }
         }
     ) {
-        var lyricsOutcome by remember(song) {
-            mutableStateOf(song?.lyrics?.let { Outcome.Success(it) } ?: Outcome.Initial)
+        var lyricsResult by remember(song) {
+            mutableStateOf(song?.lyrics?.let { Result.success(it) })
         }
 
         RouteHandler(
@@ -181,21 +181,16 @@ fun PlayerBottomSheet(
                 val context = LocalContext.current
 
                 LyricsView(
-                    lyricsOutcome = lyricsOutcome,
+                    lyrics = lyricsResult?.getOrNull(),
                     nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
                     onInitialize = {
                         coroutineScope.launch(Dispatchers.Main) {
-                            lyricsOutcome = Outcome.Loading
-
                             val mediaItem = player?.currentMediaItem!!
 
-                            if (nextOutcome.isEvaluable) {
-                                nextOutcome = Outcome.Loading
-
-
+                            if (nextResult == null) {
                                 val mediaItemIndex = player.currentMediaItemIndex
 
-                                nextOutcome = withContext(Dispatchers.IO) {
+                                nextResult = withContext(Dispatchers.IO) {
                                     YouTube.next(
                                         mediaItem.mediaId,
                                         mediaItem.mediaMetadata.extras?.getString("playlistId"),
@@ -204,11 +199,9 @@ fun PlayerBottomSheet(
                                 }
                             }
 
-                            lyricsOutcome = nextOutcome.flatMap {
-                                it.lyrics?.text().toNotNull()
-                            }.map { lyrics ->
-                                lyrics ?: ""
-                            }.map { lyrics ->
+                            lyricsResult = nextResult?.map { nextResult ->
+                                nextResult.lyrics?.text()?.getOrNull() ?: ""
+                            }?.map { lyrics ->
                                 query {
                                     song?.let {
                                         Database.update(song.copy(lyrics = lyrics))

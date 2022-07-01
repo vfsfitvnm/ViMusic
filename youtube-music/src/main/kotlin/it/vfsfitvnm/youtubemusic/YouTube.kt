@@ -448,7 +448,7 @@ object YouTube {
                                 .searchEndpoint
                                 ?.query
                         }
-            }
+                }
         }
     }
 
@@ -539,109 +539,109 @@ object YouTube {
         params: String? = null,
         playlistSetVideoId: String? = null,
         continuation: String? = null,
-    ): Outcome<NextResult> {
-        return client.postCatching("/youtubei/v1/next") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                NextBody(
-                    context = Context.DefaultWeb,
-                    videoId = videoId,
-                    playlistId = playlistId,
-                    isAudioOnly = true,
-                    tunerSettingValue = "AUTOMIX_SETTING_NORMAL",
-                    watchEndpointMusicSupportedConfigs = NextBody.WatchEndpointMusicSupportedConfigs(
-                        musicVideoType = "MUSIC_VIDEO_TYPE_ATV"
-                    ),
-                    index = index,
-                    playlistSetVideoId = playlistSetVideoId,
-                    params = params,
-                    continuation = continuation
-                )
-            )
-            parameter("key", Key)
-            parameter("prettyPrint", false)
-        }
-            .bodyCatching<NextResponse>()
-            .map { body ->
-                val tabs = body
-                    .contents
-                    .singleColumnMusicWatchNextResultsRenderer
-                    .tabbedRenderer
-                    .watchNextTabbedResultsRenderer
-                    .tabs
-
-                NextResult(
-                    continuation = (tabs
-                        .getOrNull(0)
-                        ?.tabRenderer
-                        ?.content
-                        ?.musicQueueRenderer
-                        ?.content
-                        ?: body.continuationContents)
-                        ?.playlistPanelRenderer
-                        ?.continuations
-                        ?.getOrNull(0)
-                        ?.nextRadioContinuationData
-                        ?.continuation,
-                    items = (tabs
-                        .getOrNull(0)
-                        ?.tabRenderer
-                        ?.content
-                        ?.musicQueueRenderer
-                        ?.content
-                        ?: body.continuationContents)
-                        ?.playlistPanelRenderer
-                        ?.contents
-                        ?.mapNotNull { it.playlistPanelVideoRenderer }
-                        ?.mapNotNull { renderer ->
-                            Item.Song(
-                                info = Info(
-                                    name = renderer
-                                        .title
-                                        ?.text ?: return@mapNotNull null,
-                                    endpoint = renderer
-                                        .navigationEndpoint
-                                        .watchEndpoint
-                                ),
-                                authors = renderer
-                                    .longBylineText
-                                    ?.splitBySeparator()
-                                    ?.getOrNull(0)
-                                    ?.map { run -> Info.from(run) }
-                                    ?: emptyList(),
-                                album = renderer
-                                    .longBylineText
-                                    ?.splitBySeparator()
-                                    ?.getOrNull(1)
-                                    ?.getOrNull(0)
-                                    ?.let { run -> Info.from(run) },
-                                thumbnail = renderer
-                                    .thumbnail
-                                    .thumbnails
-                                    .firstOrNull(),
-                                durationText = renderer
-                                    .lengthText
-                                    ?.text
-                            )
-                        },
-                    lyrics = NextResult.Lyrics(
-                        browseId = tabs
-                            .getOrNull(1)
-                            ?.tabRenderer
-                            ?.endpoint
-                            ?.browseEndpoint
-                            ?.browseId
-                    ),
-                    related = NextResult.Related(
-                        browseId = tabs
-                            .getOrNull(2)
-                            ?.tabRenderer
-                            ?.endpoint
-                            ?.browseEndpoint
-                            ?.browseId
+    ): Result<NextResult>? {
+        return runCatching {
+            val body = client.post("/youtubei/v1/next") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    NextBody(
+                        context = Context.DefaultWeb,
+                        videoId = videoId,
+                        playlistId = playlistId,
+                        isAudioOnly = true,
+                        tunerSettingValue = "AUTOMIX_SETTING_NORMAL",
+                        watchEndpointMusicSupportedConfigs = NextBody.WatchEndpointMusicSupportedConfigs(
+                            musicVideoType = "MUSIC_VIDEO_TYPE_ATV"
+                        ),
+                        index = index,
+                        playlistSetVideoId = playlistSetVideoId,
+                        params = params,
+                        continuation = continuation
                     )
                 )
-            }
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+            }.body<NextResponse>()
+
+            val tabs = body
+                .contents
+                .singleColumnMusicWatchNextResultsRenderer
+                .tabbedRenderer
+                .watchNextTabbedResultsRenderer
+                .tabs
+
+            NextResult(
+                continuation = (tabs
+                    .getOrNull(0)
+                    ?.tabRenderer
+                    ?.content
+                    ?.musicQueueRenderer
+                    ?.content
+                    ?: body.continuationContents)
+                    ?.playlistPanelRenderer
+                    ?.continuations
+                    ?.getOrNull(0)
+                    ?.nextRadioContinuationData
+                    ?.continuation,
+                items = (tabs
+                    .getOrNull(0)
+                    ?.tabRenderer
+                    ?.content
+                    ?.musicQueueRenderer
+                    ?.content
+                    ?: body.continuationContents)
+                    ?.playlistPanelRenderer
+                    ?.contents
+                    ?.mapNotNull { it.playlistPanelVideoRenderer }
+                    ?.mapNotNull { renderer ->
+                        Item.Song(
+                            info = Info(
+                                name = renderer
+                                    .title
+                                    ?.text ?: return@mapNotNull null,
+                                endpoint = renderer
+                                    .navigationEndpoint
+                                    .watchEndpoint
+                            ),
+                            authors = renderer
+                                .longBylineText
+                                ?.splitBySeparator()
+                                ?.getOrNull(0)
+                                ?.map { run -> Info.from(run) }
+                                ?: emptyList(),
+                            album = renderer
+                                .longBylineText
+                                ?.splitBySeparator()
+                                ?.getOrNull(1)
+                                ?.getOrNull(0)
+                                ?.let { run -> Info.from(run) },
+                            thumbnail = renderer
+                                .thumbnail
+                                .thumbnails
+                                .firstOrNull(),
+                            durationText = renderer
+                                .lengthText
+                                ?.text
+                        )
+                    },
+                lyrics = NextResult.Lyrics(
+                    browseId = tabs
+                        .getOrNull(1)
+                        ?.tabRenderer
+                        ?.endpoint
+                        ?.browseEndpoint
+                        ?.browseId
+                ),
+                related = NextResult.Related(
+                    browseId = tabs
+                        .getOrNull(2)
+                        ?.tabRenderer
+                        ?.endpoint
+                        ?.browseEndpoint
+                        ?.browseId
+                )
+            )
+        }.recoverIfCancelled()
     }
 
     data class NextResult(
@@ -653,11 +653,11 @@ object YouTube {
         class Lyrics(
             val browseId: String?,
         ) {
-            suspend fun text(): Outcome<String?> {
+            suspend fun text(): Result<String?> {
                 return if (browseId == null) {
-                    Outcome.Success(null)
+                    Result.success(null)
                 } else {
-                    browse(browseId).map { body ->
+                    browse2(browseId).map { body ->
                         body.contents
                             .sectionListRenderer
                             ?.contents
@@ -690,7 +690,7 @@ object YouTube {
     }
 
     suspend fun browse2(browseId: String): Result<BrowseResponse> {
-        return runCatching<YouTube, BrowseResponse> {
+        return runCatching {
             client.post("/youtubei/v1/browse") {
                 contentType(ContentType.Application.Json)
                 setBody(

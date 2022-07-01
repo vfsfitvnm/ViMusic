@@ -5,6 +5,7 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+
 data class YouTubeRadio(
     private val videoId: String? = null,
     private val playlistId: String? = null,
@@ -23,11 +24,11 @@ data class YouTubeRadio(
                 params = parameters,
                 playlistSetVideoId = playlistSetVideoId,
                 continuation = nextContinuation
-            )
-        }.map { nextResult ->
-            mediaItems = nextResult.items?.map(YouTube.Item.Song::asMediaItem)
-            nextResult.continuation?.takeUnless { nextContinuation == nextResult.continuation }
-        }.recoverWith(nextContinuation).valueOrNull
+            )?.getOrNull()?.let { nextResult ->
+                mediaItems = nextResult.items?.map(YouTube.Item.Song::asMediaItem)
+                nextResult.continuation?.takeUnless { nextContinuation == nextResult.continuation }
+            }
+        }
 
         return mediaItems ?: emptyList()
     }
