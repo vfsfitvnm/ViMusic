@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
@@ -554,31 +555,35 @@ fun PlayerView(
                     modifier = Modifier
                         .clickable(onClick = player::seekToPrevious)
                         .padding(horizontal = 16.dp)
-                        .size(32.dp)
+                        .size(28.dp)
                 )
 
-                when {
-                    playerState.playbackState == Player.STATE_ENDED || !playerState.playWhenReady -> Image(
-                        painter = painterResource(R.drawable.play_circle),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .clickable {
+                val isPaused = playerState.playbackState == Player.STATE_ENDED || !playerState.playWhenReady
+
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .clickable {
+                            if (isPaused) {
                                 if (player.playbackState == Player.STATE_IDLE) {
                                     player.prepare()
                                 }
 
                                 player.play()
+                            } else {
+                                player.pause()
                             }
-                            .size(64.dp)
-                    )
-                    else -> Image(
-                        painter = painterResource(R.drawable.pause_circle),
+                        }
+                        .background(color = colorPalette.text, shape = CircleShape)
+                        .size(64.dp)
+                ) {
+                    Image(
+                        painter = painterResource(if (isPaused) R.drawable.play else R.drawable.pause),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        colorFilter = ColorFilter.tint(colorPalette.background),
                         modifier = Modifier
-                            .clickable(onClick = player::pause)
-                            .size(64.dp)
+                            .align(Alignment.Center)
+                            .size(28.dp)
                     )
                 }
 
@@ -589,7 +594,7 @@ fun PlayerView(
                     modifier = Modifier
                         .clickable(onClick = player::seekToNext)
                         .padding(horizontal = 16.dp)
-                        .size(32.dp)
+                        .size(28.dp)
                 )
 
                 Image(
