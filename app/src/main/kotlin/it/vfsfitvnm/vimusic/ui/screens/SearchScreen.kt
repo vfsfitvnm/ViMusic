@@ -34,13 +34,12 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -68,8 +67,8 @@ fun SearchScreen(
         FocusRequester()
     }
 
-    val searchSuggestions by produceState<Outcome<List<String>?>>(
-        initialValue = Outcome.Initial,
+    val searchSuggestionsResult by produceState<Result<List<String>?>?>(
+        initialValue = null,
         key1 = textFieldValue
     ) {
         value = if (textFieldValue.text.isNotEmpty()) {
@@ -77,7 +76,7 @@ fun SearchScreen(
                 YouTube.getSearchSuggestions(textFieldValue.text)
             }
         } else {
-            Outcome.Initial
+            null
         }
     }
 
@@ -304,10 +303,8 @@ fun SearchScreen(
                         }
                     }
 
-                    OutcomeItem(
-                        outcome = searchSuggestions
-                    ) { suggestions ->
-                        suggestions?.forEach { suggestion ->
+                    searchSuggestionsResult?.getOrNull()?.let { suggestions ->
+                        suggestions.forEach { suggestion ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
@@ -352,6 +349,8 @@ fun SearchScreen(
                                 )
                             }
                         }
+                    } ?: searchSuggestionsResult?.exceptionOrNull()?.let { throwable ->
+                        LoadingOrError(errorMessage = throwable.javaClass.canonicalName) {}
                     }
                 }
             }

@@ -420,19 +420,21 @@ object YouTube {
         }.recoverIfCancelled()
     }
 
-    suspend fun getSearchSuggestions(input: String): Outcome<List<String>?> {
-        return client.postCatching("/youtubei/v1/music/get_search_suggestions") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                GetSearchSuggestionsBody(
-                    context = Context.DefaultWeb,
-                    input = input
+    suspend fun getSearchSuggestions(input: String): Result<List<String>?>? {
+        return runCatching {
+            val body = client.post("/youtubei/v1/music/get_search_suggestions") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    GetSearchSuggestionsBody(
+                        context = Context.DefaultWeb,
+                        input = input
+                    )
                 )
-            )
-            parameter("key", Key)
-            parameter("prettyPrint", false)
-        }.bodyCatching<GetSearchSuggestionsResponse>().map { response ->
-            response
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+            }.body<GetSearchSuggestionsResponse>()
+
+            body
                 .contents
                 ?.flatMap { content ->
                     content
@@ -445,7 +447,7 @@ object YouTube {
                                 ?.query
                         }
                 }
-        }
+        }.recoverIfCancelled()
     }
 
     suspend fun player(videoId: String, playlistId: String? = null): Outcome<PlayerResponse> {
