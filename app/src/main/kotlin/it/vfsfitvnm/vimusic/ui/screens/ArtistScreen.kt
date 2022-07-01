@@ -25,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
-import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -35,6 +34,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
@@ -85,7 +85,7 @@ fun ArtistScreen(
                     artist?.takeIf {
                         artist.shufflePlaylistId != null
                     }?.let(Result.Companion::success) ?: YouTube.artist(browseId)
-                        .map { youtubeArtist ->
+                        ?.map { youtubeArtist ->
                             Artist(
                                 id = browseId,
                                 name = youtubeArtist.name,
@@ -312,44 +312,29 @@ private fun LoadingOrError(
 ) {
     val colorPalette = LocalColorPalette.current
 
-    Box {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+    LoadingOrError(
+        errorMessage = errorMessage,
+        onRetry = onRetry,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(
             modifier = Modifier
-                .alpha(if (errorMessage == null) 1f else 0f)
-                .shimmer()
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .background(color = colorPalette.darkGray, shape = CircleShape)
-                    .size(192.dp)
-            )
+                .background(color = colorPalette.darkGray, shape = CircleShape)
+                .size(192.dp)
+        )
 
+        TextPlaceholder(
+            modifier = Modifier
+                .alpha(0.9f)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
+        )
+
+        repeat(3) {
             TextPlaceholder(
                 modifier = Modifier
-                    .alpha(0.9f)
-                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    .alpha(0.8f)
+                    .padding(horizontal = 16.dp)
             )
-
-            repeat(3) {
-                TextPlaceholder(
-                    modifier = Modifier
-                        .alpha(0.8f)
-                        .padding(horizontal = 16.dp)
-                )
-            }
-        }
-
-        errorMessage?.let {
-            TextCard(
-                icon = R.drawable.alert_circle,
-                onClick = onRetry,
-                modifier = Modifier
-                    .align(Alignment.Center)
-            ) {
-                Title(text = onRetry?.let { "Tap to retry" } ?: "Error")
-                Text(text = "An error has occurred:\n$errorMessage")
-            }
         }
     }
 }

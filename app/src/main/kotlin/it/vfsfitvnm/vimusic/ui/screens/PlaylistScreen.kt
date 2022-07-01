@@ -25,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -35,14 +34,12 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -92,13 +89,13 @@ fun PlaylistScreen(
                 }
             }
 
-            var playlistOrAlbum by remember {
-                mutableStateOf<Outcome<YouTube.PlaylistOrAlbum>>(Outcome.Loading)
+            var playlist by remember {
+                mutableStateOf<Result<YouTube.PlaylistOrAlbum>?>(null)
             }
 
             val onLoad = relaunchableEffect(Unit) {
-                playlistOrAlbum = withContext(Dispatchers.IO) {
-                    YouTube.playlistOrAlbum2(browseId)
+                playlist = withContext(Dispatchers.IO) {
+                    YouTube.playlistOrAlbum(browseId)
                 }
             }
 
@@ -140,7 +137,7 @@ fun PlaylistScreen(
                                                 text = "Enqueue",
                                                 onClick = {
                                                     menuState.hide()
-                                                    playlistOrAlbum.valueOrNull?.let { album ->
+                                                    playlist?.getOrNull()?.let { album ->
                                                         album.items
                                                             ?.mapNotNull { song ->
                                                                 song.toMediaItem(browseId, album)
@@ -160,7 +157,7 @@ fun PlaylistScreen(
                                                 onClick = {
                                                     menuState.hide()
 
-                                                    playlistOrAlbum.valueOrNull?.let { album ->
+                                                    playlist?.getOrNull()?.let { album ->
                                                         transaction {
                                                             val playlistId =
                                                                 Database.insert(
@@ -196,7 +193,7 @@ fun PlaylistScreen(
                                                 onClick = {
                                                     menuState.hide()
 
-                                                    (playlistOrAlbum.valueOrNull?.url
+                                                    (playlist?.getOrNull()?.url
                                                         ?: "https://music.youtube.com/playlist?list=${
                                                             browseId.removePrefix(
                                                                 "VL"
@@ -227,13 +224,7 @@ fun PlaylistScreen(
                 }
 
                 item {
-                    OutcomeItem(
-                        outcome = playlistOrAlbum,
-                        onRetry = onLoad,
-                        onLoading = {
-                            Loading()
-                        }
-                    ) { playlistOrAlbum ->
+                    playlist?.getOrNull()?.let { playlist ->
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier
@@ -243,7 +234,7 @@ fun PlaylistScreen(
                                 .padding(bottom = 16.dp)
                         ) {
                             AsyncImage(
-                                model = playlistOrAlbum.thumbnail?.size(thumbnailSizePx),
+                                model = playlist.thumbnail?.size(thumbnailSizePx),
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
@@ -258,19 +249,19 @@ fun PlaylistScreen(
                             ) {
                                 Column {
                                     BasicText(
-                                        text = playlistOrAlbum.title ?: "Unknown",
+                                        text = playlist.title ?: "Unknown",
                                         style = typography.m.semiBold
                                     )
 
                                     BasicText(
                                         text = buildString {
                                             val authors =
-                                                playlistOrAlbum.authors?.joinToString("") { it.name }
+                                                playlist.authors?.joinToString("") { it.name }
                                             append(authors)
-                                            if (authors?.isNotEmpty() == true && playlistOrAlbum.year != null) {
+                                            if (authors?.isNotEmpty() == true && playlist.year != null) {
                                                 append(" • ")
                                             }
-                                            append(playlistOrAlbum.year)
+                                            append(playlist.year)
                                         },
                                         style = typography.xs.secondary.semiBold,
                                         maxLines = 2,
@@ -291,10 +282,10 @@ fun PlaylistScreen(
                                         modifier = Modifier
                                             .clickable {
                                                 binder?.stopRadio()
-                                                playlistOrAlbum.items
+                                                playlist.items
                                                     ?.shuffled()
                                                     ?.mapNotNull { song ->
-                                                        song.toMediaItem(browseId, playlistOrAlbum)
+                                                        song.toMediaItem(browseId, playlist)
                                                     }
                                                     ?.let { mediaItems ->
                                                         binder?.player?.forcePlayFromBeginning(
@@ -318,9 +309,9 @@ fun PlaylistScreen(
                                         modifier = Modifier
                                             .clickable {
                                                 binder?.stopRadio()
-                                                playlistOrAlbum.items
+                                                playlist.items
                                                     ?.mapNotNull { song ->
-                                                        song.toMediaItem(browseId, playlistOrAlbum)
+                                                        song.toMediaItem(browseId, playlist)
                                                     }
                                                     ?.let { mediaItems ->
                                                         binder?.player?.forcePlayFromBeginning(
@@ -339,22 +330,27 @@ fun PlaylistScreen(
                                 }
                             }
                         }
-                    }
+                    } ?: playlist?.exceptionOrNull()?.let { throwable ->
+                        LoadingOrError(
+                            errorMessage = throwable.javaClass.canonicalName,
+                            onRetry = onLoad
+                        )
+                    } ?: LoadingOrError()
                 }
 
                 itemsIndexed(
-                    items = playlistOrAlbum.valueOrNull?.items ?: emptyList(),
+                    items = playlist?.getOrNull()?.items ?: emptyList(),
                     contentType = { _, song -> song }
                 ) { index, song ->
                     SongItem(
                         title = song.info.name,
                         authors = (song.authors
-                            ?: playlistOrAlbum.valueOrNull?.authors)?.joinToString("") { it.name },
+                            ?: playlist?.getOrNull()?.authors)?.joinToString("") { it.name },
                         durationText = song.durationText,
                         onClick = {
                             binder?.stopRadio()
-                            playlistOrAlbum.valueOrNull?.items?.mapNotNull { song ->
-                                song.toMediaItem(browseId, playlistOrAlbum.valueOrNull!!)
+                            playlist?.getOrNull()?.items?.mapNotNull { song ->
+                                song.toMediaItem(browseId, playlist?.getOrNull()!!)
                             }?.let { mediaItems ->
                                 binder?.player?.forcePlayAtIndex(mediaItems, index)
                             }
@@ -384,7 +380,7 @@ fun PlaylistScreen(
                             NonQueuedMediaItemMenu(
                                 mediaItem = song.toMediaItem(
                                     browseId,
-                                    playlistOrAlbum.valueOrNull!!
+                                    playlist?.getOrNull()!!
                                 )
                                     ?: return@SongItem,
                                 onDismiss = menuState::hide,
@@ -397,15 +393,16 @@ fun PlaylistScreen(
     }
 }
 
-
-
 @Composable
-private fun Loading() {
+private fun LoadingOrError(
+    errorMessage: String? = null,
+    onRetry: (() -> Unit)? = null
+) {
     val colorPalette = LocalColorPalette.current
 
-    Column(
-        modifier = Modifier
-            .shimmer()
+    LoadingOrError(
+        errorMessage = errorMessage,
+        onRetry = onRetry
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),

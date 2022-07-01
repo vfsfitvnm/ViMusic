@@ -653,11 +653,11 @@ object YouTube {
         class Lyrics(
             val browseId: String?,
         ) {
-            suspend fun text(): Result<String?> {
+            suspend fun text(): Result<String?>? {
                 return if (browseId == null) {
                     Result.success(null)
                 } else {
-                    browse2(browseId).map { body ->
+                    browse2(browseId)?.map { body ->
                         body.contents
                             .sectionListRenderer
                             ?.contents
@@ -689,8 +689,8 @@ object YouTube {
         }.bodyCatching()
     }
 
-    suspend fun browse2(browseId: String): Result<BrowseResponse> {
-        return runCatching {
+    suspend fun browse2(browseId: String): Result<BrowseResponse>? {
+        return runCatching<YouTube, BrowseResponse> {
             client.post("/youtubei/v1/browse") {
                 contentType(ContentType.Application.Json)
                 setBody(
@@ -702,7 +702,7 @@ object YouTube {
                 parameter("key", Key)
                 parameter("prettyPrint", false)
             }.body()
-        }
+        }.recoverIfCancelled()
     }
 
     open class PlaylistOrAlbum(
@@ -723,115 +723,8 @@ object YouTube {
         )
     }
 
-    suspend fun playlistOrAlbum(browseId: String): Result<PlaylistOrAlbum> {
-        return browse2(browseId).map { body ->
-            PlaylistOrAlbum(
-                title = body
-                    .header
-                    ?.musicDetailHeaderRenderer
-                    ?.title
-                    ?.text,
-                thumbnail = body
-                    .header
-                    ?.musicDetailHeaderRenderer
-                    ?.thumbnail
-                    ?.musicThumbnailRenderer
-                    ?.thumbnail
-                    ?.thumbnails
-                    ?.firstOrNull(),
-                authors = body
-                    .header
-                    ?.musicDetailHeaderRenderer
-                    ?.subtitle
-                    ?.splitBySeparator()
-                    ?.getOrNull(1)
-                    ?.map { Info.from(it) },
-                year = body
-                    .header
-                    ?.musicDetailHeaderRenderer
-                    ?.subtitle
-                    ?.splitBySeparator()
-                    ?.getOrNull(2)
-                    ?.firstOrNull()
-                    ?.text,
-                items = body
-                    .contents
-                    .singleColumnBrowseResultsRenderer
-                    ?.tabs
-                    ?.firstOrNull()
-                    ?.tabRenderer
-                    ?.content
-                    ?.sectionListRenderer
-                    ?.contents
-                    ?.firstOrNull()
-                    ?.musicShelfRenderer
-                    ?.contents
-                    ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                    ?.mapNotNull { renderer ->
-                        PlaylistOrAlbum.Item(
-                            info = renderer
-                                .flexColumns
-                                .getOrNull(0)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.getOrNull(0)
-                                ?.let { Info.from(it) } ?: return@mapNotNull null,
-                            authors = renderer
-                                .flexColumns
-                                .getOrNull(1)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
-                                ?.takeIf { it.isNotEmpty() },
-                            durationText = renderer
-                                .fixedColumns
-                                ?.getOrNull(0)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.getOrNull(0)
-                                ?.text,
-                            album = renderer
-                                .flexColumns
-                                .getOrNull(2)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.firstOrNull()
-                                ?.let { Info.from(it) },
-                            thumbnail = renderer
-                                .thumbnail
-                                ?.musicThumbnailRenderer
-                                ?.thumbnail
-                                ?.thumbnails
-                                ?.firstOrNull()
-                        )
-                    }
-                    ?.filter { it.info.endpoint != null },
-                url = body
-                    .microformat
-                    ?.microformatDataRenderer
-                    ?.urlCanonical,
-                continuation = body
-                    .contents
-                    .singleColumnBrowseResultsRenderer
-                    ?.tabs
-                    ?.firstOrNull()
-                    ?.tabRenderer
-                    ?.content
-                    ?.sectionListRenderer
-                    ?.continuations
-                    ?.firstOrNull()
-                    ?.nextRadioContinuationData
-                    ?.continuation
-            )
-        }
-    }
-
-    suspend fun playlistOrAlbum2(browseId: String): Outcome<PlaylistOrAlbum> {
-        return browse(browseId).map { body ->
+    suspend fun playlistOrAlbum(browseId: String): Result<PlaylistOrAlbum>? {
+        return browse2(browseId)?.map { body ->
             PlaylistOrAlbum(
                 title = body
                     .header
@@ -945,8 +838,8 @@ object YouTube {
         val radioEndpoint: NavigationEndpoint.Endpoint.Watch?
     )
 
-    suspend fun artist(browseId: String): Result<Artist> {
-        return browse2(browseId).map { body ->
+    suspend fun artist(browseId: String): Result<Artist>? {
+        return browse2(browseId)?.map { body ->
             Artist(
                 name = body
                     .header

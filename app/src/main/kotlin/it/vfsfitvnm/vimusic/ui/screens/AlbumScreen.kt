@@ -28,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -62,7 +61,7 @@ fun AlbumScreen(
             album?.takeIf {
                 album.thumbnailUrl != null
             }?.let(Result.Companion::success) ?: YouTube.playlistOrAlbum(browseId)
-                .map { youtubeAlbum ->
+                ?.map { youtubeAlbum ->
                     Album(
                         id = browseId,
                         title = youtubeAlbum.title,
@@ -337,53 +336,36 @@ private fun LoadingOrError(
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null
 ) {
-    val colorPalette = LocalColorPalette.current
-
-    Box {
-        Column(
+    LoadingOrError(
+        errorMessage = errorMessage,
+        onRetry = onRetry
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .alpha(if (errorMessage == null) 1f else 0f)
-                .shimmer()
+                .height(IntrinsicSize.Max)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
+                .padding(bottom = 16.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            Spacer(
                 modifier = Modifier
-                    .height(IntrinsicSize.Max)
-                    .padding(vertical = 8.dp, horizontal = 16.dp)
-                    .padding(bottom = 16.dp)
+                    .background(color = LocalColorPalette.current.darkGray, shape = ThumbnailRoundness.shape)
+                    .size(128.dp)
+            )
+
+            Column(
+                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxHeight()
             ) {
-                Spacer(
-                    modifier = Modifier
-                        .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
-                        .size(128.dp)
-                )
+                Column {
+                    TextPlaceholder()
 
-                Column(
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                ) {
-                    Column {
-                        TextPlaceholder()
-
-                        TextPlaceholder(
-                            modifier = Modifier
-                                .alpha(0.7f)
-                        )
-                    }
+                    TextPlaceholder(
+                        modifier = Modifier
+                            .alpha(0.7f)
+                    )
                 }
-            }
-        }
-
-        errorMessage?.let {
-            TextCard(
-                icon = R.drawable.alert_circle,
-                onClick = onRetry,
-                modifier = Modifier
-                    .align(Alignment.Center)
-            ) {
-                Title(text = onRetry?.let { "Tap to retry" } ?: "Error")
-                Text(text = "An error has occurred:\n$errorMessage")
             }
         }
     }
