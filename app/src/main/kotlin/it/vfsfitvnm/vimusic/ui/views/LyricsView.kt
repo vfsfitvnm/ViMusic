@@ -64,11 +64,9 @@ fun LyricsView(
                 .padding(horizontal = 48.dp)
         ) {
             if (lyrics.isEmpty()) {
-                TextCard(
-                    icon = R.drawable.sad
-                ) {
-                    Title(text = "No results found")
-                    Text(text = "Please try a different query or category.")
+                TextCard(icon = R.drawable.sad) {
+                    Title(text = "Lyrics not available")
+                    Text(text = "...but you can always search them online and add them here!")
                 }
             } else {
                 BasicText(
