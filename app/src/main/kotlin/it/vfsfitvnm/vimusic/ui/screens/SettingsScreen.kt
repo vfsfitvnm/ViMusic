@@ -408,40 +408,9 @@ fun SettingsEntryGroupText(
 
     BasicText(
         text = title.uppercase(),
-        style = typography.xs.semiBold.copy(LocalColorPalette.current.blue),
+        style = typography.xxs.semiBold.copy(LocalColorPalette.current.blue),
         modifier = modifier
             .padding(start = 24.dp, top = 24.dp)
             .padding(horizontal = 32.dp)
     )
-}
-
-@Composable
-fun SettingsEntryGroupText(
-    @DrawableRes icon: Int,
-    title: String,
-    modifier: Modifier = Modifier,
-    iconColor: Color = LocalColorPalette.current.textSecondary
-) {
-    val typography = LocalTypography.current
-
-    Row(
-       verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .padding(top = 24.dp)
-            .padding(horizontal = 8.dp)
-    ) {
-        Image(
-            painter = painterResource(icon),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(iconColor),
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .size(16.dp)
-        )
-
-        BasicText(
-            text = title.uppercase(),
-            style = typography.xs.semiBold,
-        )
-    }
 }
