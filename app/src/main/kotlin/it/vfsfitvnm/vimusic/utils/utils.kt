@@ -7,9 +7,7 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.internal
-import it.vfsfitvnm.vimusic.models.*
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.youtubemusic.YouTube
 
 fun Context.shareAsYouTubeSong(mediaItem: MediaItem) {
@@ -20,65 +18,6 @@ fun Context.shareAsYouTubeSong(mediaItem: MediaItem) {
     }
 
     startActivity(Intent.createChooser(sendIntent, null))
-}
-
-fun Database.insert(mediaItem: MediaItem): Song {
-    return internal.runInTransaction<Song> {
-        Database.song(mediaItem.mediaId)?.let {
-            return@runInTransaction it
-        }
-
-        val song = Song(
-            id = mediaItem.mediaId,
-            title = mediaItem.mediaMetadata.title!!.toString(),
-            artistsText = mediaItem.mediaMetadata.artist!!.toString(),
-            durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
-            thumbnailUrl = mediaItem.mediaMetadata.artworkUri!!.toString(),
-            loudnessDb = mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb"),
-            contentLength = mediaItem.mediaMetadata.extras?.getLongOrNull("contentLength"),
-        ).also(::insert)
-
-        mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
-            Album(
-                id = albumId,
-                title = mediaItem.mediaMetadata.albumTitle!!.toString(),
-                year = null,
-                authorsText = null,
-                thumbnailUrl = null,
-                shareUrl = null,
-            ).also(::insert)
-
-            upsert(
-                SongAlbumMap(
-                    songId = song.id,
-                    albumId = albumId,
-                    position = null
-                )
-            )
-        }
-
-        mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
-            mediaItem.mediaMetadata.extras!!.getStringArrayList("artistIds")?.let { artistIds ->
-                artistNames.mapIndexed { index, artistName ->
-                    Artist(
-                        id = artistIds[index],
-                        name = artistName,
-                        thumbnailUrl = null,
-                        info = null
-                    ).also(::insert)
-                }
-            }
-        }?.forEach { artist ->
-            insert(
-                SongArtistMap(
-                    songId = song.id,
-                    artistId = artist.id
-                )
-            )
-        }
-
-        return@runInTransaction song
-    }
 }
 
 val YouTube.Item.Song.asMediaItem: MediaItem

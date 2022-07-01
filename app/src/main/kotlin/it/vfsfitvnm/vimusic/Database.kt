@@ -12,55 +12,14 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import it.vfsfitvnm.vimusic.models.*
+import it.vfsfitvnm.vimusic.utils.getFloatOrNull
+import it.vfsfitvnm.vimusic.utils.getLongOrNull
 import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface Database {
     companion object : Database by DatabaseInitializer.Instance.database
-
-    @Query("SELECT * FROM SearchQuery WHERE query LIKE :query ORDER BY id DESC")
-    fun getRecentQueries(query: String): Flow<List<SearchQuery>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(searchQuery: SearchQuery)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Artist): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Album): Long
-
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(playlist: Playlist): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: SongInPlaylist): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(songAlbumMap: SongAlbumMap): Long
-
-    @Query("SELECT * FROM Song WHERE id = :id")
-    fun songFlow(id: String): Flow<Song?>
-
-    @Query("SELECT * FROM Song WHERE id = :id")
-    fun song(id: String): Song?
-
-    @Query("SELECT * FROM Playlist WHERE id = :id")
-    fun playlist(id: Long): Playlist?
-
-    @Query("SELECT * FROM Song")
-    fun songs(): Flow<List<Song>>
-
-    @Query("SELECT * FROM Artist WHERE id = :id")
-    fun artist(id: String): Flow<Artist?>
-
-    @Query("SELECT * FROM Album WHERE id = :id")
-    fun album(id: String): Flow<Album?>
-
-    @Transaction
-    @Query("SELECT * FROM Song WHERE id = :id")
-    fun songWithInfo(id: String): DetailedSong?
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
@@ -74,6 +33,24 @@ interface Database {
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs >= 60000 ORDER BY totalPlayTimeMs DESC LIMIT 20")
     fun mostPlayed(): Flow<List<DetailedSong>>
 
+    @Query("SELECT * FROM QueuedMediaItem")
+    fun queue(): List<QueuedMediaItem>
+
+    @Query("DELETE FROM QueuedMediaItem")
+    fun clearQueue()
+
+    @Query("SELECT * FROM SearchQuery WHERE query LIKE :query ORDER BY id DESC")
+    fun queries(query: String): Flow<List<SearchQuery>>
+
+    @Query("SELECT * FROM Song WHERE id = :id")
+    fun song(id: String): Flow<Song?>
+
+    @Query("SELECT * FROM Artist WHERE id = :id")
+    fun artist(id: String): Flow<Artist?>
+
+    @Query("SELECT * FROM Album WHERE id = :id")
+    fun album(id: String): Flow<Album?>
+
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
 
@@ -81,23 +58,112 @@ interface Database {
     @Query("SELECT * FROM Playlist WHERE id = :id")
     fun playlistWithSongs(id: Long): Flow<PlaylistWithSongs?>
 
-    @Query("SELECT COUNT(*) FROM SongInPlaylist WHERE playlistId = :id")
-    fun playlistSongCount(id: Long): Int
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist")
+    fun playlistPreviews(): Flow<List<PlaylistPreview>>
 
-    @Query("UPDATE SongInPlaylist SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition")
+    @Query("SELECT thumbnailUrl FROM Song JOIN SongPlaylistMap ON id = songId WHERE playlistId = :id ORDER BY position LIMIT 4")
+    fun playlistThumbnailUrls(id: Long): Flow<List<String?>>
+
+    @Transaction
+    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
+    @RewriteQueriesToDropUnusedColumns
+    fun artistSongs(artistId: String): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
+    @RewriteQueriesToDropUnusedColumns
+    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
+
+    @Query("UPDATE SongPlaylistMap SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition")
     fun decrementSongPositions(playlistId: Long, fromPosition: Int)
 
-    @Query("UPDATE SongInPlaylist SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
+    @Query("UPDATE SongPlaylistMap SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
     fun decrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
 
-    @Query("UPDATE SongInPlaylist SET position = position + 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
+    @Query("UPDATE SongPlaylistMap SET position = position + 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
     fun incrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(songWithAuthors: SongArtistMap): Long
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(searchQuery: SearchQuery)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(info: Artist): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(info: Album): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(playlist: Playlist): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(songPlaylistMap: SongPlaylistMap): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(songAlbumMap: SongAlbumMap): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insert(songArtistMap: SongArtistMap): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(song: Song): Long
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insert(queuedMediaItem: QueuedMediaItem)
+
+    @Transaction
+    fun insert(mediaItem: MediaItem, block: (Song) -> Song = { it }) {
+        val song = Song(
+            id = mediaItem.mediaId,
+            title = mediaItem.mediaMetadata.title!!.toString(),
+            artistsText = mediaItem.mediaMetadata.artist?.toString(),
+            durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
+            thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString(),
+            loudnessDb = mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb"),
+            contentLength = mediaItem.mediaMetadata.extras?.getLongOrNull("contentLength"),
+        ).let(block).also { song ->
+            if (insert(song) == -1L) return
+        }
+
+        mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+            Album(
+                id = albumId,
+                title = mediaItem.mediaMetadata.albumTitle?.toString(),
+                year = null,
+                authorsText = null,
+                thumbnailUrl = null,
+                shareUrl = null,
+            ).also(::insert)
+
+            upsert(
+                SongAlbumMap(
+                    songId = song.id,
+                    albumId = albumId,
+                    position = null
+                )
+            )
+        }
+
+        mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
+            mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.let { artistIds ->
+                artistNames.mapIndexed { index, artistName ->
+                    Artist(
+                        id = artistIds[index],
+                        name = artistName,
+                        thumbnailUrl = null,
+                        info = null
+                    ).also(::insert)
+                }
+            }
+        }?.forEach { artist ->
+            insert(
+                SongArtistMap(
+                    songId = song.id,
+                    artistId = artist.id
+                )
+            )
+        }
+    }
 
     @Update
     fun update(song: Song)
@@ -105,32 +171,14 @@ interface Database {
     @Update
     fun update(artist: Artist)
 
-    fun upsert(artist: Artist) {
-        if (insert(artist) == -1L) {
-            update(artist)
-        }
-    }
-
     @Update
     fun update(album: Album)
-
-    fun upsert(album: Album) {
-        if (insert(album) == -1L) {
-            update(album)
-        }
-    }
 
     @Update
     fun update(songAlbumMap: SongAlbumMap)
 
-    fun upsert(songAlbumMap: SongAlbumMap) {
-        if (insert(songAlbumMap) == -1L) {
-            update(songAlbumMap)
-        }
-    }
-
     @Update
-    fun update(songInPlaylist: SongInPlaylist)
+    fun update(songPlaylistMap: SongPlaylistMap)
 
     @Update
     fun update(playlist: Playlist)
@@ -145,39 +193,31 @@ interface Database {
     fun delete(song: Song)
 
     @Delete
-    fun delete(songInPlaylist: SongInPlaylist)
+    fun delete(songPlaylistMap: SongPlaylistMap)
 
-    @Transaction
-    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongInPlaylist WHERE playlistId = id) as songCount FROM Playlist")
-    fun playlistPreviews(): Flow<List<PlaylistPreview>>
+    fun upsert(songAlbumMap: SongAlbumMap) {
+        if (insert(songAlbumMap) == -1L) {
+            update(songAlbumMap)
+        }
+    }
 
-    @Query("SELECT thumbnailUrl FROM Song JOIN SongInPlaylist ON id = songId WHERE playlistId = :id ORDER BY position LIMIT 4")
-    fun playlistThumbnailUrls(id: Long): Flow<List<String?>>
+    fun upsert(artist: Artist) {
+        if (insert(artist) == -1L) {
+            update(artist)
+        }
+    }
 
-    @Transaction
-    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
-    @RewriteQueriesToDropUnusedColumns
-    fun artistSongs(artistId: String): Flow<List<DetailedSong>>
-
-    @Transaction
-    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
-    @RewriteQueriesToDropUnusedColumns
-    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
-
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insertQueue(queuedMediaItems: List<QueuedMediaItem>)
-
-    @Query("SELECT * FROM QueuedMediaItem")
-    fun queue(): List<QueuedMediaItem>
-
-    @Query("DELETE FROM QueuedMediaItem")
-    fun clearQueue()
+    fun upsert(album: Album) {
+        if (insert(album) == -1L) {
+            update(album)
+        }
+    }
 }
 
 @androidx.room.Database(
     entities = [
         Song::class,
-        SongInPlaylist::class,
+        SongPlaylistMap::class,
         Playlist::class,
         Artist::class,
         SongArtistMap::class,
@@ -187,9 +227,9 @@ interface Database {
         QueuedMediaItem::class,
     ],
     views = [
-        SortedSongInPlaylist::class
+        SortedSongPlaylistMap::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -199,7 +239,8 @@ interface Database {
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
-        AutoMigration(from = 9, to = 10)
+        AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 11, to = 12, spec = DatabaseInitializer.From11To12Migration::class),
     ],
 )
 @TypeConverters(Converters::class)
@@ -283,6 +324,10 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             it.execSQL("ALTER TABLE Song_new RENAME TO Song;")
         }
     }
+
+    @RenameTable("SongInPlaylist", "SongPlaylistMap")
+    @RenameTable("SortedSongInPlaylist", "SortedSongPlaylistMap")
+    class From11To12Migration : AutoMigrationSpec
 }
 
 @TypeConverters

@@ -210,8 +210,10 @@ fun PlayerBottomSheet(
                                 lyrics ?: ""
                             }.map { lyrics ->
                                 query {
-                                    (song ?: mediaItem.let(Database::insert)).let {
-                                        Database.update(it.copy(lyrics = lyrics))
+                                    song?.let {
+                                        Database.update(song.copy(lyrics = lyrics))
+                                    } ?: Database.insert(mediaItem) { song ->
+                                        song.copy(lyrics = lyrics)
                                     }
                                 }
                                 lyrics
@@ -234,8 +236,12 @@ fun PlayerBottomSheet(
                     onLyricsUpdate = { lyrics ->
                         val mediaItem = player?.currentMediaItem
                         query {
-                            (song ?: mediaItem?.let(Database::insert))?.let {
-                                Database.update(it.copy(lyrics = lyrics))
+                            song?.let {
+                                Database.update(song.copy(lyrics = lyrics))
+                            } ?: mediaItem?.let {
+                                Database.insert(mediaItem) { song ->
+                                    song.copy(lyrics = lyrics)
+                                }
                             }
                         }
                     }

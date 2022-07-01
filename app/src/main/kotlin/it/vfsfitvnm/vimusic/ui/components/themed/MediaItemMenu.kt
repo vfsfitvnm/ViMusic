@@ -19,7 +19,7 @@ import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
-import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
@@ -104,7 +104,7 @@ fun InPlaylistMediaItemMenu(
         onRemoveFromPlaylist = {
             transaction {
                 Database.delete(
-                    SongInPlaylist(
+                    SongPlaylistMap(
                         songId = song.song.id,
                         playlistId = playlistId,
                         position = positionInPlaylist
@@ -214,14 +214,11 @@ fun BaseMediaItemMenu(
         onEnqueue = onEnqueue,
         onAddToPlaylist = { playlist, position ->
             transaction {
-                val playlistId = Database.playlist(playlist.id)?.id ?: Database.insert(playlist)
-
                 Database.insert(mediaItem)
-
                 Database.insert(
-                    SongInPlaylist(
+                    SongPlaylistMap(
                         songId = mediaItem.mediaId,
-                        playlistId = playlistId,
+                        playlistId = Database.insert(playlist).takeIf { it != -1L } ?: playlist.id,
                         position = position
                     )
                 )

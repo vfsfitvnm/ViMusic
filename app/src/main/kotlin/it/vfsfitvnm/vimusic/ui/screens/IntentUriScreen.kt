@@ -24,7 +24,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
-import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.Error
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -109,7 +109,7 @@ fun IntentUriScreen(uri: Uri) {
                                     Database.insert(mediaItem)
 
                                     Database.insert(
-                                        SongInPlaylist(
+                                        SongPlaylistMap(
                                             songId = mediaItem.mediaId,
                                             playlistId = playlistId,
                                             position = index

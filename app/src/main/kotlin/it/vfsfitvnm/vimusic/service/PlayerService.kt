@@ -205,14 +205,14 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
             query {
                 Database.clearQueue()
-                Database.insertQueue(
-                    mediaItems.mapIndexed { index, mediaItem ->
+                mediaItems.forEachIndexed { index, mediaItem ->
+                    Database.insert(
                         QueuedMediaItem(
                             mediaItem = mediaItem,
                             position = if (index == mediaItemIndex) mediaItemPosition else null
                         )
-                    }
-                )
+                    )
+                }
             }
         }
 

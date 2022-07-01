@@ -10,7 +10,7 @@ data class PlaylistWithSongs(
         parentColumn = "id",
         entityColumn = "id",
         associateBy = Junction(
-            value = SortedSongInPlaylist::class,
+            value = SortedSongPlaylistMap::class,
             parentColumn = "playlistId",
             entityColumn = "songId"
         )

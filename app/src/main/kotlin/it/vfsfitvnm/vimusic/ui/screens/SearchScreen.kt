@@ -82,7 +82,7 @@ fun SearchScreen(
     }
 
     val history by remember(textFieldValue.text) {
-        Database.getRecentQueries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
+        Database.queries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
             old.size == new.size
         }
     }.collectAsState(initial = null, context = Dispatchers.IO)

@@ -32,7 +32,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Playlist
-import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.OutcomeItem
@@ -177,7 +177,7 @@ fun PlaylistScreen(
                                                                         Database.insert(mediaItem)
 
                                                                         Database.insert(
-                                                                            SongInPlaylist(
+                                                                            SongPlaylistMap(
                                                                                 songId = mediaItem.mediaId,
                                                                                 playlistId = playlistId,
                                                                                 position = index

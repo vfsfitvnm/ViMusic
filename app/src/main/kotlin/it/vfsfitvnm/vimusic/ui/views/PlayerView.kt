@@ -40,6 +40,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
@@ -181,7 +182,7 @@ fun PlayerView(
         }
     ) {
         val song by remember(playerState.mediaItem?.mediaId) {
-            playerState.mediaItem?.mediaId?.let(Database::songFlow)?.distinctUntilChanged()
+            playerState.mediaItem?.mediaId?.let(Database::song)?.distinctUntilChanged()
                 ?: flowOf(
                     null
                 )
@@ -550,8 +551,10 @@ fun PlayerView(
                     modifier = Modifier
                         .clickable {
                             query {
-                                (song ?: playerState.mediaItem?.let(Database::insert))?.let {
-                                    Database.update(it.toggleLike())
+                                song?.let { song ->
+                                    Database.update(song.toggleLike())
+                                } ?: playerState.mediaItem?.let { mediaItem ->
+                                    Database.insert(mediaItem, Song::toggleLike)
                                 }
                             }
                         }

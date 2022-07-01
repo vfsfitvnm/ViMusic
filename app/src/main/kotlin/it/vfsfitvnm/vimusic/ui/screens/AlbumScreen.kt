@@ -37,7 +37,6 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.SongAlbumMap
-import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
@@ -73,10 +72,11 @@ fun AlbumScreen(
                         shareUrl = youtubeAlbum.url
                     ).also(Database::upsert).also {
                         youtubeAlbum.items?.forEachIndexed { position, albumItem ->
-                            albumItem.toMediaItem(browseId, youtubeAlbum)?.let(Database::insert)?.let { song ->
+                            albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
+                                Database.insert(mediaItem)
                                 Database.upsert(
                                     SongAlbumMap(
-                                        songId = song.id,
+                                        songId = mediaItem.mediaId,
                                         albumId = browseId,
                                         position = position
                                     )

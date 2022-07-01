@@ -27,7 +27,7 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
-import it.vfsfitvnm.vimusic.models.SongInPlaylist
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
@@ -302,7 +302,7 @@ fun LocalPlaylistScreen(
                                         }
 
                                         Database.update(
-                                            SongInPlaylist(
+                                            SongPlaylistMap(
                                                 songId = playlistWithSongs.songs[index].song.id,
                                                 playlistId = playlistWithSongs.playlist.id,
                                                 position = reachedIndex
