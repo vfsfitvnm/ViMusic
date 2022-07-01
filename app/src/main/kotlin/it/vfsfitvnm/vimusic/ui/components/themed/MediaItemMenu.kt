@@ -137,6 +137,7 @@ fun NonQueuedMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss ?: menuState::hide,
         onStartRadio = {
+            binder?.stopRadio()
             binder?.player?.forcePlay(mediaItem)
             binder?.setupRadio(
                 NavigationEndpoint.Endpoint.Watch(
@@ -146,6 +147,7 @@ fun NonQueuedMediaItemMenu(
             )
         },
         onPlaySingle = {
+            binder?.stopRadio()
             binder?.player?.forcePlay(mediaItem)
         },
         onPlayNext = {

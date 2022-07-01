@@ -223,10 +223,12 @@ fun SearchResultScreen(
                                 is YouTube.Item.Artist -> artistRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Playlist -> playlistRoute(item.info.endpoint!!.browseId)
                                 is YouTube.Item.Song -> {
+                                    binder?.stopRadio()
                                     binder?.player?.forcePlay(item.asMediaItem)
                                     binder?.setupRadio(item.info.endpoint)
                                 }
                                 is YouTube.Item.Video -> {
+                                    binder?.stopRadio()
                                     binder?.player?.forcePlay(item.asMediaItem)
                                     binder?.setupRadio(item.info.endpoint)
                                 }
