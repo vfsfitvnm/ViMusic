@@ -100,7 +100,7 @@ fun CurrentPlaylistView(
                 menuContent = {
                     QueuedMediaItemMenu(
                         mediaItem = mediaItem,
-                        indexInQueue = index,
+                        indexInQueue = if (isPlayingThisMediaItem) null else index,
                         onGlobalRouteEmitted = onGlobalRouteEmitted
                     )
                 },

@@ -165,7 +165,7 @@ fun NonQueuedMediaItemMenu(
 @Composable
 fun QueuedMediaItemMenu(
     mediaItem: MediaItem,
-    indexInQueue: Int,
+    indexInQueue: Int?,
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null,
     onGlobalRouteEmitted: (() -> Unit)? = null
@@ -176,9 +176,9 @@ fun QueuedMediaItemMenu(
     BaseMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss ?: menuState::hide,
-        onRemoveFromQueue = {
+        onRemoveFromQueue = if (indexInQueue != null) ({
             player?.removeMediaItem(indexInQueue)
-        },
+        }) else null,
         onGlobalRouteEmitted = onGlobalRouteEmitted,
         modifier = modifier
     )

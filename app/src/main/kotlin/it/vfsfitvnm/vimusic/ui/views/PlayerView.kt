@@ -219,7 +219,7 @@ fun PlayerView(
                             menuState.display {
                                 QueuedMediaItemMenu(
                                     mediaItem = playerState.mediaItem ?: MediaItem.EMPTY,
-                                    indexInQueue = playerState.mediaItemIndex,
+                                    indexInQueue = null,
                                     onDismiss = menuState::hide,
                                     onGlobalRouteEmitted = layoutState.collapse
                                 )
