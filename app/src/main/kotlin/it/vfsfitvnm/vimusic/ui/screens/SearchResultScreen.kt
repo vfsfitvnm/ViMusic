@@ -250,9 +250,7 @@ fun SearchResultScreen(
                 } ?: continuationResult?.let {
                     if (items.isEmpty()) {
                         item {
-                            TextCard(
-                                icon = R.drawable.sad
-                            ) {
+                            TextCard(icon = R.drawable.sad) {
                                 Title(text = "No results found")
                                 Text(text = "Please try a different query or category.")
                             }

@@ -17,8 +17,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -26,19 +24,15 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.transaction
-import it.vfsfitvnm.vimusic.ui.components.Error
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.components.Message
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.Menu
-import it.vfsfitvnm.vimusic.ui.components.themed.MenuCloseButton
-import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
-import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
+import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Outcome
+import it.vfsfitvnm.vimusic.utils.asMediaItem
+import it.vfsfitvnm.vimusic.utils.enqueue
+import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
+import it.vfsfitvnm.vimusic.utils.relaunchableEffect
 import it.vfsfitvnm.youtubemusic.YouTube
-import it.vfsfitvnm.youtubemusic.toNullable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -69,19 +63,21 @@ fun IntentUriScreen(uri: Uri) {
             val density = LocalDensity.current
             val binder = LocalPlayerServiceBinder.current
 
-            var items by remember(uri) {
-                mutableStateOf<Outcome<List<YouTube.Item.Song>>>(Outcome.Loading)
+            var itemsResult by remember(uri) {
+                mutableStateOf<Result<List<YouTube.Item.Song>>?>(null)
             }
 
             val onLoad = relaunchableEffect(uri) {
-                items = withContext(Dispatchers.IO) {
-                    uri.getQueryParameter("list")?.let { playlistId ->
-                        YouTube.queue(playlistId).toNullable()?.map { songList ->
-                            songList
+                withContext(Dispatchers.IO) {
+                    itemsResult = uri.getQueryParameter("list")?.let { playlistId ->
+                        YouTube.queue(playlistId)?.map { songList ->
+                            songList ?: emptyList()
                         }
                     } ?: uri.getQueryParameter("v")?.let { videoId ->
-                        YouTube.song(videoId).toNullable()?.map { listOf(it) }
-                    } ?: Outcome.Error.Unhandled(Error("Missing URL parameters"))
+                        YouTube.song(videoId)?.map { song ->
+                            song?.let { listOf(song) } ?: emptyList()
+                        }
+                    } ?: Result.failure(Error("Missing URL parameters"))
                 }
             }
 
@@ -101,7 +97,8 @@ fun IntentUriScreen(uri: Uri) {
                         transaction {
                             val playlistId = Database.insert(Playlist(name = text))
 
-                            items.valueOrNull
+                            itemsResult
+                                ?.getOrNull()
                                 ?.map(YouTube.Item.Song::asMediaItem)
                                 ?.forEachIndexed { index, mediaItem ->
                                     Database.insert(mediaItem)
@@ -159,7 +156,8 @@ fun IntentUriScreen(uri: Uri) {
                                                 onClick = {
                                                     menuState.hide()
 
-                                                    items.valueOrNull
+                                                    itemsResult
+                                                        ?.getOrNull()
                                                         ?.map(YouTube.Item.Song::asMediaItem)
                                                         ?.let { mediaItems ->
                                                             binder?.player?.enqueue(
@@ -185,59 +183,62 @@ fun IntentUriScreen(uri: Uri) {
                     }
                 }
 
-                when (val currentItems = items) {
-                    is Outcome.Error -> item {
-                        Error(
-                            error = currentItems,
-                            onRetry = onLoad,
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                        )
-                    }
-                    is Outcome.Recovered -> item {
-                        Error(
-                            error = currentItems.error,
-                            onRetry = onLoad,
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                        )
-                    }
-                    is Outcome.Loading, is Outcome.Initial -> items(count = 5) { index ->
-                        SmallSongItemShimmer(
-                            thumbnailSizeDp = 54.dp,
-                            modifier = Modifier
-                                .alpha(1f - index * 0.175f)
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                        )
-                    }
-                    is Outcome.Success -> {
-                        if (currentItems.value.isEmpty()) {
-                            item {
-                                Message(
-                                    text = "No songs were found",
-                                    modifier = Modifier
-                                )
-                            }
-                        } else {
-                            itemsIndexed(
-                                items = currentItems.value,
-                                contentType = { _, item -> item }
-                            ) { index, item ->
-                                SmallSongItem(
-                                    song = item,
-                                    thumbnailSizePx = density.run { 54.dp.roundToPx() },
-                                    onClick = {
-                                        binder?.stopRadio()
-                                        binder?.player?.forcePlayAtIndex(currentItems.value.map(YouTube.Item.Song::asMediaItem), index)
-                                    }
-                                )
+
+                itemsResult?.getOrNull()?.let { items ->
+                    if (items.isEmpty()) {
+                        item {
+                            TextCard(icon = R.drawable.sad) {
+                                Title(text = "No songs found")
+                                Text(text = "Please try a different query or category.")
                             }
                         }
+                    } else {
+                        itemsIndexed(
+                            items = items,
+                            contentType = { _, item -> item }
+                        ) { index, item ->
+                            SmallSongItem(
+                                song = item,
+                                thumbnailSizePx = density.run { 54.dp.roundToPx() },
+                                onClick = {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayAtIndex(items.map(YouTube.Item.Song::asMediaItem), index)
+                                }
+                            )
+                        }
                     }
-                    else -> {}
+                } ?: itemsResult?.exceptionOrNull()?.let { throwable ->
+                   item {
+                       LoadingOrError(
+                           errorMessage = throwable.javaClass.canonicalName,
+                           onRetry = onLoad
+                       )
+                   }
+                } ?: item {
+                    LoadingOrError()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LoadingOrError(
+    errorMessage: String? = null,
+    onRetry: (() -> Unit)? = null
+) {
+    LoadingOrError(
+        errorMessage = errorMessage,
+        onRetry = onRetry
+    ) {
+        repeat(5) { index ->
+            SmallSongItemShimmer(
+                thumbnailSizeDp = 54.dp,
+                modifier = Modifier
+                    .alpha(1f - index * 0.175f)
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp, horizontal = 16.dp)
+            )
         }
     }
 }

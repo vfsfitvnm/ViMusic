@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.ui.components.Message
+import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -64,10 +64,12 @@ fun LyricsView(
                 .padding(horizontal = 48.dp)
         ) {
             if (lyrics.isEmpty()) {
-                Message(
-                    text = "Lyrics not available",
-                    icon = R.drawable.text,
-                )
+                TextCard(
+                    icon = R.drawable.sad
+                ) {
+                    Title(text = "No results found")
+                    Text(text = "Please try a different query or category.")
+                }
             } else {
                 BasicText(
                     text = lyrics,

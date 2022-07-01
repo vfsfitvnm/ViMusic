@@ -51,7 +51,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Outcome
+import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
@@ -427,9 +427,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     ringBuffer.getOrNull(0)?.first -> dataSpec.withUri(ringBuffer.getOrNull(0)!!.second)
                     ringBuffer.getOrNull(1)?.first -> dataSpec.withUri(ringBuffer.getOrNull(1)!!.second)
                     else -> {
-                        val url = runBlocking(Dispatchers.IO) {
-                            it.vfsfitvnm.youtubemusic.YouTube.player(videoId)
-                        }.flatMap { body ->
+                        val urlResult = runBlocking(Dispatchers.IO) {
+                            YouTube.player(videoId)
+                        }?.mapCatching { body ->
                             val loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()
 
                             songPendingLoudnessDb[videoId] = loudnessDb
@@ -462,42 +462,25 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                                         }
                                     }
 
-                                    Outcome.Success(format.url)
-                                } ?: Outcome.Error.Unhandled(
-                                    PlaybackException(
-                                        "Couldn't find a playable audio format",
-                                        null,
-                                        PlaybackException.ERROR_CODE_REMOTE_ERROR
-                                    )
+                                    format.url
+                                } ?: throw PlaybackException(
+                                    "Couldn't find a playable audio format",
+                                    null,
+                                    PlaybackException.ERROR_CODE_REMOTE_ERROR
                                 )
-                                else -> Outcome.Error.Unhandled(
-                                    PlaybackException(
-                                        status,
-                                        null,
-                                        PlaybackException.ERROR_CODE_REMOTE_ERROR
-                                    )
+                                else -> throw PlaybackException(
+                                    status,
+                                    null,
+                                    PlaybackException.ERROR_CODE_REMOTE_ERROR
                                 )
                             }
                         }
 
-                        when (url) {
-                            is Outcome.Success -> {
-                                ringBuffer.append(videoId to url.value.toUri())
-                                dataSpec.withUri(url.value.toUri())
-                                    .subrange(dataSpec.uriPositionOffset, chunkLength)
-                            }
-                            is Outcome.Error.Network -> throw PlaybackException(
-                                "Couldn't reach the internet",
-                                null,
-                                PlaybackException.ERROR_CODE_REMOTE_ERROR
-                            )
-                            is Outcome.Error.Unhandled -> throw url.throwable
-                            else -> throw PlaybackException(
-                                "Unexpected error",
-                                null,
-                                PlaybackException.ERROR_CODE_REMOTE_ERROR
-                            )
-                        }
+                        urlResult?.getOrThrow()?.let { url ->
+                            ringBuffer.append(videoId to url.toUri())
+                            dataSpec.withUri(url.toUri())
+                                .subrange(dataSpec.uriPositionOffset, chunkLength)
+                        } ?: throw PlaybackException(null, null, PlaybackException.ERROR_CODE_REMOTE_ERROR)
                     }
                 }
             }

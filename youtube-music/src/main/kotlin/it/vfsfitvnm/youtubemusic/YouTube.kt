@@ -450,77 +450,79 @@ object YouTube {
         }.recoverIfCancelled()
     }
 
-    suspend fun player(videoId: String, playlistId: String? = null): Outcome<PlayerResponse> {
-        return client.postCatching("/youtubei/v1/player") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PlayerBody(
-                    context = Context.DefaultAndroid,
-                    videoId = videoId,
-                    playlistId = playlistId,
+    suspend fun player(videoId: String, playlistId: String? = null): Result<PlayerResponse>? {
+        return runCatching {
+            client.post("/youtubei/v1/player") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    PlayerBody(
+                        context = Context.DefaultAndroid,
+                        videoId = videoId,
+                        playlistId = playlistId,
+                    )
                 )
-            )
-            parameter("key", Key)
-            parameter("prettyPrint", false)
-        }.bodyCatching()
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+            }.body<PlayerResponse>()
+        }.recoverIfCancelled()
     }
 
-    private suspend fun getQueue(body: GetQueueBody): Outcome<List<Item.Song>?> {
-        return client.postCatching("/youtubei/v1/music/get_queue") {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-            parameter("key", Key)
-            parameter("prettyPrint", false)
-        }
-            .bodyCatching<GetQueueResponse>()
-            .map { body ->
-                body.queueDatas?.mapNotNull { queueData ->
-                    queueData.content?.playlistPanelVideoRenderer?.let { renderer ->
-                        Item.Song(
-                            info = Info(
-                                name = renderer
-                                    .title
-                                    ?.text ?: return@let null,
-                                endpoint = renderer
-                                    .navigationEndpoint
-                                    .watchEndpoint
-                            ),
-                            authors = renderer
-                                .longBylineText
-                                ?.splitBySeparator()
-                                ?.getOrNull(0)
-                                ?.map { Info.from(it) }
-                                ?: emptyList(),
-                            album = renderer
-                                .longBylineText
-                                ?.splitBySeparator()
-                                ?.getOrNull(1)
-                                ?.getOrNull(0)
-                                ?.let { Info.from(it) },
-                            thumbnail = renderer
-                                .thumbnail
-                                .thumbnails
-                                .getOrNull(0),
-                            durationText = renderer
-                                .lengthText
-                                ?.text
-                        )
-                    }
+    private suspend fun getQueue(body: GetQueueBody): Result<List<Item.Song>?>? {
+        return runCatching {
+            val body = client.post("/youtubei/v1/music/get_queue") {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+            }.body<GetQueueResponse>()
+
+            body.queueDatas?.mapNotNull { queueData ->
+                queueData.content?.playlistPanelVideoRenderer?.let { renderer ->
+                    Item.Song(
+                        info = Info(
+                            name = renderer
+                                .title
+                                ?.text ?: return@let null,
+                            endpoint = renderer
+                                .navigationEndpoint
+                                .watchEndpoint
+                        ),
+                        authors = renderer
+                            .longBylineText
+                            ?.splitBySeparator()
+                            ?.getOrNull(0)
+                            ?.map { Info.from(it) }
+                            ?: emptyList(),
+                        album = renderer
+                            .longBylineText
+                            ?.splitBySeparator()
+                            ?.getOrNull(1)
+                            ?.getOrNull(0)
+                            ?.let { Info.from(it) },
+                        thumbnail = renderer
+                            .thumbnail
+                            .thumbnails
+                            .getOrNull(0),
+                        durationText = renderer
+                            .lengthText
+                            ?.text
+                    )
                 }
             }
+        }.recoverIfCancelled()
     }
 
-    suspend fun song(videoId: String): Outcome<Item.Song?> {
+    suspend fun song(videoId: String): Result<Item.Song?>? {
         return getQueue(
             GetQueueBody(
                 context = Context.DefaultWeb,
                 videoIds = listOf(videoId),
                 playlistId = null
             )
-        ).map { it?.firstOrNull() }
+        )?.map { it?.firstOrNull() }
     }
 
-    suspend fun queue(playlistId: String): Outcome<List<Item.Song>?> {
+    suspend fun queue(playlistId: String): Result<List<Item.Song>?>? {
         return getQueue(
             GetQueueBody(
                 context = Context.DefaultWeb,
@@ -674,7 +676,7 @@ object YouTube {
     }
 
     suspend fun browse(browseId: String): Result<BrowseResponse>? {
-        return runCatching<YouTube, BrowseResponse> {
+        return runCatching {
             client.post("/youtubei/v1/browse") {
                 contentType(ContentType.Application.Json)
                 setBody(
@@ -685,7 +687,7 @@ object YouTube {
                 )
                 parameter("key", Key)
                 parameter("prettyPrint", false)
-            }.body()
+            }.body<BrowseResponse>()
         }.recoverIfCancelled()
     }
 

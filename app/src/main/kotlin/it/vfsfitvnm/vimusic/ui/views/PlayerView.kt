@@ -43,12 +43,12 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Outcome
 import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.PlayerResponse
 import kotlinx.coroutines.Dispatchers
@@ -416,7 +416,7 @@ fun PlayerView(
                                                         coroutineScope.launch(Dispatchers.IO) {
                                                             YouTube
                                                                 .player(song.id)
-                                                                .map { body ->
+                                                                ?.map { body ->
                                                                     Database.update(
                                                                         song.copy(
                                                                             loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
@@ -450,14 +450,14 @@ fun PlayerView(
                         .padding(horizontal = 32.dp)
                         .size(thumbnailSizeDp)
                 ) {
-                    Error(
-                        error = Outcome.Error.Unhandled(playerState.error!!),
+                    LoadingOrError(
+                        errorMessage = playerState.error?.javaClass?.canonicalName,
                         onRetry = {
                             player?.playWhenReady = true
                             player?.prepare()
                             playerState.error = null
                         }
-                    )
+                    ) {}
                 }
             }
 
