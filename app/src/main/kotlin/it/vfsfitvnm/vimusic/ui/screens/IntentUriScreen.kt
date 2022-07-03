@@ -77,6 +77,12 @@ fun IntentUriScreen(uri: Uri) {
                         YouTube.song(videoId)?.map { song ->
                             song?.let { listOf(song) } ?: emptyList()
                         }
+                    } ?: uri.takeIf {
+                        uri.host == "youtu.be"
+                    }?.path?.drop(1)?.let { videoId ->
+                        YouTube.song(videoId)?.map { song ->
+                            song?.let { listOf(song) } ?: emptyList()
+                        }
                     } ?: Result.failure(Error("Missing URL parameters"))
                 }
             }

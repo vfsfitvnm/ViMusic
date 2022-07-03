@@ -68,13 +68,16 @@
                     android:host="m.youtube.com"
                     android:pathPrefix="/watch"
                     android:scheme="https" />
+                <data
+                    android:host="youtu.be"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
 
         <service
             android:name=".service.PlayerService"
             android:exported="false"
-
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>

@@ -107,7 +107,13 @@ fun SearchScreen(
             val typography = LocalTypography.current
 
             val isOpenableUrl = remember(textFieldValue.text) {
-                Regex("""https://(music|www|m)\.youtube.com/(watch|playlist).*""").matches(textFieldValue.text)
+                listOf(
+                    "https://www.youtube.com/watch?",
+                    "https://music.youtube.com/watch?",
+                    "https://www.youtube.com/list?",
+                    "https://music.youtube.com/list?",
+                    "https://youtu.be/",
+                ).any(textFieldValue.text::startsWith)
             }
 
             LaunchedEffect(Unit) {
