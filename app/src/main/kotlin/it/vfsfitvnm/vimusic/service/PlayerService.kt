@@ -11,6 +11,8 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -21,7 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.startForegroundService
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.*
@@ -65,6 +67,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     private lateinit var player: ExoPlayer
 
     private val stateBuilder = Builder()
+        .setState(STATE_NONE, 0, 1f)
         .setActions(
             ACTION_PLAY
                     or ACTION_PAUSE
@@ -88,17 +91,26 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
 
+    private var hack: Hack? = null
+
+    private val handler = Handler(Looper.getMainLooper())
+
     private val mediaControllerCallback = object : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             when (state?.state) {
                 STATE_PLAYING -> {
-                    startForegroundService(this@PlayerService, intent<PlayerService>())
+                    ContextCompat.startForegroundService(this@PlayerService, intent<PlayerService>())
                     startForeground(NotificationId, notification())
+
+                    hack?.stop()
                 }
                 STATE_PAUSED -> {
                     if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
                         stopForeground(false)
+
                         notificationManager.notify(NotificationId, notification())
+
+                        hack?.start()
                     }
                 }
                 STATE_NONE -> {
@@ -113,7 +125,18 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    override fun onBind(intent: Intent?) = Binder()
+    private val binder = Binder()
+
+    override fun onBind(intent: Intent?): Binder {
+        hack?.stop()
+        hack = null
+        return binder
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        hack = Hack()
+        return super.onUnbind(intent)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -221,6 +244,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             }
         }
 
+        hack?.stop()
+        hack = null
+
         player.removeListener(this)
         player.stop()
         player.release()
@@ -229,6 +255,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         mediaSession.isActive = false
         mediaSession.release()
         cache.release()
+
         super.onDestroy()
     }
 
@@ -344,7 +371,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             .setContentText(mediaMetadata.artist)
             .setSubText(player.playerError?.message)
             .setLargeIcon(bitmapProvider.bitmap)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
             .setSmallIcon(player.playerError?.let { R.drawable.alert_circle }
@@ -354,6 +381,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             .setDeleteIntent(broadCastPendingIntent<StopServiceBroadcastReceiver>())
             .setChannelId(NotificationChannelId)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setSilent(true)
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(0, 1, 2)
@@ -385,7 +415,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     NotificationChannel(
                         NotificationChannelId,
                         "Now playing",
-                        NotificationManager.IMPORTANCE_LOW
+                        NotificationManager.IMPORTANCE_DEFAULT
                     )
                 )
             }
@@ -592,7 +622,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    private class SessionCallback(private val player: Player) : MediaSessionCompat.Callback() {
+    private inner class SessionCallback(private val player: Player) : MediaSessionCompat.Callback() {
         override fun onPlay() = player.play()
         override fun onPause() = player.pause()
         override fun onSkipToPrevious() = player.seekToPrevious()
@@ -603,6 +633,36 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     class StopServiceBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             context.stopService(context.intent<PlayerService>())
+        }
+    }
+
+    // https://stackoverflow.com/q/53502244/16885569
+    private inner class Hack: Runnable {
+        private var isStarted = false
+        private val intervalMs = 30_000L
+
+        @Synchronized
+        fun start() {
+            if (!isStarted) {
+                isStarted = true
+                handler.postDelayed(this, intervalMs)
+            }
+        }
+
+        @Synchronized
+        fun stop() {
+            if (isStarted) {
+                handler.removeCallbacks(this)
+                isStarted = false
+            }
+        }
+
+        override fun run() {
+            if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
+                startForeground(NotificationId, notification())
+                stopForeground(false)
+                handler.postDelayed(this, intervalMs)
+            }
         }
     }
 
