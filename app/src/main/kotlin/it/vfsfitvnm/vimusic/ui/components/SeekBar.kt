@@ -31,18 +31,32 @@ fun SeekBar(
     scrubberColor: Color = color,
     scrubberRadius: Dp = 6.dp,
     shape: Shape = RectangleShape,
+    drawSteps: Boolean = false,
 ) {
     Box(
         modifier = modifier
             .pointerInput(minimumValue, maximumValue) {
                 if (maximumValue < minimumValue) return@pointerInput
 
+                var acc = 0f
+
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { _, delta ->
-                        onDrag((delta / size.width * (maximumValue - minimumValue)).roundToLong())
+                        acc += delta / size.width * (maximumValue - minimumValue)
+
+                        if (acc !in -1f..1f) {
+                            onDrag(acc.toLong())
+                            acc -= acc.toLong()
+                        }
                     },
-                    onDragEnd = onDragEnd,
-                    onDragCancel = onDragEnd
+                    onDragEnd = {
+                        acc = 0f
+                        onDragEnd()
+                    },
+                    onDragCancel = {
+                        acc = 0f
+                        onDragEnd()
+                    }
                 )
             }
             .pointerInput(minimumValue, maximumValue) {
@@ -72,6 +86,17 @@ fun SeekBar(
                     radius = scrubberRadius.toPx(),
                     center = center.copy(x = scrubberPosition)
                 )
+
+                if (drawSteps) {
+                    for (i in value + 1 .. maximumValue) {
+                        val stepPosition = (i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
+                        drawCircle(
+                            color = scrubberColor,
+                            radius = scrubberRadius.toPx() / 2,
+                            center = center.copy(x = stepPosition),
+                        )
+                    }
+                }
             }
     ) {
         Spacer(
