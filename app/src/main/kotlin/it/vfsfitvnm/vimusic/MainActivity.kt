@@ -14,11 +14,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ripple.LocalRippleTheme
@@ -126,7 +122,7 @@ class MainActivity : ComponentActivity() {
             }
 
             CompositionLocalProvider(
-                LocalOverScrollConfiguration provides null,
+                LocalOverscrollConfiguration provides null,
                 LocalIndication provides rememberRipple(bounded = false),
                 LocalRippleTheme provides rippleTheme,
                 LocalPreferences provides preferences,

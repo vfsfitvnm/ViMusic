@@ -41,7 +41,7 @@ class Route0(
 ) : Route(tag) {
     context(RouteHandlerScope)
     @Composable
-    inline operator fun invoke(content: @Composable () -> Unit) {
+    operator fun invoke(content: @Composable () -> Unit) {
         if (this == route) {
             content()
         }
@@ -61,7 +61,7 @@ class Route1<P0>(
 
     context(RouteHandlerScope)
     @Composable
-    inline operator fun invoke(content: @Composable (P0) -> Unit) {
+    operator fun invoke(content: @Composable (P0) -> Unit) {
         if (this == route) {
             if (route is Route1<*>) {
                 @Suppress("UNCHECKED_CAST")
@@ -90,7 +90,7 @@ class Route2<P0, P1>(
 
     context(RouteHandlerScope)
     @Composable
-    inline operator fun invoke(content: @Composable (P0, P1) -> Unit) {
+    operator fun invoke(content: @Composable (P0, P1) -> Unit) {
         if (this == route) {
             if (route is Route2<*, *>) {
                 @Suppress("UNCHECKED_CAST")

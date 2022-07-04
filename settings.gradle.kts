@@ -11,14 +11,14 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.6.21")
+            version("kotlin", "1.7.0")
             alias("kotlin-serialization").toPluginId("org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
             alias("android-media").to("androidx.media", "media").version("1.6.0")
 
-            version("compose-compiler", "1.2.0-beta03")
+            version("compose-compiler", "1.2.0")
 
-            version("compose", "1.2.0-beta03")
+            version("compose", "1.3.0-alpha01")
             alias("compose-foundation").to("androidx.compose.foundation", "foundation").versionRef("compose")
             alias("compose-ui").to("androidx.compose.ui", "ui").versionRef("compose")
             alias("compose-ui-util").to("androidx.compose.ui", "ui-util").versionRef("compose")
