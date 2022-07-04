@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -156,7 +157,7 @@ fun PlayerSettingsScreen() {
                                 .fillMaxWidth()
                         ) {
                             ChunkyButton(
-                                backgroundColor = colorPalette.lightBackground,
+                                backgroundColor = Color.Transparent,
                                 text = "Cancel",
                                 textStyle = typography.xs.semiBold,
                                 shape = RoundedCornerShape(36.dp),

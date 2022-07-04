@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -120,7 +121,7 @@ fun TextFieldDialog(
                 .fillMaxWidth()
         ) {
             ChunkyButton(
-                backgroundColor = colorPalette.lightBackground,
+                backgroundColor = Color.Transparent,
                 text = cancelText,
                 textStyle = typography.xs.semiBold,
                 shape = RoundedCornerShape(36.dp),
@@ -178,7 +179,7 @@ fun ConfirmationDialog(
                 .fillMaxWidth()
         ) {
             ChunkyButton(
-                backgroundColor = colorPalette.lightBackground,
+                backgroundColor = Color.Transparent,
                 text = cancelText,
                 textStyle = typography.xs.semiBold,
                 shape = RoundedCornerShape(36.dp),
