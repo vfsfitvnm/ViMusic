@@ -7,6 +7,7 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
@@ -61,7 +62,8 @@ import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 
 
-class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback {
+class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback,
+    SharedPreferences.OnSharedPreferenceChangeListener {
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var cache: SimpleCache
     private lateinit var player: ExoPlayer
@@ -93,20 +95,34 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     private var hack: Hack? = null
 
+    private var isTaskRemoved = false
+
+    private var isVolumeNormalizationEnabled = false
+    private var isPersistentQueueEnabled = false
+
     private val handler = Handler(Looper.getMainLooper())
 
     private val mediaControllerCallback = object : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             when (state?.state) {
                 STATE_PLAYING -> {
-                    ContextCompat.startForegroundService(this@PlayerService, intent<PlayerService>())
+                    ContextCompat.startForegroundService(
+                        this@PlayerService,
+                        intent<PlayerService>()
+                    )
                     startForeground(NotificationId, notification())
 
                     hack?.stop()
                 }
                 STATE_PAUSED -> {
                     if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
-                        stopForeground(false)
+                        if (isPersistentQueueEnabled) {
+                            if (isTaskRemoved) {
+                                stopForeground(false)
+                            }
+                        } else {
+                            stopForeground(false)
+                        }
 
                         notificationManager.notify(NotificationId, notification())
 
@@ -133,9 +149,16 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         return binder
     }
 
+    override fun onRebind(intent: Intent?) {
+        isTaskRemoved = false
+        hack?.stop()
+        hack = null
+        super.onRebind(intent)
+    }
+
     override fun onUnbind(intent: Intent?): Boolean {
         hack = Hack()
-        return super.onUnbind(intent)
+        return true
     }
 
     override fun onCreate() {
@@ -150,7 +173,14 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
         createNotificationChannel()
 
+        getSharedPreferences(
+            Preferences.fileName,
+            Context.MODE_PRIVATE
+        ).registerOnSharedPreferenceChangeListener(this)
+
         val preferences = Preferences()
+        isPersistentQueueEnabled = preferences.persistentQueue
+        isVolumeNormalizationEnabled = preferences.volumeNormalization
 
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
@@ -172,37 +202,10 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
         player.repeatMode = preferences.repeatMode
         player.skipSilenceEnabled = preferences.skipSilence
-        player.playWhenReady = true
         player.addListener(this)
         player.addAnalyticsListener(PlaybackStatsListener(false, this))
 
-        if (preferences.persistentQueue) {
-            coroutineScope.launch(Dispatchers.IO) {
-                val queuedSong = Database.queue()
-                Database.clearQueue()
-
-                if (queuedSong.isEmpty()) return@launch
-
-                val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
-
-                withContext(Dispatchers.Main) {
-                    player.setMediaItems(
-                        queuedSong
-                            .map(QueuedMediaItem::mediaItem)
-                            .map { mediaItem ->
-                                mediaItem.buildUpon()
-                                    .setUri(mediaItem.mediaId)
-                                    .setCustomCacheKey(mediaItem.mediaId)
-                                    .build()
-                            },
-                        true
-                    )
-                    player.seekTo(index, queuedSong[index].position ?: 0)
-                    player.playWhenReady = false
-                    player.prepare()
-                }
-            }
-        }
+        maybeRestorePlayerQueue()
 
         mediaSession = MediaSessionCompat(baseContext, "PlayerService")
         mediaSession.setCallback(SessionCallback(player))
@@ -213,36 +216,24 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        isTaskRemoved = true
         if (!player.playWhenReady) {
-            notificationManager.cancel(NotificationId)
             stopSelf()
         }
-
         super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {
-        if (Preferences().persistentQueue) {
-            val mediaItems = player.currentTimeline.mediaItems
-            val mediaItemIndex = player.currentMediaItemIndex
-            val mediaItemPosition = player.currentPosition
+        maybeSavePlayerQueue()
 
-            query {
-                Database.clearQueue()
-                mediaItems.forEachIndexed { index, mediaItem ->
-                    Database.insert(
-                        QueuedMediaItem(
-                            mediaItem = mediaItem,
-                            position = if (index == mediaItemIndex) mediaItemPosition else null
-                        )
-                    )
-                }
-            }
-        }
+        getSharedPreferences(
+            Preferences.fileName,
+            Context.MODE_PRIVATE
+        ).unregisterOnSharedPreferenceChangeListener(this)
 
         hack?.stop()
         hack = null
@@ -290,8 +281,59 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
+    private fun maybeSavePlayerQueue() {
+        if (!isPersistentQueueEnabled) return
+
+        val mediaItems = player.currentTimeline.mediaItems
+        val mediaItemIndex = player.currentMediaItemIndex
+        val mediaItemPosition = player.currentPosition
+
+        mediaItems.mapIndexed { index, mediaItem ->
+            QueuedMediaItem(
+                mediaItem = mediaItem,
+                position = if (index == mediaItemIndex) mediaItemPosition else null
+            )
+        }.let { queuedMediaItems ->
+            query {
+                Database.clearQueue()
+                Database.insert(queuedMediaItems)
+            }
+        }
+    }
+
+    private fun maybeRestorePlayerQueue() {
+        if (!isPersistentQueueEnabled) return
+
+        coroutineScope.launch(Dispatchers.IO) {
+            val queuedSong = Database.queue()
+            Database.clearQueue()
+
+            if (queuedSong.isEmpty()) return@launch
+
+            val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+
+            withContext(Dispatchers.Main) {
+                player.setMediaItems(
+                    queuedSong
+                        .map { mediaItem ->
+                            mediaItem.mediaItem.buildUpon()
+                                .setUri(mediaItem.mediaItem.mediaId)
+                                .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+                                .build()
+                        },
+                    true
+                )
+                player.seekTo(index, queuedSong[index].position ?: 0)
+                player.prepare()
+
+                ContextCompat.startForegroundService(this@PlayerService, intent<PlayerService>())
+                startForeground(NotificationId, notification())
+            }
+        }
+    }
+
     private fun normalizeVolume() {
-        if (Preferences().volumeNormalization) {
+        if (isVolumeNormalizationEnabled) {
             player.volume = player.currentMediaItem?.let { mediaItem ->
                 songPendingLoudnessDb.getOrElse(mediaItem.mediaId) {
                     mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
@@ -347,6 +389,15 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             .setBufferedPosition(player.bufferedPosition)
 
         mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+        when (key) {
+            Preferences.Keys.persistentQueue -> isPersistentQueueEnabled =
+                sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
+            Preferences.Keys.volumeNormalization -> isVolumeNormalizationEnabled =
+                sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
+        }
     }
 
     private fun notification(): Notification {
@@ -510,7 +561,11 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                             ringBuffer.append(videoId to url.toUri())
                             dataSpec.withUri(url.toUri())
                                 .subrange(dataSpec.uriPositionOffset, chunkLength)
-                        } ?: throw PlaybackException(null, null, PlaybackException.ERROR_CODE_REMOTE_ERROR)
+                        } ?: throw PlaybackException(
+                            null,
+                            null,
+                            PlaybackException.ERROR_CODE_REMOTE_ERROR
+                        )
                     }
                 }
             }
@@ -622,7 +677,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    private inner class SessionCallback(private val player: Player) : MediaSessionCompat.Callback() {
+    private class SessionCallback(private val player: Player) : MediaSessionCompat.Callback() {
         override fun onPlay() = player.play()
         override fun onPause() = player.pause()
         override fun onSkipToPrevious() = player.seekToPrevious()
@@ -637,7 +692,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     }
 
     // https://stackoverflow.com/q/53502244/16885569
-    private inner class Hack: Runnable {
+    private inner class Hack : Runnable {
         private var isStarted = false
         private val intervalMs = 30_000L
 

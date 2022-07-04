@@ -72,7 +72,7 @@ class Preferences(
     var persistentQueue = initialPersistentQueue
         set(value) = edit { putBoolean(Keys.persistentQueue, value) }
 
-    private object Keys {
+    object Keys {
         const val colorPaletteMode = "colorPaletteMode"
         const val searchFilter = "searchFilter"
         const val repeatMode = "repeatMode"

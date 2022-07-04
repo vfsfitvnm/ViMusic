@@ -109,7 +109,7 @@ interface Database {
     fun insert(song: Song): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insert(queuedMediaItem: QueuedMediaItem)
+    fun insert(queuedMediaItems: List<QueuedMediaItem>)
 
     @Transaction
     fun insert(mediaItem: MediaItem, block: (Song) -> Song = { it }) {
