@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
@@ -22,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -473,7 +475,7 @@ fun HomeScreen() {
 
                                 Column(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
                                         .background(colorPalette.elevatedBackground)
                                         .width(IntrinsicSize.Max),
                                 ) {
@@ -500,7 +502,7 @@ fun HomeScreen() {
 
                                 Column(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
+                                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
                                         .background(colorPalette.elevatedBackground)
                                         .width(IntrinsicSize.Max),
                                 ) {
