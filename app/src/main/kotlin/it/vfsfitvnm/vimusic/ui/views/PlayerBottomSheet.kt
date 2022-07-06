@@ -3,11 +3,9 @@ package it.vfsfitvnm.vimusic.ui.views
 import android.app.SearchManager
 import android.content.Intent
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,23 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.route.Route
-import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.route.empty
-import it.vfsfitvnm.route.rememberRoute
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
-import it.vfsfitvnm.vimusic.ui.screens.rememberLyricsRoute
+import it.vfsfitvnm.vimusic.ui.components.HorizontalTabPager
+import it.vfsfitvnm.vimusic.ui.components.rememberTabPagerState
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.PlayerState
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,9 +52,7 @@ fun PlayerBottomSheet(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val lyricsRoute = rememberLyricsRoute()
-
-    var route by rememberRoute()
+    val tabPagerState = rememberTabPagerState(initialPageIndex = 0, pageCount = 2)
 
     var nextResult by remember(playerState?.mediaItem?.mediaId) {
         mutableStateOf<Result<YouTube.NextResult>?>(null)
@@ -100,10 +92,10 @@ fun PlayerBottomSheet(
                     @Composable
                     fun Element(
                         text: String,
-                        targetRoute: Route?
+                        pageIndex: Int
                     ) {
                         val color by animateColorAsState(
-                            if (targetRoute == route) {
+                            if (tabPagerState.pageIndex == pageIndex) {
                                 colorPalette.text
                             } else {
                                 colorPalette.textDisabled
@@ -111,7 +103,7 @@ fun PlayerBottomSheet(
                         )
 
                         val scale by animateFloatAsState(
-                            if (targetRoute == route) {
+                            if (pageIndex == pageIndex) {
                                 1f
                             } else {
                                 0.9f
@@ -120,17 +112,22 @@ fun PlayerBottomSheet(
 
                         BasicText(
                             text = text,
-                            style = typography.xs.medium.color(color).center,
+                            style = typography.xs.color(color).center,
                             modifier = Modifier
                                 .clickable(
                                     indication = rememberRipple(bounded = true),
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) {
-                                    route = targetRoute
-                                    coroutineScope.launch(Dispatchers.Main) {
-                                        layoutState.expand()
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onClick = {
+                                        coroutineScope.launch(Dispatchers.Main) {
+                                            layoutState.expand()
+                                            if (layoutState.isCollapsed) {
+                                                tabPagerState.pageIndex = pageIndex
+                                            } else {
+                                                tabPagerState.animateScrollTo(pageIndex)
+                                            }
+                                        }
                                     }
-                                }
+                                )
                                 .padding(vertical = 8.dp)
                                 .scale(scale)
                                 .weight(1f)
@@ -139,116 +136,102 @@ fun PlayerBottomSheet(
 
                     Element(
                         text = "UP NEXT",
-                        targetRoute = null
+                        pageIndex = 0
                     )
 
                     Element(
                         text = "LYRICS",
-                        targetRoute = lyricsRoute
+                        pageIndex = 1
                     )
                 }
             }
         }
     ) {
-        var lyricsResult by remember(song) {
-            mutableStateOf(song?.lyrics?.let { Result.success(it) })
-        }
-
-        RouteHandler(
-            route = route,
-            onRouteChanged = {
-                route = it
-            },
-            handleBackPress = false,
-            transitionSpec = {
-                when (targetState.route) {
-                    lyricsRoute -> slideIntoContainer(AnimatedContentScope.SlideDirection.Left) with
-                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left)
-                    else -> when (initialState.route) {
-                        lyricsRoute -> slideIntoContainer(AnimatedContentScope.SlideDirection.Right) with
-                                slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-                        else -> empty
-                    }
-                }
-            },
+        HorizontalTabPager(
+            state = tabPagerState,
             modifier = Modifier
                 .background(colorPalette.elevatedBackground)
                 .fillMaxSize()
-        ) {
-            lyricsRoute {
-                val player = LocalPlayerServiceBinder.current?.player
+        ) { index ->
+            when (index) {
+                0 -> {
+                    CurrentPlaylistView(
+                        playerState = playerState,
+                        layoutState = layoutState,
+                        onGlobalRouteEmitted = onGlobalRouteEmitted,
+                        modifier = Modifier
+                            .padding(top = 64.dp)
+                    )
+                }
+                1 -> {
+                    val player = LocalPlayerServiceBinder.current?.player
+                    val context = LocalContext.current
 
-                val context = LocalContext.current
+                    var lyricsResult by remember(song) {
+                        mutableStateOf(song?.lyrics?.let { Result.success(it) })
+                    }
 
-                LyricsView(
-                    lyrics = lyricsResult?.getOrNull(),
-                    nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
-                    onInitialize = {
-                        coroutineScope.launch(Dispatchers.Main) {
-                            val mediaItem = player?.currentMediaItem!!
+                    LyricsView(
+                        lyrics = lyricsResult?.getOrNull(),
+                        nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
+                        onInitialize = {
+                            coroutineScope.launch(Dispatchers.Main) {
+                                val mediaItem = player?.currentMediaItem!!
 
-                            if (nextResult == null) {
-                                val mediaItemIndex = player.currentMediaItemIndex
+                                if (nextResult == null) {
+                                    val mediaItemIndex = player.currentMediaItemIndex
 
-                                nextResult = withContext(Dispatchers.IO) {
-                                    YouTube.next(
-                                        mediaItem.mediaId,
-                                        mediaItem.mediaMetadata.extras?.getString("playlistId"),
-                                        mediaItemIndex
-                                    )
+                                    nextResult = withContext(Dispatchers.IO) {
+                                        YouTube.next(
+                                            mediaItem.mediaId,
+                                            mediaItem.mediaMetadata.extras?.getString("playlistId"),
+                                            mediaItemIndex
+                                        )
+                                    }
+                                }
+
+                                lyricsResult = nextResult?.map { nextResult ->
+                                    nextResult.lyrics?.text()?.getOrNull() ?: ""
+                                }?.map { lyrics ->
+                                    query {
+                                        song?.let {
+                                            Database.update(song.copy(lyrics = lyrics))
+                                        } ?: Database.insert(mediaItem) { song ->
+                                            song.copy(lyrics = lyrics)
+                                        }
+                                    }
+                                    lyrics
                                 }
                             }
+                        },
+                        onSearchOnline = {
+                            val mediaMetadata = player?.mediaMetadata ?: return@LyricsView
 
-                            lyricsResult = nextResult?.map { nextResult ->
-                                nextResult.lyrics?.text()?.getOrNull() ?: ""
-                            }?.map { lyrics ->
-                                query {
-                                    song?.let {
-                                        Database.update(song.copy(lyrics = lyrics))
-                                    } ?: Database.insert(mediaItem) { song ->
+                            val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                putExtra(SearchManager.QUERY, "${mediaMetadata.title} ${mediaMetadata.artist} lyrics")
+                            }
+
+                            if (intent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(intent)
+                            } else {
+                                Toast.makeText(context, "No browser app found!", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onLyricsUpdate = { lyrics ->
+                            val mediaItem = player?.currentMediaItem
+                            query {
+                                song?.let {
+                                    Database.update(song.copy(lyrics = lyrics))
+                                } ?: mediaItem?.let {
+                                    Database.insert(mediaItem) { song ->
                                         song.copy(lyrics = lyrics)
                                     }
                                 }
-                                lyrics
                             }
                         }
-                    },
-                    onSearchOnline = {
-                        val mediaMetadata = player?.mediaMetadata ?: return@LyricsView
-
-                        val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-                            putExtra(SearchManager.QUERY, "${mediaMetadata.title} ${mediaMetadata.artist} lyrics")
-                        }
-
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        } else {
-                            Toast.makeText(context, "No browser app found!", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    onLyricsUpdate = { lyrics ->
-                        val mediaItem = player?.currentMediaItem
-                        query {
-                            song?.let {
-                                Database.update(song.copy(lyrics = lyrics))
-                            } ?: mediaItem?.let {
-                                Database.insert(mediaItem) { song ->
-                                    song.copy(lyrics = lyrics)
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-
-            host {
-                CurrentPlaylistView(
-                    playerState = playerState,
-                    layoutState = layoutState,
-                    onGlobalRouteEmitted = onGlobalRouteEmitted,
-                    modifier = Modifier
-                        .padding(top = 64.dp)
-                )
+                    )
+                }
+                else -> {}
             }
         }
     }
