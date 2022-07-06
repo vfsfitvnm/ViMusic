@@ -18,6 +18,7 @@ import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
+
 @Stable
 class TabPagerState(
     val pageCount: Int,
@@ -40,14 +41,14 @@ class TabPagerState(
         if (newPageIndex > pageIndex) {
             animatable.animateTo(
                 animatable.upperBound!!, tween(
-                    durationMillis = 500,
+                    durationMillis = 300,
                     easing = FastOutSlowInEasing
                 )
             )
         } else if (newPageIndex < pageIndex) {
             animatable.animateTo(
                 animatable.lowerBound!!, tween(
-                    durationMillis = 500,
+                    durationMillis = 300,
                     easing = FastOutSlowInEasing
                 )
             )
