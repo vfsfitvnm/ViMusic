@@ -7,6 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.Route1
+import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
+
 
 @Composable
 fun rememberIntentUriRoute(): Route1<Uri?> {
@@ -50,11 +52,21 @@ fun rememberArtistRoute(): Route1<String?> {
 
 @Composable
 fun rememberLocalPlaylistRoute(): Route1<Long?> {
-    val playlistType = rememberSaveable {
+    val playlistId = rememberSaveable {
         mutableStateOf<Long?>(null)
     }
     return remember {
-        Route1("LocalPlaylistRoute", playlistType)
+        Route1("LocalPlaylistRoute", playlistId)
+    }
+}
+
+@Composable
+fun rememberBuiltInPlaylistRoute(): Route1<BuiltInPlaylist> {
+    val playlistType = rememberSaveable {
+        mutableStateOf(BuiltInPlaylist.Favorites)
+    }
+    return remember {
+        Route1("BuiltInPlaylistRoute", playlistType)
     }
 }
 

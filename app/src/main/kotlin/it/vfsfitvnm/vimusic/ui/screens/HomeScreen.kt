@@ -36,6 +36,7 @@ import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -68,6 +69,7 @@ fun HomeScreen() {
     val intentUriRoute = rememberIntentUriRoute()
     val settingsRoute = rememberSettingsRoute()
     val playlistRoute = rememberLocalPlaylistRoute()
+    val builtInPlaylistRoute = rememberBuiltInPlaylistRoute()
     val searchRoute = rememberSearchRoute()
     val searchResultRoute = rememberSearchResultRoute()
     val albumRoute = rememberAlbumRoute()
@@ -99,6 +101,12 @@ fun HomeScreen() {
         playlistRoute { playlistId ->
             LocalPlaylistScreen(
                 playlistId = playlistId ?: error("playlistId cannot be null")
+            )
+        }
+
+        builtInPlaylistRoute { builtInPlaylist ->
+            BuiltInPlaylistScreen(
+                builtInPlaylist = builtInPlaylist
             )
         }
 
@@ -233,6 +241,18 @@ fun HomeScreen() {
                         )
 
                         Image(
+                            painter = painterResource(R.drawable.add),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .clickable {
+                                    isCreatingANewPlaylist = true
+                                }
+                                .padding(all = 8.dp)
+                                .size(20.dp)
+                        )
+
+                        Image(
                             painter = painterResource(if (isGridExpanded) R.drawable.grid else R.drawable.grid_single),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.textSecondary),
@@ -256,32 +276,74 @@ fun HomeScreen() {
                             .height(124.dp * (if (isGridExpanded) 3 else 1))
                     ) {
                         item {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            Box(
                                 modifier = Modifier
                                     .padding(all = 8.dp)
-                                    .width(108.dp)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() }
-                                        ) {
-                                            isCreatingANewPlaylist = true
+                                    .clickable(
+                                        indication = rememberRipple(bounded = true),
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = {
+                                            builtInPlaylistRoute(BuiltInPlaylist.Favorites)
                                         }
-                                        .background(colorPalette.lightBackground)
-                                        .size(108.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.add),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.text),
-                                        modifier = Modifier
-                                            .size(24.dp)
                                     )
-                                }
+                                    .background(colorPalette.lightBackground)
+                                    .size(108.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.heart),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(colorPalette.red),
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .size(24.dp)
+                                )
+
+                                BasicText(
+                                    text = "Favorites",
+                                    style = typography.xxs.semiBold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.BottomStart)
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .padding(all = 8.dp)
+                                    .clickable(
+                                        indication = rememberRipple(bounded = true),
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = {
+                                            builtInPlaylistRoute(BuiltInPlaylist.Cached)
+                                        }
+                                    )
+                                    .background(colorPalette.lightBackground)
+                                    .size(108.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.download),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(colorPalette.blue),
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .size(24.dp)
+                                )
+
+                                BasicText(
+                                    text = "Cached",
+                                    style = typography.xxs.semiBold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.BottomStart)
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
                             }
                         }
 

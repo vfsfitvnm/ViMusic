@@ -53,10 +53,6 @@ interface Database {
     }
 
     @Transaction
-    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
-    fun history(): Flow<List<DetailedSong>>
-
-    @Transaction
     @Query("SELECT * FROM Song WHERE likedAt IS NOT NULL ORDER BY likedAt DESC")
     fun favorites(): Flow<List<DetailedSong>>
 
