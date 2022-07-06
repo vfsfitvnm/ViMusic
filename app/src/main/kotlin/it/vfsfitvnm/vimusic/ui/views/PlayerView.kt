@@ -142,7 +142,7 @@ fun PlayerView(
                         )
                         BasicText(
                             text = playerState.mediaMetadata.artist?.toString() ?: "",
-                            style = typography.xs,
+                            style = typography.xs.semiBold.secondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )

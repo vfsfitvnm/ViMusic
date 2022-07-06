@@ -197,7 +197,7 @@ fun SearchResultScreen(
                         unselectedTextStyle = typography.xs.medium,
                         shape = RoundedCornerShape(36.dp),
                         onValueChanged = {
-                             preferences.searchFilter = it
+                            preferences.searchFilter = it
                         },
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -276,7 +276,7 @@ fun SmallSongItemShimmer(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
     ) {
         Spacer(
@@ -301,7 +301,7 @@ fun SmallArtistItemShimmer(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier
     ) {
         Spacer(
@@ -334,7 +334,7 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-                .padding(vertical = 4.dp, horizontal = 16.dp)
+                .padding(vertical = 5.dp, horizontal = 16.dp)
         )
         is YouTube.Item.Song -> SmallSongItem(
             song = item,
@@ -352,7 +352,7 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-                .padding(vertical = 4.dp, horizontal = 16.dp)
+                .padding(vertical = 5.dp, horizontal = 16.dp)
         )
         is YouTube.Item.Video -> SmallVideoItem(
             video = item,
@@ -370,7 +370,7 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-                .padding(vertical = 4.dp, horizontal = 16.dp)
+                .padding(vertical = 5.dp, horizontal = 16.dp)
         )
     }
 }
@@ -407,7 +407,8 @@ fun SmallVideoItem(
     SongItem(
         thumbnailModel = video.thumbnail?.size(thumbnailSizePx),
         title = video.info.name,
-        authors = video.views.joinToString("") { it.name },
+        authors = (if (video.isOfficialMusicVideo) video.authors else video.views)
+            .joinToString("") { it.name },
         durationText = video.durationText,
         onClick = onClick,
         menuContent = {
@@ -452,14 +453,17 @@ fun SmallPlaylistItem(
                 overflow = TextOverflow.Ellipsis,
             )
             BasicText(
-                text = buildString {
-                    append(playlist.channel?.name)
-                    if (playlist.channel?.name?.isEmpty() == false && playlist.songCount != null) {
-                        append(" • ")
-                    }
-                    append("${playlist.songCount} songs")
-                },
-                style = typography.xs,
+                text = playlist.channel?.name ?: "",
+                style = typography.xs.semiBold.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        playlist.songCount?.let { songCount ->
+            BasicText(
+                text = "$songCount songs",
+                style = typography.xxs.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -501,8 +505,17 @@ fun SmallAlbumItem(
                 overflow = TextOverflow.Ellipsis,
             )
             BasicText(
-                text = "${album.authors?.joinToString("") { it.name }} • ${album.year}",
-                style = typography.xs,
+                text = album.authors?.joinToString("") { it.name } ?: "",
+                style = typography.xs.semiBold.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        album.year?.let { year ->
+            BasicText(
+                text = year,
+                style = typography.xxs.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -562,7 +575,7 @@ private fun LoadingOrError(
                     modifier = Modifier
                         .alpha(1f - index * 0.125f)
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                        .padding(vertical = 5.dp, horizontal = 16.dp)
                 )
             } else {
                 SmallSongItemShimmer(
@@ -570,7 +583,7 @@ private fun LoadingOrError(
                     modifier = Modifier
                         .alpha(1f - index * 0.125f)
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                        .padding(vertical = 5.dp, horizontal = 16.dp)
                 )
             }
         }
