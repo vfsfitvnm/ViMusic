@@ -14,12 +14,14 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -27,20 +29,22 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.enums.SongCollection
+import it.vfsfitvnm.vimusic.enums.SongSortBy
+import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
@@ -75,12 +79,8 @@ fun HomeScreen() {
 
     val preferences = LocalPreferences.current
 
-    val songCollection by remember(preferences.homePageSongCollection) {
-        when (preferences.homePageSongCollection) {
-            SongCollection.MostPlayed -> Database.mostPlayed()
-            SongCollection.Favorites -> Database.favorites()
-            SongCollection.History -> Database.history()
-        }
+    val songCollection by remember(preferences.songSortBy, preferences.songSortOrder) {
+        Database.songs(preferences.songSortBy, preferences.songSortOrder)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
     RouteHandler(
@@ -313,48 +313,13 @@ fun HomeScreen() {
                             .padding(horizontal = 8.dp)
                             .padding(top = 32.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
+                        BasicText(
+                            text = "Songs",
+                            style = typography.m.semiBold,
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 8.dp)
-                        ) {
-                            BasicText(
-                                text = when (preferences.homePageSongCollection) {
-                                    SongCollection.MostPlayed -> "Most played"
-                                    SongCollection.Favorites -> "Favorites"
-                                    SongCollection.History -> "History"
-                                },
-                                style = typography.m.semiBold,
-                                modifier = Modifier
-                                    .alignByBaseline()
-                                    .animateContentSize()
-                            )
-
-                            val songCollections = enumValues<SongCollection>()
-                            val nextSongCollection =
-                                songCollections[(preferences.homePageSongCollection.ordinal + 1) % songCollections.size]
-
-                            BasicText(
-                                text = when (nextSongCollection) {
-                                    SongCollection.MostPlayed -> "Most played"
-                                    SongCollection.Favorites -> "Favorites"
-                                    SongCollection.History -> "History"
-                                },
-                                style = typography.xxs.secondary.bold,
-                                modifier = Modifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            preferences.homePageSongCollection = nextSongCollection
-                                        }
-                                    )
-                                    .alignByBaseline()
-                                    .padding(horizontal = 16.dp)
-                                    .animateContentSize()
-                            )
-                        }
+                        )
 
                         Image(
                             painter = painterResource(R.drawable.shuffle),
@@ -372,6 +337,126 @@ fun HomeScreen() {
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(20.dp)
                         )
+
+                        Box {
+                            var isSortMenuDisplayed by remember {
+                                mutableStateOf(false)
+                            }
+
+                            Image(
+                                painter = painterResource(R.drawable.sort),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette.text),
+                                modifier = Modifier
+                                    .clickable {
+                                        isSortMenuDisplayed = true
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                                    .size(20.dp)
+                            )
+
+                            DropdownMenu(
+                                isDisplayed = isSortMenuDisplayed,
+                                onDismissRequest = {
+                                    isSortMenuDisplayed = false
+                                }
+                            ) {
+                                @Composable
+                                fun Item(
+                                    text: String,
+                                    textColor: Color,
+                                    backgroundColor: Color,
+                                    onClick: () -> Unit
+                                ) {
+                                    BasicText(
+                                        text = text,
+                                        style = typography.xxs.copy(color = textColor, letterSpacing = 1.sp),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = {
+                                                    isSortMenuDisplayed = false
+                                                    onClick()
+                                                }
+                                            )
+                                            .background(backgroundColor)
+                                            .fillMaxWidth()
+                                            .widthIn(min = 124.dp, max = 248.dp)
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    )
+                                }
+
+                                @Composable
+                                fun Item(
+                                    text: String,
+                                    isSelected: Boolean,
+                                    onClick: () -> Unit
+                                ) {
+                                    Item(
+                                        text = text,
+                                        textColor = if (isSelected) {
+                                            colorPalette.onPrimaryContainer
+                                        } else {
+                                            colorPalette.textSecondary
+                                        },
+                                        backgroundColor = if (isSelected) {
+                                            colorPalette.primaryContainer
+                                        } else {
+                                            colorPalette.elevatedBackground
+                                        },
+                                        onClick = onClick
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(colorPalette.elevatedBackground)
+                                        .width(IntrinsicSize.Max),
+                                ) {
+                                    Item(
+                                        text = "PLAY TIME",
+                                        isSelected = preferences.songSortBy == SongSortBy.PlayTime,
+                                        onClick = {
+                                            preferences.songSortBy = SongSortBy.PlayTime
+                                        }
+                                    )
+                                    Item(
+                                        text = "DATE ADDED",
+                                        isSelected = preferences.songSortBy == SongSortBy.DateAdded,
+                                        onClick = {
+                                            preferences.songSortBy = SongSortBy.DateAdded
+                                        }
+                                    )
+                                }
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .height(4.dp)
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(colorPalette.elevatedBackground)
+                                        .width(IntrinsicSize.Max),
+                                ) {
+                                    Item(
+                                        text = when (preferences.songSortOrder) {
+                                            SortOrder.Ascending -> "ASCENDING"
+                                            SortOrder.Descending -> "DESCENDING"
+                                        },
+                                        textColor = colorPalette.text,
+                                        backgroundColor = colorPalette.elevatedBackground,
+                                        onClick = {
+                                            preferences.songSortOrder = !preferences.songSortOrder
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -393,15 +478,14 @@ fun HomeScreen() {
                             )
                         },
                         menuContent = {
-                            when (preferences.homePageSongCollection) {
-                                SongCollection.MostPlayed -> NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
-                                SongCollection.Favorites -> InFavoritesMediaItemMenu(song = song)
-                                SongCollection.History -> InHistoryMediaItemMenu(song = song)
+                            when (preferences.songSortBy) {
+                                SongSortBy.PlayTime -> NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                SongSortBy.DateAdded -> InHistoryMediaItemMenu(song = song)
                             }
                         },
                         onThumbnailContent = {
                             AnimatedVisibility(
-                                visible = preferences.homePageSongCollection == SongCollection.MostPlayed,
+                                visible = preferences.songSortBy == SongSortBy.PlayTime,
                                 enter = fadeIn(),
                                 exit = fadeOut(),
                                 modifier = Modifier

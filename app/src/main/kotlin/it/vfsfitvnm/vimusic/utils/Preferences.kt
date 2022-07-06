@@ -6,19 +6,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import androidx.media3.common.Player
-import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
-import it.vfsfitvnm.vimusic.enums.SongCollection
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.enums.*
 import it.vfsfitvnm.youtubemusic.YouTube
 
 
 @Stable
 class Preferences(
     private val edit: (action: SharedPreferences.Editor.() -> Unit) -> Unit,
+    initialSongSortBy: SongSortBy,
+    initialSongSortOrder: SortOrder,
     initialColorPaletteMode: ColorPaletteMode,
     initialSearchFilter: String,
     initialRepeatMode: Int,
-    initialHomePageSongCollection: SongCollection,
     initialThumbnailRoundness: ThumbnailRoundness,
     initialCoilDiskCacheMaxSizeBytes: Long,
     initialExoPlayerDiskCacheMaxSizeBytes: Long,
@@ -30,10 +29,11 @@ class Preferences(
         edit = { action: SharedPreferences.Editor.() -> Unit ->
            preferences.edit(action = action)
         },
+        initialSongSortBy = preferences.getEnum(Keys.songSortBy, SongSortBy.DateAdded),
+        initialSongSortOrder = preferences.getEnum(Keys.songSortOrder, SortOrder.Descending),
         initialColorPaletteMode = preferences.getEnum(Keys.colorPaletteMode, ColorPaletteMode.System),
         initialSearchFilter = preferences.getString(Keys.searchFilter, YouTube.Item.Song.Filter.value)!!,
         initialRepeatMode = preferences.getInt(Keys.repeatMode, Player.REPEAT_MODE_OFF),
-        initialHomePageSongCollection = preferences.getEnum(Keys.homePageSongCollection, SongCollection.History),
         initialThumbnailRoundness = preferences.getEnum(Keys.thumbnailRoundness, ThumbnailRoundness.Light),
         initialCoilDiskCacheMaxSizeBytes = preferences.getLong(Keys.coilDiskCacheMaxSizeBytes, 512L * 1024 * 1024),
         initialExoPlayerDiskCacheMaxSizeBytes = preferences.getLong(Keys.exoPlayerDiskCacheMaxSizeBytes, 512L * 1024 * 1024),
@@ -41,6 +41,12 @@ class Preferences(
         initialVolumeNormalization = preferences.getBoolean(Keys.volumeNormalization, false),
         initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false)
     )
+
+    var songSortBy = initialSongSortBy
+        set(value) = edit { putEnum(Keys.songSortBy, value) }
+
+    var songSortOrder = initialSongSortOrder
+        set(value) = edit { putEnum(Keys.songSortOrder, value) }
 
     var colorPaletteMode = initialColorPaletteMode
         set(value) = edit { putEnum(Keys.colorPaletteMode, value) }
@@ -50,9 +56,6 @@ class Preferences(
 
     var repeatMode = initialRepeatMode
         set(value) = edit { putInt(Keys.repeatMode, value) }
-
-    var homePageSongCollection = initialHomePageSongCollection
-        set(value) = edit { putEnum(Keys.homePageSongCollection, value) }
 
     var thumbnailRoundness = initialThumbnailRoundness
         set(value) = edit { putEnum(Keys.thumbnailRoundness, value) }
@@ -73,10 +76,11 @@ class Preferences(
         set(value) = edit { putBoolean(Keys.persistentQueue, value) }
 
     object Keys {
+        const val songSortOrder = "songSortOrder"
+        const val songSortBy = "songSortBy"
         const val colorPaletteMode = "colorPaletteMode"
         const val searchFilter = "searchFilter"
         const val repeatMode = "repeatMode"
-        const val homePageSongCollection = "homePageSongCollection"
         const val thumbnailRoundness = "thumbnailRoundness"
         const val coilDiskCacheMaxSizeBytes = "coilDiskCacheMaxSizeBytes"
         const val exoPlayerDiskCacheMaxSizeBytes = "exoPlayerDiskCacheMaxSizeBytes"

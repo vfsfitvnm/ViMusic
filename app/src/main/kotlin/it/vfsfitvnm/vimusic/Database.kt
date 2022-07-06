@@ -8,9 +8,11 @@ import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.room.*
 import androidx.room.migration.AutoMigrationSpec
-import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.room.migration.Migration
+import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
+import it.vfsfitvnm.vimusic.enums.SongSortBy
+import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.*
 import it.vfsfitvnm.vimusic.utils.getFloatOrNull
 import it.vfsfitvnm.vimusic.utils.getLongOrNull
@@ -22,16 +24,41 @@ interface Database {
     companion object : Database by DatabaseInitializer.Instance.database
 
     @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID ASC")
+    fun songsByRowIdAsc(): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
+    fun songsByRowIdDesc(): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs ASC")
+    fun songsByPlayTimeAsc(): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs DESC")
+    fun songsByPlayTimeDesc(): Flow<List<DetailedSong>>
+
+    fun songs(sortBy: SongSortBy, sortOrder: SortOrder): Flow<List<DetailedSong>> {
+        return when (sortBy) {
+            SongSortBy.PlayTime -> when (sortOrder) {
+                SortOrder.Ascending -> songsByPlayTimeAsc()
+                SortOrder.Descending -> songsByPlayTimeDesc()
+            }
+            SongSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> songsByRowIdAsc()
+                SortOrder.Descending -> songsByRowIdDesc()
+            }
+        }
+    }
+
+    @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
     fun history(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE likedAt IS NOT NULL ORDER BY likedAt DESC")
     fun favorites(): Flow<List<DetailedSong>>
-
-    @Transaction
-    @Query("SELECT * FROM Song WHERE totalPlayTimeMs >= 60000 ORDER BY totalPlayTimeMs DESC LIMIT 20")
-    fun mostPlayed(): Flow<List<DetailedSong>>
 
     @Query("SELECT * FROM QueuedMediaItem")
     fun queue(): List<QueuedMediaItem>
