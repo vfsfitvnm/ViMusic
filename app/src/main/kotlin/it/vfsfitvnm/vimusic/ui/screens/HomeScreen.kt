@@ -47,7 +47,6 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
@@ -540,10 +539,7 @@ fun HomeScreen() {
                             )
                         },
                         menuContent = {
-                            when (preferences.songSortBy) {
-                                SongSortBy.PlayTime -> NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
-                                SongSortBy.DateAdded -> InHistoryMediaItemMenu(song = song)
-                            }
+                            InHistoryMediaItemMenu(song = song)
                         },
                         onThumbnailContent = {
                             AnimatedVisibility(

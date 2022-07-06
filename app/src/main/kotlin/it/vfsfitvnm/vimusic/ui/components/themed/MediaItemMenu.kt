@@ -58,22 +58,22 @@ fun InHistoryMediaItemMenu(
     val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
-    var isDeletingFromDatabase by remember {
+    var isHiding by remember {
         mutableStateOf(false)
     }
 
-    if (isDeletingFromDatabase) {
+    if (isHiding) {
         ConfirmationDialog(
-            text = "Do you really want to permanently delete this song? It will removed from any playlist as well.\nThis action is irreversible.",
+            text = "Do you really hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.",
             onDismiss = {
-                isDeletingFromDatabase = false
+                isHiding = false
             },
             onConfirm = {
                 (onDismiss ?: menuState::hide).invoke()
                 query {
                     // Not sure we can to this here
                     binder?.cache?.removeResource(song.song.id)
-                    Database.delete(song.song)
+                    Database.update(song.song.copy(totalPlayTimeMs = 0))
                 }
             }
         )
@@ -82,8 +82,8 @@ fun InHistoryMediaItemMenu(
     NonQueuedMediaItemMenu(
         mediaItem = song.asMediaItem,
         onDismiss = onDismiss,
-        onDeleteFromDatabase = {
-            isDeletingFromDatabase = true
+        onHideFromDatabase = {
+            isHiding = true
         },
         modifier = modifier
     )
@@ -127,7 +127,7 @@ fun NonQueuedMediaItemMenu(
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
-    onDeleteFromDatabase: (() -> Unit)? = null,
+    onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromFavorites: (() -> Unit)? = null,
 ) {
     val menuState = LocalMenuState.current
@@ -157,7 +157,7 @@ fun NonQueuedMediaItemMenu(
             binder?.player?.enqueue(mediaItem)
         },
         onRemoveFromPlaylist = onRemoveFromPlaylist,
-        onDeleteFromDatabase = onDeleteFromDatabase,
+        onHideFromDatabase = onHideFromDatabase,
         onRemoveFromFavorites = onRemoveFromFavorites,
         modifier = modifier
     )
@@ -198,7 +198,7 @@ fun BaseMediaItemMenu(
     onEnqueue: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
-    onDeleteFromDatabase: (() -> Unit)? = null,
+    onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromFavorites: (() -> Unit)? = null,
     onGlobalRouteEmitted: (() -> Unit)? = null,
 ) {
@@ -226,7 +226,7 @@ fun BaseMediaItemMenu(
                 )
             }
         },
-        onDeleteFromDatabase = onDeleteFromDatabase,
+        onHideFromDatabase = onHideFromDatabase,
         onRemoveFromFavorites = onRemoveFromFavorites,
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onRemoveFromQueue = onRemoveFromQueue,
@@ -250,7 +250,7 @@ fun MediaItemMenu(
     onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
-    onDeleteFromDatabase: (() -> Unit)? = null,
+    onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromFavorites: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
@@ -481,10 +481,10 @@ fun MediaItemMenu(
                         )
                     }
 
-                    onDeleteFromDatabase?.let { onDeleteFromDatabase ->
+                    onHideFromDatabase?.let { onDeleteFromDatabase ->
                         MenuEntry(
                             icon = R.drawable.trash,
-                            text = "Delete",
+                            text = "Hide",
                             onClick = onDeleteFromDatabase
                         )
                     }

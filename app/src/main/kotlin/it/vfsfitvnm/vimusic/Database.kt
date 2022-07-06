@@ -213,9 +213,6 @@ interface Database {
     fun delete(playlist: Playlist)
 
     @Delete
-    fun delete(song: Song)
-
-    @Delete
     fun delete(songPlaylistMap: SongPlaylistMap)
 
     fun upsert(songAlbumMap: SongAlbumMap) {
