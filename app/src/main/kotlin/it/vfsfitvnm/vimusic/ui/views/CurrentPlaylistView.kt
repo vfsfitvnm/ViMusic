@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -137,6 +138,17 @@ fun CurrentPlaylistView(
                             }
                         }
                     }
+                },
+                trailingContent = {
+                    Image(
+                        painter = painterResource(R.drawable.reorder),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                        modifier = Modifier
+                            .clickable {}
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .size(20.dp)
+                    )
                 },
                 backgroundColor = colorPalette.elevatedBackground,
                 modifier = Modifier

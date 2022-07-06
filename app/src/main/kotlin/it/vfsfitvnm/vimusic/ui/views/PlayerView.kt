@@ -95,7 +95,7 @@ fun PlayerView(
         collapsedContent = {
             if (!layoutState.isExpanded) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .height(layoutState.lowerBound)

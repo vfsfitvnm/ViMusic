@@ -276,6 +276,17 @@ fun LocalPlaylistScreen(
                                 song = song
                             )
                         },
+                        trailingContent = {
+                            Image(
+                                painter = painterResource(R.drawable.reorder),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                                modifier = Modifier
+                                    .clickable {}
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .size(20.dp)
+                            )
+                        },
                         modifier = Modifier
                             .verticalDragAfterLongPressToReorder(
                                 reorderingState = reorderingState,
