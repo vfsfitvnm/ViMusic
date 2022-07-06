@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
@@ -34,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.route.fastFade
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -86,15 +84,7 @@ fun HomeScreen() {
         Database.songs(preferences.songSortBy, preferences.songSortOrder)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
-    RouteHandler(
-        listenToGlobalEmitter = true,
-        transitionSpec = {
-            when (targetState.route) {
-                settingsRoute -> scaleIn(initialScale = 0.9f) with fadeOut()
-                else -> fastFade
-            }
-        }
-    ) {
+    RouteHandler(listenToGlobalEmitter = true) {
         settingsRoute {
             SettingsScreen()
         }
