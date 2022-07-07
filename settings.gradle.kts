@@ -12,49 +12,49 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             version("kotlin", "1.7.0")
-            alias("kotlin-serialization").toPluginId("org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
+            plugin("kotlin-serialization","org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
-            alias("android-media").to("androidx.media", "media").version("1.6.0")
+            library("android-media", "androidx.media", "media").version("1.6.0")
 
             version("compose-compiler", "1.2.0")
 
             version("compose", "1.3.0-alpha01")
-            alias("compose-foundation").to("androidx.compose.foundation", "foundation").versionRef("compose")
-            alias("compose-ui").to("androidx.compose.ui", "ui").versionRef("compose")
-            alias("compose-ui-util").to("androidx.compose.ui", "ui-util").versionRef("compose")
-            alias("compose-ripple").to("androidx.compose.material", "material-ripple").versionRef("compose")
+            library("compose-foundation", "androidx.compose.foundation", "foundation").versionRef("compose")
+            library("compose-ui", "androidx.compose.ui", "ui").versionRef("compose")
+            library("compose-ui-util", "androidx.compose.ui", "ui-util").versionRef("compose")
+            library("compose-ripple", "androidx.compose.material", "material-ripple").versionRef("compose")
 
-            alias("compose-shimmer").to("com.valentinilk.shimmer", "compose-shimmer").version("1.0.3")
+            library("compose-shimmer", "com.valentinilk.shimmer", "compose-shimmer").version("1.0.3")
 
-            alias("compose-activity").to("androidx.activity", "activity-compose").version("1.5.0-rc01")
+            library("compose-activity", "androidx.activity", "activity-compose").version("1.5.0-rc01")
 
-            alias("compose-coil").to("io.coil-kt", "coil-compose").version("2.1.0")
+            library("compose-coil", "io.coil-kt", "coil-compose").version("2.1.0")
 
             version("accompanist", "0.24.12-rc")
-            alias("accompanist-systemuicontroller").to("com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
+            library("accompanist-systemuicontroller", "com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
 
             version("room", "2.5.0-alpha02")
-            alias("room").to("androidx.room", "room-ktx").versionRef("room")
-            alias("room-compiler").to("androidx.room", "room-compiler").versionRef("room")
+            library("room", "androidx.room", "room-ktx").versionRef("room")
+            library("room-compiler", "androidx.room", "room-compiler").versionRef("room")
 
             version("media3", "1.0.0-beta01")
-            alias("exoplayer").to("androidx.media3", "media3-exoplayer").versionRef("media3")
+            library("exoplayer", "androidx.media3", "media3-exoplayer").versionRef("media3")
 
             version("ktor", "2.0.2")
-            alias("ktor-client-core").to("io.ktor", "ktor-client-core").versionRef("ktor")
-            alias("ktor-client-cio").to("io.ktor", "ktor-client-cio").versionRef("ktor")
-            alias("ktor-client-content-negotiation").to("io.ktor", "ktor-client-content-negotiation").versionRef("ktor")
-            alias("ktor-client-encoding").to("io.ktor", "ktor-client-encoding").versionRef("ktor")
-            alias("ktor-client-serialization").to("io.ktor", "ktor-client-serialization").versionRef("ktor")
-            alias("ktor-serialization-json").to("io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
+            library("ktor-client-core", "io.ktor", "ktor-client-core").versionRef("ktor")
+            library("ktor-client-cio", "io.ktor", "ktor-client-cio").versionRef("ktor")
+            library("ktor-client-content-negotiation", "io.ktor", "ktor-client-content-negotiation").versionRef("ktor")
+            library("ktor-client-encoding", "io.ktor", "ktor-client-encoding").versionRef("ktor")
+            library("ktor-client-serialization", "io.ktor", "ktor-client-serialization").versionRef("ktor")
+            library("ktor-serialization-json", "io.ktor", "ktor-serialization-kotlinx-json").versionRef("ktor")
 
-            alias("brotli").to("org.brotli", "dec").version("0.1.2")
+            library("brotli", "org.brotli", "dec").version("0.1.2")
 
-            alias("desugaring").to("com.android.tools", "desugar_jdk_libs").version("1.1.5")
+            library("desugaring", "com.android.tools", "desugar_jdk_libs").version("1.1.5")
         }
 
         create("testLibs") {
-            alias("junit").to("junit", "junit").version("4.13.2")
+            library("junit", "junit", "junit").version("4.13.2")
         }
     }
 }
