@@ -205,7 +205,7 @@ fun ArtistScreen(
                                     .clickable {
                                         binder?.playRadio(
                                             NavigationEndpoint.Endpoint.Watch(
-                                                videoId = artist.radioVideoId,
+                                                videoId = artist.radioVideoId ?: artist.shuffleVideoId,
                                                 playlistId = artist.radioPlaylistId
                                             )
                                         )
