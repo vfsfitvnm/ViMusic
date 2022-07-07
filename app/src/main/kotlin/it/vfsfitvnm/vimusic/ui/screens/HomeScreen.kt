@@ -423,7 +423,7 @@ fun HomeScreen() {
                                 ) {
                                     BasicText(
                                         text = text,
-                                        style = typography.xxs.copy(color = textColor, letterSpacing = 1.sp),
+                                        style = typography.xxs.medium.copy(color = textColor, letterSpacing = 1.sp),
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(16.dp))
                                             .clickable(
