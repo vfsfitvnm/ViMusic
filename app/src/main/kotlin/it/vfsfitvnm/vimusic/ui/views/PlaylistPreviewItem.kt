@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.color
@@ -30,11 +31,12 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 
+
 @Composable
 fun PlaylistPreviewItem(
     playlistPreview: PlaylistPreview,
     modifier: Modifier = Modifier,
-    thumbnailSize: Dp = 54.dp,
+    thumbnailSize: Dp = Dimensions.thumbnails.song,
 ) {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current

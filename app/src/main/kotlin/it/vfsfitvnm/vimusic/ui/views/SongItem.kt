@@ -25,6 +25,7 @@ import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -113,7 +114,7 @@ fun SongItem(
         startContent = {
             Box(
                 modifier = Modifier
-                    .size(54.dp)
+                    .size(Dimensions.thumbnails.song)
             ) {
                 AsyncImage(
                     model = thumbnailModel,

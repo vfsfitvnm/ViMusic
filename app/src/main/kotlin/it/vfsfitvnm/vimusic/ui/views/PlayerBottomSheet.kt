@@ -27,6 +27,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.HorizontalTabPager
 import it.vfsfitvnm.vimusic.ui.components.rememberTabPagerState
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.PlayerState
@@ -60,7 +61,7 @@ fun PlayerBottomSheet(
 
     BottomSheet(
         state = layoutState,
-        peekHeight = 128.dp,
+        peekHeight = Dimensions.playerBottomSheetPeekHeight,
         elevation = 16.dp,
         shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
         handleOutsideInteractionsWhenExpanded = true,

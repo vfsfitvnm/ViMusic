@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,8 +38,10 @@ import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -109,18 +110,12 @@ fun AlbumScreen(
 
         host {
             val context = LocalContext.current
-            val density = LocalDensity.current
             val binder = LocalPlayerServiceBinder.current
 
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
             val menuState = LocalMenuState.current
 
-            val (thumbnailSizeDp, thumbnailSizePx) = remember {
-                density.run {
-                    128.dp to 128.dp.roundToPx()
-                }
-            }
 
             LazyColumn(
                 state = lazyListState,
@@ -208,12 +203,12 @@ fun AlbumScreen(
                                 .padding(bottom = 16.dp)
                         ) {
                             AsyncImage(
-                                model = album.thumbnailUrl?.thumbnail(thumbnailSizePx),
+                                model = album.thumbnailUrl?.thumbnail(Dimensions.thumbnails.album.px),
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .clip(ThumbnailRoundness.shape)
-                                    .size(thumbnailSizeDp)
+                                    .size(Dimensions.thumbnails.album)
                             )
 
                             Column(
@@ -350,7 +345,7 @@ private fun LoadingOrError(
             Spacer(
                 modifier = Modifier
                     .background(color = LocalColorPalette.current.darkGray, shape = ThumbnailRoundness.shape)
-                    .size(128.dp)
+                    .size(Dimensions.thumbnails.album)
             )
 
             Column(

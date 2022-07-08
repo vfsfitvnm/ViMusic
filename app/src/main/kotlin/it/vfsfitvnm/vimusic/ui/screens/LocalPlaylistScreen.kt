@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -26,14 +25,16 @@ import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +69,6 @@ fun LocalPlaylistScreen(
         }
 
         host {
-            val density = LocalDensity.current
             val hapticFeedback = LocalHapticFeedback.current
             val menuState = LocalMenuState.current
 
@@ -76,11 +76,7 @@ fun LocalPlaylistScreen(
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
 
-            val thumbnailSize = remember {
-                density.run {
-                    54.dp.roundToPx()
-                }
-            }
+            val thumbnailSize = Dimensions.thumbnails.song.px
 
             val reorderingState = rememberReorderingState(playlistWithSongs.songs)
 
@@ -124,7 +120,7 @@ fun LocalPlaylistScreen(
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(bottom = 64.dp),
+                contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
                     .background(colorPalette.background)
                     .fillMaxSize()

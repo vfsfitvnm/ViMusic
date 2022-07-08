@@ -37,8 +37,10 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.MusicBars
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.screens.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.PlayerState
 
 
@@ -52,14 +54,9 @@ fun CurrentPlaylistView(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val hapticFeedback = LocalHapticFeedback.current
-    val density = LocalDensity.current
     val colorPalette = LocalColorPalette.current
 
-    val thumbnailSize = remember {
-        density.run {
-            54.dp.roundToPx()
-        }
-    }
+    val thumbnailSize = Dimensions.thumbnails.song.px
 
     val isPaused by derivedStateOf {
         playerState?.playbackState == Player.STATE_ENDED || playerState?.playWhenReady == false
@@ -119,7 +116,7 @@ fun CurrentPlaylistView(
                                     color = Color.Black.copy(alpha = 0.25f),
                                     shape = ThumbnailRoundness.shape
                                 )
-                                .size(54.dp)
+                                .size(Dimensions.thumbnails.song)
                         ) {
                             if (isPaused) {
                                 Image(
@@ -175,7 +172,7 @@ fun CurrentPlaylistView(
                 ) {
                     repeat(3) { index ->
                         SmallSongItemShimmer(
-                            thumbnailSizeDp = 54.dp,
+                            thumbnailSizeDp = Dimensions.thumbnails.song,
                             modifier = Modifier
                                 .alpha(1f - index * 0.125f)
                                 .fillMaxWidth()

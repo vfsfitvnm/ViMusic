@@ -36,6 +36,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.medium
@@ -245,7 +246,7 @@ fun SearchScreen(
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
-                        .padding(bottom = 64.dp)
+                        .padding(bottom = Dimensions.collapsedPlayer)
                 ) {
                     history?.forEach { searchQuery ->
                         Row(

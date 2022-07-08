@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
@@ -30,8 +29,10 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -62,18 +63,13 @@ fun BuiltInPlaylistScreen(
         }
 
         host {
-            val density = LocalDensity.current
             val menuState = LocalMenuState.current
 
             val binder = LocalPlayerServiceBinder.current
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
 
-            val thumbnailSize = remember {
-                density.run {
-                    54.dp.roundToPx()
-                }
-            }
+            val thumbnailSize = Dimensions.thumbnails.song.px
 
             val songs by remember(binder?.cache, builtInPlaylist) {
                 when (builtInPlaylist) {
@@ -90,7 +86,7 @@ fun BuiltInPlaylistScreen(
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(bottom = 64.dp),
+                contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
                     .background(colorPalette.background)
                     .fillMaxSize()

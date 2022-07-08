@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -37,8 +36,10 @@ import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -76,7 +77,6 @@ fun ArtistScreen(
         host {
             val binder = LocalPlayerServiceBinder.current
 
-            val density = LocalDensity.current
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
 
@@ -100,17 +100,7 @@ fun ArtistScreen(
                 }.distinctUntilChanged()
             }.collectAsState(initial = null, context = Dispatchers.IO)
 
-            val (thumbnailSizeDp, thumbnailSizePx) = remember {
-                density.run {
-                    192.dp to 192.dp.roundToPx()
-                }
-            }
-
-            val songThumbnailSizePx = remember {
-                density.run {
-                    54.dp.roundToPx()
-                }
-            }
+            val songThumbnailSizePx = Dimensions.thumbnails.song.px
 
             val songs by remember(browseId) {
                 Database.artistSongs(browseId)
@@ -145,7 +135,7 @@ fun ArtistScreen(
                 item {
                     artistResult?.getOrNull()?.let { artist ->
                         AsyncImage(
-                            model = artist.thumbnailUrl?.thumbnail(thumbnailSizePx),
+                            model = artist.thumbnailUrl?.thumbnail(Dimensions.thumbnails.artist.px),
                             contentDescription = null,
                             modifier = Modifier
                                 .clip(CircleShape)
@@ -160,7 +150,7 @@ fun ArtistScreen(
                                         }
                                     }
                                 }
-                                .size(thumbnailSizeDp)
+                                .size(Dimensions.thumbnails.artist)
                         )
 
                         BasicText(
@@ -205,7 +195,8 @@ fun ArtistScreen(
                                     .clickable {
                                         binder?.playRadio(
                                             NavigationEndpoint.Endpoint.Watch(
-                                                videoId = artist.radioVideoId ?: artist.shuffleVideoId,
+                                                videoId = artist.radioVideoId
+                                                    ?: artist.shuffleVideoId,
                                                 playlistId = artist.radioPlaylistId
                                             )
                                         )
@@ -320,7 +311,7 @@ private fun LoadingOrError(
         Spacer(
             modifier = Modifier
                 .background(color = colorPalette.darkGray, shape = CircleShape)
-                .size(192.dp)
+                .size(Dimensions.thumbnails.artist)
         )
 
         TextPlaceholder(

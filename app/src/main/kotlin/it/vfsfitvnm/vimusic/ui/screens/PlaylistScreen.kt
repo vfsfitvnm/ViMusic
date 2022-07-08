@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,8 +35,10 @@ import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -70,24 +71,14 @@ fun PlaylistScreen(
 
         host {
             val context = LocalContext.current
-            val density = LocalDensity.current
             val binder = LocalPlayerServiceBinder.current
 
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
             val menuState = LocalMenuState.current
 
-            val (thumbnailSizeDp, thumbnailSizePx) = remember {
-                density.run {
-                    128.dp to 128.dp.roundToPx()
-                }
-            }
-
-            val (songThumbnailSizeDp, songThumbnailSizePx) = remember {
-                density.run {
-                    54.dp to 54.dp.roundToPx()
-                }
-            }
+            val thumbnailSizePx = Dimensions.thumbnails.playlist.px
+            val songThumbnailSizePx = Dimensions.thumbnails.song.px
 
             var playlist by remember {
                 mutableStateOf<Result<YouTube.PlaylistOrAlbum>?>(null)
@@ -239,7 +230,7 @@ fun PlaylistScreen(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .clip(ThumbnailRoundness.shape)
-                                    .size(thumbnailSizeDp)
+                                    .size(Dimensions.thumbnails.playlist)
                             )
 
                             Column(
@@ -372,7 +363,7 @@ fun PlaylistScreen(
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
                                         .clip(ThumbnailRoundness.shape)
-                                        .size(songThumbnailSizeDp)
+                                        .size(Dimensions.thumbnails.song)
                                 )
                             }
                         },
@@ -414,7 +405,7 @@ private fun LoadingOrError(
             Spacer(
                 modifier = Modifier
                     .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
-                    .size(128.dp)
+                    .size(Dimensions.thumbnails.playlist)
             )
 
             Column(
@@ -439,7 +430,7 @@ private fun LoadingOrError(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .alpha(0.6f - it * 0.1f)
-                    .height(54.dp)
+                    .height(Dimensions.thumbnails.song)
                     .fillMaxWidth()
                     .padding(vertical = 4.dp, horizontal = 16.dp)
             ) {

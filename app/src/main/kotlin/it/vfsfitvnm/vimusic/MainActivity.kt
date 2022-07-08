@@ -144,7 +144,7 @@ class MainActivity : ComponentActivity() {
 
                             PlayerView(
                                 layoutState = rememberBottomSheetState(
-                                    lowerBound = 64.dp, upperBound = maxHeight
+                                    lowerBound = Dimensions.collapsedPlayer, upperBound = maxHeight
                                 ),
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)

@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
@@ -27,7 +26,9 @@ import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
@@ -35,6 +36,7 @@ import it.vfsfitvnm.vimusic.utils.relaunchableEffect
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
 
 @ExperimentalAnimationApi
 @Composable
@@ -60,8 +62,9 @@ fun IntentUriScreen(uri: Uri) {
         host {
             val menuState = LocalMenuState.current
             val colorPalette = LocalColorPalette.current
-            val density = LocalDensity.current
             val binder = LocalPlayerServiceBinder.current
+
+            val thumbnailSizePx = Dimensions.thumbnails.song.px
 
             var itemsResult by remember(uri) {
                 mutableStateOf<Result<List<YouTube.Item.Song>>?>(null)
@@ -125,7 +128,7 @@ fun IntentUriScreen(uri: Uri) {
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(bottom = 64.dp),
+                contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
                     .background(colorPalette.background)
                     .fillMaxSize()
@@ -189,7 +192,6 @@ fun IntentUriScreen(uri: Uri) {
                     }
                 }
 
-
                 itemsResult?.getOrNull()?.let { items ->
                     if (items.isEmpty()) {
                         item {
@@ -205,7 +207,7 @@ fun IntentUriScreen(uri: Uri) {
                         ) { index, item ->
                             SmallSongItem(
                                 song = item,
-                                thumbnailSizePx = density.run { 54.dp.roundToPx() },
+                                thumbnailSizePx = thumbnailSizePx,
                                 onClick = {
                                     binder?.stopRadio()
                                     binder?.player?.forcePlayAtIndex(items.map(YouTube.Item.Song::asMediaItem), index)
@@ -239,7 +241,7 @@ private fun LoadingOrError(
     ) {
         repeat(5) { index ->
             SmallSongItemShimmer(
-                thumbnailSizeDp = 54.dp,
+                thumbnailSizeDp = Dimensions.thumbnails.song,
                 modifier = Modifier
                     .alpha(1f - index * 0.175f)
                     .fillMaxWidth()

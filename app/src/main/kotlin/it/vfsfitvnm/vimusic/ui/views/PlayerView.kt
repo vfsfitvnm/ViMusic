@@ -25,9 +25,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,9 +43,7 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.PlayerResponse
@@ -67,26 +63,19 @@ fun PlayerView(
     val preferences = LocalPreferences.current
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
-    val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
 
     val player = binder?.player
     val playerState = rememberPlayerState(player)
 
-    val coroutineScope = rememberCoroutineScope()
-
     player ?: return
     playerState?.mediaItem ?: return
 
-    val smallThumbnailSize = remember {
-        density.run { 64.dp.roundToPx() }
-    }
+    val coroutineScope = rememberCoroutineScope()
 
-    val (thumbnailSizeDp, thumbnailSizePx) = remember {
-        val size = minOf(configuration.screenHeightDp, configuration.screenWidthDp).dp
-        size to density.run { size.minus(64.dp).roundToPx() }
+    val (thumbnailSizeDp, thumbnailSizePx) = Dimensions.thumbnails.player.song.let {
+        it to (it - 64.dp).px
     }
 
     BottomSheet(
@@ -105,7 +94,7 @@ fun PlayerView(
                         }
                         .background(colorPalette.elevatedBackground)
                         .drawBehind {
-                            val offset = 64.dp.toPx()
+                            val offset = Dimensions.thumbnails.player.songPreview.toPx()
 
                             drawLine(
                                 color = colorPalette.text,
@@ -122,11 +111,11 @@ fun PlayerView(
                         }
                 ) {
                     AsyncImage(
-                        model = playerState.mediaMetadata.artworkUri.thumbnail(smallThumbnailSize),
+                        model = playerState.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(64.dp)
+                            .size(Dimensions.thumbnails.player.songPreview)
                     )
 
                     Column(
@@ -631,11 +620,11 @@ fun PlayerView(
 
         PlayerBottomSheet(
             playerState = playerState,
-            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound - 128.dp),
+            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound - Dimensions.playerBottomSheetPeekHeight),
             onGlobalRouteEmitted = layoutState.collapse,
             song = song,
             modifier = Modifier
-                .padding(bottom = 128.dp)
+                .padding(bottom = Dimensions.playerBottomSheetPeekHeight)
                 .align(Alignment.BottomCenter)
         )
     }

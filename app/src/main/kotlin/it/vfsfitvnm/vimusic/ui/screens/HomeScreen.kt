@@ -48,8 +48,10 @@ import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -148,13 +150,8 @@ fun HomeScreen() {
             @Suppress("UNUSED_EXPRESSION") songCollection
 
             val binder = LocalPlayerServiceBinder.current
-            val density = LocalDensity.current
 
-            val thumbnailSize = remember {
-                density.run {
-                    54.dp.roundToPx()
-                }
-            }
+            val thumbnailSize = Dimensions.thumbnails.song.px
 
             var isGridExpanded by remember {
                 mutableStateOf(false)

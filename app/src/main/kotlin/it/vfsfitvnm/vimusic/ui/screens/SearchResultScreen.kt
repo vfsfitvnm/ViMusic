@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -37,8 +36,10 @@ import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -52,7 +53,6 @@ fun SearchResultScreen(
     query: String,
     onSearchAgain: () -> Unit,
 ) {
-    val density = LocalDensity.current
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
     val preferences = LocalPreferences.current
@@ -83,11 +83,7 @@ fun SearchResultScreen(
         }
     }
 
-    val thumbnailSizePx = remember {
-        density.run {
-            54.dp.roundToPx()
-        }
-    }
+    val thumbnailSizePx = Dimensions.thumbnails.song.px
 
     val albumRoute = rememberAlbumRoute()
     val playlistRoute = rememberPlaylistRoute()
@@ -118,7 +114,7 @@ fun SearchResultScreen(
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(bottom = 64.dp),
+                contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
                     .background(colorPalette.background)
                     .fillMaxSize()
@@ -212,7 +208,7 @@ fun SearchResultScreen(
                 ) { item ->
                     SmallItem(
                         item = item,
-                        thumbnailSizeDp = 54.dp,
+                        thumbnailSizeDp = Dimensions.thumbnails.song,
                         thumbnailSizePx = thumbnailSizePx,
                         onClick = {
                             when (item) {
@@ -571,7 +567,7 @@ private fun LoadingOrError(
         repeat(itemCount) { index ->
             if (isLoadingArtists) {
                 SmallArtistItemShimmer(
-                    thumbnailSizeDp = 54.dp,
+                    thumbnailSizeDp = Dimensions.thumbnails.song,
                     modifier = Modifier
                         .alpha(1f - index * 0.125f)
                         .fillMaxWidth()
@@ -579,7 +575,7 @@ private fun LoadingOrError(
                 )
             } else {
                 SmallSongItemShimmer(
-                    thumbnailSizeDp = 54.dp,
+                    thumbnailSizeDp = Dimensions.thumbnails.song,
                     modifier = Modifier
                         .alpha(1f - index * 0.125f)
                         .fillMaxWidth()
