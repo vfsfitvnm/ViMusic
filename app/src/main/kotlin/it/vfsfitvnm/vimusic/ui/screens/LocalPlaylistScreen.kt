@@ -153,7 +153,7 @@ fun LocalPlaylistScreen(
                                             MenuEntry(
                                                 icon = R.drawable.time,
                                                 text = "Enqueue",
-                                                enabled = playlistWithSongs.songs.isNotEmpty(),
+                                                isEnabled = playlistWithSongs.songs.isNotEmpty(),
                                                 onClick = {
                                                     menuState.hide()
                                                     binder?.player?.enqueue(playlistWithSongs.songs.map(DetailedSong::asMediaItem))

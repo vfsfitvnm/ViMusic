@@ -119,7 +119,7 @@ fun BuiltInPlaylistScreen(
                                             MenuEntry(
                                                 icon = R.drawable.time,
                                                 text = "Enqueue",
-                                                enabled = songs.isNotEmpty(),
+                                                isEnabled = songs.isNotEmpty(),
                                                 onClick = {
                                                     menuState.hide()
                                                     binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))

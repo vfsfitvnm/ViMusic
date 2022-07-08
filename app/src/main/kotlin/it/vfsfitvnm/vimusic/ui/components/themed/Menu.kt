@@ -11,13 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.color
+import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 
 @Composable
@@ -30,10 +32,10 @@ inline fun Menu(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
-            .width(256.dp)
+            .fillMaxWidth()
             .background(
                 color = colorPalette.elevatedBackground,
-                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
             )
             .padding(vertical = 8.dp),
         content = content
@@ -59,7 +61,7 @@ fun MenuEntry(
     text: String,
     onClick: () -> Unit,
     secondaryText: String? = null,
-    enabled: Boolean = true,
+    isEnabled: Boolean = true,
 ) {
     val colorPalette = LocalColorPalette.current
     val typography = LocalTypography.current
@@ -71,30 +73,31 @@ fun MenuEntry(
             .clickable(
                 indication = rememberRipple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
-                enabled = enabled,
+                enabled = isEnabled,
                 onClick = onClick
             )
             .fillMaxWidth()
+            .alpha(if (isEnabled) 1f else 0.4f)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Image(
             painter = painterResource(icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(if (enabled) colorPalette.textSecondary else colorPalette.textDisabled),
+            colorFilter = ColorFilter.tint(colorPalette.textSecondary),
             modifier = Modifier
-                .size(18.dp)
+                .size(16.dp)
         )
 
         Column {
             BasicText(
                 text = text,
-                style = typography.xs.semiBold.color(if (enabled) colorPalette.text else colorPalette.textDisabled)
+                style = typography.xs.medium
             )
 
             secondaryText?.let { secondaryText ->
                 BasicText(
                     text = secondaryText,
-                    style = typography.xxs.semiBold.color(if (enabled) colorPalette.textSecondary else colorPalette.textDisabled)
+                    style = typography.xxs.medium.secondary
                 )
             }
         }
