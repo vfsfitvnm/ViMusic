@@ -726,9 +726,7 @@ object YouTube {
                 copy(
                     items = items?.mapIndexed { index, item ->
                         if (item.info.endpoint?.type != "MUSIC_VIDEO_TYPE_ATV") {
-                            sources.getOrNull(index)?.takeIf { source ->
-                                source.title == item.info.name
-                            }?.let { source ->
+                            sources.getOrNull(index)?.let { source ->
                                 item.copy(
                                     info = item.info.copy(
                                         endpoint = item.info.endpoint?.copy(
