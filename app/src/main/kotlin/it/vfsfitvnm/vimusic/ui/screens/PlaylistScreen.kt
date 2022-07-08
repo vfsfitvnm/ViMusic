@@ -124,7 +124,7 @@ fun PlaylistScreen(
                                             MenuCloseButton(onClick = menuState::hide)
 
                                             MenuEntry(
-                                                icon = R.drawable.time,
+                                                icon = R.drawable.enqueue,
                                                 text = "Enqueue",
                                                 onClick = {
                                                     menuState.hide()
@@ -143,7 +143,7 @@ fun PlaylistScreen(
                                             )
 
                                             MenuEntry(
-                                                icon = R.drawable.list,
+                                                icon = R.drawable.playlist,
                                                 text = "Import",
                                                 onClick = {
                                                     menuState.hide()

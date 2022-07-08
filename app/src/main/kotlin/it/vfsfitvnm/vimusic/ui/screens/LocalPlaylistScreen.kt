@@ -151,7 +151,7 @@ fun LocalPlaylistScreen(
                                             MenuCloseButton(onClick = menuState::hide)
 
                                             MenuEntry(
-                                                icon = R.drawable.time,
+                                                icon = R.drawable.enqueue,
                                                 text = "Enqueue",
                                                 isEnabled = playlistWithSongs.songs.isNotEmpty(),
                                                 onClick = {

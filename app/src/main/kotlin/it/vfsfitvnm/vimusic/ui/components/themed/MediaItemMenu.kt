@@ -321,7 +321,7 @@ fun MediaItemMenu(
                     onAddToPlaylist?.let { onAddToPlaylist ->
                         playlistPreviews.forEach { playlistPreview ->
                             MenuEntry(
-                                icon = R.drawable.list,
+                                icon = R.drawable.playlist,
                                 text = playlistPreview.playlist.name,
                                 secondaryText = "${playlistPreview.songCount} songs",
                                 onClick = {
@@ -370,7 +370,7 @@ fun MediaItemMenu(
 
                     onPlayNext?.let { onPlayNext ->
                         MenuEntry(
-                            icon = R.drawable.play,
+                            icon = R.drawable.play_skip_forward,
                             text = "Play next",
                             onClick = {
                                 onDismiss()
@@ -381,7 +381,7 @@ fun MediaItemMenu(
 
                     onEnqueue?.let { onEnqueue ->
                         MenuEntry(
-                            icon = R.drawable.time,
+                            icon = R.drawable.enqueue,
                             text = "Enqueue",
                             onClick = {
                                 onDismiss()
@@ -390,42 +390,9 @@ fun MediaItemMenu(
                         )
                     }
 
-                    onRemoveFromQueue?.let { onRemoveFromQueue ->
-                        MenuEntry(
-                            icon = R.drawable.trash,
-                            text = "Remove",
-                            onClick = {
-                                onDismiss()
-                                onRemoveFromQueue()
-                            }
-                        )
-                    }
-
-                    onRemoveFromFavorites?.let { onRemoveFromFavorites ->
-                        MenuEntry(
-                            icon = R.drawable.heart_dislike,
-                            text = "Dislike",
-                            onClick = {
-                                onDismiss()
-                                onRemoveFromFavorites()
-                            }
-                        )
-                    }
-
-                    onRemoveFromPlaylist?.let { onRemoveFromPlaylist ->
-                        MenuEntry(
-                            icon = R.drawable.trash,
-                            text = "Remove",
-                            onClick = {
-                                onDismiss()
-                                onRemoveFromPlaylist()
-                            }
-                        )
-                    }
-
                     if (onAddToPlaylist != null) {
                         MenuEntry(
-                            icon = R.drawable.list,
+                            icon = R.drawable.playlist,
                             text = "Add to playlist",
                             onClick = {
                                 viewPlaylistsRoute()
@@ -481,11 +448,44 @@ fun MediaItemMenu(
                         )
                     }
 
-                    onHideFromDatabase?.let { onDeleteFromDatabase ->
+                    onRemoveFromQueue?.let { onRemoveFromQueue ->
+                        MenuEntry(
+                            icon = R.drawable.trash,
+                            text = "Remove from queue",
+                            onClick = {
+                                onDismiss()
+                                onRemoveFromQueue()
+                            }
+                        )
+                    }
+
+                    onRemoveFromFavorites?.let { onRemoveFromFavorites ->
+                        MenuEntry(
+                            icon = R.drawable.heart_dislike,
+                            text = "Remove from favorites",
+                            onClick = {
+                                onDismiss()
+                                onRemoveFromFavorites()
+                            }
+                        )
+                    }
+
+                    onRemoveFromPlaylist?.let { onRemoveFromPlaylist ->
+                        MenuEntry(
+                            icon = R.drawable.trash,
+                            text = "Remove from playlist",
+                            onClick = {
+                                onDismiss()
+                                onRemoveFromPlaylist()
+                            }
+                        )
+                    }
+
+                    onHideFromDatabase?.let { onHideFromDatabase ->
                         MenuEntry(
                             icon = R.drawable.trash,
                             text = "Hide",
-                            onClick = onDeleteFromDatabase
+                            onClick = onHideFromDatabase
                         )
                     }
                 }

@@ -148,7 +148,7 @@ fun AlbumScreen(
                                             MenuCloseButton(onClick = menuState::hide)
 
                                             MenuEntry(
-                                                icon = R.drawable.time,
+                                                icon = R.drawable.enqueue,
                                                 text = "Enqueue",
                                                 onClick = {
                                                     menuState.hide()
@@ -159,7 +159,7 @@ fun AlbumScreen(
                                             )
 
                                             MenuEntry(
-                                                icon = R.drawable.list,
+                                                icon = R.drawable.playlist,
                                                 text = "Import as playlist",
                                                 onClick = {
                                                     menuState.hide()

@@ -117,7 +117,7 @@ fun BuiltInPlaylistScreen(
                                             MenuCloseButton(onClick = menuState::hide)
 
                                             MenuEntry(
-                                                icon = R.drawable.time,
+                                                icon = R.drawable.enqueue,
                                                 text = "Enqueue",
                                                 isEnabled = songs.isNotEmpty(),
                                                 onClick = {
