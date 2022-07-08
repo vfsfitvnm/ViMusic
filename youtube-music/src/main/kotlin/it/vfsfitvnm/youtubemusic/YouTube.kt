@@ -691,7 +691,7 @@ object YouTube {
         }.recoverIfCancelled()
     }
 
-    open class PlaylistOrAlbum(
+    data class PlaylistOrAlbum(
         val title: String?,
         val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
         val year: String?,
@@ -700,13 +700,50 @@ object YouTube {
         val url: String?,
         val continuation: String?,
     ) {
-        open class Item(
+        data class Item(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
             val durationText: String?,
             val album: Info<NavigationEndpoint.Endpoint.Browse>?,
             val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
         )
+
+        suspend fun withAudioSources(): PlaylistOrAlbum {
+            @Serializable
+            data class RelatedStream(
+                val url: String,
+                val title: String
+            )
+
+            @Serializable
+            data class Response(
+                val relatedStreams: List<RelatedStream>
+            )
+
+            return url?.replace("https://music.youtube.com/playlist?list=", "https://pipedapi.kavin.rocks/playlists/")?.let { url ->
+                val sources = client.get(url).body<Response>().relatedStreams
+
+                copy(
+                    items = items?.mapIndexed { index, item ->
+                        if (item.info.endpoint?.type != "MUSIC_VIDEO_TYPE_ATV") {
+                            sources.getOrNull(index)?.takeIf { source ->
+                                source.title == item.info.name
+                            }?.let { source ->
+                                item.copy(
+                                    info = item.info.copy(
+                                        endpoint = item.info.endpoint?.copy(
+                                            videoId = source.url.removePrefix("/watch?v=")
+                                        )
+                                    )
+                                )
+                            } ?: item
+                        } else {
+                            item
+                        }
+                    }
+                )
+            } ?: this
+        }
     }
 
     suspend fun playlistOrAlbum(browseId: String): Result<PlaylistOrAlbum>? {
@@ -795,7 +832,8 @@ object YouTube {
                                 ?.firstOrNull()
                         )
                     }
-                    ?.filter { it.info.endpoint != null },
+//                    ?.filter { it.info.endpoint != null }
+                ,
                 url = body
                     .microformat
                     ?.microformatDataRenderer

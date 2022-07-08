@@ -71,7 +71,7 @@ fun AlbumScreen(
                         authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
                         shareUrl = youtubeAlbum.url
                     ).also(Database::upsert).also {
-                        youtubeAlbum.items?.forEachIndexed { position, albumItem ->
+                        youtubeAlbum.withAudioSources().items?.forEachIndexed { position, albumItem ->
                             albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
                                 Database.insert(mediaItem)
                                 Database.upsert(
