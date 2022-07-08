@@ -144,7 +144,7 @@ fun PlaylistScreen(
 
                                             MenuEntry(
                                                 icon = R.drawable.list,
-                                                text = "Import as playlist",
+                                                text = "Import",
                                                 onClick = {
                                                     menuState.hide()
 

@@ -28,13 +28,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.Album
-import it.vfsfitvnm.vimusic.models.DetailedSong
-import it.vfsfitvnm.vimusic.models.SongAlbumMap
+import it.vfsfitvnm.vimusic.models.*
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
@@ -158,6 +155,36 @@ fun AlbumScreen(
                                                     binder?.player?.enqueue(
                                                         songs.map(DetailedSong::asMediaItem)
                                                     )
+                                                }
+                                            )
+
+                                            MenuEntry(
+                                                icon = R.drawable.list,
+                                                text = "Import as playlist",
+                                                onClick = {
+                                                    menuState.hide()
+
+                                                    albumResult?.getOrNull()?.let { album ->
+                                                        query {
+                                                            val playlistId =
+                                                                Database.insert(
+                                                                    Playlist(
+                                                                        name = album.title
+                                                                            ?: "Unknown"
+                                                                    )
+                                                                )
+
+                                                            songs.forEachIndexed { index, song ->
+                                                                Database.insert(
+                                                                    SongPlaylistMap(
+                                                                        songId = song.song.id,
+                                                                        playlistId = playlistId,
+                                                                        position = index
+                                                                    )
+                                                                )
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             )
 
