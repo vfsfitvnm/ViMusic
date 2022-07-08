@@ -3,12 +3,9 @@ package it.vfsfitvnm.vimusic.ui.components
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,40 +20,17 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
-import kotlin.ranges.coerceAtMost
 
-
-@Composable
-@NonRestartableComposable
-fun BottomSheet(
-    lowerBound: Dp,
-    upperBound: Dp,
-    modifier: Modifier = Modifier,
-    peekHeight: Dp = 0.dp,
-    elevation: Dp = 8.dp,
-    shape: Shape = RectangleShape,
-    handleOutsideInteractionsWhenExpanded: Boolean = false,
-    interactionSource: MutableInteractionSource? = null,
-    collapsedContent: @Composable BoxScope.() -> Unit,
-    content: @Composable BoxScope.() -> Unit
-) {
-    BottomSheet(
-        state = rememberBottomSheetState(lowerBound, upperBound),
-        modifier = modifier,
-        peekHeight = peekHeight,
-        elevation = elevation,
-        shape = shape,
-        handleOutsideInteractionsWhenExpanded = handleOutsideInteractionsWhenExpanded,
-        interactionSource = interactionSource,
-        collapsedContent = collapsedContent,
-        content = content
-    )
-}
 
 @Composable
 fun BottomSheet(
@@ -66,45 +40,19 @@ fun BottomSheet(
     elevation: Dp = 8.dp,
     shape: Shape = RectangleShape,
     handleOutsideInteractionsWhenExpanded: Boolean = false,
-    interactionSource: MutableInteractionSource? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
-    var lastOffset by remember {
-        mutableStateOf(state.value)
-    }
-
     Box {
         if (handleOutsideInteractionsWhenExpanded && !state.isCollapsed) {
             Spacer(
                 modifier = Modifier
-                    .pointerInput(Unit) {
+                    .pointerInput(state) {
                         detectTapGestures {
                             state.collapse()
                         }
                     }
-                    .draggable(
-                        state = state,
-                        onDragStarted = {
-                            lastOffset = state.value
-                        },
-                        onDragStopped = { velocity ->
-                            if (velocity.absoluteValue > 300 && lastOffset != state.value) {
-                                if (lastOffset > state.value) {
-                                    state.collapse()
-                                } else {
-                                    state.expand()
-                                }
-                            } else {
-                                if (state.upperBound - state.value > state.value - state.lowerBound) {
-                                    state.collapse()
-                                } else {
-                                    state.expand()
-                                }
-                            }
-                        },
-                        orientation = Orientation.Vertical
-                    )
+                    .draggableBottomSheet(state)
                     .drawBehind {
                         drawRect(color = Color.Black.copy(alpha = 0.5f * state.progress))
                     }
@@ -122,36 +70,14 @@ fun BottomSheet(
                 }
                 .shadow(elevation = elevation, shape = shape)
                 .clip(shape)
-                .draggable(
-                    state = state,
-                    interactionSource = interactionSource,
-                    onDragStarted = {
-                        lastOffset = state.value
-                    },
-                    onDragStopped = { velocity ->
-                        if (velocity.absoluteValue > 300 && lastOffset != state.value) {
-                            if (lastOffset > state.value) {
-                                state.collapse()
-                            } else {
-                                state.expand()
-                            }
-                        } else {
-                            if (state.upperBound - state.value > state.value - state.lowerBound) {
-                                state.collapse()
-                            } else {
-                                state.expand()
-                            }
+                .draggableBottomSheet(state)
+                .pointerInput(state) {
+                    if (!state.isRunning && state.isCollapsed) {
+                        detectTapGestures {
+                            state.expand()
                         }
-                    },
-                    orientation = Orientation.Vertical
-                )
-                .clickable(
-                    enabled = !state.isRunning && state.isCollapsed,
-                    indication = null,
-                    interactionSource = interactionSource
-                        ?: remember { MutableInteractionSource() },
-                    onClick = state.expand
-                )
+                    }
+                }
                 .fillMaxSize()
         ) {
             if (!state.isCollapsed) {
@@ -298,4 +224,37 @@ fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp): BottomSheetState {
             }
         )
     }
+}
+
+private fun Modifier.draggableBottomSheet(state: BottomSheetState) = pointerInput(state) {
+    var initialValue = 0.dp
+    val velocityTracker = VelocityTracker()
+
+    detectVerticalDragGestures(
+        onDragStart = {
+            initialValue = state.value
+        },
+        onVerticalDrag = { change, dragAmount ->
+            velocityTracker.addPointerInputChange(change)
+            state.dispatchRawDelta(dragAmount)
+        },
+        onDragEnd = {
+            val velocity = velocityTracker.calculateVelocity().y.absoluteValue
+            velocityTracker.resetTracking()
+
+            if (velocity.absoluteValue > 300 && initialValue != state.value) {
+                if (initialValue > state.value) {
+                    state.collapse()
+                } else {
+                    state.expand()
+                }
+            } else {
+                if (state.upperBound - state.value > state.value - state.lowerBound) {
+                    state.collapse()
+                } else {
+                    state.expand()
+                }
+            }
+        }
+    )
 }
