@@ -148,8 +148,6 @@ fun LocalPlaylistScreen(
                                 .clickable {
                                     menuState.display {
                                         Menu {
-                                            MenuCloseButton(onClick = menuState::hide)
-
                                             MenuEntry(
                                                 icon = R.drawable.enqueue,
                                                 text = "Enqueue",

@@ -18,16 +18,17 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
+
 
 @ExperimentalAnimationApi
 @Composable
@@ -344,8 +345,6 @@ fun MediaItemMenu(
                             detectTapGestures { }
                         }
                 ) {
-                    MenuCloseButton(onClick = onDismiss)
-
                     onStartRadio?.let { onStartRadio ->
                         MenuEntry(
                             icon = R.drawable.radio,

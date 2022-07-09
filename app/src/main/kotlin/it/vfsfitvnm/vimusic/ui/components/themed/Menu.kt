@@ -20,7 +20,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
+
 
 @Composable
 inline fun Menu(
@@ -31,29 +31,18 @@ inline fun Menu(
 
     Column(
         modifier = modifier
+            .padding(top = 48.dp)
             .verticalScroll(rememberScrollState())
             .fillMaxWidth()
             .background(
                 color = colorPalette.elevatedBackground,
-                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
+            .padding(top = 8.dp)
             .padding(vertical = 8.dp),
         content = content
     )
 }
-
-@Composable
-inline fun BasicMenu(
-    noinline onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Menu(modifier = modifier) {
-        MenuCloseButton(onClick = onDismiss)
-        content()
-    }
-}
-
 
 @Composable
 fun MenuEntry(
@@ -114,7 +103,7 @@ fun MenuIconButton(
 
     Box(
         modifier = modifier
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 14.dp)
     ) {
         Image(
             painter = painterResource(icon),
@@ -122,22 +111,10 @@ fun MenuIconButton(
             colorFilter = ColorFilter.tint(colorPalette.text),
             modifier = Modifier
                 .clickable(onClick = onClick)
-                .padding(horizontal = 8.dp, vertical = 16.dp)
+                .padding(horizontal = 8.dp, vertical = 8.dp)
                 .size(20.dp)
         )
     }
-}
-
-@Composable
-fun MenuCloseButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    MenuIconButton(
-        icon = R.drawable.close,
-        onClick = onClick,
-        modifier = modifier
-    )
 }
 
 @Composable
@@ -151,5 +128,3 @@ fun MenuBackButton(
         modifier = modifier
     )
 }
-
-
