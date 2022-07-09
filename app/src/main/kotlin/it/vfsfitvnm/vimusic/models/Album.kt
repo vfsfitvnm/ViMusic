@@ -10,5 +10,6 @@ data class Album(
     val thumbnailUrl: String? = null,
     val year: String? = null,
     val authorsText: String? = null,
-    val shareUrl: String? = null
+    val shareUrl: String? = null,
+    val timestamp: Long?
 )

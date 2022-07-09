@@ -156,6 +156,7 @@ interface Database {
                 authorsText = null,
                 thumbnailUrl = null,
                 shareUrl = null,
+                timestamp = null,
             ).also(::insert)
 
             upsert(
@@ -174,7 +175,8 @@ interface Database {
                         id = artistIds[index],
                         name = artistName,
                         thumbnailUrl = null,
-                        info = null
+                        info = null,
+                        timestamp = null,
                     ).also(::insert)
                 }
             }
@@ -213,6 +215,9 @@ interface Database {
     fun delete(playlist: Playlist)
 
     @Delete
+    fun delete(playlist: Album)
+
+    @Delete
     fun delete(songPlaylistMap: SongPlaylistMap)
 
     fun upsert(songAlbumMap: SongAlbumMap) {
@@ -249,7 +254,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -261,6 +266,7 @@ interface Database {
         AutoMigration(from = 7, to = 8, spec = DatabaseInitializer.From7To8Migration::class),
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 11, to = 12, spec = DatabaseInitializer.From11To12Migration::class),
+        AutoMigration(from = 12, to = 13),
     ],
 )
 @TypeConverters(Converters::class)

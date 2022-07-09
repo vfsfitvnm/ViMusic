@@ -45,6 +45,9 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
+import java.text.DateFormat
+import java.util.*
 
 
 @ExperimentalAnimationApi
@@ -56,32 +59,10 @@ fun AlbumScreen(
 
     val albumResult by remember(browseId) {
         Database.album(browseId).map { album ->
-            album?.takeIf {
-                album.thumbnailUrl != null
-            }?.let(Result.Companion::success) ?: YouTube.playlistOrAlbum(browseId)
-                ?.map { youtubeAlbum ->
-                    Album(
-                        id = browseId,
-                        title = youtubeAlbum.title,
-                        thumbnailUrl = youtubeAlbum.thumbnail?.url,
-                        year = youtubeAlbum.year,
-                        authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
-                        shareUrl = youtubeAlbum.url
-                    ).also(Database::upsert).also {
-                        youtubeAlbum.withAudioSources().items?.forEachIndexed { position, albumItem ->
-                            albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
-                                Database.insert(mediaItem)
-                                Database.upsert(
-                                    SongAlbumMap(
-                                        songId = mediaItem.mediaId,
-                                        albumId = browseId,
-                                        position = position
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
+            album
+                ?.takeIf { album.timestamp != null }
+                ?.let(Result.Companion::success)
+                ?: fetchAlbum(browseId)
         }.distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
@@ -207,6 +188,25 @@ fun AlbumScreen(
                                                                 null
                                                             )
                                                         )
+                                                    }
+                                                }
+                                            )
+
+                                            MenuEntry(
+                                                icon = R.drawable.download,
+                                                text = "Refetch",
+                                                secondaryText = albumResult?.getOrNull()?.timestamp?.let { timestamp ->
+                                                    "Last updated on ${DateFormat.getDateTimeInstance().format(Date(timestamp))}"
+                                                },
+                                                isEnabled = albumResult?.getOrNull() != null,
+                                                onClick = {
+                                                    menuState.hide()
+
+                                                    query {
+                                                        albumResult?.getOrNull()?.let(Database::delete)
+                                                        runBlocking(Dispatchers.IO) {
+                                                            fetchAlbum(browseId)
+                                                        }
                                                     }
                                                 }
                                             )
@@ -391,4 +391,32 @@ private fun LoadingOrError(
             }
         }
     }
+}
+
+private suspend fun fetchAlbum(browseId: String): Result<Album>? {
+    return YouTube.playlistOrAlbum(browseId)
+        ?.map { youtubeAlbum ->
+            Album(
+                id = browseId,
+                title = youtubeAlbum.title,
+                thumbnailUrl = youtubeAlbum.thumbnail?.url,
+                year = youtubeAlbum.year,
+                authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
+                shareUrl = youtubeAlbum.url,
+                timestamp = System.currentTimeMillis()
+            ).also(Database::upsert).also {
+                youtubeAlbum.withAudioSources().items?.forEachIndexed { position, albumItem ->
+                    albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
+                        Database.insert(mediaItem)
+                        Database.upsert(
+                            SongAlbumMap(
+                                songId = mediaItem.mediaId,
+                                albumId = browseId,
+                                position = position
+                            )
+                        )
+                    }
+                }
+            }
+        }
 }

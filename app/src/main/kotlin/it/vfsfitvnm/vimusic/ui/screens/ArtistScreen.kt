@@ -82,21 +82,10 @@ fun ArtistScreen(
 
             val artistResult by remember(browseId) {
                 Database.artist(browseId).map { artist ->
-                    artist?.takeIf {
-                        artist.shufflePlaylistId != null
-                    }?.let(Result.Companion::success) ?: YouTube.artist(browseId)
-                        ?.map { youtubeArtist ->
-                            Artist(
-                                id = browseId,
-                                name = youtubeArtist.name,
-                                thumbnailUrl = youtubeArtist.thumbnail?.url,
-                                info = youtubeArtist.description,
-                                shuffleVideoId = youtubeArtist.shuffleEndpoint?.videoId,
-                                shufflePlaylistId = youtubeArtist.shuffleEndpoint?.playlistId,
-                                radioVideoId = youtubeArtist.radioEndpoint?.videoId,
-                                radioPlaylistId = youtubeArtist.radioEndpoint?.playlistId,
-                            ).also(Database::upsert)
-                        }
+                    artist
+                        ?.takeIf { artist.timestamp != null }
+                        ?.let(Result.Companion::success)
+                        ?: fetchArtist(browseId)
                 }.distinctUntilChanged()
             }.collectAsState(initial = null, context = Dispatchers.IO)
 
@@ -139,17 +128,6 @@ fun ArtistScreen(
                             contentDescription = null,
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .clickable {
-                                    query {
-                                        runBlocking {
-                                            Database
-                                                .artist(browseId)
-                                                .first()
-                                                ?.copy(shufflePlaylistId = null)
-                                                ?.let(Database::update)
-                                        }
-                                    }
-                                }
                                 .size(Dimensions.thumbnails.artist)
                         )
 
@@ -177,6 +155,12 @@ fun ArtistScreen(
                                                 playlistId = artist.shufflePlaylistId
                                             )
                                         )
+
+                                        query {
+                                            runBlocking {
+                                                fetchArtist(browseId)
+                                            }
+                                        }
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -200,6 +184,12 @@ fun ArtistScreen(
                                                 playlistId = artist.radioPlaylistId
                                             )
                                         )
+
+                                        query {
+                                            runBlocking {
+                                                fetchArtist(browseId)
+                                            }
+                                        }
                                     }
                                     .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
@@ -285,7 +275,10 @@ fun ArtistScreen(
 
                 artistResult?.getOrNull()?.info?.let { description ->
                     item {
-                        TextCard {
+                        TextCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
                             Title(text = "Information")
                             Text(text = description)
                         }
@@ -328,4 +321,21 @@ private fun LoadingOrError(
             )
         }
     }
+}
+
+private suspend fun fetchArtist(browseId: String): Result<Artist>? {
+    return YouTube.artist(browseId)
+        ?.map { youtubeArtist ->
+            Artist(
+                id = browseId,
+                name = youtubeArtist.name,
+                thumbnailUrl = youtubeArtist.thumbnail?.url,
+                info = youtubeArtist.description,
+                shuffleVideoId = youtubeArtist.shuffleEndpoint?.videoId,
+                shufflePlaylistId = youtubeArtist.shuffleEndpoint?.playlistId,
+                radioVideoId = youtubeArtist.radioEndpoint?.videoId,
+                radioPlaylistId = youtubeArtist.radioEndpoint?.playlistId,
+                timestamp = System.currentTimeMillis()
+            ).also(Database::upsert)
+        }
 }

@@ -13,4 +13,5 @@ data class Artist(
     val shufflePlaylistId: String? = null,
     val radioVideoId: String? = null,
     val radioPlaylistId: String? = null,
+    val timestamp: Long?
 )
