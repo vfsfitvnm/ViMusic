@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -27,7 +28,6 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.HorizontalTabPager
 import it.vfsfitvnm.vimusic.ui.components.rememberTabPagerState
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.PlayerState
@@ -44,6 +44,7 @@ import kotlinx.coroutines.withContext
 fun PlayerBottomSheet(
     playerState: PlayerState?,
     layoutState: BottomSheetState,
+    padding: Dp,
     song: Song?,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
@@ -61,11 +62,12 @@ fun PlayerBottomSheet(
 
     BottomSheet(
         state = layoutState,
-        peekHeight = Dimensions.playerBottomSheetPeekHeight,
+        peekHeight = padding,
         elevation = 16.dp,
         shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
         handleOutsideInteractionsWhenExpanded = true,
-        modifier = modifier,
+        modifier = modifier
+            .padding(bottom = padding),
         collapsedContent = {
             Column(
                 verticalArrangement = Arrangement.SpaceEvenly,

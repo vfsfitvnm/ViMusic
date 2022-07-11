@@ -6,7 +6,6 @@ import android.text.format.DateUtils
 import android.text.format.Formatter
 import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
@@ -642,11 +641,11 @@ fun PlayerView(
 
         PlayerBottomSheet(
             playerState = playerState,
-            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound - Dimensions.playerBottomSheetPeekHeight),
+            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound * 0.9f),
             onGlobalRouteEmitted = layoutState.collapse,
+            padding  = layoutState.upperBound * 0.1f,
             song = song,
             modifier = Modifier
-                .padding(bottom = Dimensions.playerBottomSheetPeekHeight)
                 .align(Alignment.BottomCenter)
         )
     }

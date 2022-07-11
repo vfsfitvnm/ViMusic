@@ -26,7 +26,6 @@ object Dimensions {
     }
 
     val collapsedPlayer = 64.dp
-    val playerBottomSheetPeekHeight = 128.dp
 }
 
 inline val Dp.px: Int
