@@ -54,7 +54,7 @@ import android.os.Binder as AndroidBinder
 
 
 @Suppress("DEPRECATION")
-class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback,
+class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener {
     private lateinit var mediaSession: MediaSession
     private lateinit var cache: SimpleCache
@@ -86,14 +86,19 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     private var isVolumeNormalizationEnabled = false
     private var isPersistentQueueEnabled = false
+    override var isInvincibilityEnabled = false
 
     private val binder = Binder()
 
     private var isNotificationStarted = false
 
+    override val notificationId: Int
+        get() = NotificationId
+
     private lateinit var notificationActionReceiver: NotificationActionReceiver
 
     override fun onBind(intent: Intent?): AndroidBinder {
+        super.onBind(intent)
         return binder
     }
 
@@ -117,6 +122,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         val preferences = Preferences()
         isPersistentQueueEnabled = preferences.persistentQueue
         isVolumeNormalizationEnabled = preferences.volumeNormalization
+        isInvincibilityEnabled = preferences.isInvincibilityEnabled
 
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
@@ -188,6 +194,10 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         cache.release()
 
         super.onDestroy()
+    }
+
+    override fun shouldBeInvincible(): Boolean {
+        return !player.shouldBePlaying
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -332,10 +342,12 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                 isNotificationStarted = true
                 startForegroundService(this@PlayerService, intent<PlayerService>())
                 startForeground(NotificationId, notification())
+                makeInvincible(false)
             } else {
                 if (!player.shouldBePlaying) {
                     isNotificationStarted = false
                     stopForeground(false)
+                    makeInvincible(true)
                 }
                 notificationManager?.notify(NotificationId, notification)
             }
@@ -348,10 +360,12 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                 sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
             Preferences.Keys.volumeNormalization -> isVolumeNormalizationEnabled =
                 sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
+            Preferences.Keys.isInvincibilityEnabled -> isInvincibilityEnabled =
+                sharedPreferences.getBoolean(key, isInvincibilityEnabled)
         }
     }
 
-    private fun notification(): Notification? {
+    override fun notification(): Notification? {
         if (player.currentMediaItem == null) return null
 
         val playIntent = Action.play.pendingIntent

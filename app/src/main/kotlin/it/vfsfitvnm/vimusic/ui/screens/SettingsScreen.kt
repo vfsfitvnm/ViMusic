@@ -35,6 +35,7 @@ fun SettingsScreen() {
     val playerSettingsRoute = rememberPlayerSettingsRoute()
     val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
     val cacheSettingsRoute = rememberCacheSettingsRoute()
+    val otherSettingsRoute = rememberOtherSettingsRoute()
     val aboutRoute = rememberAboutRoute()
 
     val scrollState = rememberScrollState()
@@ -78,6 +79,10 @@ fun SettingsScreen() {
 
         cacheSettingsRoute {
             CacheSettingsScreen()
+        }
+
+        otherSettingsRoute {
+            OtherSettingsScreen()
         }
 
         aboutRoute {
@@ -207,6 +212,14 @@ fun SettingsScreen() {
 
                 Entry(
                     color = colorPalette.green,
+                    icon = R.drawable.shapes,
+                    title = "Other",
+                    description = "Advanced settings",
+                    route = otherSettingsRoute
+                )
+
+                Entry(
+                    color = colorPalette.magenta,
                     icon = R.drawable.information,
                     title = "About",
                     description = "App version and social links",

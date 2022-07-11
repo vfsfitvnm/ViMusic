@@ -24,6 +24,7 @@ class Preferences(
     initialSkipSilence: Boolean,
     initialVolumeNormalization: Boolean,
     initialPersistentQueue: Boolean,
+    initialIsInvincibilityEnabled: Boolean,
 ) {
     constructor(preferences: SharedPreferences) : this(
         edit = { action: SharedPreferences.Editor.() -> Unit ->
@@ -39,7 +40,8 @@ class Preferences(
         initialExoPlayerDiskCacheMaxSizeBytes = preferences.getLong(Keys.exoPlayerDiskCacheMaxSizeBytes, 512L * 1024 * 1024),
         initialSkipSilence = preferences.getBoolean(Keys.skipSilence, false),
         initialVolumeNormalization = preferences.getBoolean(Keys.volumeNormalization, false),
-        initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false)
+        initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false),
+        initialIsInvincibilityEnabled = preferences.getBoolean(Keys.isInvincibilityEnabled, false),
     )
 
     var songSortBy = initialSongSortBy
@@ -75,6 +77,9 @@ class Preferences(
     var persistentQueue = initialPersistentQueue
         set(value) = edit { putBoolean(Keys.persistentQueue, value) }
 
+    var isInvincibilityEnabled = initialIsInvincibilityEnabled
+        set(value) = edit { putBoolean(Keys.isInvincibilityEnabled, value) }
+
     object Keys {
         const val songSortOrder = "songSortOrder"
         const val songSortBy = "songSortBy"
@@ -87,6 +92,7 @@ class Preferences(
         const val skipSilence = "skipSilence"
         const val volumeNormalization = "volumeNormalization"
         const val persistentQueue = "persistentQueue"
+        const val isInvincibilityEnabled = "isInvincibilityEnabled"
     }
 
     companion object {

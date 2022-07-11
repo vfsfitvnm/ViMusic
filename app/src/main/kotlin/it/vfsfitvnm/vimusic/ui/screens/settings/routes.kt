@@ -33,6 +33,13 @@ fun rememberCacheSettingsRoute(): Route0 {
 }
 
 @Composable
+fun rememberOtherSettingsRoute(): Route0 {
+    return remember {
+        Route0("OtherSettingsRoute")
+    }
+}
+
+@Composable
 fun rememberAboutRoute(): Route0 {
     return remember {
         Route0("AboutRoute")
