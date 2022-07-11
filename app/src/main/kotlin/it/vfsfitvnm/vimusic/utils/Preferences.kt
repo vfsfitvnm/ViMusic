@@ -13,6 +13,7 @@ import it.vfsfitvnm.youtubemusic.YouTube
 @Stable
 class Preferences(
     private val edit: (action: SharedPreferences.Editor.() -> Unit) -> Unit,
+    initialIsFirstLaunch: Boolean,
     initialSongSortBy: SongSortBy,
     initialSongSortOrder: SortOrder,
     initialColorPaletteMode: ColorPaletteMode,
@@ -30,6 +31,7 @@ class Preferences(
         edit = { action: SharedPreferences.Editor.() -> Unit ->
            preferences.edit(action = action)
         },
+        initialIsFirstLaunch = preferences.getBoolean(Keys.isFirstLaunch, true),
         initialSongSortBy = preferences.getEnum(Keys.songSortBy, SongSortBy.DateAdded),
         initialSongSortOrder = preferences.getEnum(Keys.songSortOrder, SortOrder.Descending),
         initialColorPaletteMode = preferences.getEnum(Keys.colorPaletteMode, ColorPaletteMode.System),
@@ -43,6 +45,9 @@ class Preferences(
         initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false),
         initialIsInvincibilityEnabled = preferences.getBoolean(Keys.isInvincibilityEnabled, false),
     )
+
+    var isFirstLaunch = initialIsFirstLaunch
+        set(value) = edit { putBoolean(Keys.isFirstLaunch, value) }
 
     var songSortBy = initialSongSortBy
         set(value) = edit { putEnum(Keys.songSortBy, value) }
@@ -81,6 +86,7 @@ class Preferences(
         set(value) = edit { putBoolean(Keys.isInvincibilityEnabled, value) }
 
     object Keys {
+        const val isFirstLaunch = "isFirstLaunch"
         const val songSortOrder = "songSortOrder"
         const val songSortBy = "songSortBy"
         const val colorPaletteMode = "colorPaletteMode"

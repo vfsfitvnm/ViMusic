@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -25,6 +26,7 @@ import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.*
+
 
 @ExperimentalAnimationApi
 @Composable
@@ -92,6 +94,7 @@ fun SettingsScreen() {
         host {
             val colorPalette = LocalColorPalette.current
             val typography = LocalTypography.current
+            val preferences = LocalPreferences.current
 
             Column(
                 modifier = Modifier
@@ -132,7 +135,9 @@ fun SettingsScreen() {
                     color: Color,
                     title: String,
                     description: String,
-                    route: Route0
+                    route: Route0,
+                    withAlert: Boolean = false,
+                    onClick: (() -> Unit)? = null
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -143,6 +148,7 @@ fun SettingsScreen() {
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = {
                                     route()
+                                    onClick?.invoke()
                                 }
                             )
                             .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -163,7 +169,10 @@ fun SettingsScreen() {
                             )
                         }
 
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
                             BasicText(
                                 text = title,
                                 style = typography.s.semiBold,
@@ -174,6 +183,23 @@ fun SettingsScreen() {
                                 style = typography.xs.secondary.medium,
                                 maxLines = 1
                             )
+                        }
+
+                        if (withAlert) {
+                            Canvas(
+                                modifier = Modifier
+                                    .size(8.dp)
+                            ) {
+                                drawCircle(
+                                    color = colorPalette.red,
+                                    center = size.center.copy(x = size.width),
+                                    radius = 4.dp.toPx(),
+                                    shadow = Shadow(
+                                        color = colorPalette.red,
+                                        blurRadius = 4.dp.toPx()
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -215,7 +241,11 @@ fun SettingsScreen() {
                     icon = R.drawable.shapes,
                     title = "Other",
                     description = "Advanced settings",
-                    route = otherSettingsRoute
+                    route = otherSettingsRoute,
+                    withAlert = LocalPreferences.current.isFirstLaunch,
+                    onClick = {
+                        preferences.isFirstLaunch = false
+                    }
                 )
 
                 Entry(

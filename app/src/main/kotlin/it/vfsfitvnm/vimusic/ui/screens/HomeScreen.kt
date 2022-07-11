@@ -22,11 +22,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -196,6 +198,26 @@ fun HomeScreen() {
                                     settingsRoute()
                                 }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .run {
+                                    if (preferences.isFirstLaunch) {
+                                        drawBehind {
+                                            drawCircle(
+                                                color = colorPalette.red,
+                                                center = Offset(
+                                                    x = size.width,
+                                                    y = 0.dp.toPx()
+                                                ),
+                                                radius = 4.dp.toPx(),
+                                                shadow = Shadow(
+                                                    color = colorPalette.red,
+                                                    blurRadius = 4.dp.toPx()
+                                                )
+                                            )
+                                        }
+                                    } else {
+                                        this
+                                    }
+                                }
                                 .size(24.dp)
                         )
 
