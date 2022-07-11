@@ -9,6 +9,7 @@ import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,18 +26,18 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.analytics.PlaybackStatsListener
-import androidx.media3.exoplayer.audio.AudioSink
-import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.audio.*
 import androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain
-import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
-import androidx.media3.exoplayer.audio.SonicAudioProcessor
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.extractor.ExtractorsFactory
+import androidx.media3.extractor.mkv.MatroskaExtractor
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
@@ -120,10 +121,9 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
 
-        player = ExoPlayer.Builder(this)
+        player = ExoPlayer.Builder(this, createRendersFactory(), createMediaSourceFactory())
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_LOCAL)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(createDataSourceFactory()))
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -131,7 +131,6 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     .build(),
                 true
             )
-            .setRenderersFactory(createRendersFactory())
             .setUsePlatformDiagnostics(false)
             .build()
 
@@ -475,7 +474,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
                             when (val status = body.playabilityStatus.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
-                                    format.itag == 251 || format.itag == 140
+                                    format.itag == 251
                                 }?.let { format ->
                                     val mediaItem = runBlocking(Dispatchers.Main) {
                                         player.findNextMediaItemById(videoId)
@@ -526,34 +525,35 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    private fun createRendersFactory(): RenderersFactory {
-        return object : DefaultRenderersFactory(this) {
-            override fun buildAudioSink(
-                context: Context,
-                enableFloatOutput: Boolean,
-                enableAudioTrackPlaybackParams: Boolean,
-                enableOffload: Boolean
-            ): AudioSink {
-                return DefaultAudioSink.Builder()
-                    .setEnableFloatOutput(enableFloatOutput)
-                    .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
-                    .setOffloadMode(
-                        if (enableOffload) {
-                            DefaultAudioSink.OFFLOAD_MODE_ENABLED_GAPLESS_REQUIRED
-                        } else {
-                            DefaultAudioSink.OFFLOAD_MODE_DISABLED
-                        }
-                    )
-                    .setAudioProcessorChain(
-                        DefaultAudioProcessorChain(
-                            emptyArray(),
-                            SilenceSkippingAudioProcessor(1_000_000, 20_000, 256),
-                            SonicAudioProcessor()
-                        )
-                    )
-                    .build()
-            }
+    private fun createMediaSourceFactory(): MediaSource.Factory {
+        return DefaultMediaSourceFactory(createDataSourceFactory(), createExtractorsFactory())
+    }
+
+    private fun createExtractorsFactory(): ExtractorsFactory {
+        return ExtractorsFactory {
+            arrayOf(MatroskaExtractor())
         }
+    }
+
+    private fun createRendersFactory(): RenderersFactory {
+        val audioSink = DefaultAudioSink.Builder()
+            .setEnableFloatOutput(false)
+            .setEnableAudioTrackPlaybackParams(false)
+            .setOffloadMode(DefaultAudioSink.OFFLOAD_MODE_DISABLED)
+            .setAudioProcessorChain(
+                DefaultAudioProcessorChain(
+                    emptyArray(),
+                    SilenceSkippingAudioProcessor(1_000_000, 20_000, 256),
+                    SonicAudioProcessor()
+                )
+            )
+            .build()
+
+        return RenderersFactory { handler: Handler?, _, audioListener: AudioRendererEventListener?, _, _ ->
+                arrayOf(
+                    MediaCodecAudioRenderer(this, MediaCodecSelector.DEFAULT, handler, audioListener, audioSink)
+                )
+            }
     }
 
     inner class Binder : AndroidBinder() {

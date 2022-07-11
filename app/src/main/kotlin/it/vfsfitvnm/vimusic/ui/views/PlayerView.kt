@@ -403,7 +403,7 @@ fun PlayerView(
                                                                             loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
                                                                             contentLength = body.streamingData?.adaptiveFormats
                                                                                 ?.findLast { format ->
-                                                                                    format.itag == 251 || format.itag == 140
+                                                                                    format.itag == 251
                                                                                 }
                                                                                 ?.let(PlayerResponse.StreamingData.AdaptiveFormat::contentLength)
                                                                         )
