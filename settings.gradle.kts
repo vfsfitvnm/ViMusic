@@ -14,8 +14,6 @@ dependencyResolutionManagement {
             version("kotlin", "1.7.0")
             plugin("kotlin-serialization","org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
-            library("android-media", "androidx.media", "media").version("1.6.0")
-
             version("compose-compiler", "1.2.0")
 
             version("compose", "1.3.0-alpha01")

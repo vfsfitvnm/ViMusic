@@ -85,7 +85,6 @@ dependencies {
 
     implementation(libs.accompanist.systemuicontroller)
 
-    implementation(libs.android.media)
     implementation(libs.exoplayer)
 
     implementation(libs.room)

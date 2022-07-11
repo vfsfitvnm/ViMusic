@@ -1,12 +1,17 @@
 package it.vfsfitvnm.vimusic
 
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.os.PowerManager
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -22,11 +27,12 @@ import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.unit.dp
+import androidx.core.content.getSystemService
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
@@ -35,6 +41,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
+import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.styling.*
@@ -71,6 +78,7 @@ class MainActivity : ComponentActivity() {
         super.onStop()
     }
 
+    @SuppressLint("BatteryLife")
     @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,6 +146,43 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(colorPalette.background)
                 ) {
+                    var isIgnoringBatteryOptimizations by rememberSaveable {
+                        mutableStateOf(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) ?: true
+                        } else {
+                            true
+                        })
+                    }
+
+                    if (!isIgnoringBatteryOptimizations) {
+                        ConfirmationDialog(
+                            text = "(Temporary) ViMusic needs to ignore battery optimizations to avoid being killed when the playback is paused.",
+                            confirmText = "Grant",
+                            onDismiss = {
+                                isIgnoringBatteryOptimizations = true
+                            },
+                            onConfirm = {
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return@ConfirmationDialog
+
+                                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                    data = Uri.parse("package:$packageName")
+                                }
+
+                                if (intent.resolveActivity(packageManager) != null) {
+                                    startActivity(intent)
+                                } else {
+                                    val fallbackIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+
+                                    if (fallbackIntent.resolveActivity(packageManager) != null) {
+                                        startActivity(fallbackIntent)
+                                    } else {
+                                        Toast.makeText(this@MainActivity, "Couldn't find battery optimization settings, please whitelist ViMusic manually", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        )
+                    }
+
                     when (val uri = uri) {
                         null -> {
                             HomeScreen()

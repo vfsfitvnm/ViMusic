@@ -1,32 +1,21 @@
 package it.vfsfitvnm.vimusic.service
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.app.*
+import android.content.*
 import android.content.res.Configuration
 import android.graphics.Color
+import android.media.MediaMetadata
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaControllerCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import android.support.v4.media.session.PlaybackStateCompat.*
-import androidx.annotation.DrawableRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startForegroundService
+import androidx.core.content.getSystemService
 import androidx.core.net.toUri
-import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.*
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
@@ -60,28 +49,29 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
+import android.os.Binder as AndroidBinder
 
 
+@Suppress("DEPRECATION")
 class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener {
-    private lateinit var mediaSession: MediaSessionCompat
+    private lateinit var mediaSession: MediaSession
     private lateinit var cache: SimpleCache
     private lateinit var player: ExoPlayer
 
-    private val stateBuilder = Builder()
-        .setState(STATE_NONE, 0, 1f)
+    private val stateBuilder = PlaybackState.Builder()
         .setActions(
-            ACTION_PLAY
-                    or ACTION_PAUSE
-                    or ACTION_SKIP_TO_PREVIOUS
-                    or ACTION_SKIP_TO_NEXT
-                    or ACTION_PLAY_PAUSE
-                    or ACTION_SEEK_TO
+            PlaybackState.ACTION_PLAY
+                    or PlaybackState.ACTION_PAUSE
+                    or PlaybackState.ACTION_SKIP_TO_PREVIOUS
+                    or PlaybackState.ACTION_SKIP_TO_NEXT
+                    or PlaybackState.ACTION_PLAY_PAUSE
+                    or PlaybackState.ACTION_SEEK_TO
         )
 
-    private val metadataBuilder = MediaMetadataCompat.Builder()
+    private val metadataBuilder = MediaMetadata.Builder()
 
-    private lateinit var notificationManager: NotificationManager
+    private var notificationManager: NotificationManager? = null
 
     private var timerJob: TimerJob? = null
 
@@ -93,72 +83,17 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
 
-    private var hack: Hack? = null
-
-    private var isTaskRemoved = false
-
     private var isVolumeNormalizationEnabled = false
     private var isPersistentQueueEnabled = false
 
-    private val handler = Handler(Looper.getMainLooper())
-
-    private val mediaControllerCallback = object : MediaControllerCompat.Callback() {
-        override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            when (state?.state) {
-                STATE_PLAYING -> {
-                    ContextCompat.startForegroundService(
-                        this@PlayerService,
-                        intent<PlayerService>()
-                    )
-                    startForeground(NotificationId, notification())
-
-                    hack?.stop()
-                }
-                STATE_PAUSED -> {
-                    if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
-                        if (isPersistentQueueEnabled) {
-                            if (isTaskRemoved) {
-                                stopForeground(false)
-                            }
-                        } else {
-                            stopForeground(false)
-                        }
-
-                        notificationManager.notify(NotificationId, notification())
-
-                        hack?.start()
-                    }
-                }
-                STATE_NONE -> {
-                    onPlaybackStateChanged(Player.STATE_READY)
-                    onIsPlayingChanged(player.playWhenReady)
-                }
-                STATE_ERROR -> {
-                    notificationManager.notify(NotificationId, notification())
-                }
-                else -> {}
-            }
-        }
-    }
-
     private val binder = Binder()
 
-    override fun onBind(intent: Intent?): Binder {
-        hack?.stop()
-        hack = null
+    private var isNotificationStarted = false
+
+    private lateinit var notificationActionReceiver: NotificationActionReceiver
+
+    override fun onBind(intent: Intent?): AndroidBinder {
         return binder
-    }
-
-    override fun onRebind(intent: Intent?) {
-        isTaskRemoved = false
-        hack?.stop()
-        hack = null
-        super.onRebind(intent)
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        hack = Hack()
-        return true
     }
 
     override fun onCreate() {
@@ -207,22 +142,30 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
         maybeRestorePlayerQueue()
 
-        mediaSession = MediaSessionCompat(baseContext, "PlayerService")
+        mediaSession = MediaSession(baseContext, "PlayerService")
         mediaSession.setCallback(SessionCallback(player))
         mediaSession.setPlaybackState(stateBuilder.build())
         mediaSession.isActive = true
-        mediaSession.controller.registerCallback(mediaControllerCallback)
-    }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return START_STICKY
+        notificationActionReceiver = NotificationActionReceiver(player)
+
+        val filter = IntentFilter().apply {
+            addAction(Action.play.value)
+            addAction(Action.pause.value)
+            addAction(Action.next.value)
+            addAction(Action.previous.value)
+        }
+
+        registerReceiver(notificationActionReceiver, filter)
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        isTaskRemoved = true
         if (!player.playWhenReady) {
-            stopSelf()
+            if (isPersistentQueueEnabled) {
+                broadCastPendingIntent<NotificationDismissReceiver>().send()
+            } else {
+                stopSelf()
+            }
         }
         super.onTaskRemoved(rootIntent)
     }
@@ -235,14 +178,12 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
             Context.MODE_PRIVATE
         ).unregisterOnSharedPreferenceChangeListener(this)
 
-        hack?.stop()
-        hack = null
-
         player.removeListener(this)
         player.stop()
         player.release()
 
-        mediaSession.controller.unregisterCallback(mediaControllerCallback)
+        unregisterReceiver(notificationActionReceiver)
+
         mediaSession.isActive = false
         mediaSession.release()
         cache.release()
@@ -252,7 +193,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         if (bitmapProvider.setDefaultBitmap() && player.currentMediaItem != null) {
-            notificationManager.notify(NotificationId, notification())
+            notificationManager?.notify(NotificationId, notification())
         }
         super.onConfigurationChanged(newConfig)
     }
@@ -304,29 +245,29 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
     private fun maybeRestorePlayerQueue() {
         if (!isPersistentQueueEnabled) return
 
-        coroutineScope.launch(Dispatchers.IO) {
+        query {
             val queuedSong = Database.queue()
             Database.clearQueue()
 
-            if (queuedSong.isEmpty()) return@launch
+            if (queuedSong.isEmpty()) return@query
 
             val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
 
-            withContext(Dispatchers.Main) {
+            runBlocking(Dispatchers.Main) {
                 player.setMediaItems(
-                    queuedSong
-                        .map { mediaItem ->
-                            mediaItem.mediaItem.buildUpon()
-                                .setUri(mediaItem.mediaItem.mediaId)
-                                .setCustomCacheKey(mediaItem.mediaItem.mediaId)
-                                .build()
-                        },
+                    queuedSong.map { mediaItem ->
+                        mediaItem.mediaItem.buildUpon()
+                            .setUri(mediaItem.mediaItem.mediaId)
+                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+                            .build()
+                    },
                     true
                 )
                 player.seekTo(index, queuedSong[index].position ?: 0)
                 player.prepare()
 
-                ContextCompat.startForegroundService(this@PlayerService, intent<PlayerService>())
+                isNotificationStarted = true
+                startForegroundService(this@PlayerService, intent<PlayerService>())
                 startForeground(NotificationId, notification())
             }
         }
@@ -344,51 +285,62 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    override fun onPlaybackStateChanged(@Player.State playbackState: Int) {
-        if (playbackState == Player.STATE_READY) {
-            if (player.duration != C.TIME_UNSET) {
-                metadataBuilder
-                    .putText(
-                        MediaMetadataCompat.METADATA_KEY_TITLE,
-                        player.currentMediaItem?.mediaMetadata?.title
-                    )
-                    .putText(
-                        MediaMetadataCompat.METADATA_KEY_ARTIST,
-                        player.currentMediaItem?.mediaMetadata?.artist
-                    )
-                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
-                mediaSession.setMetadata(metadataBuilder.build())
+    private val Player.androidPlaybackState: Int
+        get() = when (playbackState) {
+            Player.STATE_BUFFERING -> if (playWhenReady) PlaybackState.STATE_BUFFERING else PlaybackState.STATE_PAUSED
+            Player.STATE_READY -> if (playWhenReady) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED
+            Player.STATE_ENDED -> PlaybackState.STATE_STOPPED
+            Player.STATE_IDLE -> PlaybackState.STATE_NONE
+            else -> PlaybackState.STATE_NONE
+        }
+
+    override fun onEvents(player: Player, events: Player.Events) {
+        if (player.duration != C.TIME_UNSET) {
+            metadataBuilder
+                .putText(
+                    MediaMetadata.METADATA_KEY_TITLE,
+                    player.currentMediaItem?.mediaMetadata?.title
+                )
+                .putText(
+                    MediaMetadata.METADATA_KEY_ARTIST,
+                    player.currentMediaItem?.mediaMetadata?.artist
+                )
+                .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
+                .build().let(mediaSession::setMetadata)
+        }
+
+        stateBuilder
+            .setState(player.androidPlaybackState, player.currentPosition, 1f)
+            .setBufferedPosition(player.bufferedPosition)
+
+        mediaSession.setPlaybackState(stateBuilder.build())
+
+        if (events.containsAny(
+                Player.EVENT_PLAYBACK_STATE_CHANGED,
+                Player.EVENT_PLAY_WHEN_READY_CHANGED,
+                Player.EVENT_IS_PLAYING_CHANGED,
+                Player.EVENT_POSITION_DISCONTINUITY
+            )
+        ) {
+            val notification = notification()
+
+            if (notification == null) {
+                stopSelf()
+                return
+            }
+
+            if (player.shouldBePlaying && !isNotificationStarted) {
+                isNotificationStarted = true
+                startForegroundService(this@PlayerService, intent<PlayerService>())
+                startForeground(NotificationId, notification())
+            } else {
+                if (!player.shouldBePlaying) {
+                    isNotificationStarted = false
+                    stopForeground(false)
+                }
+                notificationManager?.notify(NotificationId, notification)
             }
         }
-    }
-
-    override fun onPlayerErrorChanged(error: PlaybackException?) {
-        if (error != null) {
-            stateBuilder
-                .setState(STATE_ERROR, player.currentPosition, 1f)
-
-            mediaSession.setPlaybackState(stateBuilder.build())
-        }
-    }
-
-    override fun onPositionDiscontinuity(
-        oldPosition: Player.PositionInfo,
-        newPosition: Player.PositionInfo,
-        @Player.DiscontinuityReason reason: Int
-    ) {
-        stateBuilder
-            .setState(STATE_NONE, newPosition.positionMs, 1f)
-            .setBufferedPosition(player.bufferedPosition)
-
-        mediaSession.setPlaybackState(stateBuilder.build())
-    }
-
-    override fun onIsPlayingChanged(isPlaying: Boolean) {
-        stateBuilder
-            .setState(if (isPlaying) STATE_PLAYING else STATE_PAUSED, player.currentPosition, 1f)
-            .setBufferedPosition(player.bufferedPosition)
-
-        mediaSession.setPlaybackState(stateBuilder.build())
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
@@ -400,24 +352,21 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    private fun notification(): Notification {
-        fun NotificationCompat.Builder.addMediaAction(
-            @DrawableRes resId: Int,
-            description: String,
-            @MediaKeyAction command: Long
-        ): NotificationCompat.Builder {
-            return addAction(
-                NotificationCompat.Action(
-                    resId,
-                    description,
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(this@PlayerService, command)
-                )
-            )
-        }
+    private fun notification(): Notification? {
+        if (player.currentMediaItem == null) return null
+
+        val playIntent = Action.play.pendingIntent
+        val pauseIntent = Action.pause.pendingIntent
+        val nextIntent = Action.next.pendingIntent
+        val prevIntent = Action.previous.pendingIntent
 
         val mediaMetadata = player.mediaMetadata
 
-        val builder = NotificationCompat.Builder(applicationContext, NotificationChannelId)
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(applicationContext, NotificationChannelId)
+        } else {
+            Notification.Builder(applicationContext)
+        }
             .setContentTitle(mediaMetadata.title)
             .setContentText(mediaMetadata.artist)
             .setSubText(player.playerError?.message)
@@ -429,45 +378,46 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                 ?: R.drawable.app_icon)
             .setOngoing(false)
             .setContentIntent(activityPendingIntent<MainActivity>())
-            .setDeleteIntent(broadCastPendingIntent<StopServiceBroadcastReceiver>())
-            .setChannelId(NotificationChannelId)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setSilent(true)
+            .setDeleteIntent(broadCastPendingIntent<NotificationDismissReceiver>())
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
+                Notification.MediaStyle()
                     .setShowActionsInCompactView(0, 1, 2)
                     .setMediaSession(mediaSession.sessionToken)
             )
-            .addMediaAction(R.drawable.play_skip_back, "Skip back", ACTION_SKIP_TO_PREVIOUS)
-            .addMediaAction(
-                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) R.drawable.play else R.drawable.pause,
-                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) "Play" else "Pause",
-                if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) ACTION_PLAY else ACTION_PAUSE
+            .addAction(R.drawable.play_skip_back, "Skip back", prevIntent)
+            .addAction(
+                if (player.shouldBePlaying) R.drawable.pause else R.drawable.play,
+                if (player.shouldBePlaying) "Pause" else "Play",
+                if (player.shouldBePlaying) pauseIntent else playIntent
             )
-            .addMediaAction(R.drawable.play_skip_forward, "Skip forward", ACTION_SKIP_TO_NEXT)
+            .addAction(R.drawable.play_skip_forward, "Skip forward", nextIntent)
 
         bitmapProvider.load(mediaMetadata.artworkUri) { bitmap ->
-            notificationManager.notify(NotificationId, builder.setLargeIcon(bitmap).build())
+            notificationManager?.notify(NotificationId, builder.setLargeIcon(bitmap).build())
         }
 
         return builder.build()
     }
 
     private fun createNotificationChannel() {
-        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager = getSystemService()
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
-        with(notificationManager) {
+        notificationManager?.run {
             if (getNotificationChannel(NotificationChannelId) == null) {
                 createNotificationChannel(
                     NotificationChannel(
                         NotificationChannelId,
                         "Now playing",
-                        NotificationManager.IMPORTANCE_DEFAULT
-                    )
+                        NotificationManager.IMPORTANCE_LOW
+                    ).apply {
+                        setSound(null, null)
+                        enableLights(false)
+                        enableVibration(false)
+                    }
                 )
             }
 
@@ -476,8 +426,12 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     NotificationChannel(
                         SleepTimerNotificationChannelId,
                         "Sleep timer",
-                        NotificationManager.IMPORTANCE_DEFAULT
-                    )
+                        NotificationManager.IMPORTANCE_LOW
+                    ).apply {
+                        setSound(null, null)
+                        enableLights(false)
+                        enableVibration(false)
+                    }
                 )
             }
         }
@@ -602,7 +556,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    inner class Binder : android.os.Binder() {
+    inner class Binder : AndroidBinder() {
         val player: ExoPlayer
             get() = this@PlayerService.player
 
@@ -631,7 +585,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
                     .setSmallIcon(R.drawable.app_icon)
                     .build()
 
-                notificationManager.notify(SleepTimerNotificationId, notification)
+                notificationManager?.notify(SleepTimerNotificationId, notification)
 
                 exitProcess(0)
             }
@@ -677,7 +631,7 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         }
     }
 
-    private class SessionCallback(private val player: Player) : MediaSessionCompat.Callback() {
+    private class SessionCallback(private val player: Player) : MediaSession.Callback() {
         override fun onPlay() = player.play()
         override fun onPause() = player.pause()
         override fun onSkipToPrevious() = player.seekToPrevious()
@@ -685,48 +639,47 @@ class PlayerService : Service(), Player.Listener, PlaybackStatsListener.Callback
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
     }
 
-    class StopServiceBroadcastReceiver : BroadcastReceiver() {
+    private class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Action.pause.value -> player.pause()
+                Action.play.value -> player.play()
+                Action.next.value -> player.seekToNext()
+                Action.previous.value -> player.seekToPrevious()
+            }
+        }
+    }
+
+    class NotificationDismissReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             context.stopService(context.intent<PlayerService>())
         }
     }
 
-    // https://stackoverflow.com/q/53502244/16885569
-    private inner class Hack : Runnable {
-        private var isStarted = false
-        private val intervalMs = 30_000L
+    @JvmInline
+    private value class Action(val value: String) {
+        context(Context)
+        val pendingIntent: PendingIntent
+            get() = PendingIntent.getBroadcast(
+                this@Context,
+                100,
+                Intent(value).setPackage(packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT.or(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+            )
 
-        @Synchronized
-        fun start() {
-            if (!isStarted) {
-                isStarted = true
-                handler.postDelayed(this, intervalMs)
-            }
-        }
-
-        @Synchronized
-        fun stop() {
-            if (isStarted) {
-                handler.removeCallbacks(this)
-                isStarted = false
-            }
-        }
-
-        override fun run() {
-            if (player.playbackState == Player.STATE_ENDED || !player.playWhenReady) {
-                startForeground(NotificationId, notification())
-                stopForeground(false)
-                handler.postDelayed(this, intervalMs)
-            }
+        companion object {
+            val pause = Action("it.vfsfitvnm.vimusic.pause")
+            val play = Action("it.vfsfitvnm.vimusic.play")
+            val next = Action("it.vfsfitvnm.vimusic.next")
+            val previous = Action("it.vfsfitvnm.vimusic.previous")
         }
     }
 
-    companion object {
-        private const val NotificationId = 1001
-        private const val NotificationChannelId = "default_channel_id"
+    private companion object {
+        const val NotificationId = 1001
+        const val NotificationChannelId = "default_channel_id"
 
-        private const val SleepTimerNotificationId = 1002
-        private const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
+        const val SleepTimerNotificationId = 1002
+        const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
     }
 }
-

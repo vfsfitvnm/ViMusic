@@ -10,6 +10,8 @@ val Timeline.mediaItems: List<MediaItem>
         getWindow(index, Timeline.Window()).mediaItem
     }
 
+val Player.shouldBePlaying: Boolean
+    get() = !(playbackState == Player.STATE_ENDED || !playWhenReady)
 
 fun Player.forcePlay(mediaItem: MediaItem) {
     setMediaItem(mediaItem, true)
