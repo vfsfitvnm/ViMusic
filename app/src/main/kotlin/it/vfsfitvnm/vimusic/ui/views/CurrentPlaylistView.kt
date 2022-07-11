@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -71,7 +70,7 @@ fun CurrentPlaylistView(
         state = lazyListState,
         modifier = modifier
             .nestedScroll(remember {
-                layoutState.nestedScrollConnection(playerState?.mediaItemIndex == 0)
+                layoutState.nestedScrollConnection(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
             })
     ) {
         itemsIndexed(
