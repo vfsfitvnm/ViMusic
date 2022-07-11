@@ -26,6 +26,7 @@ data class Typography(
 
 val LocalTypography = staticCompositionLocalOf<Typography> { TODO() }
 
+@Suppress("DEPRECATION")
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun rememberTypography(color: Color): Typography {

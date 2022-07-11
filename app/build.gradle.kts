@@ -26,6 +26,8 @@ android {
         }
     }
 
+    namespace = "it.vfsfitvnm.vimusic"
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"

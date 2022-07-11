@@ -265,7 +265,7 @@ fun <T : Enum<T>> EnumPager(
     content: @Composable (item: T) -> Unit
 ) {
     val items = remember {
-        value.declaringClass.enumConstants!!
+        value.declaringJavaClass.enumConstants!!
     }
 
     Pager(
