@@ -193,6 +193,8 @@ fun BaseMediaItemMenu(
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    onGoToEqualizer: (() -> Unit)? = null,
+    onSetSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
@@ -211,6 +213,8 @@ fun BaseMediaItemMenu(
     MediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
+        onGoToEqualizer = onGoToEqualizer,
+        onSetSleepTimer = onSetSleepTimer,
         onStartRadio = onStartRadio,
         onPlayNext = onPlayNext,
         onPlaySingle = onPlaySingle,
@@ -247,6 +251,8 @@ fun MediaItemMenu(
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    onGoToEqualizer: (() -> Unit)? = null,
+    onSetSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
@@ -267,9 +273,7 @@ fun MediaItemMenu(
 
     val viewPlaylistsRoute = rememberCreatePlaylistRoute()
 
-    Menu(
-        modifier = modifier
-    ) {
+    Menu(modifier = modifier) {
         RouteHandler(
             transitionSpec = {
                 when (targetState.route) {
@@ -345,6 +349,28 @@ fun MediaItemMenu(
                             detectTapGestures { }
                         }
                 ) {
+                    onGoToEqualizer?.let { onGoToEqualizer ->
+                        MenuEntry(
+                            icon = R.drawable.equalizer,
+                            text = "Equalizer",
+                            onClick = {
+                                onDismiss()
+                                onGoToEqualizer()
+                            }
+                        )
+                    }
+
+                    onSetSleepTimer?.let { onSetSleepTimer ->
+                        MenuEntry(
+                            icon = R.drawable.time,
+                            text = "Sleep timer",
+                            onClick = {
+                                onDismiss()
+                                onSetSleepTimer()
+                            }
+                        )
+                    }
+
                     onStartRadio?.let { onStartRadio ->
                         MenuEntry(
                             icon = R.drawable.radio,

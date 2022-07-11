@@ -1,7 +1,13 @@
 package it.vfsfitvnm.vimusic.ui.views
 
+import android.content.Intent
+import android.media.audiofx.AudioEffect
 import android.text.format.DateUtils
 import android.text.format.Formatter
+import android.widget.Toast
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,8 +47,8 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
+import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
-import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -201,11 +207,27 @@ fun PlayerView(
                     modifier = Modifier
                         .clickable {
                             menuState.display {
-                                QueuedMediaItemMenu(
+                                val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+
+                                BaseMediaItemMenu(
                                     mediaItem = playerState.mediaItem,
-                                    indexInQueue = null,
+                                    onGoToEqualizer = {
+                                        val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
+                                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                                        }
+
+                                        if (intent.resolveActivity(context.packageManager) != null) {
+                                            val contract = ActivityResultContracts.StartActivityForResult()
+
+                                            resultRegistryOwner?.activityResultRegistry?.register("", contract) {}?.launch(intent)
+                                        } else {
+                                            Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
                                     onDismiss = menuState::hide,
-                                    onGlobalRouteEmitted = layoutState.collapse
+                                    onGlobalRouteEmitted = layoutState.collapse,
                                 )
                             }
                         }
