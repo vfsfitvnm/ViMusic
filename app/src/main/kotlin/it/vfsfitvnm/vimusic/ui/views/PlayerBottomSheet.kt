@@ -33,6 +33,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.PlayerState
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
+import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -115,7 +116,7 @@ fun PlayerBottomSheet(
 
                         BasicText(
                             text = text,
-                            style = typography.xs.color(color).center,
+                            style = typography.xs.medium.color(color).center,
                             modifier = Modifier
                                 .clickable(
                                     indication = rememberRipple(bounded = true),

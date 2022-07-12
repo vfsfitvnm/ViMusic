@@ -209,7 +209,7 @@ fun PlayerView(
                     modifier = Modifier
                         .padding(bottom = 64.dp)
                         .background(colorPalette.background)
-                        .padding(top = 16.dp)
+                        .padding(top = 32.dp)
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
