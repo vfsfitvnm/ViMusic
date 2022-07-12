@@ -61,7 +61,7 @@ fun rememberPlayerState(
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
-                playerState = playerState?.copy(playbackState = playbackState)
+                playerState = playerState?.copy(playbackState = playbackState, error = player.playerError)
 
                 if (playbackState == Player.STATE_READY) {
                     isSeeking = false
