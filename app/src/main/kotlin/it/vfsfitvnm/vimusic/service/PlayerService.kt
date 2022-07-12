@@ -1,6 +1,9 @@
 package it.vfsfitvnm.vimusic.service
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.*
 import android.content.res.Configuration
 import android.graphics.Color
@@ -22,11 +25,7 @@ import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
-import androidx.media3.datasource.cache.Cache
-import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
-import androidx.media3.datasource.cache.NoOpCacheEvictor
-import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.datasource.cache.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.exoplayer.analytics.AnalyticsListener
@@ -39,6 +38,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.mkv.MatroskaExtractor
+import androidx.media3.extractor.mp4.FragmentedMp4Extractor
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
@@ -494,7 +494,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
                             when (val status = body.playabilityStatus.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
-                                    format.itag == 251
+                                    format.itag == 251 || format.itag == 140
                                 }?.let { format ->
                                     val mediaItem = runBlocking(Dispatchers.Main) {
                                         player.findNextMediaItemById(videoId)
@@ -551,7 +551,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     private fun createExtractorsFactory(): ExtractorsFactory {
         return ExtractorsFactory {
-            arrayOf(MatroskaExtractor())
+            arrayOf(MatroskaExtractor(), FragmentedMp4Extractor())
         }
     }
 
