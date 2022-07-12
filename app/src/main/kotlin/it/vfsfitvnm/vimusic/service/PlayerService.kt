@@ -25,6 +25,7 @@ import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.RenderersFactory
@@ -41,6 +42,7 @@ import androidx.media3.extractor.mkv.MatroskaExtractor
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.utils.*
@@ -124,7 +126,11 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         isVolumeNormalizationEnabled = preferences.volumeNormalization
         isInvincibilityEnabled = preferences.isInvincibilityEnabled
 
-        val cacheEvictor = LeastRecentlyUsedCacheEvictor(preferences.exoPlayerDiskCacheMaxSizeBytes)
+        val cacheEvictor = when (val size = preferences.exoPlayerDiskCacheMaxSize) {
+            ExoPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
+            else -> LeastRecentlyUsedCacheEvictor(size.bytes)
+        }
+
         cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
 
         player = ExoPlayer.Builder(this, createRendersFactory(), createMediaSourceFactory())

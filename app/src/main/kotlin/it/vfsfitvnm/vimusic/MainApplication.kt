@@ -19,7 +19,7 @@ class MainApplication : Application(), ImageLoaderFactory {
             .diskCache(
                 DiskCache.Builder()
                     .directory(filesDir.resolve("coil"))
-                    .maxSizeBytes(Preferences().coilDiskCacheMaxSizeBytes)
+                    .maxSizeBytes(Preferences().coilDiskCacheMaxSize.bytes)
                     .build()
             )
             .build()

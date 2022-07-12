@@ -20,8 +20,8 @@ class Preferences(
     initialSearchFilter: String,
     initialRepeatMode: Int,
     initialThumbnailRoundness: ThumbnailRoundness,
-    initialCoilDiskCacheMaxSizeBytes: Long,
-    initialExoPlayerDiskCacheMaxSizeBytes: Long,
+    initialCoilDiskCacheMaxSize: CoilDiskCacheMaxSize,
+    initialExoPlayerDiskCacheMaxSize: ExoPlayerDiskCacheMaxSize,
     initialSkipSilence: Boolean,
     initialVolumeNormalization: Boolean,
     initialPersistentQueue: Boolean,
@@ -38,8 +38,8 @@ class Preferences(
         initialSearchFilter = preferences.getString(Keys.searchFilter, YouTube.Item.Song.Filter.value)!!,
         initialRepeatMode = preferences.getInt(Keys.repeatMode, Player.REPEAT_MODE_OFF),
         initialThumbnailRoundness = preferences.getEnum(Keys.thumbnailRoundness, ThumbnailRoundness.Light),
-        initialCoilDiskCacheMaxSizeBytes = preferences.getLong(Keys.coilDiskCacheMaxSizeBytes, 512L * 1024 * 1024),
-        initialExoPlayerDiskCacheMaxSizeBytes = preferences.getLong(Keys.exoPlayerDiskCacheMaxSizeBytes, 512L * 1024 * 1024),
+        initialCoilDiskCacheMaxSize = preferences.getEnum(Keys.coilDiskCacheMaxSize, CoilDiskCacheMaxSize.`128MB`),
+        initialExoPlayerDiskCacheMaxSize = preferences.getEnum(Keys.exoPlayerDiskCacheMaxSize, ExoPlayerDiskCacheMaxSize.`2GB`),
         initialSkipSilence = preferences.getBoolean(Keys.skipSilence, false),
         initialVolumeNormalization = preferences.getBoolean(Keys.volumeNormalization, false),
         initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false),
@@ -67,11 +67,11 @@ class Preferences(
     var thumbnailRoundness = initialThumbnailRoundness
         set(value) = edit { putEnum(Keys.thumbnailRoundness, value) }
 
-    var coilDiskCacheMaxSizeBytes = initialCoilDiskCacheMaxSizeBytes
-        set(value) = edit { putLong(Keys.coilDiskCacheMaxSizeBytes, value) }
+    var coilDiskCacheMaxSize = initialCoilDiskCacheMaxSize
+        set(value) = edit { putEnum(Keys.coilDiskCacheMaxSize, value) }
 
-    var exoPlayerDiskCacheMaxSizeBytes = initialExoPlayerDiskCacheMaxSizeBytes
-        set(value) = edit { putLong(Keys.exoPlayerDiskCacheMaxSizeBytes, value) }
+    var exoPlayerDiskCacheMaxSize = initialExoPlayerDiskCacheMaxSize
+        set(value) = edit { putEnum(Keys.exoPlayerDiskCacheMaxSize, value) }
 
     var skipSilence = initialSkipSilence
         set(value) = edit { putBoolean(Keys.skipSilence, value) }
@@ -93,8 +93,8 @@ class Preferences(
         const val searchFilter = "searchFilter"
         const val repeatMode = "repeatMode"
         const val thumbnailRoundness = "thumbnailRoundness"
-        const val coilDiskCacheMaxSizeBytes = "coilDiskCacheMaxSizeBytes"
-        const val exoPlayerDiskCacheMaxSizeBytes = "exoPlayerDiskCacheMaxSizeBytes"
+        const val coilDiskCacheMaxSize = "coilDiskCacheMaxSize"
+        const val exoPlayerDiskCacheMaxSize = "exoPlayerDiskCacheMaxSize"
         const val skipSilence = "skipSilence"
         const val volumeNormalization = "volumeNormalization"
         const val persistentQueue = "persistentQueue"

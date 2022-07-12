@@ -4,7 +4,6 @@ import android.text.format.Formatter
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,14 +16,13 @@ import coil.annotation.ExperimentalCoilApi
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.ui.components.SeekBar
+import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.screens.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.LocalPreferences
-import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -98,54 +96,28 @@ fun CacheSettingsScreen() {
                         mutableStateOf(diskCache.size)
                     }
 
-                    var scrubbingDiskCacheMaxSize by remember {
-                        mutableStateOf<Long?>(null)
-                    }
-
                     SettingsEntryGroupText(title = "IMAGE CACHE")
 
-                    Column(
-                        modifier = Modifier
-                            .padding(start = 24.dp)
-                            .padding(horizontal = 32.dp, vertical = 16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        BasicText(
-                            text = "Max size",
-                            style = typography.xs.semiBold,
-                        )
-
-                        BasicText(
-                            text = Formatter.formatShortFileSize(context, scrubbingDiskCacheMaxSize ?: preferences.coilDiskCacheMaxSizeBytes),
-                            style = typography.xs.semiBold.secondary
-                        )
-
-                        SeekBar(
-                            value = (scrubbingDiskCacheMaxSize ?: preferences.coilDiskCacheMaxSizeBytes).coerceIn(250L * 1024 * 1024, 2048L * 1024 * 1024),
-                            minimumValue = 250L * 1024 * 1024,
-                            maximumValue = 2048L * 1024 * 1024,
-                            onDragStart = {
-                                scrubbingDiskCacheMaxSize = it
-                            },
-                            onDrag = { delta ->
-                                scrubbingDiskCacheMaxSize = scrubbingDiskCacheMaxSize?.plus(delta)?.coerceIn(250L * 1024 * 1024, 2048L * 1024 * 1024)
-                            },
-                            onDragEnd = {
-                                preferences.coilDiskCacheMaxSizeBytes = scrubbingDiskCacheMaxSize ?: preferences.coilDiskCacheMaxSizeBytes
-                                scrubbingDiskCacheMaxSize = null
-                            },
-                            color = colorPalette.text,
-                            backgroundColor = colorPalette.textDisabled,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier
-                                .padding(top = 8.dp)
-                                .fillMaxWidth()
-                        )
-                    }
+                    EnumValueSelectorSettingsEntry(
+                        title = "Max size",
+                        selectedValue = preferences.coilDiskCacheMaxSize,
+                        onValueSelected = {
+                            preferences.coilDiskCacheMaxSize = it
+                        }
+                    )
 
                     DisabledSettingsEntry(
                         title = "Space used",
-                        text = "${Formatter.formatShortFileSize(context, diskCacheSize)} (${diskCacheSize * 100 / preferences.coilDiskCacheMaxSizeBytes.coerceAtLeast(1)}%)",
+                        text = "${
+                            Formatter.formatShortFileSize(
+                                context,
+                                diskCacheSize
+                            )
+                        } (${
+                            diskCacheSize * 100 / preferences.coilDiskCacheMaxSize.bytes.coerceAtLeast(
+                                1
+                            )
+                        }%)",
                     )
 
                     SettingsEntry(
@@ -167,54 +139,26 @@ fun CacheSettingsScreen() {
                         }
                     }
 
-                    var scrubbingDiskCacheMaxSize by remember {
-                        mutableStateOf<Long?>(null)
-                    }
-
                     SettingsEntryGroupText(title = "SONG CACHE")
 
-                    Column(
-                        modifier = Modifier
-                            .padding(start = 24.dp)
-                            .padding(horizontal = 32.dp, vertical = 16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        BasicText(
-                            text = "Max size",
-                            style = typography.xs.semiBold,
-                        )
-
-                        BasicText(
-                            text = Formatter.formatShortFileSize(context, scrubbingDiskCacheMaxSize ?: preferences.exoPlayerDiskCacheMaxSizeBytes),
-                            style = typography.xs.semiBold.secondary
-                        )
-
-                        SeekBar(
-                            value = (scrubbingDiskCacheMaxSize ?: preferences.exoPlayerDiskCacheMaxSizeBytes).coerceIn(250L * 1024 * 1024, 4096L * 1024 * 1024),
-                            minimumValue = 250L * 1024 * 1024,
-                            maximumValue = 4096L * 1024 * 1024,
-                            onDragStart = {
-                                scrubbingDiskCacheMaxSize = it
-                            },
-                            onDrag = { delta ->
-                                scrubbingDiskCacheMaxSize = scrubbingDiskCacheMaxSize?.plus(delta)?.coerceIn(250L * 1024 * 1024, 4096L * 1024 * 1024)
-                            },
-                            onDragEnd = {
-                                preferences.exoPlayerDiskCacheMaxSizeBytes = scrubbingDiskCacheMaxSize ?: preferences.exoPlayerDiskCacheMaxSizeBytes
-                                scrubbingDiskCacheMaxSize = null
-                            },
-                            color = colorPalette.text,
-                            backgroundColor = colorPalette.textDisabled,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier
-                                .padding(top = 8.dp)
-                                .fillMaxWidth()
-                        )
-                    }
+                    EnumValueSelectorSettingsEntry(
+                        title = "Max size",
+                        selectedValue = preferences.exoPlayerDiskCacheMaxSize,
+                        onValueSelected = {
+                            preferences.exoPlayerDiskCacheMaxSize = it
+                        }
+                    )
 
                     DisabledSettingsEntry(
                         title = "Space used",
-                        text = "${Formatter.formatShortFileSize(context, diskCacheSize)} (${diskCacheSize * 100 / preferences.exoPlayerDiskCacheMaxSizeBytes.coerceAtLeast(1)}%)",
+                        text = buildString {
+                            append(Formatter.formatShortFileSize(context, diskCacheSize))
+
+                            when (val size = preferences.exoPlayerDiskCacheMaxSize) {
+                                ExoPlayerDiskCacheMaxSize.Unlimited -> {}
+                                else -> append("(${diskCacheSize * 100 / size.bytes}%)")
+                            }
+                        }
                     )
                 }
 
