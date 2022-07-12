@@ -77,6 +77,8 @@ fun AppearanceSettingsScreen() {
                     )
                 }
 
+                SettingsEntryGroupText(title = "COLORS")
+
                 EnumValueSelectorSettingsEntry(
                     title = "Theme mode",
                     selectedValue = preferences.colorPaletteMode,
@@ -84,6 +86,8 @@ fun AppearanceSettingsScreen() {
                         preferences.colorPaletteMode = it
                     }
                 )
+
+                SettingsEntryGroupText(title = "SHAPES")
 
                 EnumValueSelectorSettingsEntry(
                     title = "Thumbnail roundness",

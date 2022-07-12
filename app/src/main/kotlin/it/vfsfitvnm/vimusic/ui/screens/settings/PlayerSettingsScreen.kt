@@ -213,6 +213,19 @@ fun PlayerSettingsScreen() {
                     )
                 }
 
+                SettingsEntryGroupText(title = "PLAYER")
+
+                SwitchSettingEntry(
+                    title = "Persistent queue",
+                    text = "Save and restore playing songs",
+                    isChecked = preferences.persistentQueue,
+                    onCheckedChange = {
+                        preferences.persistentQueue = it
+                    }
+                )
+
+                SettingsEntryGroupText(title = "AUDIO")
+
                 SwitchSettingEntry(
                     title = "Skip silence",
                     text = "Skip silent parts during playback",
@@ -229,15 +242,6 @@ fun PlayerSettingsScreen() {
                     isChecked = preferences.volumeNormalization,
                     onCheckedChange = {
                         preferences.volumeNormalization = it
-                    }
-                )
-
-                SwitchSettingEntry(
-                    title = "Persistent queue",
-                    text = "Save and restore playing songs",
-                    isChecked = preferences.persistentQueue,
-                    onCheckedChange = {
-                        preferences.persistentQueue = it
                     }
                 )
 
@@ -258,6 +262,8 @@ fun PlayerSettingsScreen() {
                         }
                     }
                 )
+
+                SettingsEntryGroupText(title = "OTHER")
 
                 SettingsEntry(
                     title = "Sleep timer",
