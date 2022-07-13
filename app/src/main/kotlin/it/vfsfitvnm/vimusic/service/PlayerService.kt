@@ -607,6 +607,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
                 notificationManager?.notify(SleepTimerNotificationId, notification)
 
+                stopSelf()
                 exitProcess(0)
             }
         }

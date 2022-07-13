@@ -23,15 +23,17 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.semiBold
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -86,6 +88,7 @@ fun BackupAndRestoreScreen() {
                     if (uri == null) return@rememberLauncherForActivityResult
 
                     query {
+                        Database.internal.checkpoint()
                         Database.internal.close()
 
                         FileOutputStream(Database.internal.path).use { outputStream ->
@@ -95,6 +98,7 @@ fun BackupAndRestoreScreen() {
                                 }
                         }
 
+                        context.stopService(context.intent<PlayerService>())
                         exitProcess(0)
                     }
                 }
