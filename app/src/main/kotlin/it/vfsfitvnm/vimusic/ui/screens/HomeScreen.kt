@@ -321,39 +321,41 @@ fun HomeScreen() {
                             }
                         }
 
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .padding(all = 8.dp)
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            builtInPlaylistRoute(BuiltInPlaylist.Cached)
-                                        }
+                        if (preferences.isCachedPlaylistShown) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(all = 8.dp)
+                                        .clickable(
+                                            indication = rememberRipple(bounded = true),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = {
+                                                builtInPlaylistRoute(BuiltInPlaylist.Cached)
+                                            }
+                                        )
+                                        .background(colorPalette.lightBackground)
+                                        .size(108.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.download),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.tint(colorPalette.blue),
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .size(24.dp)
                                     )
-                                    .background(colorPalette.lightBackground)
-                                    .size(108.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.download),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette.blue),
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .size(24.dp)
-                                )
 
-                                BasicText(
-                                    text = "Cached",
-                                    style = typography.xxs.semiBold,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .align(Alignment.BottomStart)
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
+                                    BasicText(
+                                        text = "Cached",
+                                        style = typography.xxs.semiBold,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.BottomStart)
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
+                                }
                             }
                         }
 

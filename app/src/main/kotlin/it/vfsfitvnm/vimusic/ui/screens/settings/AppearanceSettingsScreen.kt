@@ -96,6 +96,17 @@ fun AppearanceSettingsScreen() {
                         preferences.thumbnailRoundness = it
                     }
                 )
+
+                SettingsEntryGroupText(title = "OTHER")
+
+                SwitchSettingEntry(
+                    title = "Cached playlist",
+                    text = "Display a playlist whose songs can be played offline",
+                    isChecked = preferences.isCachedPlaylistShown,
+                    onCheckedChange = {
+                        preferences.isCachedPlaylistShown = it
+                    }
+                )
             }
         }
     }

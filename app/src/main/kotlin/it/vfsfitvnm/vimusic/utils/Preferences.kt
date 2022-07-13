@@ -26,6 +26,7 @@ class Preferences(
     initialVolumeNormalization: Boolean,
     initialPersistentQueue: Boolean,
     initialIsInvincibilityEnabled: Boolean,
+    initialIsCachedPlaylistShown: Boolean,
 ) {
     constructor(preferences: SharedPreferences) : this(
         edit = { action: SharedPreferences.Editor.() -> Unit ->
@@ -44,6 +45,7 @@ class Preferences(
         initialVolumeNormalization = preferences.getBoolean(Keys.volumeNormalization, false),
         initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false),
         initialIsInvincibilityEnabled = preferences.getBoolean(Keys.isInvincibilityEnabled, false),
+        initialIsCachedPlaylistShown = preferences.getBoolean(Keys.isCachedPlaylistShown, false),
     )
 
     var isFirstLaunch = initialIsFirstLaunch
@@ -85,6 +87,9 @@ class Preferences(
     var isInvincibilityEnabled = initialIsInvincibilityEnabled
         set(value) = edit { putBoolean(Keys.isInvincibilityEnabled, value) }
 
+    var isCachedPlaylistShown = initialIsCachedPlaylistShown
+        set(value) = edit { putBoolean(Keys.isCachedPlaylistShown, value) }
+
     object Keys {
         const val isFirstLaunch = "isFirstLaunch"
         const val songSortOrder = "songSortOrder"
@@ -99,6 +104,7 @@ class Preferences(
         const val volumeNormalization = "volumeNormalization"
         const val persistentQueue = "persistentQueue"
         const val isInvincibilityEnabled = "isInvincibilityEnabled"
+        const val isCachedPlaylistShown = "isCachedPlaylistShown"
     }
 
     companion object {
