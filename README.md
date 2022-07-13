@@ -4,18 +4,17 @@
     <p>A Jetpack Compose Android application for streaming music from YouTube Music</p>
 
 [![Downloads](https://img.shields.io/badge/-Jetpack%20Compose-3a83f9?style=for-the-badge&logo=jetpackcompose&logoColor=white&labelColor=2ec781)](https://developer.android.com/jetpack/compose)
-[![Downloads](https://img.shields.io/github/downloads/vfsfitvnm/ViMusic/total?style=for-the-badge&labelColor=002b41)](https://github.com/vfsfitvnm/ViMusic/releases)
 </div>
 
 ---
 
 <p>
-  <img src="https://user-images.githubusercontent.com/46219656/174445416-4fdc05de-1280-41be-a4e0-d40724606f4a.png" width="15.5%" />
-  <img src="https://user-images.githubusercontent.com/46219656/174445418-357c84b1-2db1-4add-9709-cd4a5ecb2215.png" width="15.5%" />
-  <img src="https://user-images.githubusercontent.com/46219656/174445421-f5697ec8-adee-4c4d-9aa8-b4336b9d7c86.png" width="15.5%" />
-  <img src="https://user-images.githubusercontent.com/46219656/174445419-59a48e05-d1da-4a58-b1cf-b0a3331c1f15.png" width="15.5%" />
-  <img src="https://user-images.githubusercontent.com/46219656/174445415-a1f16f1b-362e-4fa3-bc8e-a58d53b26c88.png" width="15.5%" />
-  <img src="https://user-images.githubusercontent.com/46219656/174445412-f8b1d15c-908e-490d-8702-0e59cf64772e.png" width="15.5%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="15.5%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="15.5%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="15.5%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="15.5%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="15.5%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="15.5%" />
 </p>
 
 ## Features
@@ -30,6 +29,7 @@
 - Skip silence
 - Sleep timer
 - Audio normalization
+- Persistent queue
 - Open YouTube/YouTube Music links (`watch`, `playlist`)
 - ...
 
