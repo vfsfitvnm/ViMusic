@@ -11,9 +11,10 @@ A Jetpack Compose Android application for streaming music from YouTube Music.
 <li>Open YouTube/YouTube Music links</li>
 <li>Local playlists management</li>
 <li>Queue management</li>
-<li>History, Favorites and Most Played built-in song collections</li>
+<li>Favorites and Cached built-in playlists</li>
 <li>Sleep timer</li>
 <li>Skip silence</li>
+<li>Persistent queue</li>
 <li>Loudness/audio normalization</li>
 <li>Simple and minimal UI</li>
 <li>Ridiculously lightweight APK</li>
