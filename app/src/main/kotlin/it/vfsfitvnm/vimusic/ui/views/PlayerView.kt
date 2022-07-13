@@ -75,7 +75,6 @@ fun PlayerView(
     player ?: return
     playerState?.mediaItem ?: return
 
-
     BottomSheet(
         state = layoutState,
         modifier = modifier,
@@ -288,6 +287,7 @@ fun PlayerView(
                                             .show()
                                     }
                                 },
+                                onSetSleepTimer = {},
                                 onDismiss = menuState::hide,
                                 onGlobalRouteEmitted = layoutState.collapse,
                             )

@@ -1,18 +1,22 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
+import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.with
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
@@ -21,13 +25,18 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
+import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.Pager
 import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
+import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
 
 
 @ExperimentalAnimationApi
@@ -361,12 +370,128 @@ fun MediaItemMenu(
                     }
 
                     onSetSleepTimer?.let { onSetSleepTimer ->
+                        val binder = LocalPlayerServiceBinder.current
+                        val typography = LocalTypography.current
+                        val colorPalette = LocalColorPalette.current
+
+                        var isShowingSleepTimerDialog by remember {
+                            mutableStateOf(false)
+                        }
+
+                        val sleepTimerMillisLeft by (binder?.sleepTimerMillisLeft ?: flowOf(null))
+                            .collectAsState(initial = null)
+
+                        if (isShowingSleepTimerDialog) {
+                            if (sleepTimerMillisLeft != null) {
+                                ConfirmationDialog(
+                                    text = "Do you want to stop the sleep timer?",
+                                    cancelText = "No",
+                                    confirmText = "Stop",
+                                    onDismiss = {
+                                        isShowingSleepTimerDialog = false
+                                    },
+                                    onConfirm = {
+                                        binder?.cancelSleepTimer()
+                                    }
+                                )
+                            } else {
+                                DefaultDialog(
+                                    onDismiss = {
+                                        isShowingSleepTimerDialog = false
+                                    }
+                                ) {
+                                    var hours by remember {
+                                        mutableStateOf(0)
+                                    }
+
+                                    var minutes by remember {
+                                        mutableStateOf(0)
+                                    }
+
+                                    BasicText(
+                                        text = "Set sleep timer",
+                                        style = typography.s.semiBold,
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp, horizontal = 24.dp)
+                                    )
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .padding(vertical = 16.dp)
+                                    ) {
+                                        Pager(
+                                            selectedIndex = hours,
+                                            onSelectedIndex = {
+                                                hours = it
+                                            },
+                                            orientation = Orientation.Vertical,
+                                            modifier = Modifier
+                                                .padding(horizontal = 8.dp)
+                                                .height(92.dp)
+                                        ) {
+                                            repeat(12) {
+                                                BasicText(
+                                                    text = "$it h",
+                                                    style = typography.xs.semiBold
+                                                )
+                                            }
+                                        }
+
+                                        Pager(
+                                            selectedIndex = minutes,
+                                            onSelectedIndex = {
+                                                minutes = it
+                                            },
+                                            orientation = Orientation.Vertical,
+                                            modifier = Modifier
+                                                .padding(horizontal = 8.dp)
+                                                .height(72.dp)
+                                        ) {
+                                            repeat(4) {
+                                                BasicText(
+                                                    text = "${it * 15} m",
+                                                    style = typography.xs.semiBold
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    ) {
+                                        ChunkyButton(
+                                            backgroundColor = Color.Transparent,
+                                            text = "Cancel",
+                                            textStyle = typography.xs.semiBold,
+                                            shape = RoundedCornerShape(36.dp),
+                                            onClick = { isShowingSleepTimerDialog = false }
+                                        )
+
+                                        ChunkyButton(
+                                            backgroundColor = colorPalette.primaryContainer,
+                                            text = "Set",
+                                            textStyle = typography.xs.semiBold.color(colorPalette.onPrimaryContainer),
+                                            shape = RoundedCornerShape(36.dp),
+                                            isEnabled = hours > 0 || minutes > 0,
+                                            onClick = {
+                                                binder?.startSleepTimer((hours * 60 + minutes * 15) * 60 * 1000L)
+                                                isShowingSleepTimerDialog = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         MenuEntry(
-                            icon = R.drawable.time,
+                            icon = R.drawable.alarm,
                             text = "Sleep timer",
+                            secondaryText = sleepTimerMillisLeft?.let { "${DateUtils.formatElapsedTime(it / 1000)} left" },
                             onClick = {
-                                onDismiss()
-                                onSetSleepTimer()
+                                isShowingSleepTimerDialog = true
                             }
                         )
                     }

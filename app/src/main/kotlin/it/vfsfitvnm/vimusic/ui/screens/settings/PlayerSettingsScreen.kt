@@ -2,19 +2,15 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import android.text.format.DateUtils
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -22,18 +18,12 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
-import it.vfsfitvnm.vimusic.ui.components.Pager
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
-import it.vfsfitvnm.vimusic.ui.components.themed.DefaultDialog
 import it.vfsfitvnm.vimusic.ui.screens.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
 import it.vfsfitvnm.vimusic.utils.LocalPreferences
-import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.semiBold
-import kotlinx.coroutines.flow.flowOf
 
 
 @ExperimentalAnimationApi
@@ -67,118 +57,6 @@ fun PlayerSettingsScreen() {
             val activityResultLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 }
-
-            val sleepTimerMillisLeft by (binder?.sleepTimerMillisLeft
-                ?: flowOf(null)).collectAsState(initial = null)
-
-            var isShowingSleepTimerDialog by remember {
-                mutableStateOf(false)
-            }
-
-            if (isShowingSleepTimerDialog) {
-                if (sleepTimerMillisLeft != null) {
-                    ConfirmationDialog(
-                        text = "Do you want to stop the sleep timer?",
-                        cancelText = "No",
-                        confirmText = "Stop",
-                        onDismiss = {
-                            isShowingSleepTimerDialog = false
-                        },
-                        onConfirm = {
-                            binder?.cancelSleepTimer()
-                        }
-                    )
-                } else {
-                    DefaultDialog(
-                        onDismiss = {
-                            isShowingSleepTimerDialog = false
-                        },
-                        modifier = Modifier
-                    ) {
-                        var hours by remember {
-                            mutableStateOf(0)
-                        }
-
-                        var minutes by remember {
-                            mutableStateOf(0)
-                        }
-
-                        BasicText(
-                            text = "Set sleep timer",
-                            style = typography.s.semiBold,
-                            modifier = Modifier
-                                .padding(vertical = 8.dp, horizontal = 24.dp)
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                        ) {
-                            Pager(
-                                selectedIndex = hours,
-                                onSelectedIndex = {
-                                    hours = it
-                                },
-                                orientation = Orientation.Vertical,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .height(72.dp)
-                            ) {
-                                repeat(12) {
-                                    BasicText(
-                                        text = "$it h",
-                                        style = typography.xs.semiBold
-                                    )
-                                }
-                            }
-
-                            Pager(
-                                selectedIndex = minutes,
-                                onSelectedIndex = {
-                                    minutes = it
-                                },
-                                orientation = Orientation.Vertical,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .height(72.dp)
-                            ) {
-                                repeat(4) {
-                                    BasicText(
-                                        text = "${it * 15} m",
-                                        style = typography.xs.semiBold
-                                    )
-                                }
-                            }
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            ChunkyButton(
-                                backgroundColor = Color.Transparent,
-                                text = "Cancel",
-                                textStyle = typography.xs.semiBold,
-                                shape = RoundedCornerShape(36.dp),
-                                onClick = { isShowingSleepTimerDialog = false }
-                            )
-
-                            ChunkyButton(
-                                backgroundColor = colorPalette.primaryContainer,
-                                text = "Set",
-                                textStyle = typography.xs.semiBold.color(colorPalette.onPrimaryContainer),
-                                shape = RoundedCornerShape(36.dp),
-                                isEnabled = hours > 0 || minutes > 0,
-                                onClick = {
-                                    binder?.startSleepTimer((hours * 60 + minutes * 15) * 60 * 1000L)
-                                    isShowingSleepTimerDialog = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
 
             Column(
                 modifier = Modifier
@@ -260,17 +138,6 @@ fun PlayerSettingsScreen() {
                         } else {
                             Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT).show()
                         }
-                    }
-                )
-
-                SettingsEntryGroupText(title = "OTHER")
-
-                SettingsEntry(
-                    title = "Sleep timer",
-                    text = sleepTimerMillisLeft?.let { "${DateUtils.formatElapsedTime(it / 1000)} left" }
-                        ?: "Stop the music after a period of time",
-                    onClick = {
-                        isShowingSleepTimerDialog = true
                     }
                 )
             }
