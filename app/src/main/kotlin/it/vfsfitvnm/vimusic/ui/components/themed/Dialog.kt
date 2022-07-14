@@ -21,7 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -274,30 +277,29 @@ inline fun <T> ValueSelectorDialog(
                                     onValueSelected(value)
                                 }
                             )
-                            .padding(vertical = 8.dp, horizontal = 24.dp)
+                            .padding(vertical = 12.dp, horizontal = 24.dp)
                             .fillMaxWidth()
                     ) {
                         if (selectedValue == value) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Spacer(
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                        .background(
-                                            color = colorPalette.primaryContainer,
-                                            shape = CircleShape
-                                        )
-                                )
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .background(
-                                            color = colorPalette.onPrimaryContainer,
-                                            shape = CircleShape
-                                        )
+                            Canvas(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .background(
+                                        color = colorPalette.primaryContainer,
+                                        shape = CircleShape
+                                    )
+                            ) {
+                                drawCircle(
+                                    color = colorPalette.onPrimaryContainer,
+                                    radius = 4.dp.toPx(),
+                                    center = size.center,
+                                    shadow = Shadow(
+                                        color = Color.Black.copy(alpha = 0.4f),
+                                        blurRadius = 4.dp.toPx(),
+                                        offset = Offset(x = 0f, y = 1.dp.toPx())
+                                    )
                                 )
                             }
-
                         } else {
                             Spacer(
                                 modifier = Modifier
