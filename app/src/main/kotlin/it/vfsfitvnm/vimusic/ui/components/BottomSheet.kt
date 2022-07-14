@@ -186,15 +186,11 @@ fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp): BottomSheetState {
         }
     }
 
-    LaunchedEffect(animatable.value == upperBound) {
-        wasExpanded = animatable.value == upperBound
-    }
-
     return remember(animatable, coroutineScope) {
         BottomSheetState(
             draggableState = DraggableState { delta ->
                 coroutineScope.launch {
-                    animatable.snapTo(animatable.value - density.run { delta.toDp() })
+                    animatable.snapTo(animatable.value - with(density) { delta.toDp() })
                 }
             },
             valueState = animatable.asState(),
@@ -213,11 +209,13 @@ fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp): BottomSheetState {
                 1f - (upperBound - animatable.value) / (upperBound - lowerBound)
             },
             collapse = {
+                wasExpanded = false
                 coroutineScope.launch {
                     animatable.animateTo(animatable.lowerBound!!)
                 }
             },
             expand = {
+                wasExpanded = true
                 coroutineScope.launch {
                     animatable.animateTo(animatable.upperBound!!)
                 }
