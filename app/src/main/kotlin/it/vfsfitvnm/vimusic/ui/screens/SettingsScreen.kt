@@ -23,8 +23,7 @@ import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 
 
@@ -92,9 +91,9 @@ fun SettingsScreen() {
         }
 
         host {
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
-            val preferences = LocalPreferences.current
+            val (colorPalette, typography) = LocalAppearance.current
+
+            var isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
 
             Column(
                 modifier = Modifier
@@ -242,9 +241,9 @@ fun SettingsScreen() {
                     title = "Other",
                     description = "Advanced settings",
                     route = otherSettingsRoute,
-                    withAlert = LocalPreferences.current.isFirstLaunch,
+                    withAlert = isFirstLaunch,
                     onClick = {
-                        preferences.isFirstLaunch = false
+                        isFirstLaunch = false
                     }
                 )
 
@@ -324,8 +323,7 @@ fun SwitchSettingEntry(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true
 ) {
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -370,8 +368,8 @@ fun SettingsEntry(
     onClick: () -> Unit,
     isEnabled: Boolean = true
 ) {
-    val typography = LocalTypography.current
-    val colorPalette = LocalColorPalette.current
+    val (_, typography) = LocalAppearance.current
+    val (colorPalette) = LocalAppearance.current
 
     Column(
         modifier = modifier
@@ -422,7 +420,7 @@ fun BaseSettingsEntry(
     titleTextStyle: @Composable TextStyle.() -> TextStyle = { this },
     textStyle: @Composable TextStyle.() -> TextStyle = { this },
 ) {
-    val typography = LocalTypography.current
+    val (_, typography) = LocalAppearance.current
 
     Column(
         modifier = modifier
@@ -447,11 +445,11 @@ fun SettingsEntryGroupText(
     title: String,
     modifier: Modifier = Modifier,
 ) {
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     BasicText(
         text = title.uppercase(),
-        style = typography.xxs.semiBold.copy(LocalColorPalette.current.blue),
+        style = typography.xxs.semiBold.copy(colorPalette.blue),
         modifier = modifier
             .padding(start = 24.dp, top = 24.dp)
             .padding(horizontal = 32.dp)

@@ -37,8 +37,7 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -104,8 +103,7 @@ fun SearchScreen(
         }
 
         host {
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
+            val (colorPalette, typography) = LocalAppearance.current
 
             val isOpenableUrl = remember(textFieldValue.text) {
                 listOf(

@@ -36,8 +36,7 @@ import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -73,8 +72,7 @@ fun PlaylistScreen(
             val context = LocalContext.current
             val binder = LocalPlayerServiceBinder.current
 
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
+            val (colorPalette, typography) = LocalAppearance.current
             val menuState = LocalMenuState.current
 
             val thumbnailSizePx = Dimensions.thumbnails.playlist.px
@@ -387,7 +385,7 @@ private fun LoadingOrError(
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     LoadingOrError(
         errorMessage = errorMessage,

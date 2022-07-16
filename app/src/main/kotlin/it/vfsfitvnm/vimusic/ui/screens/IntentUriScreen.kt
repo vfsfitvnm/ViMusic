@@ -27,7 +27,7 @@ import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
@@ -61,7 +61,7 @@ fun IntentUriScreen(uri: Uri) {
 
         host {
             val menuState = LocalMenuState.current
-            val colorPalette = LocalColorPalette.current
+            val (colorPalette) = LocalAppearance.current
             val binder = LocalPlayerServiceBinder.current
 
             val thumbnailSizePx = Dimensions.thumbnails.song.px

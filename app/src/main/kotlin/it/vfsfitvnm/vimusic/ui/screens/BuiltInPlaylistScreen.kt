@@ -29,10 +29,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -66,8 +63,7 @@ fun BuiltInPlaylistScreen(
             val menuState = LocalMenuState.current
 
             val binder = LocalPlayerServiceBinder.current
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
+            val (colorPalette, typography) = LocalAppearance.current
 
             val thumbnailSize = Dimensions.thumbnails.song.px
 

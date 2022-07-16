@@ -63,8 +63,7 @@ fun PlayerView(
 ) {
     val menuState = LocalMenuState.current
 
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
@@ -318,7 +317,7 @@ private fun Thumbnail(
     song: Song?,
     modifier: Modifier = Modifier
 ) {
-    val typography = LocalTypography.current
+    val (_, typography) = LocalAppearance.current
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val player = binder?.player ?: return
@@ -527,9 +526,7 @@ private fun Controls(
     song: Song?,
     modifier: Modifier = Modifier
 ) {
-    val typography = LocalTypography.current
-    val colorPalette = LocalColorPalette.current
-    val preferences = LocalPreferences.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     val binder = LocalPlayerServiceBinder.current
     val player = binder?.player ?: return
@@ -730,9 +727,8 @@ private fun Controls(
                         player.repeatMode
                             .plus(2)
                             .mod(3)
-                            .let { repeatMode ->
-                                player.repeatMode = repeatMode
-                                preferences.repeatMode = repeatMode
+                            .let {
+                                player.repeatMode = it
                             }
                     }
                     .weight(1f)

@@ -7,7 +7,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 
 fun TextStyle.style(style: FontStyle) = copy(fontStyle = style)
 
@@ -35,9 +35,9 @@ inline val TextStyle.center: TextStyle
 inline val TextStyle.secondary: TextStyle
     @Composable
     @ReadOnlyComposable
-    get() = color(LocalColorPalette.current.textSecondary)
+    get() = color(LocalAppearance.current.colorPalette.textSecondary)
 
 inline val TextStyle.disabled: TextStyle
     @Composable
     @ReadOnlyComposable
-    get() = color(LocalColorPalette.current.textDisabled)
+    get() = color(LocalAppearance.current.colorPalette.textDisabled)

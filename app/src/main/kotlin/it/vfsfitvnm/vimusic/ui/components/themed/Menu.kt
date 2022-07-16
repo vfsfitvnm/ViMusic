@@ -16,8 +16,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
 
@@ -27,7 +26,7 @@ inline fun Menu(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     Column(
         modifier = modifier
@@ -52,8 +51,7 @@ fun MenuEntry(
     secondaryText: String? = null,
     isEnabled: Boolean = true,
 ) {
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -99,7 +97,7 @@ fun MenuIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     Box(
         modifier = modifier

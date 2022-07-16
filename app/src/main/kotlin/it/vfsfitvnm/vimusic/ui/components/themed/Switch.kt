@@ -16,7 +16,7 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.drawCircle
 
 
@@ -25,7 +25,7 @@ fun Switch(
     isChecked: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     val backgroundColor by animateColorAsState(if (isChecked) colorPalette.primaryContainer else colorPalette.lightBackground)
     val color by animateColorAsState(if (isChecked) colorPalette.onPrimaryContainer else colorPalette.textDisabled)

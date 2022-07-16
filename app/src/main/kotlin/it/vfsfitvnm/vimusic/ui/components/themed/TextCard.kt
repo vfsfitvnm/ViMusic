@@ -17,8 +17,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -32,7 +31,7 @@ fun TextCard(
     onClick: (() -> Unit)? = null,
     content: @Composable TextCardScope.() -> Unit,
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     Column(
         modifier = modifier
@@ -72,17 +71,19 @@ interface TextCardScope {
 private object TextCardScopeImpl : TextCardScope {
     @Composable
     override fun Title(text: String) {
+        val (_, typography) = LocalAppearance.current
         BasicText(
             text = text,
-            style = LocalTypography.current.xxs.semiBold,
+            style = typography.xxs.semiBold,
         )
     }
 
     @Composable
     override fun Text(text: String) {
+        val (_, typography) = LocalAppearance.current
         BasicText(
             text = text,
-            style = LocalTypography.current.xxs.secondary.align(TextAlign.Justify),
+            style = typography.xxs.secondary.align(TextAlign.Justify),
         )
     }
 }
@@ -90,9 +91,10 @@ private object TextCardScopeImpl : TextCardScope {
 private object IconTextCardScopeImpl : TextCardScope {
     @Composable
     override fun Title(text: String) {
+        val (_, typography) = LocalAppearance.current
         BasicText(
             text = text,
-            style = LocalTypography.current.xxs.semiBold,
+            style = typography.xxs.semiBold,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
         )
@@ -100,9 +102,10 @@ private object IconTextCardScopeImpl : TextCardScope {
 
     @Composable
     override fun Text(text: String) {
+        val (_, typography) = LocalAppearance.current
         BasicText(
             text = text,
-            style = LocalTypography.current.xxs.secondary,
+            style = typography.xxs.secondary,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
         )

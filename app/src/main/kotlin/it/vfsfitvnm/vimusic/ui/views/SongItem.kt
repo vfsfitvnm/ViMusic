@@ -26,8 +26,7 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
@@ -150,8 +149,7 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     val menuState = LocalMenuState.current
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

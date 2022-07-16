@@ -28,8 +28,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.HorizontalTabPager
 import it.vfsfitvnm.vimusic.ui.components.rememberTabPagerState
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.PlayerState
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
@@ -50,8 +49,7 @@ fun PlayerBottomSheet(
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     val coroutineScope = rememberCoroutineScope()
 

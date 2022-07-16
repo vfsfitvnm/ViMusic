@@ -23,10 +23,10 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.screens.*
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.LocalPreferences
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
+import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
 
 
@@ -53,9 +53,9 @@ fun OtherSettingsScreen() {
 
         host {
             val context = LocalContext.current
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
-            val preferences = LocalPreferences.current
+            val (colorPalette, typography) = LocalAppearance.current
+
+            var isInvincibilityEnabled by rememberPreference(isInvincibilityEnabledKey, false)
 
             var isIgnoringBatteryOptimizations by remember {
                 mutableStateOf(context.isIgnoringBatteryOptimizations)
@@ -140,9 +140,9 @@ fun OtherSettingsScreen() {
                 SwitchSettingEntry(
                     title = "Invincible service",
                     text = "When turning off battery optimizations is not enough",
-                    isChecked = preferences.isInvincibilityEnabled,
+                    isChecked = isInvincibilityEnabled,
                     onCheckedChange = {
-                        preferences.isInvincibilityEnabled = it
+                        isInvincibilityEnabled = it
                     }
                 )
 

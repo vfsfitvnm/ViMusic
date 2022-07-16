@@ -16,12 +16,11 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.BuildConfig
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -48,8 +47,7 @@ fun AboutScreen() {
         }
 
         host {
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
+            val (colorPalette, typography) = LocalAppearance.current
             val uriHandler = LocalUriHandler.current
 
             Column(

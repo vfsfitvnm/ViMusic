@@ -82,5 +82,3 @@ val LightColorPalette = ColorPalette(
 //    iconOnPrimaryContainer = Color(0xff2e30b8),
     isDark = false
 )
-
-val LocalColorPalette = staticCompositionLocalOf { LightColorPalette }

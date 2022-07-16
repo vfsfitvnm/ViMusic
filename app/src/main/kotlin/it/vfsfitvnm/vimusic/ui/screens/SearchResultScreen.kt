@@ -37,8 +37,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -53,29 +52,29 @@ fun SearchResultScreen(
     query: String,
     onSearchAgain: () -> Unit,
 ) {
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
-    val preferences = LocalPreferences.current
+    val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+
+    var searchFilter by rememberPreference(searchFilterKey, YouTube.Item.Song.Filter.value)
 
     val lazyListState = rememberLazyListState()
 
-    val items = remember(preferences.searchFilter) {
+    val items = remember(searchFilter) {
         mutableStateListOf<YouTube.Item>()
     }
 
-    var continuationResult by remember(preferences.searchFilter) {
+    var continuationResult by remember(searchFilter) {
         mutableStateOf<Result<String?>?>(null)
     }
 
-    val onLoad = relaunchableEffect(preferences.searchFilter) {
+    val onLoad = relaunchableEffect(searchFilter) {
         withContext(Dispatchers.Main) {
             val token = continuationResult?.getOrNull()
 
             continuationResult = null
 
             continuationResult = withContext(Dispatchers.IO) {
-                YouTube.search(query, preferences.searchFilter, token)
+                YouTube.search(query, searchFilter, token)
             }?.map { searchResult ->
                 items.addAll(searchResult.items)
                 searchResult.continuation
@@ -186,14 +185,14 @@ fun SearchResultScreen(
                                 value = YouTube.Item.FeaturedPlaylist.Filter.value
                             ),
                         ),
-                        value = preferences.searchFilter,
+                        value = searchFilter,
                         selectedBackgroundColor = colorPalette.primaryContainer,
                         unselectedBackgroundColor = colorPalette.lightBackground,
                         selectedTextStyle = typography.xs.medium.color(colorPalette.onPrimaryContainer),
                         unselectedTextStyle = typography.xs.medium,
                         shape = RoundedCornerShape(36.dp),
                         onValueChanged = {
-                            preferences.searchFilter = it
+                            searchFilter = it
                         },
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -255,7 +254,7 @@ fun SearchResultScreen(
                 } ?: item(key = "loading") {
                     LoadingOrError(
                         itemCount = if (items.isEmpty()) 8 else 3,
-                        isLoadingArtists = preferences.searchFilter == YouTube.Item.Artist.Filter.value
+                        isLoadingArtists = searchFilter == YouTube.Item.Artist.Filter.value
                     )
                 }
             }
@@ -268,7 +267,7 @@ fun SmallSongItemShimmer(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -293,7 +292,7 @@ fun SmallArtistItemShimmer(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier
 ) {
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -422,7 +421,7 @@ fun SmallPlaylistItem(
     thumbnailSizePx: Int,
     modifier: Modifier = Modifier
 ) {
-    val typography = LocalTypography.current
+    val (_, typography) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -474,7 +473,7 @@ fun SmallAlbumItem(
     thumbnailSizePx: Int,
     modifier: Modifier = Modifier,
 ) {
-    val typography = LocalTypography.current
+    val (_, typography) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -526,7 +525,7 @@ fun SmallArtistItem(
     thumbnailSizePx: Int,
     modifier: Modifier = Modifier,
 ) {
-    val typography = LocalTypography.current
+    val (_, typography) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

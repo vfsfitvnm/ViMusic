@@ -34,8 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.delay
 
@@ -56,8 +55,7 @@ fun TextFieldDialog(
     val focusRequester = remember {
         FocusRequester()
     }
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -162,8 +160,7 @@ fun ConfirmationDialog(
     confirmText: String = "Confirm",
     onCancel: () -> Unit = onDismiss
 ) {
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     DefaultDialog(
         onDismiss = onDismiss,
@@ -211,6 +208,8 @@ inline fun DefaultDialog(
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     crossinline content: @Composable ColumnScope.() -> Unit
 ) {
+    val (colorPalette) = LocalAppearance.current
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -220,7 +219,7 @@ inline fun DefaultDialog(
             modifier = modifier
                 .padding(all = 48.dp)
                 .background(
-                    color = LocalColorPalette.current.elevatedBackground,
+                    color = colorPalette.elevatedBackground,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(horizontal = 24.dp, vertical = 16.dp),
@@ -240,15 +239,14 @@ inline fun <T> ValueSelectorDialog(
     modifier: Modifier = Modifier,
     crossinline valueText: (T) -> String = { it.toString() }
 ) {
-    val typography = LocalTypography.current
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier = modifier
                 .padding(all = 48.dp)
                 .background(
-                    color = LocalColorPalette.current.elevatedBackground,
+                    color = colorPalette.elevatedBackground,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(vertical = 16.dp),

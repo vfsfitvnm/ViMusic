@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.startForegroundService
+import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.media3.common.*
@@ -116,17 +117,14 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         createNotificationChannel()
 
-        getSharedPreferences(
-            Preferences.fileName,
-            Context.MODE_PRIVATE
-        ).registerOnSharedPreferenceChangeListener(this)
+        preferences.registerOnSharedPreferenceChangeListener(this)
 
-        val preferences = Preferences()
-        isPersistentQueueEnabled = preferences.persistentQueue
-        isVolumeNormalizationEnabled = preferences.volumeNormalization
-        isInvincibilityEnabled = preferences.isInvincibilityEnabled
+        val preferences = preferences
+        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
+        isVolumeNormalizationEnabled = preferences.getBoolean(volumeNormalizationKey, false)
+        isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
 
-        val cacheEvictor = when (val size = preferences.exoPlayerDiskCacheMaxSize) {
+        val cacheEvictor = when (val size = preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {
             ExoPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
             else -> LeastRecentlyUsedCacheEvictor(size.bytes)
         }
@@ -146,8 +144,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .setUsePlatformDiagnostics(false)
             .build()
 
-        player.repeatMode = preferences.repeatMode
-        player.skipSilenceEnabled = preferences.skipSilence
+        player.repeatMode = preferences.getInt(repeatModeKey, Player.REPEAT_MODE_OFF)
+        player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this)
         player.addAnalyticsListener(PlaybackStatsListener(false, this))
 
@@ -184,10 +182,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     override fun onDestroy() {
         maybeSavePlayerQueue()
 
-        getSharedPreferences(
-            Preferences.fileName,
-            Context.MODE_PRIVATE
-        ).unregisterOnSharedPreferenceChangeListener(this)
+        preferences.unregisterOnSharedPreferenceChangeListener(this)
 
         player.removeListener(this)
         player.stop()
@@ -289,14 +284,16 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     }
 
     private fun normalizeVolume() {
-        if (isVolumeNormalizationEnabled) {
-            player.volume = player.currentMediaItem?.let { mediaItem ->
+        player.volume = if (isVolumeNormalizationEnabled) {
+             player.currentMediaItem?.let { mediaItem ->
                 songPendingLoudnessDb.getOrElse(mediaItem.mediaId) {
                     mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
                 }?.takeIf { it > 0 }?.let { loudnessDb ->
                     (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
                 }
             } ?: 1f
+        } else {
+            1f
         }
     }
 
@@ -308,6 +305,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             Player.STATE_IDLE -> PlaybackState.STATE_NONE
             else -> PlaybackState.STATE_NONE
         }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        preferences.edit { putInt(repeatModeKey, repeatMode) }
+    }
 
     override fun onEvents(player: Player, events: Player.Events) {
         if (player.duration != C.TIME_UNSET) {
@@ -362,12 +363,16 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
         when (key) {
-            Preferences.Keys.persistentQueue -> isPersistentQueueEnabled =
+            persistentQueueKey -> isPersistentQueueEnabled =
                 sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
-            Preferences.Keys.volumeNormalization -> isVolumeNormalizationEnabled =
-                sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
-            Preferences.Keys.isInvincibilityEnabled -> isInvincibilityEnabled =
+            volumeNormalizationKey -> {
+                isVolumeNormalizationEnabled =
+                    sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
+                normalizeVolume()
+            }
+            isInvincibilityEnabledKey -> isInvincibilityEnabled =
                 sharedPreferences.getBoolean(key, isInvincibilityEnabled)
+            skipSilenceKey -> player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
         }
     }
 

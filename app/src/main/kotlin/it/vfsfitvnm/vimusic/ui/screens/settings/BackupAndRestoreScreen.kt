@@ -31,8 +31,7 @@ import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
 import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.semiBold
 import java.io.FileInputStream
@@ -64,8 +63,7 @@ fun BackupAndRestoreScreen() {
         }
 
         host {
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
+            val (colorPalette, typography) = LocalAppearance.current
             val context = LocalContext.current
 
             val backupLauncher =

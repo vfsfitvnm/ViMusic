@@ -31,8 +31,7 @@ import it.vfsfitvnm.vimusic.ui.components.Pager
 import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
@@ -371,8 +370,7 @@ fun MediaItemMenu(
 
                     onSetSleepTimer?.let { onSetSleepTimer ->
                         val binder = LocalPlayerServiceBinder.current
-                        val typography = LocalTypography.current
-                        val colorPalette = LocalColorPalette.current
+                        val (colorPalette, typography) = LocalAppearance.current
 
                         var isShowingSleepTimerDialog by remember {
                             mutableStateOf(false)

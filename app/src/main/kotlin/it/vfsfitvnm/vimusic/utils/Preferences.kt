@@ -5,145 +5,24 @@ import android.content.SharedPreferences
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
-import androidx.media3.common.Player
-import it.vfsfitvnm.vimusic.enums.*
-import it.vfsfitvnm.youtubemusic.YouTube
 
 
-@Stable
-class Preferences(
-    private val edit: (action: SharedPreferences.Editor.() -> Unit) -> Unit,
-    initialIsFirstLaunch: Boolean,
-    initialSongSortBy: SongSortBy,
-    initialSongSortOrder: SortOrder,
-    initialColorPaletteMode: ColorPaletteMode,
-    initialSearchFilter: String,
-    initialRepeatMode: Int,
-    initialThumbnailRoundness: ThumbnailRoundness,
-    initialCoilDiskCacheMaxSize: CoilDiskCacheMaxSize,
-    initialExoPlayerDiskCacheMaxSize: ExoPlayerDiskCacheMaxSize,
-    initialSkipSilence: Boolean,
-    initialVolumeNormalization: Boolean,
-    initialPersistentQueue: Boolean,
-    initialIsInvincibilityEnabled: Boolean,
-    initialIsCachedPlaylistShown: Boolean,
-) {
-    constructor(preferences: SharedPreferences) : this(
-        edit = { action: SharedPreferences.Editor.() -> Unit ->
-           preferences.edit(action = action)
-        },
-        initialIsFirstLaunch = preferences.getBoolean(Keys.isFirstLaunch, true),
-        initialSongSortBy = preferences.getEnum(Keys.songSortBy, SongSortBy.DateAdded),
-        initialSongSortOrder = preferences.getEnum(Keys.songSortOrder, SortOrder.Descending),
-        initialColorPaletteMode = preferences.getEnum(Keys.colorPaletteMode, ColorPaletteMode.System),
-        initialSearchFilter = preferences.getString(Keys.searchFilter, YouTube.Item.Song.Filter.value)!!,
-        initialRepeatMode = preferences.getInt(Keys.repeatMode, Player.REPEAT_MODE_OFF),
-        initialThumbnailRoundness = preferences.getEnum(Keys.thumbnailRoundness, ThumbnailRoundness.Light),
-        initialCoilDiskCacheMaxSize = preferences.getEnum(Keys.coilDiskCacheMaxSize, CoilDiskCacheMaxSize.`128MB`),
-        initialExoPlayerDiskCacheMaxSize = preferences.getEnum(Keys.exoPlayerDiskCacheMaxSize, ExoPlayerDiskCacheMaxSize.`2GB`),
-        initialSkipSilence = preferences.getBoolean(Keys.skipSilence, false),
-        initialVolumeNormalization = preferences.getBoolean(Keys.volumeNormalization, false),
-        initialPersistentQueue = preferences.getBoolean(Keys.persistentQueue, false),
-        initialIsInvincibilityEnabled = preferences.getBoolean(Keys.isInvincibilityEnabled, false),
-        initialIsCachedPlaylistShown = preferences.getBoolean(Keys.isCachedPlaylistShown, false),
-    )
+const val colorPaletteModeKey = "colorPaletteMode"
+const val thumbnailRoundnessKey = "thumbnailRoundness"
+const val isCachedPlaylistShownKey = "isCachedPlaylistShown"
+const val coilDiskCacheMaxSizeKey = "coilDiskCacheMaxSize"
+const val exoPlayerDiskCacheMaxSizeKey = "exoPlayerDiskCacheMaxSize"
+const val isInvincibilityEnabledKey = "isInvincibilityEnabled"
+const val isFirstLaunchKey = "isFirstLaunch"
+const val songSortOrderKey = "songSortOrder"
+const val songSortByKey = "songSortBy"
+const val searchFilterKey = "searchFilter"
+const val repeatModeKey = "repeatMode"
+const val skipSilenceKey = "skipSilence"
+const val volumeNormalizationKey = "volumeNormalization"
+const val persistentQueueKey = "persistentQueue"
 
-    var isFirstLaunch = initialIsFirstLaunch
-        set(value) = edit { putBoolean(Keys.isFirstLaunch, value) }
-
-    var songSortBy = initialSongSortBy
-        set(value) = edit { putEnum(Keys.songSortBy, value) }
-
-    var songSortOrder = initialSongSortOrder
-        set(value) = edit { putEnum(Keys.songSortOrder, value) }
-
-    var colorPaletteMode = initialColorPaletteMode
-        set(value) = edit { putEnum(Keys.colorPaletteMode, value) }
-
-    var searchFilter = initialSearchFilter
-        set(value) = edit { putString(Keys.searchFilter, value) }
-
-    var repeatMode = initialRepeatMode
-        set(value) = edit { putInt(Keys.repeatMode, value) }
-
-    var thumbnailRoundness = initialThumbnailRoundness
-        set(value) = edit { putEnum(Keys.thumbnailRoundness, value) }
-
-    var coilDiskCacheMaxSize = initialCoilDiskCacheMaxSize
-        set(value) = edit { putEnum(Keys.coilDiskCacheMaxSize, value) }
-
-    var exoPlayerDiskCacheMaxSize = initialExoPlayerDiskCacheMaxSize
-        set(value) = edit { putEnum(Keys.exoPlayerDiskCacheMaxSize, value) }
-
-    var skipSilence = initialSkipSilence
-        set(value) = edit { putBoolean(Keys.skipSilence, value) }
-
-    var volumeNormalization = initialVolumeNormalization
-        set(value) = edit { putBoolean(Keys.volumeNormalization, value) }
-
-    var persistentQueue = initialPersistentQueue
-        set(value) = edit { putBoolean(Keys.persistentQueue, value) }
-
-    var isInvincibilityEnabled = initialIsInvincibilityEnabled
-        set(value) = edit { putBoolean(Keys.isInvincibilityEnabled, value) }
-
-    var isCachedPlaylistShown = initialIsCachedPlaylistShown
-        set(value) = edit { putBoolean(Keys.isCachedPlaylistShown, value) }
-
-    object Keys {
-        const val isFirstLaunch = "isFirstLaunch"
-        const val songSortOrder = "songSortOrder"
-        const val songSortBy = "songSortBy"
-        const val colorPaletteMode = "colorPaletteMode"
-        const val searchFilter = "searchFilter"
-        const val repeatMode = "repeatMode"
-        const val thumbnailRoundness = "thumbnailRoundness"
-        const val coilDiskCacheMaxSize = "coilDiskCacheMaxSize"
-        const val exoPlayerDiskCacheMaxSize = "exoPlayerDiskCacheMaxSize"
-        const val skipSilence = "skipSilence"
-        const val volumeNormalization = "volumeNormalization"
-        const val persistentQueue = "persistentQueue"
-        const val isInvincibilityEnabled = "isInvincibilityEnabled"
-        const val isCachedPlaylistShown = "isCachedPlaylistShown"
-    }
-
-    companion object {
-        const val fileName = "preferences"
-
-        context(Context)
-        operator fun invoke() =
-            Preferences(getSharedPreferences(fileName, Context.MODE_PRIVATE))
-    }
-}
-
-val LocalPreferences = staticCompositionLocalOf<Preferences> { TODO() }
-
-@Composable
-fun rememberPreferences(): Preferences {
-    val context = LocalContext.current
-    var preferences by remember {
-        mutableStateOf(context.run { Preferences() })
-    }
-
-    DisposableEffect(Unit) {
-        val holder = context.getSharedPreferences(Preferences.fileName, Context.MODE_PRIVATE)
-
-        val listener =
-            SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, _ ->
-                preferences = Preferences(sharedPreferences)
-            }
-
-        holder.registerOnSharedPreferenceChangeListener(listener)
-
-        onDispose {
-            holder.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
-
-    return preferences
-}
-
-private inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
+inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T
 ): T =
@@ -155,6 +34,51 @@ private inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
         }
     } ?: defaultValue
 
-private inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(key: String, value: T) =
+inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(key: String, value: T) =
     putString(key, value.name)
 
+
+val Context.preferences: SharedPreferences
+    get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
+
+
+@Composable
+fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean> {
+    val context = LocalContext.current
+    return remember {
+        mutableStatePreferenceOf(context.preferences.getBoolean(key, defaultValue)) {
+            context.preferences.edit { putBoolean(key, it) }
+        }
+    }
+}
+
+@Composable
+fun rememberPreference(key: String, defaultValue: String): MutableState<String> {
+    val context = LocalContext.current
+    return remember {
+        mutableStatePreferenceOf(context.preferences.getString(key, null) ?: defaultValue) {
+            context.preferences.edit { putString(key, it) }
+        }
+    }
+}
+
+@Composable
+inline fun <reified T: Enum<T>> rememberPreference(key: String, defaultValue: T): MutableState<T> {
+    val context = LocalContext.current
+    return remember {
+        mutableStatePreferenceOf(context.preferences.getEnum(key, defaultValue)) {
+            context.preferences.edit { putEnum(key, it) }
+        }
+    }
+}
+
+inline fun <T> mutableStatePreferenceOf(value: T, crossinline onStructuralInequality: (newValue: T) -> Unit) =
+    mutableStateOf(
+        value = value,
+        policy = object : SnapshotMutationPolicy<T> {
+            override fun equivalent(a: T, b: T): Boolean {
+                val areEquals = a == b
+                if (!areEquals) onStructuralInequality(b)
+                return areEquals
+            }
+        })

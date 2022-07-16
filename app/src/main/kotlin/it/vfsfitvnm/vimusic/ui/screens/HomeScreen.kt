@@ -50,10 +50,7 @@ import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -64,8 +61,7 @@ import kotlinx.coroutines.Dispatchers
 @ExperimentalAnimationApi
 @Composable
 fun HomeScreen() {
-    val colorPalette = LocalColorPalette.current
-    val typography = LocalTypography.current
+    val (colorPalette, typography) = LocalAppearance.current
 
     val lazyListState = rememberLazyListState()
 
@@ -82,10 +78,11 @@ fun HomeScreen() {
         Database.playlistPreviews()
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
-    val preferences = LocalPreferences.current
+    var songSortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
+    var songSortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
 
-    val songCollection by remember(preferences.songSortBy, preferences.songSortOrder) {
-        Database.songs(preferences.songSortBy, preferences.songSortOrder)
+    val songCollection by remember(songSortBy, songSortOrder) {
+        Database.songs(songSortBy, songSortOrder)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
     RouteHandler(listenToGlobalEmitter = true) {
@@ -153,6 +150,9 @@ fun HomeScreen() {
 
             val binder = LocalPlayerServiceBinder.current
 
+            val isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
+            val isCachedPlaylistShown by rememberPreference(isCachedPlaylistShownKey, false)
+
             val thumbnailSize = Dimensions.thumbnails.song.px
 
             var isGridExpanded by remember {
@@ -199,7 +199,7 @@ fun HomeScreen() {
                                 }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .run {
-                                    if (preferences.isFirstLaunch) {
+                                    if (isFirstLaunch) {
                                         drawBehind {
                                             drawCircle(
                                                 color = colorPalette.red,
@@ -321,7 +321,7 @@ fun HomeScreen() {
                             }
                         }
 
-                        if (preferences.isCachedPlaylistShown) {
+                        if (isCachedPlaylistShown) {
                             item {
                                 Box(
                                     modifier = Modifier
@@ -492,16 +492,16 @@ fun HomeScreen() {
                                 ) {
                                     Item(
                                         text = "PLAY TIME",
-                                        isSelected = preferences.songSortBy == SongSortBy.PlayTime,
+                                        isSelected = songSortBy == SongSortBy.PlayTime,
                                         onClick = {
-                                            preferences.songSortBy = SongSortBy.PlayTime
+                                            songSortBy = SongSortBy.PlayTime
                                         }
                                     )
                                     Item(
                                         text = "DATE ADDED",
-                                        isSelected = preferences.songSortBy == SongSortBy.DateAdded,
+                                        isSelected = songSortBy == SongSortBy.DateAdded,
                                         onClick = {
-                                            preferences.songSortBy = SongSortBy.DateAdded
+                                            songSortBy = SongSortBy.DateAdded
                                         }
                                     )
                                 }
@@ -518,14 +518,14 @@ fun HomeScreen() {
                                         .width(IntrinsicSize.Max),
                                 ) {
                                     Item(
-                                        text = when (preferences.songSortOrder) {
+                                        text = when (songSortOrder) {
                                             SortOrder.Ascending -> "ASCENDING"
                                             SortOrder.Descending -> "DESCENDING"
                                         },
                                         textColor = colorPalette.text,
                                         backgroundColor = colorPalette.elevatedBackground,
                                         onClick = {
-                                            preferences.songSortOrder = !preferences.songSortOrder
+                                            songSortOrder = !songSortOrder
                                         }
                                     )
                                 }
@@ -556,7 +556,7 @@ fun HomeScreen() {
                         },
                         onThumbnailContent = {
                             AnimatedVisibility(
-                                visible = preferences.songSortBy == SongSortBy.PlayTime,
+                                visible = songSortBy == SongSortBy.PlayTime,
                                 enter = fadeIn(),
                                 exit = fadeOut(),
                                 modifier = Modifier

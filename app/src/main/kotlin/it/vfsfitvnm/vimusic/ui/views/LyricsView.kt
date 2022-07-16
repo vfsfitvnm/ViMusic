@@ -19,7 +19,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.secondary
 
@@ -32,7 +32,7 @@ fun LyricsView(
     onLyricsUpdate: (String) -> Unit,
     nestedScrollConnectionProvider: () -> NestedScrollConnection,
 ) {
-    val typography = LocalTypography.current
+    val (_, typography) = LocalAppearance.current
 
     var isEditingLyrics by remember {
         mutableStateOf(false)

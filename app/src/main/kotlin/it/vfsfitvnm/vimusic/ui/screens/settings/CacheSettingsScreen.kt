@@ -16,13 +16,15 @@ import coil.annotation.ExperimentalCoilApi
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.screens.*
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.LocalPreferences
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.coilDiskCacheMaxSizeKey
+import it.vfsfitvnm.vimusic.utils.exoPlayerDiskCacheMaxSizeKey
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,10 +53,11 @@ fun CacheSettingsScreen() {
 
         host {
             val context = LocalContext.current
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
-            val preferences = LocalPreferences.current
+            val (colorPalette, typography) = LocalAppearance.current
             val binder = LocalPlayerServiceBinder.current
+
+            var coilDiskCacheMaxSize by rememberPreference(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
+            var exoPlayerDiskCacheMaxSize by rememberPreference(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
 
             val coroutineScope = rememberCoroutineScope()
 
@@ -100,9 +103,9 @@ fun CacheSettingsScreen() {
 
                     EnumValueSelectorSettingsEntry(
                         title = "Max size",
-                        selectedValue = preferences.coilDiskCacheMaxSize,
+                        selectedValue = coilDiskCacheMaxSize,
                         onValueSelected = {
-                            preferences.coilDiskCacheMaxSize = it
+                            coilDiskCacheMaxSize = it
                         }
                     )
 
@@ -114,9 +117,7 @@ fun CacheSettingsScreen() {
                                 diskCacheSize
                             )
                         } (${
-                            diskCacheSize * 100 / preferences.coilDiskCacheMaxSize.bytes.coerceAtLeast(
-                                1
-                            )
+                            diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(1)
                         }%)",
                     )
 
@@ -143,9 +144,9 @@ fun CacheSettingsScreen() {
 
                     EnumValueSelectorSettingsEntry(
                         title = "Max size",
-                        selectedValue = preferences.exoPlayerDiskCacheMaxSize,
+                        selectedValue = exoPlayerDiskCacheMaxSize,
                         onValueSelected = {
-                            preferences.exoPlayerDiskCacheMaxSize = it
+                            exoPlayerDiskCacheMaxSize = it
                         }
                     )
 
@@ -154,7 +155,7 @@ fun CacheSettingsScreen() {
                         text = buildString {
                             append(Formatter.formatShortFileSize(context, diskCacheSize))
 
-                            when (val size = preferences.exoPlayerDiskCacheMaxSize) {
+                            when (val size = exoPlayerDiskCacheMaxSize) {
                                 ExoPlayerDiskCacheMaxSize.Unlimited -> {}
                                 else -> append("(${diskCacheSize * 100 / size.bytes}%)")
                             }

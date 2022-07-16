@@ -10,6 +10,8 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -20,10 +22,8 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.*
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.LocalPreferences
-import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.*
 
 
 @ExperimentalAnimationApi
@@ -49,10 +49,12 @@ fun PlayerSettingsScreen() {
 
         host {
             val context = LocalContext.current
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
-            val preferences = LocalPreferences.current
+            val (colorPalette, typography) = LocalAppearance.current
             val binder = LocalPlayerServiceBinder.current
+
+            var persistentQueue by rememberPreference(persistentQueueKey, false)
+            var skipSilence by rememberPreference(skipSilenceKey, false)
+            var volumeNormalization by rememberPreference(volumeNormalizationKey, false)
 
             val activityResultLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -96,9 +98,9 @@ fun PlayerSettingsScreen() {
                 SwitchSettingEntry(
                     title = "Persistent queue",
                     text = "Save and restore playing songs",
-                    isChecked = preferences.persistentQueue,
+                    isChecked = persistentQueue,
                     onCheckedChange = {
-                        preferences.persistentQueue = it
+                        persistentQueue = it
                     }
                 )
 
@@ -107,19 +109,18 @@ fun PlayerSettingsScreen() {
                 SwitchSettingEntry(
                     title = "Skip silence",
                     text = "Skip silent parts during playback",
-                    isChecked = preferences.skipSilence,
+                    isChecked = skipSilence,
                     onCheckedChange = {
-                        binder?.player?.skipSilenceEnabled = it
-                        preferences.skipSilence = it
+                        skipSilence = it
                     }
                 )
 
                 SwitchSettingEntry(
                     title = "Loudness normalization",
                     text = "Lower the volume to a standard level",
-                    isChecked = preferences.volumeNormalization,
+                    isChecked = volumeNormalization,
                     onCheckedChange = {
-                        preferences.volumeNormalization = it
+                        volumeNormalization = it
                     }
                 )
 

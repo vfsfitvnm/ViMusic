@@ -28,16 +28,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.vimusic.*
+import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.*
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -90,8 +91,7 @@ fun AlbumScreen(
             val context = LocalContext.current
             val binder = LocalPlayerServiceBinder.current
 
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
+            val (colorPalette, typography) = LocalAppearance.current
             val menuState = LocalMenuState.current
 
 
@@ -356,6 +356,8 @@ private fun LoadingOrError(
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null
 ) {
+    val (colorPalette) = LocalAppearance.current
+
     LoadingOrError(
         errorMessage = errorMessage,
         onRetry = onRetry
@@ -369,7 +371,7 @@ private fun LoadingOrError(
         ) {
             Spacer(
                 modifier = Modifier
-                    .background(color = LocalColorPalette.current.darkGray, shape = ThumbnailRoundness.shape)
+                    .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
                     .size(Dimensions.thumbnails.album)
             )
 

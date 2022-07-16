@@ -5,18 +5,20 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.*
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.utils.LocalPreferences
-import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.*
 
 @ExperimentalAnimationApi
 @Composable
@@ -40,9 +42,11 @@ fun AppearanceSettingsScreen() {
         }
 
         host {
-            val colorPalette = LocalColorPalette.current
-            val typography = LocalTypography.current
-            val preferences = LocalPreferences.current
+            val (colorPalette, typography) = LocalAppearance.current
+
+            var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.System)
+            var thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+            var isCachedPlaylistShown by rememberPreference(isCachedPlaylistShownKey, false)
 
             Column(
                 modifier = Modifier
@@ -81,9 +85,9 @@ fun AppearanceSettingsScreen() {
 
                 EnumValueSelectorSettingsEntry(
                     title = "Theme mode",
-                    selectedValue = preferences.colorPaletteMode,
+                    selectedValue = colorPaletteMode,
                     onValueSelected = {
-                        preferences.colorPaletteMode = it
+                        colorPaletteMode = it
                     }
                 )
 
@@ -91,9 +95,9 @@ fun AppearanceSettingsScreen() {
 
                 EnumValueSelectorSettingsEntry(
                     title = "Thumbnail roundness",
-                    selectedValue = preferences.thumbnailRoundness,
+                    selectedValue = thumbnailRoundness,
                     onValueSelected = {
-                        preferences.thumbnailRoundness = it
+                        thumbnailRoundness = it
                     }
                 )
 
@@ -102,9 +106,9 @@ fun AppearanceSettingsScreen() {
                 SwitchSettingEntry(
                     title = "Cached playlist",
                     text = "Display a playlist whose songs can be played offline",
-                    isChecked = preferences.isCachedPlaylistShown,
+                    isChecked = isCachedPlaylistShown,
                     onCheckedChange = {
-                        preferences.isCachedPlaylistShown = it
+                        isCachedPlaylistShown = it
                     }
                 )
             }

@@ -1,10 +1,7 @@
 package it.vfsfitvnm.vimusic
 
 import android.annotation.SuppressLint
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
@@ -27,9 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.ExperimentalTextApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
+import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -37,15 +37,11 @@ import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.rememberMenuState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
+import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalTypography
-import it.vfsfitvnm.vimusic.ui.styling.rememberTypography
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.views.PlayerView
-import it.vfsfitvnm.vimusic.utils.LocalPreferences
-import it.vfsfitvnm.vimusic.utils.intent
-import it.vfsfitvnm.vimusic.utils.rememberHapticFeedback
-import it.vfsfitvnm.vimusic.utils.rememberPreferences
+import it.vfsfitvnm.vimusic.utils.*
 
 
 class MainActivity : ComponentActivity() {
@@ -75,30 +71,77 @@ class MainActivity : ComponentActivity() {
     }
 
     @SuppressLint("BatteryLife")
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
+        ExperimentalTextApi::class
+    )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         uri = intent?.data
 
         setContent {
-            val preferences = rememberPreferences()
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+
+            var appearance by remember(isSystemInDarkTheme) {
+                with(preferences) {
+                    val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
+                    val thumbnailRoundness = getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+
+                    mutableStateOf(
+                        Appearance(
+                            colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
+                            typography = colorPaletteMode.typography(isSystemInDarkTheme),
+                            thumbnailShape = thumbnailRoundness.shape()
+                        )
+                    )
+                }
+            }
+
+            DisposableEffect(isSystemInDarkTheme) {
+                val listener =
+                    SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+                        when (key) {
+                            colorPaletteModeKey -> {
+                                val colorPaletteMode = sharedPreferences.getEnum(key, ColorPaletteMode.System)
+
+                                appearance = appearance.copy(
+                                    colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
+                                    typography = colorPaletteMode.typography(isSystemInDarkTheme),
+                                )
+                            }
+                            thumbnailRoundnessKey -> {
+                                val thumbnailRoundness = sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
+
+                                appearance = appearance.copy(
+                                    thumbnailShape = thumbnailRoundness.shape()
+                                )
+                            }
+                        }
+                    }
+
+                with(preferences) {
+                    registerOnSharedPreferenceChangeListener(listener)
+
+                    onDispose {
+                        unregisterOnSharedPreferenceChangeListener(listener)
+                    }
+                }
+            }
+
             val systemUiController = rememberSystemUiController()
 
-            val colorPalette = preferences.colorPaletteMode.palette(isSystemInDarkTheme())
-
-            val rippleTheme = remember(colorPalette.text, colorPalette.isDark) {
+            val rippleTheme = remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
                 object : RippleTheme {
                     @Composable
                     override fun defaultColor(): Color = RippleTheme.defaultRippleColor(
-                        contentColor = colorPalette.text,
-                        lightTheme = !colorPalette.isDark
+                        contentColor = appearance.colorPalette.text,
+                        lightTheme = !appearance.colorPalette.isDark
                     )
 
                     @Composable
                     override fun rippleAlpha(): RippleAlpha = RippleTheme.defaultRippleAlpha(
-                        contentColor = colorPalette.text,
-                        lightTheme = !colorPalette.isDark
+                        contentColor = appearance.colorPalette.text,
+                        lightTheme = !appearance.colorPalette.isDark
                     )
                 }
             }
@@ -122,17 +165,15 @@ class MainActivity : ComponentActivity() {
             }
 
             SideEffect {
-                systemUiController.setSystemBarsColor(colorPalette.background, !colorPalette.isDark)
+                systemUiController.setSystemBarsColor(appearance.colorPalette.background, !appearance.colorPalette.isDark)
             }
 
             CompositionLocalProvider(
+                LocalAppearance provides appearance,
                 LocalOverscrollConfiguration provides null,
                 LocalIndication provides rememberRipple(bounded = false),
                 LocalRippleTheme provides rippleTheme,
-                LocalPreferences provides preferences,
-                LocalColorPalette provides colorPalette,
                 LocalShimmerTheme provides shimmerTheme,
-                LocalTypography provides rememberTypography(colorPalette.text),
                 LocalPlayerServiceBinder provides binder,
                 LocalMenuState provides rememberMenuState(),
                 LocalHapticFeedback provides rememberHapticFeedback()
@@ -140,7 +181,7 @@ class MainActivity : ComponentActivity() {
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(colorPalette.background)
+                        .background(appearance.colorPalette.background)
                 ) {
                     when (val uri = uri) {
                         null -> {

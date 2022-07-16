@@ -36,10 +36,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.MusicBars
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.screens.SmallSongItemShimmer
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.LocalColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.PlayerState
 
 
@@ -53,7 +50,7 @@ fun CurrentPlaylistView(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val hapticFeedback = LocalHapticFeedback.current
-    val colorPalette = LocalColorPalette.current
+    val (colorPalette) = LocalAppearance.current
 
     val thumbnailSize = Dimensions.thumbnails.song.px
 
