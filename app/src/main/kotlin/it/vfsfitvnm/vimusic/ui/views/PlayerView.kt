@@ -148,7 +148,7 @@ fun PlayerView(
                                 }
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
-                                .size(24.dp)
+                                .size(22.dp)
                         )
                         else -> Image(
                             painter = painterResource(R.drawable.pause),
@@ -158,7 +158,7 @@ fun PlayerView(
                                 .clickable(onClick = player::pause)
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
-                                .size(24.dp)
+                                .size(22.dp)
                         )
                     }
                 }
