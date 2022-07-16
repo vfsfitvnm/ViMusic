@@ -168,21 +168,13 @@ fun HomeScreen() {
                                 drawCircle(
                                     color = colorPalette.primaryContainer,
                                     center = size.center.copy(x = 8.dp.toPx()),
-                                    radius = 16.dp.toPx(),
-                                    shadow = Shadow(
-                                        color = colorPalette.primaryContainer,
-                                        blurRadius = 4.dp.toPx()
-                                    )
+                                    radius = 16.dp.toPx()
                                 )
 
                                 drawCircle(
                                     color = colorPalette.primaryContainer,
                                     center = Offset(x = 32.dp.toPx(), y = 0f),
-                                    radius = 8.dp.toPx(),
-                                    shadow = Shadow(
-                                        color = colorPalette.primaryContainer,
-                                        blurRadius = 4.dp.toPx()
-                                    )
+                                    radius = 8.dp.toPx()
                                 )
 
                                 if (!isFirstLaunch) return@drawBehind
