@@ -131,15 +131,12 @@ fun HomeScreen() {
         host {
             val (colorPalette, typography) = LocalAppearance.current
 
-            var homeScreenPageIndex by rememberPreference(homeScreenPageIndexKey, 0)
             val isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
 
             val tabPagerState = rememberTabPagerState(
-                initialPageIndex = homeScreenPageIndex,
+                pageIndexState = rememberPreference(homeScreenPageIndexKey, 0),
                 pageCount = 4
-            ) {
-                homeScreenPageIndex = it
-            }
+            )
 
             val coroutineScope = rememberCoroutineScope()
             val density = LocalDensity.current

@@ -21,11 +21,10 @@ import kotlin.math.absoluteValue
 
 @Stable
 class TabPagerState(
-    val pageCount: Int,
-    val initialPageIndex: Int,
-    val onPageChanged: ((Int) -> Unit)?
+    pageIndexState: MutableState<Int>,
+    val pageCount: Int
 ) {
-    var pageIndex by mutableStateOf(initialPageIndex)
+    var pageIndex by pageIndexState
 
     var tempPageIndex by mutableStateOf<Int?>(null)
 
@@ -42,14 +41,14 @@ class TabPagerState(
         if (newPageIndex > pageIndex) {
             animatable.animateTo(
                 animatable.upperBound!!, tween(
-                    durationMillis = 300,
+                    durationMillis = 3000,
                     easing = FastOutSlowInEasing
                 )
             )
         } else if (newPageIndex < pageIndex) {
             animatable.animateTo(
                 animatable.lowerBound!!, tween(
-                    durationMillis = 300,
+                    durationMillis = 3000,
                     easing = FastOutSlowInEasing
                 )
             )
@@ -58,17 +57,25 @@ class TabPagerState(
         pageIndex = newPageIndex
         animatable.snapTo(0f)
         tempPageIndex = null
-        onPageChanged?.invoke(newPageIndex)
     }
 }
 
 @Composable
-fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int, onPageChanged: ((Int) -> Unit)? = null): TabPagerState {
+fun rememberTabPagerState(pageIndexState: MutableState<Int>, pageCount: Int): TabPagerState {
     return remember {
         TabPagerState(
+            pageIndexState = pageIndexState,
             pageCount = pageCount,
-            initialPageIndex = initialPageIndex,
-            onPageChanged = onPageChanged
+        )
+    }
+}
+
+@Composable
+fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int): TabPagerState {
+    return remember {
+        TabPagerState(
+            pageIndexState = mutableStateOf(initialPageIndex),
+            pageCount = pageCount
         )
     }
 }
@@ -125,7 +132,6 @@ fun HorizontalTabPager(
                                         .plus(1)
                                         .coerceAtMost(state.pageCount - 1)
                                     state.animatable.snapTo(0f)
-                                    state.onPageChanged?.invoke(state.pageIndex)
                                 }
                             } else {
                                 state.animatable.animateTo(
@@ -137,7 +143,6 @@ fun HorizontalTabPager(
                                         .minus(1)
                                         .coerceAtLeast(0)
                                     state.animatable.snapTo(0f)
-                                    state.onPageChanged?.invoke(state.pageIndex)
                                 }
                             }
                         }

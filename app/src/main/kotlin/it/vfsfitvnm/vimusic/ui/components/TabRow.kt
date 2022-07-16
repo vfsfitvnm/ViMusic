@@ -1,6 +1,8 @@
 package it.vfsfitvnm.vimusic.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -15,7 +17,10 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 data class TabPosition(
     val left: Int,
     val width: Int
-)
+) {
+    val center: Int
+        get() = left + width / 2
+}
 
 @Composable
 fun TabRow(
@@ -30,11 +35,19 @@ fun TabRow(
     }
 
     val indicatorWidth by animateIntAsState(
-        targetValue = (tabPositions?.getOrNull(tabPagerState.transitioningIndex)?.width ?: 0)
+        targetValue = (tabPositions?.getOrNull(tabPagerState.transitioningIndex)?.width ?: 0),
+        tween(
+            durationMillis = 3000,
+            easing = FastOutSlowInEasing
+        )
     )
 
     val indicatorStart by animateIntAsState(
-        targetValue = (tabPositions?.getOrNull(tabPagerState.transitioningIndex)?.left ?: 0)
+        targetValue = (tabPositions?.getOrNull(tabPagerState.transitioningIndex)?.left ?: 0),
+        tween(
+            durationMillis = 3000,
+            easing = FastOutSlowInEasing
+        )
     )
 
     Layout(
