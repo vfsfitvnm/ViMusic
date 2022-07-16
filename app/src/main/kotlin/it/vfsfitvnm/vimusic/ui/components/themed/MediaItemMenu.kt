@@ -22,6 +22,8 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
+import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
@@ -276,7 +278,7 @@ fun MediaItemMenu(
     onGlobalRouteEmitted: (() -> Unit)? = null,
 ) {
     val playlistPreviews by remember {
-        Database.playlistPreviews()
+        Database.playlistPreviews(PlaylistSortBy.DateAdded, SortOrder.Descending)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
     val viewPlaylistsRoute = rememberCreatePlaylistRoute()

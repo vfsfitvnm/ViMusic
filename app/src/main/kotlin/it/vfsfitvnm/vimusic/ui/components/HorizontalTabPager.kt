@@ -23,10 +23,11 @@ import kotlin.math.absoluteValue
 class TabPagerState(
     val pageCount: Int,
     val initialPageIndex: Int,
+    val onPageChanged: ((Int) -> Unit)?
 ) {
     var pageIndex by mutableStateOf(initialPageIndex)
 
-    var tempPageIndex: Int? = null
+    var tempPageIndex by mutableStateOf<Int?>(null)
 
     val animatable = Animatable(0f)
 
@@ -57,15 +58,17 @@ class TabPagerState(
         pageIndex = newPageIndex
         animatable.snapTo(0f)
         tempPageIndex = null
+        onPageChanged?.invoke(newPageIndex)
     }
 }
 
 @Composable
-fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int): TabPagerState {
+fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int, onPageChanged: ((Int) -> Unit)? = null): TabPagerState {
     return remember {
         TabPagerState(
             pageCount = pageCount,
             initialPageIndex = initialPageIndex,
+            onPageChanged = onPageChanged
         )
     }
 }
@@ -122,6 +125,7 @@ fun HorizontalTabPager(
                                         .plus(1)
                                         .coerceAtMost(state.pageCount - 1)
                                     state.animatable.snapTo(0f)
+                                    state.onPageChanged?.invoke(state.pageIndex)
                                 }
                             } else {
                                 state.animatable.animateTo(
@@ -133,6 +137,7 @@ fun HorizontalTabPager(
                                         .minus(1)
                                         .coerceAtLeast(0)
                                     state.animatable.snapTo(0f)
+                                    state.onPageChanged?.invoke(state.pageIndex)
                                 }
                             }
                         }
@@ -142,7 +147,7 @@ fun HorizontalTabPager(
     ) { constraints ->
         val previousPlaceable = state.offset.takeIf { it < 0 }?.let {
             (state.tempPageIndex ?: (state.pageIndex - 1)).takeIf { it >= 0 }?.let { index ->
-                measure(index, constraints).first()
+                measure(index, constraints).firstOrNull()
             }
         }
         val placeable = measure(state.pageIndex, constraints).first()
@@ -150,7 +155,7 @@ fun HorizontalTabPager(
         val nextPlaceable = state.offset.takeIf { it > 0 }?.let {
             (state.tempPageIndex ?: (state.pageIndex + 1)).takeIf { it < state.pageCount }
                 ?.let { index ->
-                    measure(index, constraints).first()
+                    measure(index, constraints).firstOrNull()
                 }
         }
 

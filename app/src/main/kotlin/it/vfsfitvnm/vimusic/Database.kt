@@ -11,12 +11,12 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
-import it.vfsfitvnm.vimusic.enums.SongSortBy
-import it.vfsfitvnm.vimusic.enums.SortOrder
+import it.vfsfitvnm.vimusic.enums.*
 import it.vfsfitvnm.vimusic.models.*
 import it.vfsfitvnm.vimusic.utils.getFloatOrNull
 import it.vfsfitvnm.vimusic.utils.getLongOrNull
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 
 @Dao
@@ -32,6 +32,14 @@ interface Database {
     fun songsByRowIdDesc(): Flow<List<DetailedSong>>
 
     @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title ASC")
+    fun songsByTitleAsc(): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title DESC")
+    fun songsByTitleDesc(): Flow<List<DetailedSong>>
+
+    @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs ASC")
     fun songsByPlayTimeAsc(): Flow<List<DetailedSong>>
 
@@ -44,6 +52,10 @@ interface Database {
             SongSortBy.PlayTime -> when (sortOrder) {
                 SortOrder.Ascending -> songsByPlayTimeAsc()
                 SortOrder.Descending -> songsByPlayTimeDesc()
+            }
+            SongSortBy.Title -> when (sortOrder) {
+                SortOrder.Ascending -> songsByTitleAsc()
+                SortOrder.Descending -> songsByTitleDesc()
             }
             SongSortBy.DateAdded -> when (sortOrder) {
                 SortOrder.Ascending -> songsByRowIdAsc()
@@ -71,8 +83,71 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
+    @Query("SELECT * FROM Artist ORDER BY name DESC")
+    fun artistsByNameDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist ORDER BY name ASC")
+    fun artistsByNameAsc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist ORDER BY ROWID DESC")
+    fun artistsByRowIdDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist ORDER BY ROWID ASC")
+    fun artistsByRowIdAsc(): Flow<List<Artist>>
+
+    fun artists(sortBy: ArtistSortBy, sortOrder: SortOrder): Flow<List<Artist>> {
+        return when (sortBy) {
+            ArtistSortBy.Name -> when (sortOrder) {
+                SortOrder.Ascending -> artistsByNameAsc()
+                SortOrder.Descending -> artistsByNameDesc()
+            }
+            ArtistSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> artistsByRowIdAsc()
+                SortOrder.Descending -> artistsByRowIdDesc()
+            }
+        }
+    }
+
     @Query("SELECT * FROM Album WHERE id = :id")
     fun album(id: String): Flow<Album?>
+
+    @Query("SELECT * FROM Album ORDER BY ROWID ASC")
+    fun albums(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album ORDER BY title ASC")
+    fun albumsByTitleAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album ORDER BY year ASC")
+    fun albumsByYearAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album ORDER BY ROWID ASC")
+    fun albumsByRowIdAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album ORDER BY title DESC")
+    fun albumsByTitleDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album ORDER BY year DESC")
+    fun albumsByYearDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album ORDER BY ROWID DESC")
+    fun albumsByRowIdDesc(): Flow<List<Album>>
+
+    fun albums(sortBy: AlbumSortBy, sortOrder: SortOrder): Flow<List<Album>> {
+        return when (sortBy) {
+            AlbumSortBy.Title -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByTitleAsc()
+                SortOrder.Descending -> albumsByTitleDesc()
+            }
+            AlbumSortBy.Year -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByYearAsc()
+                SortOrder.Descending -> albumsByYearDesc()
+            }
+            AlbumSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByRowIdAsc()
+                SortOrder.Descending -> albumsByRowIdDesc()
+            }
+        }
+    }
 
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
@@ -82,8 +157,29 @@ interface Database {
     fun playlistWithSongs(id: Long): Flow<PlaylistWithSongs?>
 
     @Transaction
-    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist")
-    fun playlistPreviews(): Flow<List<PlaylistPreview>>
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY name ASC")
+    fun playlistPreviewsByName(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY ROWID ASC")
+    fun playlistPreviewsByDateAdded(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY songCount ASC")
+    fun playlistPreviewsByDateSongCount(): Flow<List<PlaylistPreview>>
+
+    fun playlistPreviews(sortBy: PlaylistSortBy, sortOrder: SortOrder): Flow<List<PlaylistPreview>> {
+        return when (sortBy) {
+            PlaylistSortBy.Name -> playlistPreviewsByName()
+            PlaylistSortBy.DateAdded -> playlistPreviewsByDateAdded()
+            PlaylistSortBy.SongCount -> playlistPreviewsByDateSongCount()
+        }.map {
+            when (sortOrder) {
+                SortOrder.Ascending -> it
+                SortOrder.Descending -> it.reversed()
+            }
+        }
+    }
 
     @Query("SELECT thumbnailUrl FROM Song JOIN SongPlaylistMap ON id = songId WHERE playlistId = :id ORDER BY position LIMIT 4")
     fun playlistThumbnailUrls(id: Long): Flow<List<String?>>

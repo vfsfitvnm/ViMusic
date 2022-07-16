@@ -71,7 +71,7 @@ fun BuiltInPlaylistScreen(
                 when (builtInPlaylist) {
                     BuiltInPlaylist.Favorites -> Database.favorites()
                     BuiltInPlaylist.Cached -> Database.songsByRowIdDesc().map { songs ->
-                        songs.filter { song ->
+                        songs.reversed().filter { song ->
                             song.song.contentLength?.let { contentLength ->
                                 binder?.cache?.isCached(song.song.id, 0, contentLength)
                             } ?: false
