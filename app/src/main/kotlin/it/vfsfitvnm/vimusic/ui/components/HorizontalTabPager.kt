@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -22,7 +23,8 @@ import kotlin.math.absoluteValue
 @Stable
 class TabPagerState(
     pageIndexState: MutableState<Int>,
-    val pageCount: Int
+    val pageCount: Int,
+    val coroutineScope: CoroutineScope
 ) {
     var pageIndex by pageIndexState
 
@@ -47,46 +49,54 @@ class TabPagerState(
         animatable.updateBounds(lowerBound, upperBound)
     }
 
-    suspend fun animateScrollTo(newPageIndex: Int) {
-        tempPageIndex = newPageIndex
-        if (newPageIndex > pageIndex) {
-            animatable.animateTo(
-                animatable.upperBound!!, tween(
-                    durationMillis = 300,
-                    easing = FastOutSlowInEasing
+    fun animateScrollTo(newPageIndex: Int) {
+        coroutineScope.launch {
+            tempPageIndex = newPageIndex
+            if (newPageIndex > pageIndex) {
+                animatable.animateTo(
+                    animatable.upperBound!!, tween(
+                        durationMillis = 300,
+                        easing = FastOutSlowInEasing
+                    )
                 )
-            )
-        } else if (newPageIndex < pageIndex) {
-            animatable.animateTo(
-                animatable.lowerBound!!, tween(
-                    durationMillis = 300,
-                    easing = FastOutSlowInEasing
+            } else if (newPageIndex < pageIndex) {
+                animatable.animateTo(
+                    animatable.lowerBound!!, tween(
+                        durationMillis = 300,
+                        easing = FastOutSlowInEasing
+                    )
                 )
-            )
-        }
+            }
 
-        pageIndex = newPageIndex
-        animatable.snapTo(0f)
-        tempPageIndex = null
+            pageIndex = newPageIndex
+            animatable.snapTo(0f)
+            tempPageIndex = null
+        }
     }
 }
 
 @Composable
 fun rememberTabPagerState(pageIndexState: MutableState<Int>, pageCount: Int): TabPagerState {
-    return remember {
+    val coroutineScope = rememberCoroutineScope()
+
+    return remember(coroutineScope) {
         TabPagerState(
             pageIndexState = pageIndexState,
             pageCount = pageCount,
+            coroutineScope = coroutineScope
         )
     }
 }
 
 @Composable
 fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int): TabPagerState {
+    val coroutineScope = rememberCoroutineScope()
+
     return remember {
         TabPagerState(
             pageIndexState = mutableStateOf(initialPageIndex),
-            pageCount = pageCount
+            pageCount = pageCount,
+            coroutineScope = coroutineScope
         )
     }
 }
@@ -98,8 +108,6 @@ fun HorizontalTabPager(
     modifier: Modifier = Modifier,
     content: @Composable (index: Int) -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     val itemProvider = remember(state) {
         object : LazyLayoutItemProvider {
             override val itemCount = state.pageCount
@@ -120,7 +128,7 @@ fun HorizontalTabPager(
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
                         velocityTracker.addPointerInputChange(change)
-                        coroutineScope.launch {
+                        state.coroutineScope.launch {
                             state.animatable.snapTo(state.offset - dragAmount)
                         }
                     },
@@ -131,7 +139,7 @@ fun HorizontalTabPager(
 
                         velocityTracker.resetTracking()
 
-                        coroutineScope.launch {
+                        state.coroutineScope.launch {
                             val isEnough = initialTargetValue.absoluteValue > size.width / 2
                             if (initialTargetValue > 0) {
                                 state.animatable.animateTo(

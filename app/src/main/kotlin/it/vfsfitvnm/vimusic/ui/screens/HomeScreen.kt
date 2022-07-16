@@ -2,7 +2,6 @@ package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
 import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -54,7 +53,6 @@ import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
 
 @ExperimentalFoundationApi
@@ -138,7 +136,6 @@ fun HomeScreen() {
                 pageCount = 4
             )
 
-            val coroutineScope = rememberCoroutineScope()
             val density = LocalDensity.current
 
             var topAppBarOffset by remember {
@@ -171,7 +168,6 @@ fun HomeScreen() {
                             .coerceIn(minimumValue = (-52).dp, maximumValue = 0.dp)
                         return Offset.Zero
                     }
-
                 }
             }
 
@@ -189,13 +185,21 @@ fun HomeScreen() {
                                 drawCircle(
                                     color = colorPalette.primaryContainer,
                                     center = size.center.copy(x = 8.dp.toPx()),
-                                    radius = 16.dp.toPx()
+                                    radius = 16.dp.toPx(),
+                                    shadow = Shadow(
+                                        color = colorPalette.primaryContainer,
+                                        blurRadius = 4.dp.toPx()
+                                    )
                                 )
 
                                 drawCircle(
                                     color = colorPalette.primaryContainer,
                                     center = Offset(x = 32.dp.toPx(), y = 0f),
-                                    radius = 8.dp.toPx()
+                                    radius = 8.dp.toPx(),
+                                    shadow = Shadow(
+                                        color = colorPalette.primaryContainer,
+                                        blurRadius = 4.dp.toPx()
+                                    )
                                 )
                             }
                             .padding(horizontal = 16.dp)
@@ -257,66 +261,26 @@ fun HomeScreen() {
                         .padding(top = 52.dp + topAppBarOffset)
                 ) {
                     TabRow(tabPagerState = tabPagerState) {
-                        @Composable
-                        fun Item(
-                            index: Int,
-                            text: String
-                        ) {
-                            val alpha by animateFloatAsState(
-                                if (tabPagerState.transitioningIndex == index) {
-                                    1f
-                                } else {
-                                    0.4f
-                                }
-                            )
-
-                            val scale by animateFloatAsState(
-                                if (tabPagerState.transitioningIndex == index) {
-                                    1f
-                                } else {
-                                    0.9f
-                                }
-                            )
-
-                            BasicText(
-                                text = text,
-                                style = typography.s.semiBold.color(colorPalette.text).center,
-                                modifier = Modifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            coroutineScope.launch {
-                                                tabPagerState.animateScrollTo(index)
-                                            }
-                                        }
-                                    )
-                                    .weight(1f)
-                                    .graphicsLayer {
-                                        this.alpha = alpha
-                                        scaleX = scale
-                                        scaleY = scale
-                                    }
-                                    .padding(vertical = 8.dp)
-                            )
-                        }
-
-                        Item(
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
                             index = 0,
                             text = "Songs"
                         )
 
-                        Item(
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
                             index = 1,
                             text = "Playlists"
                         )
 
-                        Item(
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
                             index = 2,
                             text = "Artists"
                         )
 
-                        Item(
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
                             index = 3,
                             text = "Albums"
                         )

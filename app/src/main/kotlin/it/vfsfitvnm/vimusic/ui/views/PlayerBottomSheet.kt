@@ -120,13 +120,11 @@ fun PlayerBottomSheet(
                                     indication = rememberRipple(bounded = true),
                                     interactionSource = remember { MutableInteractionSource() },
                                     onClick = {
-                                        coroutineScope.launch(Dispatchers.Main) {
-                                            layoutState.expand()
-                                            if (layoutState.isCollapsed) {
-                                                tabPagerState.pageIndex = pageIndex
-                                            } else {
-                                                tabPagerState.animateScrollTo(pageIndex)
-                                            }
+                                        layoutState.expand()
+                                        if (layoutState.isCollapsed) {
+                                            tabPagerState.pageIndex = pageIndex
+                                        } else {
+                                            tabPagerState.animateScrollTo(pageIndex)
                                         }
                                     }
                                 )
