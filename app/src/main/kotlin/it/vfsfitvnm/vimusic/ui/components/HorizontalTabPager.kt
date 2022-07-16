@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.pointerInput
@@ -92,9 +93,13 @@ fun rememberTabPagerState(pageIndexState: MutableState<Int>, pageCount: Int): Ta
 fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int): TabPagerState {
     val coroutineScope = rememberCoroutineScope()
 
-    return remember {
+    val pageIndexState = rememberSaveable {
+        mutableStateOf(initialPageIndex)
+    }
+
+    return remember(coroutineScope) {
         TabPagerState(
-            pageIndexState = mutableStateOf(initialPageIndex),
+            pageIndexState = pageIndexState,
             pageCount = pageCount,
             coroutineScope = coroutineScope
         )
