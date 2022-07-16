@@ -1,97 +1,54 @@
 package it.vfsfitvnm.vimusic.ui.components
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-
-data class TabPosition(
-    val left: Int,
-    val width: Int
-) {
-    val center: Int
-        get() = left + width / 2
-}
 
 @Composable
 fun TabRow(
     tabPagerState: TabPagerState,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable RowScope.() -> Unit
 ) {
     val (colorPalette) = LocalAppearance.current
 
-    var tabPositions by remember {
-        mutableStateOf<List<TabPosition>?>(null)
-    }
-
-    val indicatorWidth by animateIntAsState(
-        targetValue = (tabPositions?.getOrNull(tabPagerState.transitioningIndex)?.width ?: 0),
-        tween(
-            durationMillis = 3000,
-            easing = FastOutSlowInEasing
-        )
-    )
-
-    val indicatorStart by animateIntAsState(
-        targetValue = (tabPositions?.getOrNull(tabPagerState.transitioningIndex)?.left ?: 0),
-        tween(
-            durationMillis = 3000,
-            easing = FastOutSlowInEasing
-        )
-    )
-
-    Layout(
+    BoxWithConstraints(
         modifier = modifier
-            .drawBehind {
-                if (indicatorWidth == 0) return@drawBehind
+            .fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    val indicatorWidth = maxWidth.toPx() / tabPagerState.pageCount
 
-                drawLine(
-                    color = colorPalette.primaryContainer,
-                    start = Offset(x = indicatorStart + 16.dp.toPx(), y = size.height),
-                    end = Offset(
-                        x = indicatorStart + indicatorWidth - 16.dp.toPx(),
-                        y = size.height
-                    ),
-                    cap = StrokeCap.Round,
-                    strokeWidth = 3.dp.toPx()
-                )
-            },
-        content = content
-    ) { measurables, constraints ->
-        val placeables = measurables.map {
-            it.measure(constraints)
-        }
+                    var indicatorStart = tabPagerState.pageIndex * indicatorWidth
 
-        if (tabPositions == null) {
-            var x = 0
+                    val targetPageIndex = tabPagerState.targetPageIndex
 
-            tabPositions = placeables.map { placeable ->
-                TabPosition(
-                    left = x,
-                    width = placeable.width
-                ).also {
-                    x += placeable.width
-                }
-            }
-        }
+                    if (targetPageIndex != null && targetPageIndex != tabPagerState.pageIndex) {
+                        val targetStart = targetPageIndex * indicatorWidth
+                        indicatorStart += (targetStart - indicatorStart) * tabPagerState.progress
+                    }
 
-        layout(constraints.maxWidth, placeables.maxOf(Placeable::height)) {
-            var x = 0
-            placeables.fastForEach { placeable ->
-                placeable.place(x = x, y = constraints.minHeight / 2)
-                x += placeable.width
-            }
-        }
+                    drawLine(
+                        color = colorPalette.primaryContainer,
+                        start = Offset(x = indicatorStart + 16.dp.toPx(), y = size.height),
+                        end = Offset(x = indicatorStart + indicatorWidth - 16.dp.toPx(), y = size.height),
+                        cap = StrokeCap.Round,
+                        strokeWidth = 3.dp.toPx()
+                    )
+                },
+            content = content,
+        )
     }
 }
 

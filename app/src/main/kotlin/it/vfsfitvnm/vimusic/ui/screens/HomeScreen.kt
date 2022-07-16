@@ -274,7 +274,7 @@ fun HomeScreen() {
 
                             BasicText(
                                 text = text,
-                                style = typography.s.semiBold.color(colorPalette.text),
+                                style = typography.s.semiBold.color(colorPalette.text).center,
                                 modifier = Modifier
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
@@ -285,12 +285,13 @@ fun HomeScreen() {
                                             }
                                         }
                                     )
+                                    .weight(1f)
                                     .graphicsLayer {
                                         this.alpha = alpha
                                         scaleX = scale
                                         scaleY = scale
                                     }
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .padding(vertical = 8.dp)
                             )
                         }
 

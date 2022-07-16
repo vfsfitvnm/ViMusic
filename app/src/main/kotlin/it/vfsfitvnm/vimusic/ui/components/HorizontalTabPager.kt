@@ -32,6 +32,17 @@ class TabPagerState(
 
     val offset by animatable.asState()
 
+    val progress: Float
+        get() = if (offset >= 0) (offset / animatable.upperBound!!) else (offset / animatable.lowerBound!!)
+
+    val targetPageIndex by derivedStateOf {
+        tempPageIndex ?: when {
+            offset > 0 -> pageIndex + 1
+            offset < 0 -> pageIndex - 1
+            else -> null
+        }
+    }
+
     fun updateBounds(lowerBound: Float, upperBound: Float) {
         animatable.updateBounds(lowerBound, upperBound)
     }
@@ -41,14 +52,14 @@ class TabPagerState(
         if (newPageIndex > pageIndex) {
             animatable.animateTo(
                 animatable.upperBound!!, tween(
-                    durationMillis = 3000,
+                    durationMillis = 300,
                     easing = FastOutSlowInEasing
                 )
             )
         } else if (newPageIndex < pageIndex) {
             animatable.animateTo(
                 animatable.lowerBound!!, tween(
-                    durationMillis = 3000,
+                    durationMillis = 300,
                     easing = FastOutSlowInEasing
                 )
             )
