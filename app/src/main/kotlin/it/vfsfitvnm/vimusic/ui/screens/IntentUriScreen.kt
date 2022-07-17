@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -46,6 +47,44 @@ fun IntentUriScreen(uri: Uri) {
 
     val lazyListState = rememberLazyListState()
 
+    var itemsResult by remember(uri) {
+        mutableStateOf<Result<List<YouTube.Item.Song>>?>(null)
+    }
+
+    var playlistBrowseId by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+
+    val onLoad = relaunchableEffect(uri) {
+        withContext(Dispatchers.IO) {
+            itemsResult = uri.getQueryParameter("list")?.let { playlistId ->
+                if (playlistId.startsWith("OLAK5uy_")) {
+                    YouTube.queue(playlistId)?.map { songList ->
+                        songList ?: emptyList()
+                    }
+                } else {
+                    playlistBrowseId = "VL$playlistId"
+                    null
+                }
+            } ?: uri.getQueryParameter("v")?.let { videoId ->
+                YouTube.song(videoId)?.map { song ->
+                    song?.let { listOf(song) } ?: emptyList()
+                }
+            } ?: uri.takeIf {
+                uri.host == "youtu.be"
+            }?.path?.drop(1)?.let { videoId ->
+                YouTube.song(videoId)?.map { song ->
+                    song?.let { listOf(song) } ?: emptyList()
+                }
+            } ?: Result.failure(Error("Missing URL parameters"))
+        }
+    }
+
+    playlistBrowseId?.let { browseId ->
+        PlaylistScreen(browseId = browseId)
+        return
+    }
+
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
             AlbumScreen(
@@ -66,33 +105,10 @@ fun IntentUriScreen(uri: Uri) {
 
             val thumbnailSizePx = Dimensions.thumbnails.song.px
 
-            var itemsResult by remember(uri) {
-                mutableStateOf<Result<List<YouTube.Item.Song>>?>(null)
-            }
-
-            val onLoad = relaunchableEffect(uri) {
-                withContext(Dispatchers.IO) {
-                    itemsResult = uri.getQueryParameter("list")?.let { playlistId ->
-                        YouTube.queue(playlistId)?.map { songList ->
-                            songList ?: emptyList()
-                        }
-                    } ?: uri.getQueryParameter("v")?.let { videoId ->
-                        YouTube.song(videoId)?.map { song ->
-                            song?.let { listOf(song) } ?: emptyList()
-                        }
-                    } ?: uri.takeIf {
-                        uri.host == "youtu.be"
-                    }?.path?.drop(1)?.let { videoId ->
-                        YouTube.song(videoId)?.map { song ->
-                            song?.let { listOf(song) } ?: emptyList()
-                        }
-                    } ?: Result.failure(Error("Missing URL parameters"))
-                }
-            }
-
             var isImportingAsPlaylist by remember(uri) {
                 mutableStateOf(false)
             }
+
 
             if (isImportingAsPlaylist) {
                 TextFieldDialog(
