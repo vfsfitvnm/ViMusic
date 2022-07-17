@@ -1,6 +1,7 @@
 package it.vfsfitvnm.youtubemusic.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class ContinuationResponse(
@@ -8,7 +9,8 @@ data class ContinuationResponse(
 ) {
     @Serializable
     data class ContinuationContents(
-        val musicShelfContinuation: MusicShelfRenderer
+        @JsonNames("musicPlaylistShelfContinuation")
+        val musicShelfContinuation: MusicShelfRenderer?
     ) {
 //        @Serializable
 //        data class MusicShelfContinuation(

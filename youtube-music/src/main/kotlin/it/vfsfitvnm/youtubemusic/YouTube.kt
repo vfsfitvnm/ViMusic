@@ -42,6 +42,11 @@ object YouTube {
     }
 
     @Serializable
+    data class EmptyBody(
+        val context: Context,
+    )
+
+    @Serializable
     data class BrowseBody(
         val context: Context,
         val browseId: String,
@@ -706,7 +711,82 @@ object YouTube {
             val durationText: String?,
             val album: Info<NavigationEndpoint.Endpoint.Browse>?,
             val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
-        )
+        ) {
+            companion object {
+                fun from(renderer: MusicResponsiveListItemRenderer): Item? {
+                    return Item(
+                        info = renderer
+                            .flexColumns
+                            .getOrNull(0)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.getOrNull(0)
+                            ?.let { Info.from(it) } ?: return null,
+                        authors = renderer
+                            .flexColumns
+                            .getOrNull(1)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
+                            ?.takeIf { it.isNotEmpty() },
+                        durationText = renderer
+                            .fixedColumns
+                            ?.getOrNull(0)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.getOrNull(0)
+                            ?.text,
+                        album = renderer
+                            .flexColumns
+                            .getOrNull(2)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.firstOrNull()
+                            ?.let { Info.from(it) },
+                        thumbnail = renderer
+                            .thumbnail
+                            ?.musicThumbnailRenderer
+                            ?.thumbnail
+                            ?.thumbnails
+                            ?.firstOrNull()
+                    )
+                }
+            }
+        }
+
+        suspend fun next(): PlaylistOrAlbum {
+            return continuation?.let {
+                runCatching {
+                    client.post("/youtubei/v1/browse") {
+                        contentType(ContentType.Application.Json)
+                        setBody(EmptyBody(context = Context.DefaultWeb))
+                        parameter("key", Key)
+                        parameter("prettyPrint", false)
+                        parameter("continuation", continuation)
+                    }.body<ContinuationResponse>().let { continuationResponse ->
+                        copy(
+                            items = items?.plus(continuationResponse
+                                .continuationContents
+                                .musicShelfContinuation
+                                ?.contents
+                                ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
+                                ?.mapNotNull(Item.Companion::from) ?: emptyList()),
+                            continuation = continuationResponse
+                                .continuationContents
+                                .musicShelfContinuation
+                                ?.continuations
+                                ?.firstOrNull()
+                                ?.nextRadioContinuationData
+                                ?.continuation
+                        ).next()
+                    }
+                }?.recoverIfCancelled()?.getOrNull()
+            } ?: this
+        }
 
         suspend fun withAudioSources(): PlaylistOrAlbum {
             @Serializable
@@ -788,48 +868,7 @@ object YouTube {
                     ?.musicShelfRenderer
                     ?.contents
                     ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                    ?.mapNotNull { renderer ->
-                        PlaylistOrAlbum.Item(
-                            info = renderer
-                                .flexColumns
-                                .getOrNull(0)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.getOrNull(0)
-                                ?.let { Info.from(it) } ?: return@mapNotNull null,
-                            authors = renderer
-                                .flexColumns
-                                .getOrNull(1)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
-                                ?.takeIf { it.isNotEmpty() },
-                            durationText = renderer
-                                .fixedColumns
-                                ?.getOrNull(0)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.getOrNull(0)
-                                ?.text,
-                            album = renderer
-                                .flexColumns
-                                .getOrNull(2)
-                                ?.musicResponsiveListItemFlexColumnRenderer
-                                ?.text
-                                ?.runs
-                                ?.firstOrNull()
-                                ?.let { Info.from(it) },
-                            thumbnail = renderer
-                                .thumbnail
-                                ?.musicThumbnailRenderer
-                                ?.thumbnail
-                                ?.thumbnails
-                                ?.firstOrNull()
-                        )
-                    }
+                    ?.mapNotNull(PlaylistOrAlbum.Item.Companion::from)
 //                    ?.filter { it.info.endpoint != null }
                 ,
                 url = body
@@ -844,6 +883,9 @@ object YouTube {
                     ?.tabRenderer
                     ?.content
                     ?.sectionListRenderer
+                    ?.contents
+                    ?.firstOrNull()
+                    ?.musicShelfRenderer
                     ?.continuations
                     ?.firstOrNull()
                     ?.nextRadioContinuationData
