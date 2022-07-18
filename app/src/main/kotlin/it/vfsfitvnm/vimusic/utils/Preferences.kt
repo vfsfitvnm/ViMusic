@@ -8,6 +8,7 @@ import androidx.core.content.edit
 
 
 const val colorPaletteModeKey = "colorPaletteMode"
+const val homeScreenPageIndexKey = "homeScreenPageIndex"
 const val thumbnailRoundnessKey = "thumbnailRoundness"
 const val isCachedPlaylistShownKey = "isCachedPlaylistShown"
 const val coilDiskCacheMaxSizeKey = "coilDiskCacheMaxSize"
@@ -48,6 +49,16 @@ fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean
     return remember {
         mutableStatePreferenceOf(context.preferences.getBoolean(key, defaultValue)) {
             context.preferences.edit { putBoolean(key, it) }
+        }
+    }
+}
+
+@Composable
+fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
+    val context = LocalContext.current
+    return remember {
+        mutableStatePreferenceOf(context.preferences.getInt(key, defaultValue)) {
+            context.preferences.edit { putInt(key, it) }
         }
     }
 }

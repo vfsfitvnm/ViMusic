@@ -1,7 +1,7 @@
 package it.vfsfitvnm.vimusic.enums
 
-enum class SongSortBy {
-    PlayTime,
+enum class AlbumSortBy {
     Title,
+    Year,
     DateAdded
 }

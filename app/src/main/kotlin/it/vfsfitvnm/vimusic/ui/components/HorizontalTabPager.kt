@@ -10,62 +10,98 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 
 @Stable
 class TabPagerState(
+    pageIndexState: MutableState<Int>,
     val pageCount: Int,
-    val initialPageIndex: Int,
+    val coroutineScope: CoroutineScope
 ) {
-    var pageIndex by mutableStateOf(initialPageIndex)
+    var pageIndex by pageIndexState
 
-    var tempPageIndex: Int? = null
+    var tempPageIndex by mutableStateOf<Int?>(null)
 
     val animatable = Animatable(0f)
 
     val offset by animatable.asState()
 
+    val progress: Float
+        get() = if (offset >= 0) (offset / animatable.upperBound!!) else (offset / animatable.lowerBound!!)
+
+    val targetPageIndex by derivedStateOf {
+        tempPageIndex ?: when {
+            offset > 0 -> pageIndex + 1
+            offset < 0 -> pageIndex - 1
+            else -> null
+        }
+    }
+
     fun updateBounds(lowerBound: Float, upperBound: Float) {
         animatable.updateBounds(lowerBound, upperBound)
     }
 
-    suspend fun animateScrollTo(newPageIndex: Int) {
-        tempPageIndex = newPageIndex
-        if (newPageIndex > pageIndex) {
-            animatable.animateTo(
-                animatable.upperBound!!, tween(
-                    durationMillis = 300,
-                    easing = FastOutSlowInEasing
+    fun animateScrollTo(newPageIndex: Int) {
+        coroutineScope.launch {
+            tempPageIndex = newPageIndex
+            if (newPageIndex > pageIndex) {
+                animatable.animateTo(
+                    animatable.upperBound!!, tween(
+                        durationMillis = 300,
+                        easing = FastOutSlowInEasing
+                    )
                 )
-            )
-        } else if (newPageIndex < pageIndex) {
-            animatable.animateTo(
-                animatable.lowerBound!!, tween(
-                    durationMillis = 300,
-                    easing = FastOutSlowInEasing
+            } else if (newPageIndex < pageIndex) {
+                animatable.animateTo(
+                    animatable.lowerBound!!, tween(
+                        durationMillis = 300,
+                        easing = FastOutSlowInEasing
+                    )
                 )
-            )
-        }
+            }
 
-        pageIndex = newPageIndex
-        animatable.snapTo(0f)
-        tempPageIndex = null
+            pageIndex = newPageIndex
+            animatable.snapTo(0f)
+            tempPageIndex = null
+        }
+    }
+}
+
+@Composable
+fun rememberTabPagerState(pageIndexState: MutableState<Int>, pageCount: Int): TabPagerState {
+    val coroutineScope = rememberCoroutineScope()
+
+    return remember(coroutineScope) {
+        TabPagerState(
+            pageIndexState = pageIndexState,
+            pageCount = pageCount,
+            coroutineScope = coroutineScope
+        )
     }
 }
 
 @Composable
 fun rememberTabPagerState(initialPageIndex: Int, pageCount: Int): TabPagerState {
-    return remember {
+    val coroutineScope = rememberCoroutineScope()
+
+    val pageIndexState = rememberSaveable {
+        mutableStateOf(initialPageIndex)
+    }
+
+    return remember(coroutineScope) {
         TabPagerState(
+            pageIndexState = pageIndexState,
             pageCount = pageCount,
-            initialPageIndex = initialPageIndex,
+            coroutineScope = coroutineScope
         )
     }
 }
@@ -77,8 +113,6 @@ fun HorizontalTabPager(
     modifier: Modifier = Modifier,
     content: @Composable (index: Int) -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     val itemProvider = remember(state) {
         object : LazyLayoutItemProvider {
             override val itemCount = state.pageCount
@@ -99,7 +133,7 @@ fun HorizontalTabPager(
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
                         velocityTracker.addPointerInputChange(change)
-                        coroutineScope.launch {
+                        state.coroutineScope.launch {
                             state.animatable.snapTo(state.offset - dragAmount)
                         }
                     },
@@ -110,7 +144,7 @@ fun HorizontalTabPager(
 
                         velocityTracker.resetTracking()
 
-                        coroutineScope.launch {
+                        state.coroutineScope.launch {
                             val isEnough = initialTargetValue.absoluteValue > size.width / 2
                             if (initialTargetValue > 0) {
                                 state.animatable.animateTo(
@@ -142,7 +176,7 @@ fun HorizontalTabPager(
     ) { constraints ->
         val previousPlaceable = state.offset.takeIf { it < 0 }?.let {
             (state.tempPageIndex ?: (state.pageIndex - 1)).takeIf { it >= 0 }?.let { index ->
-                measure(index, constraints).first()
+                measure(index, constraints).firstOrNull()
             }
         }
         val placeable = measure(state.pageIndex, constraints).first()
@@ -150,7 +184,7 @@ fun HorizontalTabPager(
         val nextPlaceable = state.offset.takeIf { it > 0 }?.let {
             (state.tempPageIndex ?: (state.pageIndex + 1)).takeIf { it < state.pageCount }
                 ?.let { index ->
-                    measure(index, constraints).first()
+                    measure(index, constraints).firstOrNull()
                 }
         }
 

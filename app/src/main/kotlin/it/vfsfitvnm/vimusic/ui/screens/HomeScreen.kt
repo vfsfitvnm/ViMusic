@@ -4,67 +4,37 @@ import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.center
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
-import it.vfsfitvnm.vimusic.enums.SongSortBy
-import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.DetailedSong
-import it.vfsfitvnm.vimusic.models.Playlist
-import it.vfsfitvnm.vimusic.models.SearchQuery
+import it.vfsfitvnm.vimusic.models.*
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
+import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.styling.*
-import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
-import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.ui.views.*
 import it.vfsfitvnm.vimusic.utils.*
-import kotlinx.coroutines.Dispatchers
 
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun HomeScreen() {
-    val (colorPalette, typography) = LocalAppearance.current
-
-    val lazyListState = rememberLazyListState()
-
     val intentUriRoute = rememberIntentUriRoute()
     val settingsRoute = rememberSettingsRoute()
     val playlistRoute = rememberLocalPlaylistRoute()
@@ -73,17 +43,6 @@ fun HomeScreen() {
     val searchResultRoute = rememberSearchResultRoute()
     val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
-
-    val playlistPreviews by remember {
-        Database.playlistPreviews()
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-
-    var songSortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
-    var songSortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
-
-    val songCollection by remember(songSortBy, songSortOrder) {
-        Database.songs(songSortBy, songSortOrder)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
     RouteHandler(listenToGlobalEmitter = true) {
         settingsRoute {
@@ -144,83 +103,102 @@ fun HomeScreen() {
         }
 
         host {
-            // This somehow prevents items to not be displayed sometimes...
-            @Suppress("UNUSED_EXPRESSION") playlistPreviews
-            @Suppress("UNUSED_EXPRESSION") songCollection
-
-            val binder = LocalPlayerServiceBinder.current
+            val (colorPalette, typography) = LocalAppearance.current
 
             val isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
-            val isCachedPlaylistShown by rememberPreference(isCachedPlaylistShownKey, false)
 
-            val thumbnailSize = Dimensions.thumbnails.song.px
+            val tabPagerState = rememberTabPagerState(
+                pageIndexState = rememberPreference(homeScreenPageIndexKey, 0),
+                pageCount = 4
+            )
 
-            var isGridExpanded by remember {
-                mutableStateOf(false)
+            val density = LocalDensity.current
+
+            var topAppBarOffset by remember {
+                mutableStateOf(0.dp)
             }
 
-            var isCreatingANewPlaylist by rememberSaveable {
-                mutableStateOf(false)
-            }
-
-            if (isCreatingANewPlaylist) {
-                TextFieldDialog(
-                    hintText = "Enter the playlist name",
-                    onDismiss = {
-                        isCreatingANewPlaylist = false
-                    },
-                    onDone = { text ->
-                        query {
-                            Database.insert(Playlist(name = text))
+            val nestedScrollConnection = remember {
+                object : NestedScrollConnection {
+                    override fun onPreScroll(
+                        available: Offset,
+                        source: NestedScrollSource
+                    ): Offset {
+                        val newOffset = topAppBarOffset + with(density) { available.y.toDp() }
+                        val coerced =
+                            newOffset.coerceIn(minimumValue = (-52).dp, maximumValue = 0.dp)
+                        return if (newOffset == coerced) {
+                            topAppBarOffset = coerced
+                            available.copy(x = 0f)
+                        } else {
+                            Offset.Zero
                         }
                     }
-                )
+
+                    override fun onPostScroll(
+                        consumed: Offset,
+                        available: Offset,
+                        source: NestedScrollSource
+                    ): Offset {
+                        topAppBarOffset = (topAppBarOffset + with(density) { consumed.y.toDp() })
+                            .coerceIn(minimumValue = (-52).dp, maximumValue = 0.dp)
+                        return Offset.Zero
+                    }
+                }
             }
 
-            LazyColumn(
-                state = lazyListState,
-                contentPadding = PaddingValues(bottom = 72.dp),
-                modifier = Modifier
-                    .background(colorPalette.background)
-                    .fillMaxSize()
-            ) {
-                item {
-                    TopAppBar(
+            Box {
+                TopAppBar(
+                    modifier = Modifier
+                        .offset(y = topAppBarOffset)
+                        .height(52.dp)
+                ) {
+                    BasicText(
+                        text = "ViMusic",
+                        style = typography.l.semiBold,
                         modifier = Modifier
-                            .height(52.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.cog),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable {
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
                                     settingsRoute()
                                 }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .run {
-                                    if (isFirstLaunch) {
-                                        drawBehind {
-                                            drawCircle(
-                                                color = colorPalette.red,
-                                                center = Offset(
-                                                    x = size.width,
-                                                    y = 0.dp.toPx()
-                                                ),
-                                                radius = 4.dp.toPx(),
-                                                shadow = Shadow(
-                                                    color = colorPalette.red,
-                                                    blurRadius = 4.dp.toPx()
-                                                )
-                                            )
-                                        }
-                                    } else {
-                                        this
-                                    }
-                                }
-                                .size(24.dp)
-                        )
+                            )
+                            .drawBehind {
+                                drawCircle(
+                                    color = colorPalette.primaryContainer,
+                                    center = size.center.copy(x = 8.dp.toPx()),
+                                    radius = 16.dp.toPx()
+                                )
 
+                                drawCircle(
+                                    color = colorPalette.primaryContainer,
+                                    center = Offset(x = 32.dp.toPx(), y = 0f),
+                                    radius = 8.dp.toPx()
+                                )
+
+                                if (!isFirstLaunch) return@drawBehind
+
+                                drawCircle(
+                                    color = colorPalette.red,
+                                    center = Offset(
+                                        x = size.width - 8.dp.toPx(),
+                                        y = 0.dp.toPx()
+                                    ),
+                                    radius = 4.dp.toPx(),
+                                    shadow = Shadow(
+                                        color = colorPalette.red,
+                                        blurRadius = 4.dp.toPx()
+                                    )
+                                )
+                            }
+                            .padding(horizontal = 16.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                    ) {
                         Image(
                             painter = painterResource(R.drawable.search),
                             contentDescription = null,
@@ -229,360 +207,103 @@ fun HomeScreen() {
                                 .clickable {
                                     searchRoute("")
                                 }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .size(24.dp)
                         )
+
+//                        Image(
+//                            painter = painterResource(R.drawable.cog),
+//                            contentDescription = null,
+//                            colorFilter = ColorFilter.tint(colorPalette.text),
+//                            modifier = Modifier
+//                                .clickable {
+//                                    settingsRoute()
+//                                }
+//                                .padding(horizontal = 8.dp, vertical = 8.dp)
+//                                .run {
+//                                    if (isFirstLaunch) {
+//                                        drawBehind {
+//                                            drawCircle(
+//                                                color = colorPalette.red,
+//                                                center = Offset(
+//                                                    x = size.width,
+//                                                    y = 0.dp.toPx()
+//                                                ),
+//                                                radius = 4.dp.toPx(),
+//                                                shadow = Shadow(
+//                                                    color = colorPalette.red,
+//                                                    blurRadius = 4.dp.toPx()
+//                                                )
+//                                            )
+//                                        }
+//                                    } else {
+//                                        this
+//                                    }
+//                                }
+//                                .size(24.dp)
+//                        )
                     }
                 }
 
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                Column(
+                    modifier = Modifier
+                        .nestedScroll(nestedScrollConnection)
+                        .padding(top = 52.dp + topAppBarOffset)
+                ) {
+                    TabRow(tabPagerState = tabPagerState) {
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
+                            index = 0,
+                            text = "Songs"
+                        )
+
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
+                            index = 1,
+                            text = "Playlists"
+                        )
+
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
+                            index = 2,
+                            text = "Artists"
+                        )
+
+                        TabRowItem(
+                            tabPagerState = tabPagerState,
+                            index = 3,
+                            text = "Albums"
+                        )
+                    }
+
+                    HorizontalTabPager(
+                        state = tabPagerState,
                         modifier = Modifier
-                            .zIndex(1f)
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        BasicText(
-                            text = "Your playlists",
-                            style = typography.m.semiBold,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 8.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(R.drawable.add),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable {
-                                    isCreatingANewPlaylist = true
+                            .padding(top = 8.dp)
+                            .fillMaxSize()
+                    ) { index ->
+                        when (index) {
+                            1 -> PlaylistsTab(
+                                onBuiltInPlaylistClicked = { builtInPlaylist ->
+                                    builtInPlaylistRoute(builtInPlaylist)
+                                },
+                                onPlaylistClicked = { playlist ->
+                                    playlistRoute(playlist.id)
                                 }
-                                .padding(all = 8.dp)
-                                .size(20.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(if (isGridExpanded) R.drawable.grid else R.drawable.grid_single),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.textSecondary),
-                            modifier = Modifier
-                                .clickable {
-                                    isGridExpanded = !isGridExpanded
-                                }
-                                .padding(all = 10.dp)
-                                .size(16.dp)
-                        )
-                    }
-                }
-
-                item {
-                    LazyHorizontalGrid(
-                        rows = GridCells.Fixed(if (isGridExpanded) 3 else 1),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        modifier = Modifier
-                            .animateContentSize()
-                            .fillMaxWidth()
-                            .height(124.dp * (if (isGridExpanded) 3 else 1))
-                    ) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .padding(all = 8.dp)
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            builtInPlaylistRoute(BuiltInPlaylist.Favorites)
-                                        }
-                                    )
-                                    .background(colorPalette.lightBackground)
-                                    .size(108.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.heart),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette.red),
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .size(24.dp)
-                                )
-
-                                BasicText(
-                                    text = "Favorites",
-                                    style = typography.xxs.semiBold,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .align(Alignment.BottomStart)
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-
-                        if (isCachedPlaylistShown) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(all = 8.dp)
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            onClick = {
-                                                builtInPlaylistRoute(BuiltInPlaylist.Cached)
-                                            }
-                                        )
-                                        .background(colorPalette.lightBackground)
-                                        .size(108.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.download),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.blue),
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp)
-                                    )
-
-                                    BasicText(
-                                        text = "Cached",
-                                        style = typography.xxs.semiBold,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .align(Alignment.BottomStart)
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        items(
-                            items = playlistPreviews,
-                            contentType = { it }
-                        ) { playlistPreview ->
-                            PlaylistPreviewItem(
-                                playlistPreview = playlistPreview,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(all = 8.dp)
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() }
-                                    ) {
-                                        playlistRoute(playlistPreview.playlist.id)
-                                    }
                             )
+                            2 -> ArtistsTab(
+                                onArtistClicked = { artist ->
+                                    artistRoute(artist.id)
+                                }
+                            )
+                            3 -> AlbumsTab(
+                                onAlbumClicked = { album ->
+                                    albumRoute(album.id)
+                                }
+                            )
+                            else -> SongsTab()
                         }
                     }
-                }
-
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .zIndex(1f)
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 32.dp)
-                    ) {
-                        BasicText(
-                            text = "Songs",
-                            style = typography.m.semiBold,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 8.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(R.drawable.shuffle),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable(enabled = songCollection.isNotEmpty()) {
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(
-                                        songCollection
-                                            .shuffled()
-                                            .map(DetailedSong::asMediaItem)
-                                    )
-                                }
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
-                                .size(20.dp)
-                        )
-
-                        Box {
-                            var isSortMenuDisplayed by remember {
-                                mutableStateOf(false)
-                            }
-
-                            Image(
-                                painter = painterResource(R.drawable.sort),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.text),
-                                modifier = Modifier
-                                    .clickable {
-                                        isSortMenuDisplayed = true
-                                    }
-                                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                                    .size(20.dp)
-                            )
-
-                            DropdownMenu(
-                                isDisplayed = isSortMenuDisplayed,
-                                onDismissRequest = {
-                                    isSortMenuDisplayed = false
-                                }
-                            ) {
-                                @Composable
-                                fun Item(
-                                    text: String,
-                                    textColor: Color,
-                                    backgroundColor: Color,
-                                    onClick: () -> Unit
-                                ) {
-                                    BasicText(
-                                        text = text,
-                                        style = typography.xxs.medium.copy(color = textColor, letterSpacing = 1.sp),
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .clickable(
-                                                indication = rememberRipple(bounded = true),
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = {
-                                                    isSortMenuDisplayed = false
-                                                    onClick()
-                                                }
-                                            )
-                                            .background(backgroundColor)
-                                            .fillMaxWidth()
-                                            .widthIn(min = 124.dp, max = 248.dp)
-                                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    )
-                                }
-
-                                @Composable
-                                fun Item(
-                                    text: String,
-                                    isSelected: Boolean,
-                                    onClick: () -> Unit
-                                ) {
-                                    Item(
-                                        text = text,
-                                        textColor = if (isSelected) {
-                                            colorPalette.onPrimaryContainer
-                                        } else {
-                                            colorPalette.textSecondary
-                                        },
-                                        backgroundColor = if (isSelected) {
-                                            colorPalette.primaryContainer
-                                        } else {
-                                            colorPalette.elevatedBackground
-                                        },
-                                        onClick = onClick
-                                    )
-                                }
-
-                                Column(
-                                    modifier = Modifier
-                                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
-                                        .background(colorPalette.elevatedBackground)
-                                        .width(IntrinsicSize.Max),
-                                ) {
-                                    Item(
-                                        text = "PLAY TIME",
-                                        isSelected = songSortBy == SongSortBy.PlayTime,
-                                        onClick = {
-                                            songSortBy = SongSortBy.PlayTime
-                                        }
-                                    )
-                                    Item(
-                                        text = "DATE ADDED",
-                                        isSelected = songSortBy == SongSortBy.DateAdded,
-                                        onClick = {
-                                            songSortBy = SongSortBy.DateAdded
-                                        }
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .height(4.dp)
-                                )
-
-                                Column(
-                                    modifier = Modifier
-                                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
-                                        .background(colorPalette.elevatedBackground)
-                                        .width(IntrinsicSize.Max),
-                                ) {
-                                    Item(
-                                        text = when (songSortOrder) {
-                                            SortOrder.Ascending -> "ASCENDING"
-                                            SortOrder.Descending -> "DESCENDING"
-                                        },
-                                        textColor = colorPalette.text,
-                                        backgroundColor = colorPalette.elevatedBackground,
-                                        onClick = {
-                                            songSortOrder = !songSortOrder
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                itemsIndexed(
-                    items = songCollection,
-                    key = { _, song ->
-                        song.song.id
-                    },
-                    contentType = { _, song -> song }
-                ) { index, song ->
-                    SongItem(
-                        song = song,
-                        thumbnailSize = thumbnailSize,
-                        onClick = {
-                            binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(
-                                songCollection.map(DetailedSong::asMediaItem),
-                                index
-                            )
-                        },
-                        menuContent = {
-                            InHistoryMediaItemMenu(song = song)
-                        },
-                        onThumbnailContent = {
-                            AnimatedVisibility(
-                                visible = songSortBy == SongSortBy.PlayTime,
-                                enter = fadeIn(),
-                                exit = fadeOut(),
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                            ) {
-                                BasicText(
-                                    text = song.song.formattedTotalPlayTime,
-                                    style = typography.xxs.semiBold.center.color(Color.White),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            brush = Brush.verticalGradient(
-                                                colors = listOf(
-                                                    Color.Transparent,
-                                                    Color.Black.copy(alpha = 0.75f)
-                                                )
-                                            ),
-                                            shape = ThumbnailRoundness.shape
-                                        )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                    )
                 }
             }
         }
