@@ -114,6 +114,9 @@ interface Database {
     @Query("UPDATE SongPlaylistMap SET position = position + 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
     fun incrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
 
+    @Query("SELECT loudnessDb FROM Format WHERE songId = :songId")
+    fun loudnessDb(songId: String): Flow<Float?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(format: Format)
 

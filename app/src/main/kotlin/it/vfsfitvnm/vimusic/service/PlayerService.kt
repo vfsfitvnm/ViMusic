@@ -51,6 +51,8 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import android.os.Binder as AndroidBinder
@@ -85,7 +87,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
 
-    private val songPendingLoudnessDb = mutableMapOf<String, Float?>()
+    private var volumeNormalizationJob: Job? = null
 
     private var isVolumeNormalizationEnabled = false
     private var isPersistentQueueEnabled = false
@@ -124,7 +126,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         isVolumeNormalizationEnabled = preferences.getBoolean(volumeNormalizationKey, false)
         isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
 
-        val cacheEvictor = when (val size = preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {
+        val cacheEvictor = when (val size =
+            preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {
             ExoPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
             else -> LeastRecentlyUsedCacheEvictor(size.bytes)
         }
@@ -221,7 +224,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        normalizeVolume()
+        maybeNormalizeVolume()
 
         radio?.let { radio ->
             if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
@@ -283,17 +286,27 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         }
     }
 
-    private fun normalizeVolume() {
-        player.volume = if (isVolumeNormalizationEnabled) {
-             player.currentMediaItem?.let { mediaItem ->
-                songPendingLoudnessDb.getOrElse(mediaItem.mediaId) {
-                    mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
-                }?.takeIf { it > 0 }?.let { loudnessDb ->
-                    (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
-                }
-            } ?: 1f
-        } else {
-            1f
+    private fun maybeNormalizeVolume() {
+        if (!isVolumeNormalizationEnabled) {
+            volumeNormalizationJob?.cancel()
+            player.volume = 1f
+            return
+        }
+
+        player.currentMediaItem?.mediaId?.let { songId ->
+            volumeNormalizationJob?.cancel()
+            volumeNormalizationJob = coroutineScope.launch(Dispatchers.IO) {
+                Database.loudnessDb(songId).cancellable().distinctUntilChanged()
+                    .collect { loudnessDb ->
+                        withContext(Dispatchers.Main) {
+                            player.volume = if (loudnessDb != null && loudnessDb > 0) {
+                                (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
+                            } else {
+                                1f
+                            }
+                        }
+                    }
+            }
         }
     }
 
@@ -368,7 +381,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             volumeNormalizationKey -> {
                 isVolumeNormalizationEnabled =
                     sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
-                normalizeVolume()
+                maybeNormalizeVolume()
             }
             isInvincibilityEnabledKey -> isInvincibilityEnabled =
                 sharedPreferences.getBoolean(key, isInvincibilityEnabled)
@@ -489,14 +502,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                         val urlResult = runBlocking(Dispatchers.IO) {
                             YouTube.player(videoId)
                         }?.mapCatching { body ->
-                            val loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()
-
-                            songPendingLoudnessDb[videoId] = loudnessDb
-
-                            runBlocking(Dispatchers.Main) {
-                                normalizeVolume()
-                            }
-
                             when (val status = body.playabilityStatus.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
                                     format.itag == 251 || format.itag == 140
@@ -514,7 +519,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                                 itag = format.itag,
                                                 mimeType = format.mimeType,
                                                 bitrate = format.bitrate,
-                                                loudnessDb = loudnessDb,
+                                                loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
                                                 contentLength = format.contentLength,
                                                 lastModified = format.lastModified
                                             )
@@ -575,10 +580,16 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .build()
 
         return RenderersFactory { handler: Handler?, _, audioListener: AudioRendererEventListener?, _, _ ->
-                arrayOf(
-                    MediaCodecAudioRenderer(this, MediaCodecSelector.DEFAULT, handler, audioListener, audioSink)
+            arrayOf(
+                MediaCodecAudioRenderer(
+                    this,
+                    MediaCodecSelector.DEFAULT,
+                    handler,
+                    audioListener,
+                    audioSink
                 )
-            }
+            )
+        }
     }
 
     inner class Binder : AndroidBinder() {
