@@ -8,16 +8,12 @@
 
 ---
 
-<p>
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="15.5%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="15.5%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="15.5%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="15.5%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="15.5%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="15.5%" />
-</p>
+ <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Screenshot-1" /> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Screenshot-2"/> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="Screenshot-3"/> |
+| --- | --- | --- |
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" alt="Screenshot-4" /> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" alt="Screenshot-5" /> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" alt="Screenshot-6" /> |
 
 ## Features
+
 - Play any non-age-restricted song/video from YouTube Music
 - Background playback
 - Cache audio chunks for offline playback
@@ -48,6 +44,7 @@ adb shell cmd package compile -r bg-dexopt it.vfsfitvnm.vimusic
 ```
 
 ## Similar projects, inspirations and acknowledgments
+
 - [**Beatbump**](https://github.com/snuffyDev/Beatbump): Alternative YouTube Music frontend built with Svelte/SvelteKit.
 - [**music**](https://github.com/z-huang/music): A material design music player with music from YouTube/YouTube Music.
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
