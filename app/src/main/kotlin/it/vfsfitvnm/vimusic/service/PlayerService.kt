@@ -225,7 +225,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         maybeNormalizeVolume()
+        maybeProcessRadio()
+    }
 
+    private fun maybeProcessRadio() {
         radio?.let { radio ->
             if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                 coroutineScope.launch(Dispatchers.Main) {
