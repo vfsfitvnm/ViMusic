@@ -35,10 +35,12 @@ data class PlayerResponse(
         data class AdaptiveFormat(
             val itag: Int,
             val mimeType: String,
-            val averageBitrate: Int?,
+            val bitrate: Long?,
+            val averageBitrate: Long?,
             val contentLength: Long?,
             val audioQuality: String?,
             val approxDurationMs: Long?,
+            val lastModified: Long?,
             val loudnessDb: Double?,
             val audioSampleRate: Int?,
             val url: String,

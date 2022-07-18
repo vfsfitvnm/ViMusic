@@ -13,10 +13,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -43,6 +45,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
@@ -50,8 +53,10 @@ import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.runBlocking
 import kotlin.math.roundToInt
 
 
@@ -186,7 +191,6 @@ fun PlayerView(
                     ) {
                         Thumbnail(
                             playerState = playerState,
-                            song = song,
                             modifier = Modifier
                         )
                     }
@@ -217,7 +221,6 @@ fun PlayerView(
                     ) {
                         Thumbnail(
                             playerState = playerState,
-                            song = song,
                             modifier = Modifier
                         )
                     }
@@ -314,7 +317,6 @@ fun PlayerView(
 @Composable
 private fun Thumbnail(
     playerState: PlayerState,
-    song: Song?,
     modifier: Modifier = Modifier
 ) {
     val (_, typography) = LocalAppearance.current
@@ -378,25 +380,17 @@ private fun Thumbnail(
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    var cachedBytes by remember(song?.id) {
-                        mutableStateOf(binder.cache.getCachedBytes(playerState.mediaItem.mediaId, 0, -1))
+                    val key = playerState.mediaItem.mediaId
+
+                    var cachedBytes by remember(key) {
+                        mutableStateOf(binder.cache.getCachedBytes(key, 0, -1))
                     }
 
-                    val loudnessDb by remember {
-                        derivedStateOf {
-                            song?.loudnessDb ?: playerState.mediaMetadata.extras?.getFloatOrNull("loudnessDb")
-                        }
-                    }
+                    val format by remember(key) {
+                        Database.format(key)
+                    }.collectAsState(initial = null, context = Dispatchers.IO)
 
-                    val contentLength by remember {
-                        derivedStateOf {
-                            song?.contentLength ?: playerState.mediaMetadata.extras?.getLongOrNull("contentLength")
-                        }
-                    }
-
-                    DisposableEffect(song?.id) {
-                        val key = playerState.mediaItem.mediaId
-
+                    DisposableEffect(key) {
                         val listener = object : Cache.Listener {
                             override fun onSpanAdded(cache: Cache, span: CacheSpan) {
                                 cachedBytes += span.length
@@ -452,6 +446,10 @@ private fun Thumbnail(
                                     style = typography.xs.semiBold.color(BlackColorPalette.text)
                                 )
                                 BasicText(
+                                    text = "Bitrate",
+                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                )
+                                BasicText(
                                     text = "Size",
                                     style = typography.xs.semiBold.color(BlackColorPalette.text)
                                 )
@@ -471,13 +469,19 @@ private fun Thumbnail(
                                     style = typography.xs.semiBold.color(BlackColorPalette.text)
                                 )
                                 BasicText(
-                                    text = loudnessDb?.let { loudnessDb ->
+                                    text = format?.loudnessDb?.let { loudnessDb ->
                                         "%.2f dB".format(loudnessDb)
                                     } ?: "Unknown",
                                     style = typography.xs.semiBold.color(BlackColorPalette.text)
                                 )
                                 BasicText(
-                                    text = contentLength?.let { contentLength ->
+                                    text = format?.bitrate?.let { bitrate ->
+                                        "${bitrate / 1000} kbps"
+                                    } ?: "Unknown",
+                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
+                                )
+                                BasicText(
+                                    text = format?.contentLength?.let { contentLength ->
                                         Formatter.formatShortFileSize(
                                             context,
                                             contentLength
@@ -489,13 +493,48 @@ private fun Thumbnail(
                                     text = buildString {
                                         append(Formatter.formatShortFileSize(context, cachedBytes))
 
-                                        contentLength?.let { contentLength ->
+                                        format?.contentLength?.let { contentLength ->
                                             append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
                                         }
                                     },
                                     style = typography.xs.semiBold.color(BlackColorPalette.text)
                                 )
                             }
+                        }
+
+                        if (format != null && format?.itag == null) {
+                            BasicText(
+                                text = "FETCH MISSING DATA",
+                                style = typography.xxs.semiBold.color(BlackColorPalette.text),
+                                modifier = Modifier
+                                    .clickable(
+                                        indication = rememberRipple(bounded = true),
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = {
+                                            query {
+                                                runBlocking(Dispatchers.IO) {
+                                                    YouTube.player(key)?.map { response ->
+                                                        response.streamingData?.adaptiveFormats?.findLast { format ->
+                                                            format.itag == 251 || format.itag == 140
+                                                        }?.let { format ->
+                                                            Format(
+                                                                songId = key,
+                                                                itag = format.itag,
+                                                                mimeType = format.mimeType,
+                                                                bitrate = format.bitrate,
+                                                                loudnessDb = response.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
+                                                                contentLength = format.contentLength,
+                                                                lastModified = format.lastModified
+                                                            )
+                                                        }
+                                                    }
+                                                }?.getOrNull()?.let(Database::insert)
+                                            }
+                                        }
+                                    )
+                                    .padding(all = 16.dp)
+                                    .align(Alignment.End)
+                            )
                         }
                     }
                 }

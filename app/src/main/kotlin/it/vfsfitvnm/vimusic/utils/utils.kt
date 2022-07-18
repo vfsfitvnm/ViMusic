@@ -79,8 +79,7 @@ val DetailedSong.asMediaItem: MediaItem
                         "albumId" to albumId,
                         "artistNames" to artists?.map { it.name },
                         "artistIds" to artists?.map { it.id },
-                        "durationText" to song.durationText,
-                        "loudnessDb" to song.loudnessDb
+                        "durationText" to song.durationText
                     )
                 )
                 .build()

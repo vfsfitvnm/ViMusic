@@ -28,8 +28,13 @@ import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.*
-import it.vfsfitvnm.vimusic.ui.styling.*
+import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.Menu
+import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
+import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -70,10 +75,10 @@ fun BuiltInPlaylistScreen(
             val songs by remember(binder?.cache, builtInPlaylist) {
                 when (builtInPlaylist) {
                     BuiltInPlaylist.Favorites -> Database.favorites()
-                    BuiltInPlaylist.Cached -> Database.songsByRowIdDesc().map { songs ->
+                    BuiltInPlaylist.Cached -> Database.songsWithContentLength().map { songs ->
                         songs.filter { song ->
-                            song.song.contentLength?.let { contentLength ->
-                                binder?.cache?.isCached(song.song.id, 0, contentLength)
+                            song.contentLength?.let {
+                                binder?.cache?.isCached(song.song.id, 0, song.contentLength)
                             } ?: false
                         }
                     }

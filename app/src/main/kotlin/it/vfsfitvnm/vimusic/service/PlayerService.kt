@@ -505,20 +505,20 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                         player.findNextMediaItemById(videoId)
                                     }
 
-                                    loudnessDb?.let { loudnessDb ->
-                                        mediaItem?.mediaMetadata?.extras
-                                            ?.putFloat("loudnessDb", loudnessDb)
-                                    }
+                                    query {
+                                        mediaItem?.let(Database::insert)
 
-                                    format.contentLength?.let { contentLength ->
-                                        mediaItem?.mediaMetadata?.extras
-                                            ?.putLong("contentLength", contentLength)
-                                    }
-
-                                    mediaItem?.let {
-                                        query {
-                                            Database.insert(it)
-                                        }
+                                        Database.insert(
+                                            it.vfsfitvnm.vimusic.models.Format(
+                                                songId = videoId,
+                                                itag = format.itag,
+                                                mimeType = format.mimeType,
+                                                bitrate = format.bitrate,
+                                                loudnessDb = loudnessDb,
+                                                contentLength = format.contentLength,
+                                                lastModified = format.lastModified
+                                            )
+                                        )
                                     }
 
                                     format.url

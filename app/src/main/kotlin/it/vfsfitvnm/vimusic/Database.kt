@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
 import android.os.Parcel
+import androidx.core.database.getFloatOrNull
 import androidx.media3.common.MediaItem
 import androidx.room.*
 import androidx.room.migration.AutoMigrationSpec
@@ -14,8 +15,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.*
-import it.vfsfitvnm.vimusic.utils.getFloatOrNull
-import it.vfsfitvnm.vimusic.utils.getLongOrNull
 import kotlinx.coroutines.flow.Flow
 
 
@@ -98,6 +97,14 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun albumSongs(albumId: String): Flow<List<DetailedSong>>
 
+    @Query("SELECT * FROM Format WHERE songId = :songId")
+    fun format(songId: String): Flow<Format>
+
+    @Transaction
+    @Query("SELECT * FROM Song JOIN Format ON id = songId WHERE contentLength IS NOT NULL AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
+    @RewriteQueriesToDropUnusedColumns
+    fun songsWithContentLength(): Flow<List<DetailedSongWithContentLength>>
+
     @Query("UPDATE SongPlaylistMap SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition")
     fun decrementSongPositions(playlistId: Long, fromPosition: Int)
 
@@ -106,6 +113,9 @@ interface Database {
 
     @Query("UPDATE SongPlaylistMap SET position = position + 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
     fun incrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(format: Format)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(searchQuery: SearchQuery)
@@ -141,9 +151,7 @@ interface Database {
             title = mediaItem.mediaMetadata.title!!.toString(),
             artistsText = mediaItem.mediaMetadata.artist?.toString(),
             durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
-            thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString(),
-            loudnessDb = mediaItem.mediaMetadata.extras?.getFloatOrNull("loudnessDb"),
-            contentLength = mediaItem.mediaMetadata.extras?.getLongOrNull("contentLength"),
+            thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString()
         ).let(block).also { song ->
             if (insert(song) == -1L) return
         }
@@ -250,11 +258,12 @@ interface Database {
         SongAlbumMap::class,
         SearchQuery::class,
         QueuedMediaItem::class,
+        Format::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 13,
+    version = 15,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -267,6 +276,7 @@ interface Database {
         AutoMigration(from = 9, to = 10),
         AutoMigration(from = 11, to = 12, spec = DatabaseInitializer.From11To12Migration::class),
         AutoMigration(from = 12, to = 13),
+        AutoMigration(from = 13, to = 14),
     ],
 )
 @TypeConverters(Converters::class)
@@ -281,7 +291,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
-                    .addMigrations(From8To9Migration(), From10To11Migration())
+                    .addMigrations(From8To9Migration(), From10To11Migration(), From14To15Migration())
                     .build()
             }
         }
@@ -354,6 +364,26 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     @RenameTable("SongInPlaylist", "SongPlaylistMap")
     @RenameTable("SortedSongInPlaylist", "SortedSongPlaylistMap")
     class From11To12Migration : AutoMigrationSpec
+
+    class From14To15Migration : Migration(14, 15) {
+        override fun migrate(it: SupportSQLiteDatabase) {
+            it.query(SimpleSQLiteQuery("SELECT id, loudnessDb, contentLength FROM Song;")).use { cursor ->
+                val formatValues = ContentValues(3)
+                while (cursor.moveToNext()) {
+                    formatValues.put("songId", cursor.getString(0))
+                    formatValues.put("loudnessDb", cursor.getFloatOrNull(1))
+                    formatValues.put("contentLength", cursor.getFloatOrNull(2))
+                    it.insert("Format", CONFLICT_IGNORE, formatValues)
+                }
+            }
+
+            it.execSQL("CREATE TABLE IF NOT EXISTS `Song_new` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT NOT NULL, `thumbnailUrl` TEXT, `lyrics` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+
+            it.execSQL("INSERT INTO Song_new(id, title, artistsText, durationText, thumbnailUrl, lyrics, likedAt, totalPlayTimeMs) SELECT id, title, artistsText, durationText, thumbnailUrl, lyrics, likedAt, totalPlayTimeMs FROM Song;")
+            it.execSQL("DROP TABLE Song;")
+            it.execSQL("ALTER TABLE Song_new RENAME TO Song;")
+        }
+    }
 }
 
 @TypeConverters

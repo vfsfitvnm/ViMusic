@@ -368,7 +368,7 @@ fun MediaItemMenu(
                         )
                     }
 
-                    onSetSleepTimer?.let { onSetSleepTimer ->
+                    onSetSleepTimer?.let {
                         val binder = LocalPlayerServiceBinder.current
                         val (colorPalette, typography) = LocalAppearance.current
 
