@@ -179,7 +179,7 @@ fun HomeScreen() {
                     .background(colorPalette.background)
                     .fillMaxSize()
             ) {
-                item {
+                item("topAppBar") {
                     TopAppBar(
                         modifier = Modifier
                             .height(52.dp)
@@ -230,7 +230,7 @@ fun HomeScreen() {
                     }
                 }
 
-                item {
+                item("playlistsHeader") {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -342,7 +342,7 @@ fun HomeScreen() {
                     }
                 }
 
-                item {
+                item("playlists") {
                     LazyHorizontalGrid(
                         state = lazyHorizontalGridState,
                         rows = GridCells.Fixed(if (playlistGridExpanded) 3 else 1),
@@ -556,7 +556,9 @@ fun HomeScreen() {
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
-                        }
+                        },
+                        modifier = Modifier
+                            .animateItemPlacement()
                     )
                 }
             }
