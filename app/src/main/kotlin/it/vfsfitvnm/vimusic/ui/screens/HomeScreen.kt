@@ -236,6 +236,7 @@ fun HomeScreen() {
                         modifier = Modifier
                             .zIndex(1f)
                             .padding(horizontal = 8.dp)
+                            .padding(top = 16.dp)
                     ) {
                         BasicText(
                             text = "Your playlists",
