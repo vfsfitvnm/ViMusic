@@ -379,10 +379,11 @@ fun HomeScreen() {
                     }
                 }
 
-                item {
+                stickyHeader("songs") {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
+                            .background(colorPalette.background)
                             .zIndex(1f)
                             .padding(horizontal = 8.dp)
                             .padding(top = 32.dp)

@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,6 +49,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun ArtistScreen(
@@ -210,13 +212,14 @@ fun ArtistScreen(
                     } ?: LoadingOrError()
                 }
 
-                item {
-                    if (songs.isEmpty()) return@item
+                stickyHeader("songs") {
+                    if (songs.isEmpty()) return@stickyHeader
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
+                            .background(colorPalette.background)
                             .zIndex(1f)
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
