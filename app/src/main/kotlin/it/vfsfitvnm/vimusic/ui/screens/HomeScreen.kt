@@ -405,7 +405,7 @@ fun HomeScreen() {
                     }
                 }
 
-                stickyHeader("songs") {
+                item("songs") {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier

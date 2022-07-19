@@ -212,8 +212,8 @@ fun ArtistScreen(
                     } ?: LoadingOrError()
                 }
 
-                stickyHeader("songs") {
-                    if (songs.isEmpty()) return@stickyHeader
+                item("songs") {
+                    if (songs.isEmpty()) return@item
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
