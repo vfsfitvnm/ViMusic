@@ -1,22 +1,16 @@
-A Jetpack Compose Android application for streaming music from YouTube Music.
-
 <b>Features</b>
-
-<ul>
-<li>Play any non-age-restricted song/video from YouTube Music</li>
-<li>Background playback w/ notification</li>
-<li>Search for songs, albums, artists, videos and playlists</li>
-<li>Cache system for offline playback and saving resources</li>
-<li>Show and edit songs lyrics</li>
-<li>Open YouTube/YouTube Music links</li>
-<li>Local playlists management</li>
-<li>Queue management</li>
-<li>Favorites and Cached built-in playlists</li>
-<li>Sleep timer</li>
-<li>Skip silence</li>
-<li>Persistent queue</li>
-<li>Loudness/audio normalization</li>
-<li>Simple and minimal UI</li>
-<li>Ridiculously lightweight APK</li>
-</ul>
-
+* Search and play any non-age-restricted song/video from YouTube Music
+* Background playback w/ notification
+* Search for songs, albums, artists, videos and playlists
+* Automatic cache system for offline playback and saving resources
+* Show and edit songs lyrics
+* Open YouTube/YouTube Music links
+* Local playlists management
+* Queue management
+* Favorites and Offline built-in playlists
+* Sleep timer
+* Skip silence
+* Persistent queue
+* Loudness/audio normalization
+* Simple and minimal UI
+* Ridiculously lightweight APK
