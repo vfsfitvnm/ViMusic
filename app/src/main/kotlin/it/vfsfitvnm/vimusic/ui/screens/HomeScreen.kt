@@ -45,6 +45,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.views.BuiltInPlaylistItem
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -351,77 +352,35 @@ fun HomeScreen() {
                             .fillMaxWidth()
                             .height(124.dp * (if (playlistGridExpanded) 3 else 1))
                     ) {
-                        item {
-                            Box(
+                        item(key = "favorites") {
+                            BuiltInPlaylistItem(
+                                icon = R.drawable.heart,
+                                colorTint = colorPalette.red,
+                                name = "Favorites",
                                 modifier = Modifier
                                     .padding(all = 8.dp)
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
                                         interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            builtInPlaylistRoute(BuiltInPlaylist.Favorites)
-                                        }
+                                        onClick = { builtInPlaylistRoute(BuiltInPlaylist.Favorites) }
                                     )
-                                    .background(colorPalette.lightBackground)
-                                    .size(108.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.heart),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette.red),
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .size(24.dp)
-                                )
-
-                                BasicText(
-                                    text = "Favorites",
-                                    style = typography.xxs.semiBold,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .align(Alignment.BottomStart)
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
+                            )
                         }
 
                         if (playlistGridExpanded) {
-                            item {
-                                Box(
+                            item(key = "cached") {
+                                BuiltInPlaylistItem(
+                                    icon = R.drawable.download,
+                                    colorTint = colorPalette.blue,
+                                    name = "Cached",
                                     modifier = Modifier
                                         .padding(all = 8.dp)
                                         .clickable(
                                             indication = rememberRipple(bounded = true),
                                             interactionSource = remember { MutableInteractionSource() },
-                                            onClick = {
-                                                builtInPlaylistRoute(BuiltInPlaylist.Cached)
-                                            }
+                                            onClick = { builtInPlaylistRoute(BuiltInPlaylist.Cached) }
                                         )
-                                        .background(colorPalette.lightBackground)
-                                        .size(108.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.download),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.blue),
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp)
-                                    )
-
-                                    BasicText(
-                                        text = "Cached",
-                                        style = typography.xxs.semiBold,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .align(Alignment.BottomStart)
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
+                                )
                             }
                         }
 
