@@ -46,7 +46,6 @@ fun AppearanceSettingsScreen() {
 
             var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.System)
             var thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
-            var isCachedPlaylistShown by rememberPreference(isCachedPlaylistShownKey, false)
 
             Column(
                 modifier = Modifier
@@ -98,17 +97,6 @@ fun AppearanceSettingsScreen() {
                     selectedValue = thumbnailRoundness,
                     onValueSelected = {
                         thumbnailRoundness = it
-                    }
-                )
-
-                SettingsEntryGroupText(title = "OTHER")
-
-                SwitchSettingEntry(
-                    title = "Cached playlist",
-                    text = "Display a playlist whose songs can be played offline",
-                    isChecked = isCachedPlaylistShown,
-                    onCheckedChange = {
-                        isCachedPlaylistShown = it
                     }
                 )
             }

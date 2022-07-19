@@ -12,10 +12,12 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
+import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 
 @Dao
@@ -31,6 +33,14 @@ interface Database {
     fun songsByRowIdDesc(): Flow<List<DetailedSong>>
 
     @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title ASC")
+    fun songsByTitleAsc(): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title DESC")
+    fun songsByTitleDesc(): Flow<List<DetailedSong>>
+
+    @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs ASC")
     fun songsByPlayTimeAsc(): Flow<List<DetailedSong>>
 
@@ -43,6 +53,10 @@ interface Database {
             SongSortBy.PlayTime -> when (sortOrder) {
                 SortOrder.Ascending -> songsByPlayTimeAsc()
                 SortOrder.Descending -> songsByPlayTimeDesc()
+            }
+            SongSortBy.Title -> when (sortOrder) {
+                SortOrder.Ascending -> songsByTitleAsc()
+                SortOrder.Descending -> songsByTitleDesc()
             }
             SongSortBy.DateAdded -> when (sortOrder) {
                 SortOrder.Ascending -> songsByRowIdAsc()
@@ -81,8 +95,29 @@ interface Database {
     fun playlistWithSongs(id: Long): Flow<PlaylistWithSongs?>
 
     @Transaction
-    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist")
-    fun playlistPreviews(): Flow<List<PlaylistPreview>>
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY name ASC")
+    fun playlistPreviewsByName(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY ROWID ASC")
+    fun playlistPreviewsByDateAdded(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY songCount ASC")
+    fun playlistPreviewsByDateSongCount(): Flow<List<PlaylistPreview>>
+
+    fun playlistPreviews(sortBy: PlaylistSortBy, sortOrder: SortOrder): Flow<List<PlaylistPreview>> {
+        return when (sortBy) {
+            PlaylistSortBy.Name -> playlistPreviewsByName()
+            PlaylistSortBy.DateAdded -> playlistPreviewsByDateAdded()
+            PlaylistSortBy.SongCount -> playlistPreviewsByDateSongCount()
+        }.map {
+            when (sortOrder) {
+                SortOrder.Ascending -> it
+                SortOrder.Descending -> it.reversed()
+            }
+        }
+    }
 
     @Query("SELECT thumbnailUrl FROM Song JOIN SongPlaylistMap ON id = songId WHERE playlistId = :id ORDER BY position LIMIT 4")
     fun playlistThumbnailUrls(id: Long): Flow<List<String?>>

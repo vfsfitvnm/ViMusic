@@ -12,18 +12,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -32,25 +30,21 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
-import it.vfsfitvnm.vimusic.enums.SongSortBy
-import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
+import it.vfsfitvnm.vimusic.enums.*
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
-import it.vfsfitvnm.vimusic.ui.styling.*
+import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.*
@@ -64,6 +58,7 @@ fun HomeScreen() {
     val (colorPalette, typography) = LocalAppearance.current
 
     val lazyListState = rememberLazyListState()
+    val lazyHorizontalGridState = rememberLazyGridState()
 
     val intentUriRoute = rememberIntentUriRoute()
     val settingsRoute = rememberSettingsRoute()
@@ -74,8 +69,12 @@ fun HomeScreen() {
     val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
-    val playlistPreviews by remember {
-        Database.playlistPreviews()
+    var playlistSortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
+    var playlistSortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+    var playlistGridExpanded by rememberPreference(playlistGridExpandedKey, false)
+
+    val playlistPreviews by remember(playlistSortBy, playlistSortOrder) {
+        Database.playlistPreviews(playlistSortBy, playlistSortOrder)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
     var songSortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
@@ -151,13 +150,8 @@ fun HomeScreen() {
             val binder = LocalPlayerServiceBinder.current
 
             val isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
-            val isCachedPlaylistShown by rememberPreference(isCachedPlaylistShownKey, false)
 
             val thumbnailSize = Dimensions.thumbnails.song.px
-
-            var isGridExpanded by remember {
-                mutableStateOf(false)
-            }
 
             var isCreatingANewPlaylist by rememberSaveable {
                 mutableStateOf(false)
@@ -262,28 +256,100 @@ fun HomeScreen() {
                                 .size(20.dp)
                         )
 
-                        Image(
-                            painter = painterResource(if (isGridExpanded) R.drawable.grid else R.drawable.grid_single),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.textSecondary),
-                            modifier = Modifier
-                                .clickable {
-                                    isGridExpanded = !isGridExpanded
+                        Box {
+                            var isSortMenuDisplayed by remember {
+                                mutableStateOf(false)
+                            }
+
+                            Image(
+                                painter = painterResource(R.drawable.sort),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette.text),
+                                modifier = Modifier
+                                    .clickable {
+                                        isSortMenuDisplayed = true
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                                    .size(20.dp)
+                            )
+
+                            DropdownMenu(
+                                isDisplayed = isSortMenuDisplayed,
+                                onDismissRequest = {
+                                    isSortMenuDisplayed = false
                                 }
-                                .padding(all = 10.dp)
-                                .size(16.dp)
-                        )
+                            ) {
+                                DropDownSection {
+                                    DropDownTextItem(
+                                        text = "NAME",
+                                        isSelected = playlistSortBy == PlaylistSortBy.Name,
+                                        onClick = {
+                                            isSortMenuDisplayed = false
+                                            playlistSortBy = PlaylistSortBy.Name
+                                        }
+                                    )
+
+                                    DropDownTextItem(
+                                        text = "DATE ADDED",
+                                        isSelected = playlistSortBy == PlaylistSortBy.DateAdded,
+                                        onClick = {
+                                            isSortMenuDisplayed = false
+                                            playlistSortBy = PlaylistSortBy.DateAdded
+                                        }
+                                    )
+
+                                    DropDownTextItem(
+                                        text = "SONG COUNT",
+                                        isSelected = playlistSortBy == PlaylistSortBy.SongCount,
+                                        onClick = {
+                                            isSortMenuDisplayed = false
+                                            playlistSortBy = PlaylistSortBy.SongCount
+                                        }
+                                    )
+                                }
+
+                                DropDownSectionSpacer()
+
+                                DropDownSection {
+                                    DropDownTextItem(
+                                        text = when (playlistSortOrder) {
+                                            SortOrder.Ascending -> "ASCENDING"
+                                            SortOrder.Descending -> "DESCENDING"
+                                        },
+                                        onClick = {
+                                            isSortMenuDisplayed = false
+                                            playlistSortOrder = !playlistSortOrder
+                                        }
+                                    )
+                                }
+                                DropDownSectionSpacer()
+
+                                DropDownSection {
+                                    DropDownTextItem(
+                                        text = when (playlistGridExpanded) {
+                                            true -> "EXPAND"
+                                            false -> "COMPACT"
+                                        },
+                                        onClick = {
+                                            isSortMenuDisplayed = false
+                                            playlistGridExpanded = !playlistGridExpanded
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
                 item {
                     LazyHorizontalGrid(
-                        rows = GridCells.Fixed(if (isGridExpanded) 3 else 1),
+                        state = lazyHorizontalGridState,
+                        rows = GridCells.Fixed(if (playlistGridExpanded) 3 else 1),
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier
                             .animateContentSize()
                             .fillMaxWidth()
-                            .height(124.dp * (if (isGridExpanded) 3 else 1))
+                            .height(124.dp * (if (playlistGridExpanded) 3 else 1))
                     ) {
                         item {
                             Box(
@@ -321,7 +387,7 @@ fun HomeScreen() {
                             }
                         }
 
-                        if (isCachedPlaylistShown) {
+                        if (playlistGridExpanded) {
                             item {
                                 Box(
                                     modifier = Modifier
@@ -361,6 +427,7 @@ fun HomeScreen() {
 
                         items(
                             items = playlistPreviews,
+                            key = { it.playlist.id },
                             contentType = { it }
                         ) { playlistPreview ->
                             PlaylistPreviewItem(
@@ -370,10 +437,9 @@ fun HomeScreen() {
                                     .padding(all = 8.dp)
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() }
-                                    ) {
-                                        playlistRoute(playlistPreview.playlist.id)
-                                    }
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = { playlistRoute(playlistPreview.playlist.id) }
+                                    )
                             )
                         }
                     }
@@ -436,96 +502,45 @@ fun HomeScreen() {
                                     isSortMenuDisplayed = false
                                 }
                             ) {
-                                @Composable
-                                fun Item(
-                                    text: String,
-                                    textColor: Color,
-                                    backgroundColor: Color,
-                                    onClick: () -> Unit
-                                ) {
-                                    BasicText(
-                                        text = text,
-                                        style = typography.xxs.medium.copy(color = textColor, letterSpacing = 1.sp),
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .clickable(
-                                                indication = rememberRipple(bounded = true),
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = {
-                                                    isSortMenuDisplayed = false
-                                                    onClick()
-                                                }
-                                            )
-                                            .background(backgroundColor)
-                                            .fillMaxWidth()
-                                            .widthIn(min = 124.dp, max = 248.dp)
-                                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    )
-                                }
-
-                                @Composable
-                                fun Item(
-                                    text: String,
-                                    isSelected: Boolean,
-                                    onClick: () -> Unit
-                                ) {
-                                    Item(
-                                        text = text,
-                                        textColor = if (isSelected) {
-                                            colorPalette.onPrimaryContainer
-                                        } else {
-                                            colorPalette.textSecondary
-                                        },
-                                        backgroundColor = if (isSelected) {
-                                            colorPalette.primaryContainer
-                                        } else {
-                                            colorPalette.elevatedBackground
-                                        },
-                                        onClick = onClick
-                                    )
-                                }
-
-                                Column(
-                                    modifier = Modifier
-                                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
-                                        .background(colorPalette.elevatedBackground)
-                                        .width(IntrinsicSize.Max),
-                                ) {
-                                    Item(
+                                DropDownSection {
+                                    DropDownTextItem(
                                         text = "PLAY TIME",
                                         isSelected = songSortBy == SongSortBy.PlayTime,
                                         onClick = {
+                                            isSortMenuDisplayed = false
                                             songSortBy = SongSortBy.PlayTime
                                         }
                                     )
-                                    Item(
+
+                                    DropDownTextItem(
+                                        text = "TITLE",
+                                        isSelected = songSortBy == SongSortBy.Title,
+                                        onClick = {
+                                            isSortMenuDisplayed = false
+                                            songSortBy = SongSortBy.Title
+                                        }
+                                    )
+
+                                    DropDownTextItem(
                                         text = "DATE ADDED",
                                         isSelected = songSortBy == SongSortBy.DateAdded,
                                         onClick = {
+                                            isSortMenuDisplayed = false
                                             songSortBy = SongSortBy.DateAdded
                                         }
                                     )
                                 }
 
-                                Spacer(
-                                    modifier = Modifier
-                                        .height(4.dp)
-                                )
+                                DropDownSectionSpacer()
 
-                                Column(
-                                    modifier = Modifier
-                                        .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
-                                        .background(colorPalette.elevatedBackground)
-                                        .width(IntrinsicSize.Max),
-                                ) {
-                                    Item(
+                                DropDownSection {
+                                    DropDownTextItem(
                                         text = when (songSortOrder) {
                                             SortOrder.Ascending -> "ASCENDING"
                                             SortOrder.Descending -> "DESCENDING"
                                         },
-                                        textColor = colorPalette.text,
-                                        backgroundColor = colorPalette.elevatedBackground,
                                         onClick = {
+                                            isSortMenuDisplayed = false
                                             songSortOrder = !songSortOrder
                                         }
                                     )
