@@ -22,15 +22,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.center
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.res.ResourcesCompat
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -148,6 +150,7 @@ fun HomeScreen() {
             @Suppress("UNUSED_EXPRESSION") playlistPreviews
             @Suppress("UNUSED_EXPRESSION") songCollection
 
+            val context = LocalContext.current
             val binder = LocalPlayerServiceBinder.current
 
             val isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
@@ -214,6 +217,71 @@ fun HomeScreen() {
                                     }
                                 }
                                 .size(24.dp)
+                        )
+
+                        BasicText(
+                            text = "ViMusic",
+                            style = typography.l.semiBold,
+                            modifier = Modifier
+                                .drawWithCache {
+                                    val decorationPath = Path().apply {
+                                        with(asAndroidPath()) {
+                                            addCircle(
+                                                8.dp.toPx(),
+                                                size.center.y,
+                                                16.dp.toPx(),
+                                                android.graphics.Path.Direction.CCW
+                                            )
+                                            addCircle(
+                                                32.dp.toPx(),
+                                                -2.dp.toPx(),
+                                                8.dp.toPx(),
+                                                android.graphics.Path.Direction.CCW
+                                            )
+                                        }
+                                    }
+
+                                    if (colorPalette.isDark) {
+                                        return@drawWithCache onDrawBehind {
+                                            drawPath(path = decorationPath, color = colorPalette.primaryContainer)
+                                        }
+                                    }
+
+                                    val textPaint = Paint()
+                                        .asFrameworkPaint()
+                                        .apply {
+                                            isAntiAlias = true
+                                            textSize = typography.l.fontSize.toPx()
+                                            color = colorPalette.text.toArgb()
+                                            typeface = ResourcesCompat.getFont(context, R.font.poppins_w500)
+                                            textAlign = android.graphics.Paint.Align.CENTER
+                                        }
+
+                                    val textY =
+                                        ((textPaint.fontMetrics.descent - textPaint.fontMetrics.ascent) / 2) - textPaint.fontMetrics.descent
+
+                                    val textPath = Path().apply {
+                                        textPaint.getTextPath(
+                                            "ViMusic",
+                                            0,
+                                            7,
+                                            size.width / 2,
+                                            size.height / 2 + textY,
+                                            asAndroidPath()
+                                        )
+                                    }
+
+                                    onDrawWithContent {
+                                        clipPath(textPath, ClipOp.Difference) {
+                                            drawPath(path = decorationPath, color = colorPalette.primaryContainer)
+                                        }
+
+                                        clipPath(decorationPath, ClipOp.Difference) {
+                                            this@onDrawWithContent.drawContent()
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 8.dp)
                         )
 
                         Image(
