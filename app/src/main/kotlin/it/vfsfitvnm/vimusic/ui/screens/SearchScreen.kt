@@ -109,8 +109,10 @@ fun SearchScreen(
                 listOf(
                     "https://www.youtube.com/watch?",
                     "https://music.youtube.com/watch?",
+                    "https://m.youtube.com/watch?",
                     "https://www.youtube.com/playlist?",
                     "https://music.youtube.com/playlist?",
+                    "https://m.youtube.com/playlist?",
                     "https://youtu.be/",
                 ).any(textFieldValue.text::startsWith)
             }
