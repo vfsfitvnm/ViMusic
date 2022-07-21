@@ -17,9 +17,7 @@ data class PlayerState(
     val mediaMetadata: MediaMetadata,
     val playWhenReady: Boolean,
     val repeatMode: Int,
-    val error: PlaybackException?,
     val mediaItems: List<MediaItem>,
-    val volume: Float
 ) {
     constructor(player: Player) : this(
         currentPosition = player.currentPosition,
@@ -30,9 +28,7 @@ data class PlayerState(
         mediaMetadata = player.mediaMetadata,
         playWhenReady = player.playWhenReady,
         repeatMode = player.repeatMode,
-        error = player.playerError,
-        mediaItems = player.currentTimeline.mediaItems,
-        volume = player.volume
+        mediaItems = player.currentTimeline.mediaItems
     )
 
     val progress: Float
@@ -56,12 +52,8 @@ fun rememberPlayerState(
         val handler = Handler(Looper.getMainLooper())
 
         val listener = object : Player.Listener, Runnable {
-            override fun onVolumeChanged(volume: Float) {
-                playerState = playerState?.copy(volume = volume)
-            }
-
             override fun onPlaybackStateChanged(playbackState: Int) {
-                playerState = playerState?.copy(playbackState = playbackState, error = player.playerError)
+                playerState = playerState?.copy(playbackState = playbackState)
 
                 if (playbackState == Player.STATE_READY) {
                     isSeeking = false
@@ -86,10 +78,6 @@ fun rememberPlayerState(
 
             override fun onRepeatModeChanged(repeatMode: Int) {
                 playerState = playerState?.copy(repeatMode = repeatMode)
-            }
-
-            override fun onPlayerError(playbackException: PlaybackException) {
-                playerState = playerState?.copy(error = playbackException)
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -135,4 +123,70 @@ fun rememberPlayerState(
     }
 
     return playerState
+}
+
+context(DisposableEffectScope)
+fun Player.listener(listener: Player.Listener): DisposableEffectResult {
+    addListener(listener)
+    return onDispose {
+        removeListener(listener)
+    }
+}
+
+@Composable
+fun rememberMediaItemIndex(player: Player): State<Int> {
+    val mediaItemIndexState = remember(player) {
+        mutableStateOf(player.currentMediaItemIndex)
+    }
+
+    DisposableEffect(player) {
+        player.listener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                mediaItemIndexState.value = player.currentMediaItemIndex
+            }
+
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                mediaItemIndexState.value = player.currentMediaItemIndex
+            }
+        })
+    }
+
+    return mediaItemIndexState
+}
+
+@Composable
+fun rememberVolume(player: Player): State<Float> {
+    val volumeState = remember(player) {
+        mutableStateOf(player.volume)
+    }
+
+    DisposableEffect(player) {
+        player.listener(object : Player.Listener {
+            override fun onVolumeChanged(volume: Float) {
+                volumeState.value = volume
+            }
+        })
+    }
+
+    return volumeState
+}
+
+@Composable
+fun rememberError(player: Player): State<PlaybackException?> {
+    val errorState = remember(player) {
+        mutableStateOf(player.playerError)
+    }
+
+    DisposableEffect(player) {
+        player.listener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                errorState.value = player.playerError
+            }
+            override fun onPlayerError(playbackException: PlaybackException) {
+                errorState.value = playbackException
+            }
+        })
+    }
+
+    return errorState
 }

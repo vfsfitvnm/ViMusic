@@ -36,8 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.C
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
 import coil.compose.AsyncImage
@@ -45,13 +44,15 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
 import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
-import it.vfsfitvnm.vimusic.ui.styling.*
+import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
@@ -189,10 +190,7 @@ fun PlayerView(
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp)
                     ) {
-                        Thumbnail(
-                            playerState = playerState,
-                            modifier = Modifier
-                        )
+                        Thumbnail()
                     }
 
                     Controls(
@@ -219,10 +217,7 @@ fun PlayerView(
                             .weight(1.25f)
                             .padding(horizontal = 32.dp, vertical = 8.dp)
                     ) {
-                        Thumbnail(
-                            playerState = playerState,
-                            modifier = Modifier
-                        )
+                        Thumbnail()
                     }
 
                     Controls(
@@ -300,7 +295,6 @@ fun PlayerView(
             )
         }
 
-
         PlayerBottomSheet(
             playerState = playerState,
             layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound * 0.9f),
@@ -316,27 +310,26 @@ fun PlayerView(
 @ExperimentalAnimationApi
 @Composable
 private fun Thumbnail(
-    playerState: PlayerState,
     modifier: Modifier = Modifier
 ) {
-    val (_, typography) = LocalAppearance.current
-    val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val player = binder?.player ?: return
-
-    playerState.mediaItem ?: return
 
     val (thumbnailSizeDp, thumbnailSizePx) = Dimensions.thumbnails.player.song.let {
         it to (it - 64.dp).px
     }
 
+    val mediaItemIndex by rememberMediaItemIndex(player)
+
+    val error by rememberError(player)
+
     var isShowingStatsForNerds by rememberSaveable {
         mutableStateOf(false)
     }
 
-    if (playerState.error == null) {
+    if (error == null) {
         AnimatedContent(
-            targetState = playerState.mediaItemIndex,
+            targetState = mediaItemIndex,
             transitionSpec = {
                 val slideDirection =
                     if (targetState > initialState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
@@ -348,11 +341,9 @@ private fun Thumbnail(
             },
             modifier = modifier
                 .aspectRatio(1f)
-        ) {
-            val artworkUri = remember(it) {
-                player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
-                    thumbnailSizePx
-                )
+        ) { currentMediaItemIndex ->
+            val mediaItem = remember(currentMediaItemIndex) {
+                player.getMediaItemAt(currentMediaItemIndex)
             }
 
             Box(
@@ -361,7 +352,7 @@ private fun Thumbnail(
                     .size(thumbnailSizeDp)
             ) {
                 AsyncImage(
-                    model = artworkUri,
+                    model = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -375,169 +366,13 @@ private fun Thumbnail(
                         .fillMaxSize()
                 )
 
-                AnimatedVisibility(
-                    visible = isShowingStatsForNerds,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    val key = playerState.mediaItem.mediaId
-
-                    var cachedBytes by remember(key) {
-                        mutableStateOf(binder.cache.getCachedBytes(key, 0, -1))
+                StatsForNerds(
+                    mediaId = mediaItem.mediaId,
+                    isDisplayed = isShowingStatsForNerds,
+                    onDismiss = {
+                        isShowingStatsForNerds = false
                     }
-
-                    val format by remember(key) {
-                        Database.format(key)
-                    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-                    DisposableEffect(key) {
-                        val listener = object : Cache.Listener {
-                            override fun onSpanAdded(cache: Cache, span: CacheSpan) {
-                                cachedBytes += span.length
-                            }
-
-                            override fun onSpanRemoved(cache: Cache, span: CacheSpan) {
-                                cachedBytes -= span.length
-                            }
-
-                            override fun onSpanTouched(
-                                cache: Cache,
-                                oldSpan: CacheSpan,
-                                newSpan: CacheSpan
-                            ) = Unit
-                        }
-
-                        binder.cache.addListener(key, listener)
-
-                        onDispose {
-                            binder.cache.removeListener(key, listener)
-                        }
-                    }
-
-                    Column(
-                        verticalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onPress = {
-                                        isShowingStatsForNerds = false
-                                    }
-                                )
-                            }
-                            .background(Color.Black.copy(alpha = 0.8f))
-                            .fillMaxSize()
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier
-                                .padding(all = 16.dp)
-                        ) {
-                            Column {
-                                BasicText(
-                                    text = "Id",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = "Volume",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = "Loudness",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = "Bitrate",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = "Size",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = "Cached",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                            }
-
-                            Column {
-                                BasicText(
-                                    text = playerState.mediaItem.mediaId,
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = "${playerState.volume.times(100).roundToInt()}%",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = format?.loudnessDb?.let { loudnessDb ->
-                                        "%.2f dB".format(loudnessDb)
-                                    } ?: "Unknown",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = format?.bitrate?.let { bitrate ->
-                                        "${bitrate / 1000} kbps"
-                                    } ?: "Unknown",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = format?.contentLength?.let { contentLength ->
-                                        Formatter.formatShortFileSize(
-                                            context,
-                                            contentLength
-                                        )
-                                    } ?: "Unknown",
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                                BasicText(
-                                    text = buildString {
-                                        append(Formatter.formatShortFileSize(context, cachedBytes))
-
-                                        format?.contentLength?.let { contentLength ->
-                                            append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
-                                        }
-                                    },
-                                    style = typography.xs.semiBold.color(BlackColorPalette.text)
-                                )
-                            }
-                        }
-
-                        if (format != null && format?.itag == null) {
-                            BasicText(
-                                text = "FETCH MISSING DATA",
-                                style = typography.xxs.semiBold.color(BlackColorPalette.text),
-                                modifier = Modifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            query {
-                                                runBlocking(Dispatchers.IO) {
-                                                    YouTube.player(key)?.map { response ->
-                                                        response.streamingData?.adaptiveFormats?.findLast { format ->
-                                                            format.itag == 251 || format.itag == 140
-                                                        }?.let { format ->
-                                                            Format(
-                                                                songId = key,
-                                                                itag = format.itag,
-                                                                mimeType = format.mimeType,
-                                                                bitrate = format.bitrate,
-                                                                loudnessDb = response.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
-                                                                contentLength = format.contentLength,
-                                                                lastModified = format.lastModified
-                                                            )
-                                                        }
-                                                    }
-                                                }?.getOrNull()?.let(Database::insert)
-                                            }
-                                        }
-                                    )
-                                    .padding(all = 16.dp)
-                                    .align(Alignment.End)
-                            )
-                        }
-                    }
-                }
+                )
             }
         }
     } else {
@@ -549,12 +384,194 @@ private fun Thumbnail(
                 .size(thumbnailSizeDp)
         ) {
             LoadingOrError(
-                errorMessage = playerState.error.javaClass.canonicalName,
+                errorMessage = error?.javaClass?.canonicalName,
                 onRetry = {
                     player.playWhenReady = true
                     player.prepare()
                 }
             ) {}
+        }
+    }
+}
+
+@Composable
+private fun StatsForNerds(
+    mediaId: String,
+    isDisplayed: Boolean,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val (_, typography) = LocalAppearance.current
+    val context = LocalContext.current
+    val binder = LocalPlayerServiceBinder.current ?: return
+
+    AnimatedVisibility(
+        visible = isDisplayed,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        var cachedBytes by remember(mediaId) {
+            mutableStateOf(binder.cache.getCachedBytes(mediaId, 0, -1))
+        }
+
+        val format by remember(mediaId) {
+            Database.format(mediaId).distinctUntilChanged()
+        }.collectAsState(initial = null, context = Dispatchers.IO)
+
+        val volume by rememberVolume(binder.player)
+
+        DisposableEffect(mediaId) {
+            val listener = object : Cache.Listener {
+                override fun onSpanAdded(cache: Cache, span: CacheSpan) {
+                    cachedBytes += span.length
+                }
+
+                override fun onSpanRemoved(cache: Cache, span: CacheSpan) {
+                    cachedBytes -= span.length
+                }
+
+                override fun onSpanTouched(
+                    cache: Cache,
+                    oldSpan: CacheSpan,
+                    newSpan: CacheSpan
+                ) = Unit
+            }
+
+            binder.cache.addListener(mediaId, listener)
+
+            onDispose {
+                binder.cache.removeListener(mediaId, listener)
+            }
+        }
+
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            onDismiss()
+                        }
+                    )
+                }
+                .background(Color.Black.copy(alpha = 0.8f))
+                .fillMaxSize()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .padding(all = 16.dp)
+            ) {
+                Column {
+                    BasicText(
+                        text = "Id",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = "Volume",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = "Loudness",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = "Bitrate",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = "Size",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = "Cached",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                }
+
+                Column {
+                    BasicText(
+                        text = mediaId,
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = "${volume.times(100).roundToInt()}%",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = format?.loudnessDb?.let { loudnessDb ->
+                            "%.2f dB".format(loudnessDb)
+                        } ?: "Unknown",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = format?.bitrate?.let { bitrate ->
+                            "${bitrate / 1000} kbps"
+                        } ?: "Unknown",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = format?.contentLength?.let { contentLength ->
+                            Formatter.formatShortFileSize(
+                                context,
+                                contentLength
+                            )
+                        } ?: "Unknown",
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                    BasicText(
+                        text = buildString {
+                            append(Formatter.formatShortFileSize(context, cachedBytes))
+
+                            format?.contentLength?.let { contentLength ->
+                                append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
+                            }
+                        },
+                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                    )
+                }
+            }
+
+            if (format != null && format?.itag == null) {
+                BasicText(
+                    text = "FETCH MISSING DATA",
+                    style = typography.xxs.semiBold.color(BlackColorPalette.text),
+                    modifier = Modifier
+                        .clickable(
+                            indication = rememberRipple(bounded = true),
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                query {
+                                    runBlocking(Dispatchers.IO) {
+                                        YouTube
+                                            .player(mediaId)
+                                            ?.map { response ->
+                                                response.streamingData?.adaptiveFormats
+                                                    ?.findLast { format ->
+                                                        format.itag == 251 || format.itag == 140
+                                                    }
+                                                    ?.let { format ->
+                                                        it.vfsfitvnm.vimusic.models.Format(
+                                                            songId = mediaId,
+                                                            itag = format.itag,
+                                                            mimeType = format.mimeType,
+                                                            bitrate = format.bitrate,
+                                                            loudnessDb = response.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
+                                                            contentLength = format.contentLength,
+                                                            lastModified = format.lastModified
+                                                        )
+                                                    }
+                                            }
+                                    }
+                                        ?.getOrNull()
+                                        ?.let(Database::insert)
+                                }
+                            }
+                        )
+                        .padding(all = 16.dp)
+                        .align(Alignment.End)
+                )
+            }
         }
     }
 }
