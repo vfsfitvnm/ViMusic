@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.views
 
+import android.app.SearchManager
 import android.content.Intent
 import android.content.res.Configuration
 import android.media.audiofx.AudioEffect
@@ -9,9 +10,7 @@ import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -23,23 +22,28 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.*
+import androidx.media3.common.C
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
 import coil.compose.AsyncImage
+import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -47,16 +51,13 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.*
-import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
-import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlin.math.roundToInt
 
@@ -170,9 +171,13 @@ fun PlayerView(
             }
         }
     ) {
-        val song by remember(playerState.mediaItem.mediaId) {
-            playerState.mediaItem.mediaId.let(Database::song).distinctUntilChanged()
-        }.collectAsState(initial = null, context = Dispatchers.IO)
+        var isShowingLyrics by rememberSaveable {
+            mutableStateOf(false)
+        }
+
+        var isShowingStatsForNerds by rememberSaveable {
+            mutableStateOf(false)
+        }
 
         when (configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> {
@@ -190,12 +195,17 @@ fun PlayerView(
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp)
                     ) {
-                        Thumbnail()
+                        Thumbnail(
+                            isShowingLyrics = isShowingLyrics,
+                            onShowLyrics = { isShowingLyrics = it },
+                            isShowingStatsForNerds = isShowingStatsForNerds,
+                            onShowStatsForNerds = { isShowingStatsForNerds = it },
+                            nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
+                        )
                     }
 
                     Controls(
                         playerState = playerState,
-                        song = song,
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxHeight()
@@ -217,12 +227,17 @@ fun PlayerView(
                             .weight(1.25f)
                             .padding(horizontal = 32.dp, vertical = 8.dp)
                     ) {
-                        Thumbnail()
+                        Thumbnail(
+                            isShowingLyrics = isShowingLyrics,
+                            onShowLyrics = { isShowingLyrics = it },
+                            isShowingStatsForNerds = isShowingStatsForNerds,
+                            onShowStatsForNerds = { isShowingStatsForNerds = it },
+                            nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
+                        )
                     }
 
                     Controls(
                         playerState = playerState,
-                        song = song,
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxWidth()
@@ -297,10 +312,16 @@ fun PlayerView(
 
         PlayerBottomSheet(
             playerState = playerState,
-            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound * 0.9f),
+            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound),
+            onShowLyrics = {
+                isShowingStatsForNerds = false
+                isShowingLyrics = !isShowingLyrics
+            },
+            onShowStatsForNerds = {
+                isShowingLyrics = false
+                isShowingStatsForNerds = !isShowingStatsForNerds
+            },
             onGlobalRouteEmitted = layoutState.collapse,
-            padding  = layoutState.upperBound * 0.1f,
-            song = song,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )
@@ -310,6 +331,11 @@ fun PlayerView(
 @ExperimentalAnimationApi
 @Composable
 private fun Thumbnail(
+    isShowingLyrics: Boolean,
+    onShowLyrics: (Boolean) -> Unit,
+    isShowingStatsForNerds: Boolean,
+    onShowStatsForNerds: (Boolean) -> Unit,
+    nestedScrollConnectionProvider: () -> NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -323,10 +349,6 @@ private fun Thumbnail(
 
     val error by rememberError(player)
 
-    var isShowingStatsForNerds by rememberSaveable {
-        mutableStateOf(false)
-    }
-
     if (error == null) {
         AnimatedContent(
             targetState = mediaItemIndex,
@@ -339,6 +361,7 @@ private fun Thumbnail(
                     SizeTransform(clip = false)
                 )
             },
+            contentAlignment = Alignment.Center,
             modifier = modifier
                 .aspectRatio(1f)
         ) { currentMediaItemIndex ->
@@ -358,20 +381,44 @@ private fun Thumbnail(
                     modifier = Modifier
                         .pointerInput(Unit) {
                             detectTapGestures(
+                                onTap = {
+                                    onShowLyrics(true)
+                                },
                                 onLongPress = {
-                                    isShowingStatsForNerds = true
+                                    onShowStatsForNerds(true)
                                 }
                             )
                         }
                         .fillMaxSize()
                 )
 
+                Lyrics(
+                    mediaId = mediaItem.mediaId,
+                    isDisplayed = isShowingLyrics,
+                    onDismiss = {
+                        onShowLyrics(false)
+                    },
+                    onLyricsUpdate = { mediaId, lyrics ->
+                        if (Database.updateLyrics(mediaId, lyrics) == 0) {
+                            if (mediaId == mediaItem.mediaId) {
+                                Database.insert(mediaItem) { song ->
+                                    song.copy(lyrics = lyrics)
+                                }
+                            }
+                        }
+                    },
+                    size = thumbnailSizeDp,
+                    mediaMetadataProvider = mediaItem::mediaMetadata,
+                    nestedScrollConnectionProvider = nestedScrollConnectionProvider,
+                )
+
                 StatsForNerds(
                     mediaId = mediaItem.mediaId,
                     isDisplayed = isShowingStatsForNerds,
                     onDismiss = {
-                        isShowingStatsForNerds = false
-                    }
+                        onShowStatsForNerds(false)
+                    },
+                    modifier = Modifier
                 )
             }
         }
@@ -390,6 +437,203 @@ private fun Thumbnail(
                     player.prepare()
                 }
             ) {}
+        }
+    }
+}
+
+
+@Composable
+private fun Lyrics(
+    mediaId: String,
+    isDisplayed: Boolean,
+    onDismiss: () -> Unit,
+    size: Dp,
+    mediaMetadataProvider: () -> MediaMetadata,
+    onLyricsUpdate: (String, String) -> Unit,
+    nestedScrollConnectionProvider: () -> NestedScrollConnection,
+    modifier: Modifier = Modifier
+) {
+    val (_, typography) = LocalAppearance.current
+    val context = LocalContext.current
+
+    AnimatedVisibility(
+        visible = isDisplayed,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        var isLoading by remember(mediaId) {
+            mutableStateOf(false)
+        }
+
+        var isEditingLyrics by remember(mediaId) {
+            mutableStateOf(false)
+        }
+
+        val lyrics by remember(mediaId) {
+            Database.lyrics(mediaId).distinctUntilChanged().map flowMap@{ lyrics ->
+                if (lyrics != null) return@flowMap lyrics
+
+                isLoading = true
+
+                YouTube.next(mediaId, null)?.map { nextResult ->
+                    nextResult.lyrics?.text()?.map { newLyrics ->
+                        onLyricsUpdate(mediaId, newLyrics ?: "")
+                        isLoading = false
+                        return@flowMap newLyrics ?: ""
+                    }
+                }
+
+                isLoading = false
+                null
+            }.distinctUntilChanged()
+        }.collectAsState(initial = ".", context = Dispatchers.IO)
+
+        if (isEditingLyrics) {
+            TextFieldDialog(
+                hintText = "Enter the lyrics",
+                initialTextInput = lyrics ?: "",
+                singleLine = false,
+                maxLines = 10,
+                isTextInputValid = { true },
+                onDismiss = {
+                    isEditingLyrics = false
+                },
+                onDone = {
+                    query {
+                        Database.updateLyrics(mediaId, it)
+                    }
+                }
+            )
+        }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            onDismiss()
+                        }
+                    )
+                }
+                .fillMaxSize()
+                .background(Color.Black.copy(0.8f))
+        ) {
+            AnimatedVisibility(
+                visible = !isLoading && lyrics == null,
+                enter = slideInVertically { -it },
+                exit = slideOutVertically { -it },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            ) {
+                BasicText(
+                    text = "An error has occurred while fetching the lyrics",
+                    style = typography.xs.center.medium.color(BlackColorPalette.text),
+                    modifier = Modifier
+                        .background(Color.Black.copy(0.4f))
+                        .padding(all = 8.dp)
+                        .fillMaxWidth()
+                )
+            }
+
+            AnimatedVisibility(
+                visible = lyrics?.let(String::isEmpty) ?: false,
+                enter = slideInVertically { -it },
+                exit = slideOutVertically { -it },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            ) {
+                BasicText(
+                    text = "Lyrics are not available for this song",
+                    style = typography.xs.center.medium.color(BlackColorPalette.text),
+                    modifier = Modifier
+                        .background(Color.Black.copy(0.4f))
+                        .padding(all = 8.dp)
+                        .fillMaxWidth()
+                )
+            }
+
+            if (isLoading) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .shimmer()
+                ) {
+                    repeat(4) { index ->
+                        TextPlaceholder(
+                            modifier = Modifier
+                                .alpha(1f - index * 0.05f)
+                        )
+                    }
+                }
+            } else {
+                lyrics?.let { lyrics ->
+                    if (lyrics.isNotEmpty()) {
+                        BasicText(
+                            text = lyrics,
+                            style = typography.xs.center.medium.color(BlackColorPalette.text),
+                            modifier = Modifier
+                                .nestedScroll(remember { nestedScrollConnectionProvider() })
+                                .verticalFadingEdge()
+                                .verticalScroll(rememberScrollState())
+                                .padding(vertical = size / 4, horizontal = 32.dp)
+                        )
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .size(size)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.search),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(DarkColorPalette.text),
+                            modifier = Modifier
+                                .padding(all = 4.dp)
+                                .clickable {
+                                    val mediaMetadata = mediaMetadataProvider()
+
+                                    val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                        putExtra(
+                                            SearchManager.QUERY,
+                                            "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
+                                        )
+                                    }
+
+                                    if (intent.resolveActivity(context.packageManager) != null) {
+                                        context.startActivity(intent)
+                                    } else {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "No browser app found!",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
+                                }
+                                .padding(all = 8.dp)
+                                .size(20.dp)
+                        )
+
+                        Image(
+                            painter = painterResource(R.drawable.pencil),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(DarkColorPalette.text),
+                            modifier = Modifier
+                                .padding(all = 4.dp)
+                                .clickable {
+                                    isEditingLyrics = true
+                                }
+                                .padding(all = 8.dp)
+                                .size(20.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -465,50 +709,50 @@ private fun StatsForNerds(
                 Column {
                     BasicText(
                         text = "Id",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = "Volume",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = "Loudness",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = "Bitrate",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = "Size",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = "Cached",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                 }
 
                 Column {
                     BasicText(
                         text = mediaId,
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = "${volume.times(100).roundToInt()}%",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = format?.loudnessDb?.let { loudnessDb ->
                             "%.2f dB".format(loudnessDb)
                         } ?: "Unknown",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = format?.bitrate?.let { bitrate ->
                             "${bitrate / 1000} kbps"
                         } ?: "Unknown",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = format?.contentLength?.let { contentLength ->
@@ -517,7 +761,7 @@ private fun StatsForNerds(
                                 contentLength
                             )
                         } ?: "Unknown",
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                     BasicText(
                         text = buildString {
@@ -527,7 +771,7 @@ private fun StatsForNerds(
                                 append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
                             }
                         },
-                        style = typography.xs.semiBold.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(BlackColorPalette.text)
                     )
                 }
             }
@@ -535,7 +779,7 @@ private fun StatsForNerds(
             if (format != null && format?.itag == null) {
                 BasicText(
                     text = "FETCH MISSING DATA",
-                    style = typography.xxs.semiBold.color(BlackColorPalette.text),
+                    style = typography.xxs.medium.color(BlackColorPalette.text),
                     modifier = Modifier
                         .clickable(
                             indication = rememberRipple(bounded = true),
@@ -579,17 +823,21 @@ private fun StatsForNerds(
 @Composable
 private fun Controls(
     playerState: PlayerState,
-    song: Song?,
     modifier: Modifier = Modifier
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
     val binder = LocalPlayerServiceBinder.current
     val player = binder?.player ?: return
+    val mediaId = playerState.mediaItem?.mediaId ?: return
 
     var scrubbingPosition by remember(playerState.mediaItemIndex) {
         mutableStateOf<Long?>(null)
     }
+
+    val likedAt by remember(mediaId) {
+        Database.likedAt(mediaId).distinctUntilChanged()
+    }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -688,15 +936,17 @@ private fun Controls(
             Image(
                 painter = painterResource(R.drawable.heart),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(
-                    song?.likedAt?.let { colorPalette.red } ?: colorPalette.textDisabled
-                ),
+                colorFilter = ColorFilter.tint(if (likedAt != null) colorPalette.red else colorPalette.textDisabled),
                 modifier = Modifier
                     .clickable {
                         query {
-                            song?.let { song ->
-                                Database.update(song.toggleLike())
-                            } ?: Database.insert(playerState.mediaItem!!, Song::toggleLike)
+                            if (Database.like(
+                                    mediaId,
+                                    if (likedAt == null) System.currentTimeMillis() else null
+                                ) == 0
+                            ) {
+                                Database.insert(playerState.mediaItem, Song::toggleLike)
+                            }
                         }
                     }
                     .weight(1f)

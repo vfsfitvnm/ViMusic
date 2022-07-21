@@ -90,7 +90,6 @@ fun BottomSheet(
     }
 }
 
-
 @Stable
 class BottomSheetState(
     draggableState: DraggableState,

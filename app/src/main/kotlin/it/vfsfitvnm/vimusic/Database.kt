@@ -81,6 +81,18 @@ interface Database {
     @Query("SELECT * FROM Song WHERE id = :id")
     fun song(id: String): Flow<Song?>
 
+    @Query("SELECT likedAt FROM Song WHERE id = :songId")
+    fun likedAt(songId: String): Flow<Long?>
+
+    @Query("UPDATE Song SET likedAt = :likedAt WHERE id = :songId")
+    fun like(songId: String, likedAt: Long?): Int
+
+    @Query("SELECT lyrics FROM Song WHERE id = :songId")
+    fun lyrics(songId: String): Flow<String?>
+
+    @Query("UPDATE Song SET lyrics = :lyrics WHERE id = :songId")
+    fun updateLyrics(songId: String, lyrics: String): Int
+
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
