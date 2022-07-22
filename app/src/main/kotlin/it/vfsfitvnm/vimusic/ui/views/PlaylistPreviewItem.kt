@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.views
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -11,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -39,6 +41,7 @@ fun PlaylistPreviewItem(
     thumbnailSize: Dp = Dimensions.thumbnails.song
 ) {
     val density = LocalDensity.current
+    val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
     val thumbnailSizePx = with(density) {
         thumbnailSize.roundToPx()
@@ -51,7 +54,6 @@ fun PlaylistPreviewItem(
     PlaylistItem(
         name = playlistPreview.playlist.name,
         textColor = Color.White,
-        modifier = modifier,
         thumbnailSize = thumbnailSize,
         imageContent = {
             if (thumbnails.toSet().size == 1) {
@@ -60,6 +62,7 @@ fun PlaylistPreviewItem(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
+                        .clip(thumbnailShape)
                         .fillMaxSize()
                 )
             } else {
@@ -78,13 +81,16 @@ fun PlaylistPreviewItem(
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
+                                .clip(thumbnailShape)
+                                .border(width = 1.dp, color = colorPalette.lightBackground)
                                 .align(alignment)
                                 .size(thumbnailSize)
                         )
                     }
                 }
             }
-        }
+        },
+        modifier = modifier
     )
 }
 
@@ -98,7 +104,6 @@ fun BuiltInPlaylistItem(
 ) {
     PlaylistItem(
         name = name,
-        modifier = modifier,
         thumbnailSize = thumbnailSize,
         withGradient = false,
         imageContent = {
@@ -110,7 +115,8 @@ fun BuiltInPlaylistItem(
                     .align(Alignment.Center)
                     .size(24.dp)
             )
-        }
+        },
+        modifier = modifier,
     )
 }
 
@@ -123,10 +129,11 @@ fun PlaylistItem(
     withGradient: Boolean = true,
     imageContent: @Composable BoxScope.() -> Unit
 ) {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
 
     Box(
         modifier = modifier
+            .clip(thumbnailShape)
             .background(colorPalette.lightBackground)
             .size(thumbnailSize * 2)
     ) {
