@@ -55,6 +55,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.*
 import it.vfsfitvnm.vimusic.ui.styling.*
 import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -281,6 +282,13 @@ fun PlayerView(
 
                             BaseMediaItemMenu(
                                 mediaItem = mediaItem,
+                                onStartRadio = {
+                                    binder.stopRadio()
+                                    binder.player.seamlessPlay(mediaItem)
+                                    binder.setupRadio(
+                                        NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                    )
+                                },
                                 onGoToEqualizer = {
                                     val intent =
                                         Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {

@@ -184,13 +184,13 @@ fun QueuedMediaItemMenu(
     onGlobalRouteEmitted: (() -> Unit)? = null
 ) {
     val menuState = LocalMenuState.current
-    val player = LocalPlayerServiceBinder.current?.player
+    val binder = LocalPlayerServiceBinder.current
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss ?: menuState::hide,
         onRemoveFromQueue = if (indexInQueue != null) ({
-            player?.removeMediaItem(indexInQueue)
+            binder?.player?.removeMediaItem(indexInQueue)
         }) else null,
         onGlobalRouteEmitted = onGlobalRouteEmitted,
         modifier = modifier
@@ -359,6 +359,50 @@ fun MediaItemMenu(
                             detectTapGestures { }
                         }
                 ) {
+                    onStartRadio?.let { onStartRadio ->
+                        MenuEntry(
+                            icon = R.drawable.radio,
+                            text = "Start radio",
+                            onClick = {
+                                onDismiss()
+                                onStartRadio()
+                            }
+                        )
+                    }
+
+                    onPlaySingle?.let { onPlaySingle ->
+                        MenuEntry(
+                            icon = R.drawable.play,
+                            text = "Play single",
+                            onClick = {
+                                onDismiss()
+                                onPlaySingle()
+                            }
+                        )
+                    }
+
+                    onPlayNext?.let { onPlayNext ->
+                        MenuEntry(
+                            icon = R.drawable.play_skip_forward,
+                            text = "Play next",
+                            onClick = {
+                                onDismiss()
+                                onPlayNext()
+                            }
+                        )
+                    }
+
+                    onEnqueue?.let { onEnqueue ->
+                        MenuEntry(
+                            icon = R.drawable.enqueue,
+                            text = "Enqueue",
+                            onClick = {
+                                onDismiss()
+                                onEnqueue()
+                            }
+                        )
+                    }
+
                     onGoToEqualizer?.let { onGoToEqualizer ->
                         MenuEntry(
                             icon = R.drawable.equalizer,
@@ -492,50 +536,6 @@ fun MediaItemMenu(
                             secondaryText = sleepTimerMillisLeft?.let { "${DateUtils.formatElapsedTime(it / 1000)} left" },
                             onClick = {
                                 isShowingSleepTimerDialog = true
-                            }
-                        )
-                    }
-
-                    onStartRadio?.let { onStartRadio ->
-                        MenuEntry(
-                            icon = R.drawable.radio,
-                            text = "Start radio",
-                            onClick = {
-                                onDismiss()
-                                onStartRadio()
-                            }
-                        )
-                    }
-
-                    onPlaySingle?.let { onPlaySingle ->
-                        MenuEntry(
-                            icon = R.drawable.play,
-                            text = "Play single",
-                            onClick = {
-                                onDismiss()
-                                onPlaySingle()
-                            }
-                        )
-                    }
-
-                    onPlayNext?.let { onPlayNext ->
-                        MenuEntry(
-                            icon = R.drawable.play_skip_forward,
-                            text = "Play next",
-                            onClick = {
-                                onDismiss()
-                                onPlayNext()
-                            }
-                        )
-                    }
-
-                    onEnqueue?.let { onEnqueue ->
-                        MenuEntry(
-                            icon = R.drawable.enqueue,
-                            text = "Enqueue",
-                            onClick = {
-                                onDismiss()
-                                onEnqueue()
                             }
                         )
                     }

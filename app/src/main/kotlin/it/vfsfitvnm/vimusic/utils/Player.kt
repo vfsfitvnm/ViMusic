@@ -18,6 +18,15 @@ val Timeline.windows: List<Timeline.Window>
 val Player.shouldBePlaying: Boolean
     get() = !(playbackState == Player.STATE_ENDED || !playWhenReady)
 
+fun Player.seamlessPlay(mediaItem: MediaItem) {
+    if (mediaItem.mediaId == currentMediaItem?.mediaId) {
+        if (currentMediaItemIndex > 0) removeMediaItems(0, currentMediaItemIndex)
+        if (currentMediaItemIndex < mediaItemCount - 1) removeMediaItems(currentMediaItemIndex + 1, mediaItemCount)
+    } else {
+        forcePlay(mediaItem)
+    }
+}
+
 fun Player.forcePlay(mediaItem: MediaItem) {
     setMediaItem(mediaItem, true)
     playWhenReady = true
