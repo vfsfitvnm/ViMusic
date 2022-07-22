@@ -417,7 +417,11 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .setSmallIcon(player.playerError?.let { R.drawable.alert_circle }
                 ?: R.drawable.app_icon)
             .setOngoing(false)
-            .setContentIntent(activityPendingIntent<MainActivity>())
+            .setContentIntent(activityPendingIntent<MainActivity>(
+                flags = PendingIntent.FLAG_UPDATE_CURRENT
+            ) {
+                putExtra("expandPlayerBottomSheet", true)
+            })
             .setDeleteIntent(broadCastPendingIntent<NotificationDismissReceiver>())
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)

@@ -232,12 +232,12 @@ class BottomSheetState(
 }
 
 @Composable
-fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp): BottomSheetState {
+fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp, isExpanded: Boolean = false): BottomSheetState {
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
     var wasExpanded by rememberSaveable {
-        mutableStateOf(false)
+        mutableStateOf(isExpanded)
     }
 
     return remember(lowerBound, upperBound, coroutineScope) {

@@ -73,6 +73,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val expandPlayerBottomSheet = intent?.extras?.getBoolean("expandPlayerBottomSheet", false) ?: false
+
         uri = intent?.data
 
         setContent {
@@ -189,7 +191,9 @@ class MainActivity : ComponentActivity() {
                     when (val uri = uri) {
                         null -> {
                             val playerBottomSheetState = rememberBottomSheetState(
-                                lowerBound = Dimensions.collapsedPlayer, upperBound = maxHeight
+                                lowerBound = Dimensions.collapsedPlayer,
+                                upperBound = maxHeight,
+                                isExpanded = expandPlayerBottomSheet
                             )
 
                             HomeScreen()
