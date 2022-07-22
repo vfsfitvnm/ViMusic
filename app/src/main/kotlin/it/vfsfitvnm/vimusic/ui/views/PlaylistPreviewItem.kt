@@ -50,6 +50,7 @@ fun PlaylistPreviewItem(
 
     PlaylistItem(
         name = playlistPreview.playlist.name,
+        textColor = Color.White,
         modifier = modifier,
         thumbnailSize = thumbnailSize,
         imageContent = {
@@ -117,6 +118,7 @@ fun BuiltInPlaylistItem(
 fun PlaylistItem(
     name: String,
     modifier: Modifier = Modifier,
+    textColor: Color? = null,
     thumbnailSize: Dp = Dimensions.thumbnails.song,
     withGradient: Boolean = true,
     imageContent: @Composable BoxScope.() -> Unit
@@ -136,7 +138,7 @@ fun PlaylistItem(
 
         BasicText(
             text = name,
-            style = typography.xxs.semiBold.color(Color.White),
+            style = typography.xxs.semiBold.color(textColor ?: colorPalette.text),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
