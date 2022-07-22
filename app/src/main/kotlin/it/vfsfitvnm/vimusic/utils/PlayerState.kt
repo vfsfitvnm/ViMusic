@@ -40,6 +40,23 @@ fun rememberMediaItemIndex(player: Player): State<Int> {
 }
 
 @Composable
+fun rememberMediaItem(player: Player): State<MediaItem?> {
+    val state = remember(player) {
+        mutableStateOf(player.currentMediaItem)
+    }
+
+    DisposableEffect(player) {
+        player.listener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                state.value = mediaItem
+            }
+        })
+    }
+
+    return state
+}
+
+@Composable
 fun rememberWindows(player: Player): State<List<Timeline.Window>> {
     val windowsState = remember(player) {
         mutableStateOf(player.currentTimeline.windows)

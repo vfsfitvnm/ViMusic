@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.datasource.cache.Cache
@@ -79,13 +80,9 @@ fun PlayerView(
 
     binder?.player ?: return
 
-    val mediaItemIndex by rememberMediaItemIndex(binder.player)
+    val nullableMediaItem by rememberMediaItem(binder.player)
 
-    if (mediaItemIndex == -1) return
-
-    val mediaItem = remember(mediaItemIndex) {
-        binder.player.getMediaItemAt(mediaItemIndex)
-    }
+    val mediaItem = nullableMediaItem ?: return
 
     val shouldBePlaying by rememberShouldBePlaying(binder.player)
     val positionAndDuration by rememberPositionAndDuration(binder.player)
@@ -216,7 +213,7 @@ fun PlayerView(
                     }
 
                     Controls(
-                        mediaItemIndex = mediaItemIndex,
+                        mediaItem = mediaItem,
                         shouldBePlaying = shouldBePlaying,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
@@ -251,7 +248,7 @@ fun PlayerView(
                     }
 
                     Controls(
-                        mediaItemIndex = mediaItemIndex,
+                        mediaItem = mediaItem,
                         shouldBePlaying = shouldBePlaying,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
@@ -844,7 +841,7 @@ private fun StatsForNerds(
 
 @Composable
 private fun Controls(
-    mediaItemIndex: Int,
+    mediaItem: MediaItem,
     shouldBePlaying: Boolean,
     position: Long,
     duration: Long,
@@ -857,11 +854,7 @@ private fun Controls(
 
     val repeatMode by rememberRepeatMode(binder.player)
 
-    val mediaItem = remember(mediaItemIndex) {
-        binder.player.getMediaItemAt(mediaItemIndex)
-    }
-
-    var scrubbingPosition by remember(mediaItemIndex) {
+    var scrubbingPosition by remember(mediaItem.mediaId) {
         mutableStateOf<Long?>(null)
     }
 
