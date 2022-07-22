@@ -59,6 +59,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 
@@ -75,11 +76,18 @@ fun PlayerView(
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
 
-    val player = binder?.player
-    val playerState = rememberPlayerState(player)
+    binder?.player ?: return
 
-    player ?: return
-    playerState?.mediaItem ?: return
+    val mediaItemIndex by rememberMediaItemIndex(binder.player)
+
+    if (mediaItemIndex == -1) return
+
+    val mediaItem = remember(mediaItemIndex) {
+        binder.player.getMediaItemAt(mediaItemIndex)
+    }
+
+    val shouldBePlaying by rememberShouldBePlaying(binder.player)
+    val positionAndDuration by rememberPositionAndDuration(binder.player)
 
     BottomSheet(
         state = layoutState,
@@ -97,6 +105,7 @@ fun PlayerView(
                         }
                         .background(colorPalette.elevatedBackground)
                         .drawBehind {
+                            val progress = positionAndDuration.first.toFloat() / positionAndDuration.second.absoluteValue
                             val offset = Dimensions.thumbnails.player.songPreview.toPx()
 
                             drawLine(
@@ -106,7 +115,7 @@ fun PlayerView(
                                     y = 1.dp.toPx()
                                 ),
                                 end = Offset(
-                                    x = ((size.width - offset) * playerState.progress) + offset,
+                                    x = ((size.width - offset) * progress) + offset,
                                     y = 1.dp.toPx()
                                 ),
                                 strokeWidth = 2.dp.toPx()
@@ -114,7 +123,7 @@ fun PlayerView(
                         }
                 ) {
                     AsyncImage(
-                        model = playerState.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
+                        model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -127,41 +136,42 @@ fun PlayerView(
                             .weight(1f)
                     ) {
                         BasicText(
-                            text = playerState.mediaMetadata.title?.toString() ?: "",
+                            text = mediaItem.mediaMetadata.title?.toString() ?: "",
                             style = typography.xs.semiBold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                         BasicText(
-                            text = playerState.mediaMetadata.artist?.toString() ?: "",
+                            text = mediaItem.mediaMetadata.artist?.toString() ?: "",
                             style = typography.xs.semiBold.secondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
 
-                    when {
-                        playerState.playbackState == Player.STATE_ENDED || !playerState.playWhenReady -> Image(
+                    if (shouldBePlaying) {
+                        Image(
+                            painter = painterResource(R.drawable.pause),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .clickable(onClick = binder.player::pause)
+                                .padding(vertical = 8.dp)
+                                .padding(horizontal = 16.dp)
+                                .size(22.dp)
+                        )
+                    } else {
+                        Image(
                             painter = painterResource(R.drawable.play),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
                                 .clickable {
-                                    if (playerState.playbackState == Player.STATE_IDLE) {
-                                        player.prepare()
+                                    if (binder.player.playbackState == Player.STATE_IDLE) {
+                                        binder.player.prepare()
                                     }
-                                    player.play()
+                                    binder.player.play()
                                 }
-                                .padding(vertical = 8.dp)
-                                .padding(horizontal = 16.dp)
-                                .size(22.dp)
-                        )
-                        else -> Image(
-                            painter = painterResource(R.drawable.pause),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable(onClick = player::pause)
                                 .padding(vertical = 8.dp)
                                 .padding(horizontal = 16.dp)
                                 .size(22.dp)
@@ -205,7 +215,10 @@ fun PlayerView(
                     }
 
                     Controls(
-                        playerState = playerState,
+                        mediaItemIndex = mediaItemIndex,
+                        shouldBePlaying = shouldBePlaying,
+                        position = positionAndDuration.first,
+                        duration = positionAndDuration.second,
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxHeight()
@@ -237,7 +250,10 @@ fun PlayerView(
                     }
 
                     Controls(
-                        playerState = playerState,
+                        mediaItemIndex = mediaItemIndex,
+                        shouldBePlaying = shouldBePlaying,
+                        position = positionAndDuration.first,
+                        duration = positionAndDuration.second,
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxWidth()
@@ -264,13 +280,13 @@ fun PlayerView(
                             val resultRegistryOwner = LocalActivityResultRegistryOwner.current
 
                             BaseMediaItemMenu(
-                                mediaItem = playerState.mediaItem,
+                                mediaItem = mediaItem,
                                 onGoToEqualizer = {
                                     val intent =
                                         Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                                             putExtra(
                                                 AudioEffect.EXTRA_AUDIO_SESSION,
-                                                player.audioSessionId
+                                                binder.player.audioSessionId
                                             )
                                             putExtra(
                                                 AudioEffect.EXTRA_PACKAGE_NAME,
@@ -820,21 +836,29 @@ private fun StatsForNerds(
 
 @Composable
 private fun Controls(
-    playerState: PlayerState,
+    mediaItemIndex: Int,
+    shouldBePlaying: Boolean,
+    position: Long,
+    duration: Long,
     modifier: Modifier = Modifier
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
     val binder = LocalPlayerServiceBinder.current
-    val player = binder?.player ?: return
-    val mediaId = playerState.mediaItem?.mediaId ?: return
+    binder?.player ?: return
 
-    var scrubbingPosition by remember(playerState.mediaItemIndex) {
+    val repeatMode by rememberRepeatMode(binder.player)
+
+    val mediaItem = remember(mediaItemIndex) {
+        binder.player.getMediaItemAt(mediaItemIndex)
+    }
+
+    var scrubbingPosition by remember(mediaItemIndex) {
         mutableStateOf<Long?>(null)
     }
 
-    val likedAt by remember(mediaId) {
-        Database.likedAt(mediaId).distinctUntilChanged()
+    val likedAt by remember(mediaItem.mediaId) {
+        Database.likedAt(mediaItem.mediaId).distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Column(
@@ -849,14 +873,14 @@ private fun Controls(
         )
 
         BasicText(
-            text = playerState.mediaMetadata.title?.toString() ?: "",
+            text = mediaItem.mediaMetadata.title?.toString() ?: "",
             style = typography.l.bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
         BasicText(
-            text = playerState.mediaMetadata.artist?.toString() ?: "",
+            text = mediaItem.mediaMetadata.artist?.toString() ?: "",
             style = typography.s.semiBold.secondary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -868,21 +892,21 @@ private fun Controls(
         )
 
         SeekBar(
-            value = scrubbingPosition ?: playerState.currentPosition,
+            value = scrubbingPosition ?: position,
             minimumValue = 0,
-            maximumValue = playerState.duration,
+            maximumValue = duration,
             onDragStart = {
                 scrubbingPosition = it
             },
             onDrag = { delta ->
-                scrubbingPosition = if (playerState.duration != C.TIME_UNSET) {
-                    scrubbingPosition?.plus(delta)?.coerceIn(0, playerState.duration)
+                scrubbingPosition = if (duration != C.TIME_UNSET) {
+                    scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
                 } else {
                     null
                 }
             },
             onDragEnd = {
-                scrubbingPosition?.let(player::seekTo)
+                scrubbingPosition?.let(binder.player::seekTo)
                 scrubbingPosition = null
             },
             color = colorPalette.text,
@@ -902,17 +926,15 @@ private fun Controls(
                 .fillMaxWidth()
         ) {
             BasicText(
-                text = DateUtils.formatElapsedTime(
-                    (scrubbingPosition ?: playerState.currentPosition) / 1000
-                ),
+                text = DateUtils.formatElapsedTime((scrubbingPosition ?: position) / 1000),
                 style = typography.xxs.semiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
 
-            if (playerState.duration != C.TIME_UNSET) {
+            if (duration != C.TIME_UNSET) {
                 BasicText(
-                    text = DateUtils.formatElapsedTime(playerState.duration / 1000),
+                    text = DateUtils.formatElapsedTime(duration / 1000),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -939,11 +961,11 @@ private fun Controls(
                     .clickable {
                         query {
                             if (Database.like(
-                                    mediaId,
+                                    mediaItem.mediaId,
                                     if (likedAt == null) System.currentTimeMillis() else null
                                 ) == 0
                             ) {
-                                Database.insert(playerState.mediaItem, Song::toggleLike)
+                                Database.insert(mediaItem, Song::toggleLike)
                             }
                         }
                     }
@@ -956,7 +978,7 @@ private fun Controls(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
-                    .clickable(onClick = player::seekToPrevious)
+                    .clickable(onClick = binder.player::seekToPrevious)
                     .weight(1f)
                     .size(28.dp)
             )
@@ -966,27 +988,23 @@ private fun Controls(
                     .width(8.dp)
             )
 
-            val isPaused =
-                playerState.playbackState == Player.STATE_ENDED || !playerState.playWhenReady
-
             Box(
                 modifier = Modifier
                     .clickable {
-                        if (isPaused) {
-                            if (player.playbackState == Player.STATE_IDLE) {
-                                player.prepare()
-                            }
-
-                            player.play()
+                        if (shouldBePlaying) {
+                            binder.player.pause()
                         } else {
-                            player.pause()
+                            if (binder.player.playbackState == Player.STATE_IDLE) {
+                                binder.player.prepare()
+                            }
+                            binder.player.play()
                         }
                     }
                     .background(color = colorPalette.text, shape = CircleShape)
                     .size(64.dp)
             ) {
                 Image(
-                    painter = painterResource(if (isPaused) R.drawable.play else R.drawable.pause),
+                    painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.background),
                     modifier = Modifier
@@ -1005,14 +1023,14 @@ private fun Controls(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
-                    .clickable(onClick = player::seekToNext)
+                    .clickable(onClick = binder.player::seekToNext)
                     .weight(1f)
                     .size(28.dp)
             )
 
             Image(
                 painter = painterResource(
-                    if (playerState.repeatMode == Player.REPEAT_MODE_ONE) {
+                    if (repeatMode == Player.REPEAT_MODE_ONE) {
                         R.drawable.repeat_one
                     } else {
                         R.drawable.repeat
@@ -1020,7 +1038,7 @@ private fun Controls(
                 ),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(
-                    if (playerState.repeatMode == Player.REPEAT_MODE_OFF) {
+                    if (repeatMode == Player.REPEAT_MODE_OFF) {
                         colorPalette.textDisabled
                     } else {
                         colorPalette.text
@@ -1028,11 +1046,11 @@ private fun Controls(
                 ),
                 modifier = Modifier
                     .clickable {
-                        player.repeatMode
+                        binder.player.repeatMode
                             .plus(2)
                             .mod(3)
                             .let {
-                                player.repeatMode = it
+                                binder.player.repeatMode = it
                             }
                     }
                     .weight(1f)
