@@ -311,7 +311,6 @@ fun PlayerView(
         }
 
         PlayerBottomSheet(
-            playerState = playerState,
             layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound),
             onShowLyrics = {
                 isShowingStatsForNerds = false
@@ -440,7 +439,6 @@ private fun Thumbnail(
         }
     }
 }
-
 
 @Composable
 private fun Lyrics(

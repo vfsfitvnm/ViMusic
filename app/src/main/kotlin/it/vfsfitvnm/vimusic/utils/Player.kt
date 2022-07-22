@@ -10,6 +10,11 @@ val Timeline.mediaItems: List<MediaItem>
         getWindow(index, Timeline.Window()).mediaItem
     }
 
+val Timeline.windows: List<Timeline.Window>
+    get() = (0 until windowCount).map { index ->
+        getWindow(index, Timeline.Window())
+    }
+
 val Player.shouldBePlaying: Boolean
     get() = !(playbackState == Player.STATE_ENDED || !playWhenReady)
 

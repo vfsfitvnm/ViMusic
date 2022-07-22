@@ -155,6 +155,44 @@ fun rememberMediaItemIndex(player: Player): State<Int> {
 }
 
 @Composable
+fun rememberWindows(player: Player): State<List<Timeline.Window>> {
+    val windowsState = remember(player) {
+        mutableStateOf(player.currentTimeline.windows)
+    }
+
+    DisposableEffect(player) {
+        player.listener(object : Player.Listener {
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                windowsState.value = timeline.windows
+            }
+        })
+    }
+
+    return windowsState
+}
+
+@Composable
+fun rememberShouldBePlaying(player: Player): State<Boolean> {
+    val state = remember(player) {
+        mutableStateOf(!(player.playbackState == Player.STATE_ENDED || !player.playWhenReady))
+    }
+
+    DisposableEffect(player) {
+        player.listener(object : Player.Listener {
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                state.value = !(player.playbackState == Player.STATE_ENDED || !playWhenReady)
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                state.value = !(playbackState == Player.STATE_ENDED || !player.playWhenReady)
+            }
+        })
+    }
+
+    return state
+}
+
+@Composable
 fun rememberVolume(player: Player): State<Float> {
     val volumeState = remember(player) {
         mutableStateOf(player.volume)

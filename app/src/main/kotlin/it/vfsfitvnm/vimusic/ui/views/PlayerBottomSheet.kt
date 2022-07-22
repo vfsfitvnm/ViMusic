@@ -22,7 +22,6 @@ import it.vfsfitvnm.vimusic.utils.PlayerState
 @ExperimentalAnimationApi
 @Composable
 fun PlayerBottomSheet(
-    playerState: PlayerState?,
     layoutState: BottomSheetState,
     onShowLyrics: () -> Unit,
     onShowStatsForNerds: () -> Unit,
@@ -101,7 +100,6 @@ fun PlayerBottomSheet(
         }
     ) {
         CurrentPlaylistView(
-            playerState = playerState,
             layoutState = layoutState,
             onGlobalRouteEmitted = onGlobalRouteEmitted,
             modifier = Modifier

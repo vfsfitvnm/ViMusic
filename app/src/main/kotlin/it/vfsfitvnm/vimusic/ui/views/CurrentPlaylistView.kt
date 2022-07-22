@@ -10,12 +10,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,7 +29,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
@@ -45,16 +43,11 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.utils.PlayerState
-import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
-
+import it.vfsfitvnm.vimusic.utils.*
 
 @ExperimentalAnimationApi
 @Composable
 fun CurrentPlaylistView(
-    playerState: PlayerState?,
     layoutState: BottomSheetState,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
@@ -63,16 +56,18 @@ fun CurrentPlaylistView(
     val hapticFeedback = LocalHapticFeedback.current
     val (colorPalette, typography) = LocalAppearance.current
 
+    binder?.player ?: return
+
     val thumbnailSize = Dimensions.thumbnails.song.px
 
-    val isPaused by derivedStateOf {
-        playerState?.playbackState == Player.STATE_ENDED || playerState?.playWhenReady == false
-    }
+    val mediaItemIndex by rememberMediaItemIndex(binder.player)
+    val windows by rememberWindows(binder.player)
+    val shouldBePlaying by rememberShouldBePlaying(binder.player)
 
     val lazyListState =
-        rememberLazyListState(initialFirstVisibleItemIndex = playerState?.mediaItemIndex ?: 0)
+        rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex)
 
-    val reorderingState = rememberReorderingState(playerState?.mediaItems ?: emptyList())
+    val reorderingState = rememberReorderingState(windows)
 
     Box {
         LazyColumn(
@@ -84,32 +79,31 @@ fun CurrentPlaylistView(
                     layoutState.nestedScrollConnection(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
                 })
         ) {
-            itemsIndexed(
-                items = playerState?.mediaItems ?: emptyList()
-            ) { index, mediaItem ->
-                val isPlayingThisMediaItem by derivedStateOf {
-                    playerState?.mediaItemIndex == index
-                }
+            items(
+                items = windows,
+                key = { it.uid.hashCode() }
+            ) { window ->
+                val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
 
                 SongItem(
-                    mediaItem = mediaItem,
+                    mediaItem = window.mediaItem,
                     thumbnailSize = thumbnailSize,
                     onClick = {
                         if (isPlayingThisMediaItem) {
-                            if (isPaused) {
-                                binder?.player?.play()
+                            if (shouldBePlaying) {
+                                binder.player.pause()
                             } else {
-                                binder?.player?.pause()
+                                binder.player.play()
                             }
                         } else {
-                            binder?.player?.playWhenReady = true
-                            binder?.player?.seekToDefaultPosition(index)
+                            binder.player.playWhenReady = true
+                            binder.player.seekToDefaultPosition(window.firstPeriodIndex)
                         }
                     },
                     menuContent = {
                         QueuedMediaItemMenu(
-                            mediaItem = mediaItem,
-                            indexInQueue = if (isPlayingThisMediaItem) null else index,
+                            mediaItem = window.mediaItem,
+                            indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
                             onGlobalRouteEmitted = onGlobalRouteEmitted
                         )
                     },
@@ -128,19 +122,19 @@ fun CurrentPlaylistView(
                                     )
                                     .size(Dimensions.thumbnails.song)
                             ) {
-                                if (isPaused) {
+                                if (shouldBePlaying) {
+                                    MusicBars(
+                                        color = LightColorPalette.background,
+                                        modifier = Modifier
+                                            .height(24.dp)
+                                    )
+                                } else {
                                     Image(
                                         painter = painterResource(R.drawable.play),
                                         contentDescription = null,
                                         colorFilter = ColorFilter.tint(LightColorPalette.background),
                                         modifier = Modifier
                                             .size(24.dp)
-                                    )
-                                } else {
-                                    MusicBars(
-                                        color = LightColorPalette.background,
-                                        modifier = Modifier
-                                            .height(24.dp)
                                     )
                                 }
                             }
@@ -159,23 +153,24 @@ fun CurrentPlaylistView(
                     },
                     backgroundColor = colorPalette.background,
                     modifier = Modifier
+//                        .animateItemPlacement()
                         .verticalDragAfterLongPressToReorder(
                             reorderingState = reorderingState,
-                            index = index,
+                            index = window.firstPeriodIndex,
                             onDragStart = {
                                 hapticFeedback.performHapticFeedback(
                                     HapticFeedbackType.LongPress
                                 )
                             },
                             onDragEnd = { reachedIndex ->
-                                binder?.player?.moveMediaItem(index, reachedIndex)
+                                binder.player.moveMediaItem(window.firstPeriodIndex, reachedIndex)
                             }
                         )
                 )
             }
 
             item {
-                if (binder?.isLoadingRadio == true) {
+                if (binder.isLoadingRadio) {
                     Column(
                         modifier = Modifier
                             .shimmer()
@@ -226,7 +221,7 @@ fun CurrentPlaylistView(
                     modifier = Modifier
                 )
                 BasicText(
-                    text = "${playerState?.mediaItems?.size ?: 0} songs",
+                    text = "${windows.size} songs",
                     style = typography.xxs.semiBold.secondary,
                     modifier = Modifier
                 )
