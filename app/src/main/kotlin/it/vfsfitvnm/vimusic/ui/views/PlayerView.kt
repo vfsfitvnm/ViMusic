@@ -91,90 +91,84 @@ fun PlayerView(
         state = layoutState,
         modifier = modifier,
         collapsedContent = {
-            if (!layoutState.isExpanded) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(colorPalette.elevatedBackground)
+                    .fillMaxSize()
+                    .drawBehind {
+                        val progress = positionAndDuration.first.toFloat() / positionAndDuration.second.absoluteValue
+                        val offset = Dimensions.thumbnails.player.songPreview.toPx()
+
+                        drawLine(
+                            color = colorPalette.text,
+                            start = Offset(
+                                x = offset,
+                                y = 1.dp.toPx()
+                            ),
+                            end = Offset(
+                                x = ((size.width - offset) * progress) + offset,
+                                y = 1.dp.toPx()
+                            ),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
+            ) {
+                AsyncImage(
+                    model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .height(layoutState.lowerBound)
-                        .fillMaxWidth()
-                        .graphicsLayer {
-                            alpha = 1f - (layoutState.progress * 16).coerceAtMost(1f)
-                        }
-                        .background(colorPalette.elevatedBackground)
-                        .drawBehind {
-                            val progress = positionAndDuration.first.toFloat() / positionAndDuration.second.absoluteValue
-                            val offset = Dimensions.thumbnails.player.songPreview.toPx()
+                        .size(Dimensions.thumbnails.player.songPreview)
+                )
 
-                            drawLine(
-                                color = colorPalette.text,
-                                start = Offset(
-                                    x = offset,
-                                    y = 1.dp.toPx()
-                                ),
-                                end = Offset(
-                                    x = ((size.width - offset) * progress) + offset,
-                                    y = 1.dp.toPx()
-                                ),
-                                strokeWidth = 2.dp.toPx()
-                            )
-                        }
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .weight(1f)
                 ) {
-                    AsyncImage(
-                        model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(Dimensions.thumbnails.player.songPreview)
+                    BasicText(
+                        text = mediaItem.mediaMetadata.title?.toString() ?: "",
+                        style = typography.xs.semiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
+                    BasicText(
+                        text = mediaItem.mediaMetadata.artist?.toString() ?: "",
+                        style = typography.xs.semiBold.secondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
 
-                    Column(
-                        verticalArrangement = Arrangement.Center,
+                if (shouldBePlaying) {
+                    Image(
+                        painter = painterResource(R.drawable.pause),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
                         modifier = Modifier
-                            .weight(1f)
-                    ) {
-                        BasicText(
-                            text = mediaItem.mediaMetadata.title?.toString() ?: "",
-                            style = typography.xs.semiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        BasicText(
-                            text = mediaItem.mediaMetadata.artist?.toString() ?: "",
-                            style = typography.xs.semiBold.secondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-
-                    if (shouldBePlaying) {
-                        Image(
-                            painter = painterResource(R.drawable.pause),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable(onClick = binder.player::pause)
-                                .padding(vertical = 8.dp)
-                                .padding(horizontal = 16.dp)
-                                .size(22.dp)
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(R.drawable.play),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable {
-                                    if (binder.player.playbackState == Player.STATE_IDLE) {
-                                        binder.player.prepare()
-                                    }
-                                    binder.player.play()
+                            .clickable(onClick = binder.player::pause)
+                            .padding(vertical = 8.dp)
+                            .padding(horizontal = 16.dp)
+                            .size(22.dp)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.play),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        modifier = Modifier
+                            .clickable {
+                                if (binder.player.playbackState == Player.STATE_IDLE) {
+                                    binder.player.prepare()
                                 }
-                                .padding(vertical = 8.dp)
-                                .padding(horizontal = 16.dp)
-                                .size(22.dp)
-                        )
-                    }
+                                binder.player.play()
+                            }
+                            .padding(vertical = 8.dp)
+                            .padding(horizontal = 16.dp)
+                            .size(22.dp)
+                    )
                 }
             }
         }
@@ -322,7 +316,7 @@ fun PlayerView(
                                 },
                                 onSetSleepTimer = {},
                                 onDismiss = menuState::hide,
-                                onGlobalRouteEmitted = layoutState.collapse,
+                                onGlobalRouteEmitted = layoutState::collapseSoft,
                             )
                         }
                     }
@@ -341,7 +335,7 @@ fun PlayerView(
                 isShowingLyrics = false
                 isShowingStatsForNerds = !isShowingStatsForNerds
             },
-            onGlobalRouteEmitted = layoutState.collapse,
+            onGlobalRouteEmitted = layoutState::collapseSoft,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )

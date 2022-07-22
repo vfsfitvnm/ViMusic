@@ -196,7 +196,7 @@ fun CurrentPlaylistView(
                 .clickable(
                     indication = rememberRipple(bounded = true),
                     interactionSource = remember { MutableInteractionSource() },
-                    onClick = layoutState.collapse
+                    onClick = layoutState::collapseSoft
                 )
                 .shadow(elevation = 8.dp)
                 .height(64.dp)

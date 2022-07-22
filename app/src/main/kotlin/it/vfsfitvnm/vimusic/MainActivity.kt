@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic
 
-import android.annotation.SuppressLint
 import android.content.*
 import android.net.Uri
 import android.os.Bundle
@@ -24,7 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
@@ -42,7 +42,6 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.views.PlayerView
 import it.vfsfitvnm.vimusic.utils.*
-
 
 class MainActivity : ComponentActivity() {
     private val serviceConnection = object : ServiceConnection {
@@ -70,10 +69,7 @@ class MainActivity : ComponentActivity() {
         super.onStop()
     }
 
-    @SuppressLint("BatteryLife")
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
-        ExperimentalTextApi::class
-    )
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -85,7 +81,8 @@ class MainActivity : ComponentActivity() {
             var appearance by remember(isSystemInDarkTheme) {
                 with(preferences) {
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
-                    val thumbnailRoundness = getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+                    val thumbnailRoundness =
+                        getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
                     mutableStateOf(
                         Appearance(
@@ -102,7 +99,8 @@ class MainActivity : ComponentActivity() {
                     SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
                         when (key) {
                             colorPaletteModeKey -> {
-                                val colorPaletteMode = sharedPreferences.getEnum(key, ColorPaletteMode.System)
+                                val colorPaletteMode =
+                                    sharedPreferences.getEnum(key, ColorPaletteMode.System)
 
                                 appearance = appearance.copy(
                                     colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
@@ -110,7 +108,8 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             thumbnailRoundnessKey -> {
-                                val thumbnailRoundness = sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
+                                val thumbnailRoundness =
+                                    sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
 
                                 appearance = appearance.copy(
                                     thumbnailShape = thumbnailRoundness.shape()
@@ -130,21 +129,22 @@ class MainActivity : ComponentActivity() {
 
             val systemUiController = rememberSystemUiController()
 
-            val rippleTheme = remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
-                object : RippleTheme {
-                    @Composable
-                    override fun defaultColor(): Color = RippleTheme.defaultRippleColor(
-                        contentColor = appearance.colorPalette.text,
-                        lightTheme = !appearance.colorPalette.isDark
-                    )
+            val rippleTheme =
+                remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
+                    object : RippleTheme {
+                        @Composable
+                        override fun defaultColor(): Color = RippleTheme.defaultRippleColor(
+                            contentColor = appearance.colorPalette.text,
+                            lightTheme = !appearance.colorPalette.isDark
+                        )
 
-                    @Composable
-                    override fun rippleAlpha(): RippleAlpha = RippleTheme.defaultRippleAlpha(
-                        contentColor = appearance.colorPalette.text,
-                        lightTheme = !appearance.colorPalette.isDark
-                    )
+                        @Composable
+                        override fun rippleAlpha(): RippleAlpha = RippleTheme.defaultRippleAlpha(
+                            contentColor = appearance.colorPalette.text,
+                            lightTheme = !appearance.colorPalette.isDark
+                        )
+                    }
                 }
-            }
 
             val shimmerTheme = remember {
                 defaultShimmerTheme.copy(
@@ -165,7 +165,10 @@ class MainActivity : ComponentActivity() {
             }
 
             SideEffect {
-                systemUiController.setSystemBarsColor(appearance.colorPalette.background, !appearance.colorPalette.isDark)
+                systemUiController.setSystemBarsColor(
+                    appearance.colorPalette.background,
+                    !appearance.colorPalette.isDark
+                )
             }
 
             CompositionLocalProvider(
@@ -185,15 +188,26 @@ class MainActivity : ComponentActivity() {
                 ) {
                     when (val uri = uri) {
                         null -> {
+                            val playerBottomSheetState = rememberBottomSheetState(
+                                lowerBound = Dimensions.collapsedPlayer, upperBound = maxHeight
+                            )
+
                             HomeScreen()
 
                             PlayerView(
-                                layoutState = rememberBottomSheetState(
-                                    lowerBound = Dimensions.collapsedPlayer, upperBound = maxHeight
-                                ),
+                                layoutState = playerBottomSheetState,
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                             )
+
+                            binder?.player?.let { player ->
+                                ExpandPlayerOnPlaylistChange(
+                                    player = player,
+                                    expand = {
+                                        playerBottomSheetState.expand(tween(500))
+                                    }
+                                )
+                            }
                         }
                         else -> IntentUriScreen(uri = uri)
                     }
@@ -215,3 +229,16 @@ class MainActivity : ComponentActivity() {
 }
 
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }
+
+@Composable
+fun ExpandPlayerOnPlaylistChange(player: Player, expand: () -> Unit) {
+    DisposableEffect(player, expand) {
+        player.listener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                    expand()
+                }
+            }
+        })
+    }
+}

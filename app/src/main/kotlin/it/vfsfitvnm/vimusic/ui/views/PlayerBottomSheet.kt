@@ -9,14 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-
 
 @ExperimentalAnimationApi
 @Composable
@@ -38,11 +36,7 @@ fun PlayerBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .graphicsLayer {
-                        alpha = 1f - (layoutState.progress * 16).coerceAtMost(1f)
-                    }
-                    .fillMaxWidth()
-                    .height(layoutState.lowerBound)
+                    .fillMaxSize()
                     .background(colorPalette.background)
             ) {
                 Row(
