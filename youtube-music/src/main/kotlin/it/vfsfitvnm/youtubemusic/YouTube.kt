@@ -125,10 +125,19 @@ object YouTube {
                     visitorData = "CgtsZG1ySnZiQWtSbyiMjuGSBg%3D%3D"
                 )
             )
+
             val DefaultAndroid = Context(
                 client = Client(
                     clientName = "ANDROID",
                     clientVersion = "16.50",
+                    visitorData = null,
+                )
+            )
+
+            val DefaultAgeRestrictionBypass = Context(
+                client = Client(
+                    clientName = "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
+                    clientVersion = "2.0",
                     visitorData = null,
                 )
             )
@@ -457,7 +466,7 @@ object YouTube {
 
     suspend fun player(videoId: String, playlistId: String? = null): Result<PlayerResponse>? {
         return runCatching {
-            client.post("/youtubei/v1/player") {
+            val playerResponse = client.post("/youtubei/v1/player") {
                 contentType(ContentType.Application.Json)
                 setBody(
                     PlayerBody(
@@ -469,6 +478,52 @@ object YouTube {
                 parameter("key", Key)
                 parameter("prettyPrint", false)
             }.body<PlayerResponse>()
+
+            if (playerResponse.playabilityStatus.status == "OK") {
+                playerResponse
+            } else {
+                @Serializable
+                data class AudioStream(
+                    val url: String,
+                    val bitrate: Long
+                )
+
+                @Serializable
+                data class PipedResponse(
+                    val audioStreams: List<AudioStream>
+                )
+
+                val safePlayerResponse = client.post("/youtubei/v1/player") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        PlayerBody(
+                            context = Context.DefaultAgeRestrictionBypass,
+                            videoId = videoId,
+                            playlistId = playlistId,
+                        )
+                    )
+                    parameter("key", Key)
+                    parameter("prettyPrint", false)
+                }.body<PlayerResponse>()
+
+                if (safePlayerResponse.playabilityStatus.status != "OK") {
+                    return@runCatching playerResponse
+                }
+
+                val audioStreams = client.get("https://pipedapi.kavin.rocks/streams/$videoId") {
+                    contentType(ContentType.Application.Json)
+                }.body<PipedResponse>().audioStreams
+
+                safePlayerResponse.copy(
+                    streamingData = safePlayerResponse.streamingData?.copy(
+                        adaptiveFormats = safePlayerResponse.streamingData.adaptiveFormats.map { adaptiveFormat ->
+                            adaptiveFormat.copy(
+                                url = audioStreams.find { it.bitrate == adaptiveFormat.bitrate }?.url
+                            )
+                        }
+                    )
+                )
+            }
         }.recoverIfCancelled()
     }
 

@@ -43,7 +43,7 @@ data class PlayerResponse(
             val lastModified: Long?,
             val loudnessDb: Double?,
             val audioSampleRate: Int?,
-            val url: String,
+            val url: String?,
         )
     }
 
