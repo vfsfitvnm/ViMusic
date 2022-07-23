@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -80,13 +79,6 @@ fun BottomSheet(
                     }
                 )
             }
-            .pointerInput(state) {
-                if (!state.isRunning && state.isCollapsed) {
-                    detectTapGestures {
-                        state.expand()
-                    }
-                }
-            }
             .fillMaxSize()
     ) {
         if (!state.isCollapsed) {
@@ -127,10 +119,6 @@ class BottomSheetState(
         get() = animatable.upperBound!!
 
     val value by animatable.asState()
-
-    val isRunning by derivedStateOf {
-        animatable.isRunning
-    }
 
     val isCollapsed by derivedStateOf {
         value == animatable.lowerBound
