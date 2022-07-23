@@ -1,5 +1,5 @@
 <b>Features</b>
-* Search and play any non-age-restricted song/video from YouTube Music
+* Search and play any song or video from YouTube Music
 * Background playback w/ notification
 * Search for songs, albums, artists, videos and playlists
 * Automatic cache system for offline playback and saving resources
