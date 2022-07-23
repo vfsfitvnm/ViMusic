@@ -20,8 +20,11 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 @Composable
 fun PlayerBottomSheet(
     layoutState: BottomSheetState,
+    isShowingLyrics: Boolean,
     onShowLyrics: () -> Unit,
+    isShowingStatsForNerds: Boolean,
     onShowStatsForNerds: () -> Unit,
+    onShowMenu: () -> Unit,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,6 +57,12 @@ fun PlayerBottomSheet(
                             .padding(all = 8.dp)
                             .size(20.dp)
                     )
+
+                    Spacer(
+                        modifier = Modifier
+                            .padding(all = 8.dp)
+                            .size(20.dp)
+                    )
                 }
 
                 Image(
@@ -72,7 +81,7 @@ fun PlayerBottomSheet(
                     Image(
                         painter = painterResource(R.drawable.text),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        colorFilter = ColorFilter.tint(if (isShowingLyrics) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
                             .clickable(onClick = onShowLyrics)
                             .padding(all = 8.dp)
@@ -82,9 +91,19 @@ fun PlayerBottomSheet(
                     Image(
                         painter = painterResource(R.drawable.information),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        colorFilter = ColorFilter.tint(if (isShowingStatsForNerds) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
                             .clickable(onClick = onShowStatsForNerds)
+                            .padding(all = 8.dp)
+                            .size(20.dp)
+                    )
+
+                    Image(
+                        painter = painterResource(R.drawable.ellipsis_horizontal),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        modifier = Modifier
+                            .clickable(onClick = onShowMenu)
                             .padding(all = 8.dp)
                             .size(20.dp)
                     )

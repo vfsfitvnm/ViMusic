@@ -255,85 +255,70 @@ fun PlayerView(
             }
         }
 
-        TopAppBar {
-            Spacer(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .size(24.dp)
-            )
-
-            Image(
-                painter = painterResource(R.drawable.ellipsis_horizontal),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.text),
-                modifier = Modifier
-                    .clickable {
-                        menuState.display {
-                            val resultRegistryOwner = LocalActivityResultRegistryOwner.current
-
-                            BaseMediaItemMenu(
-                                mediaItem = mediaItem,
-                                onStartRadio = {
-                                    binder.stopRadio()
-                                    binder.player.seamlessPlay(mediaItem)
-                                    binder.setupRadio(
-                                        NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                    )
-                                },
-                                onGoToEqualizer = {
-                                    val intent =
-                                        Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                                            putExtra(
-                                                AudioEffect.EXTRA_AUDIO_SESSION,
-                                                binder.player.audioSessionId
-                                            )
-                                            putExtra(
-                                                AudioEffect.EXTRA_PACKAGE_NAME,
-                                                context.packageName
-                                            )
-                                            putExtra(
-                                                AudioEffect.EXTRA_CONTENT_TYPE,
-                                                AudioEffect.CONTENT_TYPE_MUSIC
-                                            )
-                                        }
-
-                                    if (intent.resolveActivity(context.packageManager) != null) {
-                                        val contract =
-                                            ActivityResultContracts.StartActivityForResult()
-
-                                        resultRegistryOwner?.activityResultRegistry
-                                            ?.register("", contract) {}
-                                            ?.launch(intent)
-                                    } else {
-                                        Toast
-                                            .makeText(
-                                                context,
-                                                "No equalizer app found!",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                            .show()
-                                    }
-                                },
-                                onSetSleepTimer = {},
-                                onDismiss = menuState::hide,
-                                onGlobalRouteEmitted = layoutState::collapseSoft,
-                            )
-                        }
-                    }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .size(24.dp)
-            )
-        }
-
         PlayerBottomSheet(
             layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound),
+            isShowingLyrics = isShowingLyrics,
             onShowLyrics = {
                 isShowingStatsForNerds = false
                 isShowingLyrics = !isShowingLyrics
             },
+            isShowingStatsForNerds = isShowingStatsForNerds,
             onShowStatsForNerds = {
                 isShowingLyrics = false
                 isShowingStatsForNerds = !isShowingStatsForNerds
+            },
+            onShowMenu = {
+                menuState.display {
+                    val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+
+                    BaseMediaItemMenu(
+                        mediaItem = mediaItem,
+                        onStartRadio = {
+                            binder.stopRadio()
+                            binder.player.seamlessPlay(mediaItem)
+                            binder.setupRadio(
+                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                            )
+                        },
+                        onGoToEqualizer = {
+                            val intent =
+                                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                    putExtra(
+                                        AudioEffect.EXTRA_AUDIO_SESSION,
+                                        binder.player.audioSessionId
+                                    )
+                                    putExtra(
+                                        AudioEffect.EXTRA_PACKAGE_NAME,
+                                        context.packageName
+                                    )
+                                    putExtra(
+                                        AudioEffect.EXTRA_CONTENT_TYPE,
+                                        AudioEffect.CONTENT_TYPE_MUSIC
+                                    )
+                                }
+
+                            if (intent.resolveActivity(context.packageManager) != null) {
+                                val contract =
+                                    ActivityResultContracts.StartActivityForResult()
+
+                                resultRegistryOwner?.activityResultRegistry
+                                    ?.register("", contract) {}
+                                    ?.launch(intent)
+                            } else {
+                                Toast
+                                    .makeText(
+                                        context,
+                                        "No equalizer app found!",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                    .show()
+                            }
+                        },
+                        onSetSleepTimer = {},
+                        onDismiss = menuState::hide,
+                        onGlobalRouteEmitted = layoutState::collapseSoft,
+                    )
+                }
             },
             onGlobalRouteEmitted = layoutState::collapseSoft,
             modifier = Modifier
