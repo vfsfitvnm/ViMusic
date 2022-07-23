@@ -686,8 +686,7 @@ private fun StatsForNerds(
             }
         }
 
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween,
+        Box(
             modifier = modifier
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -702,9 +701,10 @@ private fun StatsForNerds(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
+                    .align(Alignment.Center)
                     .padding(all = 16.dp)
             ) {
-                Column {
+                Column(horizontalAlignment = Alignment.End) {
                     BasicText(
                         text = "Id",
                         style = typography.xs.medium.color(BlackColorPalette.text)
@@ -810,8 +810,8 @@ private fun StatsForNerds(
                                 }
                             }
                         )
-                        .padding(all = 16.dp)
-                        .align(Alignment.End)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .align(Alignment.BottomEnd)
                 )
             }
         }
