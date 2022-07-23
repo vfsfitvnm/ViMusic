@@ -5,12 +5,21 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -26,7 +35,11 @@ import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
+import it.vfsfitvnm.vimusic.ui.components.themed.Menu
+import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
+import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
+import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -37,7 +50,6 @@ import it.vfsfitvnm.vimusic.utils.relaunchableEffect
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
 
 @ExperimentalAnimationApi
 @Composable
@@ -224,18 +236,21 @@ fun IntentUriScreen(uri: Uri) {
                                 thumbnailSizePx = thumbnailSizePx,
                                 onClick = {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayAtIndex(items.map(YouTube.Item.Song::asMediaItem), index)
+                                    binder?.player?.forcePlayAtIndex(
+                                        items.map(YouTube.Item.Song::asMediaItem),
+                                        index
+                                    )
                                 }
                             )
                         }
                     }
                 } ?: itemsResult?.exceptionOrNull()?.let { throwable ->
-                   item {
-                       LoadingOrError(
-                           errorMessage = throwable.javaClass.canonicalName,
-                           onRetry = onLoad
-                       )
-                   }
+                    item {
+                        LoadingOrError(
+                            errorMessage = throwable.javaClass.canonicalName,
+                            onRetry = onLoad
+                        )
+                    }
                 } ?: item {
                     LoadingOrError()
                 }

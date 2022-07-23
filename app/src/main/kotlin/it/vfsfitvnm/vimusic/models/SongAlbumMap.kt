@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 
-
 @Immutable
 @Entity(
     primaryKeys = ["songId", "albumId"],

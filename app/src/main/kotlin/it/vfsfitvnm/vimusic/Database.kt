@@ -7,7 +7,22 @@ import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
 import android.os.Parcel
 import androidx.core.database.getFloatOrNull
 import androidx.media3.common.MediaItem
-import androidx.room.*
+import androidx.room.AutoMigration
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.DeleteTable
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.RenameColumn
+import androidx.room.RenameTable
+import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.Transaction
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
+import androidx.room.Update
 import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
@@ -15,10 +30,23 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.models.*
+import it.vfsfitvnm.vimusic.models.Album
+import it.vfsfitvnm.vimusic.models.Artist
+import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
+import it.vfsfitvnm.vimusic.models.Format
+import it.vfsfitvnm.vimusic.models.Playlist
+import it.vfsfitvnm.vimusic.models.PlaylistPreview
+import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
+import it.vfsfitvnm.vimusic.models.QueuedMediaItem
+import it.vfsfitvnm.vimusic.models.SearchQuery
+import it.vfsfitvnm.vimusic.models.Song
+import it.vfsfitvnm.vimusic.models.SongAlbumMap
+import it.vfsfitvnm.vimusic.models.SongArtistMap
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
+import it.vfsfitvnm.vimusic.models.SortedSongPlaylistMap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-
 
 @Dao
 interface Database {
@@ -118,7 +146,10 @@ interface Database {
     @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY songCount ASC")
     fun playlistPreviewsByDateSongCount(): Flow<List<PlaylistPreview>>
 
-    fun playlistPreviews(sortBy: PlaylistSortBy, sortOrder: SortOrder): Flow<List<PlaylistPreview>> {
+    fun playlistPreviews(
+        sortBy: PlaylistSortBy,
+        sortOrder: SortOrder
+    ): Flow<List<PlaylistPreview>> {
         return when (sortBy) {
             PlaylistSortBy.Name -> playlistPreviewsByName()
             PlaylistSortBy.DateAdded -> playlistPreviewsByDateAdded()
@@ -337,11 +368,15 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         lateinit var Instance: DatabaseInitializer
 
         context(Context)
-        operator fun invoke() {
+                operator fun invoke() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
-                    .addMigrations(From8To9Migration(), From10To11Migration(), From14To15Migration())
+                    .addMigrations(
+                        From8To9Migration(),
+                        From10To11Migration(),
+                        From14To15Migration()
+                    )
                     .build()
             }
         }
@@ -355,35 +390,56 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     class From8To9Migration : Migration(8, 9) {
         override fun migrate(it: SupportSQLiteDatabase) {
-            it.query(SimpleSQLiteQuery("SELECT DISTINCT browseId, text, Info.id FROM Info JOIN Song ON Info.id = Song.albumId;")).use { cursor ->
-                val albumValues = ContentValues(2)
-                while (cursor.moveToNext()) {
-                    albumValues.put("id", cursor.getString(0))
-                    albumValues.put("title", cursor.getString(1))
-                    it.insert("Album", CONFLICT_IGNORE, albumValues)
+            it.query(SimpleSQLiteQuery("SELECT DISTINCT browseId, text, Info.id FROM Info JOIN Song ON Info.id = Song.albumId;"))
+                .use { cursor ->
+                    val albumValues = ContentValues(2)
+                    while (cursor.moveToNext()) {
+                        albumValues.put("id", cursor.getString(0))
+                        albumValues.put("title", cursor.getString(1))
+                        it.insert("Album", CONFLICT_IGNORE, albumValues)
 
-                    it.execSQL("UPDATE Song SET albumId = '${cursor.getString(0)}' WHERE albumId = ${cursor.getLong(2)}")
+                        it.execSQL(
+                            "UPDATE Song SET albumId = '${cursor.getString(0)}' WHERE albumId = ${
+                                cursor.getLong(
+                                    2
+                                )
+                            }"
+                        )
+                    }
                 }
-            }
 
-            it.query(SimpleSQLiteQuery("SELECT GROUP_CONCAT(text, ''), SongWithAuthors.songId FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId GROUP BY songId;")).use { cursor ->
-                val songValues = ContentValues(1)
-                while (cursor.moveToNext()) {
-                    songValues.put("artistsText", cursor.getString(0))
-                    it.update("Song", CONFLICT_IGNORE, songValues, "id = ?", arrayOf(cursor.getString(1)))
+            it.query(SimpleSQLiteQuery("SELECT GROUP_CONCAT(text, ''), SongWithAuthors.songId FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId GROUP BY songId;"))
+                .use { cursor ->
+                    val songValues = ContentValues(1)
+                    while (cursor.moveToNext()) {
+                        songValues.put("artistsText", cursor.getString(0))
+                        it.update(
+                            "Song",
+                            CONFLICT_IGNORE,
+                            songValues,
+                            "id = ?",
+                            arrayOf(cursor.getString(1))
+                        )
+                    }
                 }
-            }
 
-            it.query(SimpleSQLiteQuery("SELECT browseId, text, Info.id FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId WHERE browseId NOT NULL;")).use { cursor ->
-                val artistValues = ContentValues(2)
-                while (cursor.moveToNext()) {
-                    artistValues.put("id", cursor.getString(0))
-                    artistValues.put("name", cursor.getString(1))
-                    it.insert("Artist", CONFLICT_IGNORE, artistValues)
+            it.query(SimpleSQLiteQuery("SELECT browseId, text, Info.id FROM Info JOIN SongWithAuthors ON Info.id = SongWithAuthors.authorInfoId WHERE browseId NOT NULL;"))
+                .use { cursor ->
+                    val artistValues = ContentValues(2)
+                    while (cursor.moveToNext()) {
+                        artistValues.put("id", cursor.getString(0))
+                        artistValues.put("name", cursor.getString(1))
+                        it.insert("Artist", CONFLICT_IGNORE, artistValues)
 
-                    it.execSQL("UPDATE SongWithAuthors SET authorInfoId = '${cursor.getString(0)}' WHERE authorInfoId = ${cursor.getLong(2)}")
+                        it.execSQL(
+                            "UPDATE SongWithAuthors SET authorInfoId = '${cursor.getString(0)}' WHERE authorInfoId = ${
+                                cursor.getLong(
+                                    2
+                                )
+                            }"
+                        )
+                    }
                 }
-            }
 
             it.execSQL("INSERT INTO SongArtistMap(songId, artistId) SELECT songId, authorInfoId FROM SongWithAuthors")
 
@@ -417,15 +473,16 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     class From14To15Migration : Migration(14, 15) {
         override fun migrate(it: SupportSQLiteDatabase) {
-            it.query(SimpleSQLiteQuery("SELECT id, loudnessDb, contentLength FROM Song;")).use { cursor ->
-                val formatValues = ContentValues(3)
-                while (cursor.moveToNext()) {
-                    formatValues.put("songId", cursor.getString(0))
-                    formatValues.put("loudnessDb", cursor.getFloatOrNull(1))
-                    formatValues.put("contentLength", cursor.getFloatOrNull(2))
-                    it.insert("Format", CONFLICT_IGNORE, formatValues)
+            it.query(SimpleSQLiteQuery("SELECT id, loudnessDb, contentLength FROM Song;"))
+                .use { cursor ->
+                    val formatValues = ContentValues(3)
+                    while (cursor.moveToNext()) {
+                        formatValues.put("songId", cursor.getString(0))
+                        formatValues.put("loudnessDb", cursor.getFloatOrNull(1))
+                        formatValues.put("contentLength", cursor.getFloatOrNull(2))
+                        it.insert("Format", CONFLICT_IGNORE, formatValues)
+                    }
                 }
-            }
 
             it.execSQL("CREATE TABLE IF NOT EXISTS `Song_new` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT NOT NULL, `thumbnailUrl` TEXT, `lyrics` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, PRIMARY KEY(`id`))")
 
@@ -445,7 +502,6 @@ object Converters {
                 val parcel = Parcel.obtain()
                 parcel.unmarshall(byteArray, 0, byteArray.size)
                 parcel.setDataPosition(0)
-
                 val bundle = parcel.readBundle(MediaItem::class.java.classLoader)
                 parcel.recycle()
 
@@ -459,7 +515,6 @@ object Converters {
         return mediaItem?.toBundle()?.let { persistableBundle ->
             val parcel = Parcel.obtain()
             parcel.writeBundle(persistableBundle)
-
             val bytes = parcel.marshall()
             parcel.recycle()
 

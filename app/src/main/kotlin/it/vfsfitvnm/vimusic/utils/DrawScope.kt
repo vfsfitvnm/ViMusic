@@ -24,6 +24,11 @@ fun DrawScope.drawCircle(
         it.colorFilter = colorFilter
         it.style = style
     }.asFrameworkPaint().also {
-        it.setShadowLayer(shadow.blurRadius, shadow.offset.x, shadow.offset.y, shadow.color.toArgb())
+        it.setShadowLayer(
+            shadow.blurRadius,
+            shadow.offset.x,
+            shadow.offset.y,
+            shadow.color.toArgb()
+        )
     }
 )

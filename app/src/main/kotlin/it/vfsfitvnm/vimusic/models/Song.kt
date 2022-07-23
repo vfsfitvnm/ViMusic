@@ -1,7 +1,7 @@
 package it.vfsfitvnm.vimusic.models
 
-import androidx.room.*
-
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 @Entity
 data class Song(
@@ -20,7 +20,7 @@ data class Song(
 
             val hours = seconds / 3600
 
-            return when  {
+            return when {
                 hours == 0L -> "${seconds / 60}m"
                 hours < 24L -> "${hours}h"
                 else -> "${hours / 24}d"

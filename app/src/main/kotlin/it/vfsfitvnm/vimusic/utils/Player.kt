@@ -4,15 +4,14 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 
-
 val Timeline.mediaItems: List<MediaItem>
-    get() = (0 until windowCount).map { index ->
-        getWindow(index, Timeline.Window()).mediaItem
+    get() = List(windowCount) {
+        getWindow(it, Timeline.Window()).mediaItem
     }
 
-val Timeline.windows: List<Timeline.Window>
-    get() = (0 until windowCount).map { index ->
-        getWindow(index, Timeline.Window())
+inline val Timeline.windows: List<Timeline.Window>
+    get() = List(windowCount) {
+        getWindow(it, Timeline.Window())
     }
 
 val Player.shouldBePlaying: Boolean

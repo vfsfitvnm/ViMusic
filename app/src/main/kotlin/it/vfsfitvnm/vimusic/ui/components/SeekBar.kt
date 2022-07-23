@@ -3,7 +3,11 @@ package it.vfsfitvnm.vimusic.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,7 +19,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToLong
-
 
 @Composable
 fun SeekBar(
@@ -89,8 +92,9 @@ fun SeekBar(
                 )
 
                 if (drawSteps) {
-                    for (i in value + 1 .. maximumValue) {
-                        val stepPosition = (i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
+                    for (i in value + 1..maximumValue) {
+                        val stepPosition =
+                            (i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
                         drawCircle(
                             color = scrubberColor,
                             radius = scrubberRadius.toPx() / 2,

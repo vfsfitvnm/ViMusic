@@ -9,7 +9,6 @@ import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.Route1
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 
-
 @Composable
 fun rememberIntentUriRoute(): Route1<Uri?> {
     val uri = rememberSaveable {
@@ -94,13 +93,6 @@ fun rememberSearchResultRoute(): Route1<String> {
     }
     return remember {
         Route1("SearchResultRoute", searchQuery)
-    }
-}
-
-@Composable
-fun rememberLyricsRoute(): Route0 {
-    return remember {
-        Route0("LyricsRoute")
     }
 }
 

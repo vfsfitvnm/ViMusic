@@ -15,7 +15,6 @@ import it.vfsfitvnm.vimusic.ui.styling.DarkColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.Typography
 
-
 enum class ColorPaletteMode {
     Light,
     Dark,

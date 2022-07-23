@@ -1,15 +1,32 @@
 package it.vfsfitvnm.vimusic.ui.components
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -24,10 +41,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 
 @Composable
 fun BottomSheet(
@@ -109,7 +126,7 @@ fun BottomSheet(
 class BottomSheetState(
     draggableState: DraggableState,
     private val coroutineScope: CoroutineScope,
-    private val animatable:  Animatable<Dp, AnimationVector1D>,
+    private val animatable: Animatable<Dp, AnimationVector1D>,
     private val onWasExpandedChanged: (Boolean) -> Unit,
 ) : DraggableState by draggableState {
     val lowerBound: Dp
@@ -220,7 +237,11 @@ class BottomSheetState(
 }
 
 @Composable
-fun rememberBottomSheetState(lowerBound: Dp, upperBound: Dp, isExpanded: Boolean = false): BottomSheetState {
+fun rememberBottomSheetState(
+    lowerBound: Dp,
+    upperBound: Dp,
+    isExpanded: Boolean = false
+): BottomSheetState {
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 

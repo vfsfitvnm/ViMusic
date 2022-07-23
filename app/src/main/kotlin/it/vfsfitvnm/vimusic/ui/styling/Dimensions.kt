@@ -6,7 +6,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-
 @Suppress("ClassName")
 object Dimensions {
     object thumbnails {
@@ -19,7 +18,7 @@ object Dimensions {
             val songPreview = collapsedPlayer
             val song: Dp
                 @Composable
-                get() = with (LocalConfiguration.current) {
+                get() = with(LocalConfiguration.current) {
                     minOf(screenHeightDp, screenWidthDp)
                 }.dp
         }
@@ -30,4 +29,4 @@ object Dimensions {
 
 inline val Dp.px: Int
     @Composable
-    inline get() = with (LocalDensity.current) { roundToPx() }
+    inline get() = with(LocalDensity.current) { roundToPx() }

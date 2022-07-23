@@ -26,7 +26,6 @@ import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 
-
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen() {
@@ -271,7 +270,7 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         title = title,
         selectedValue = selectedValue,
         values = enumValues<T>().toList(),
-        onValueSelected =onValueSelected,
+        onValueSelected = onValueSelected,
         modifier = modifier,
         valueText = valueText
     )
@@ -312,7 +311,6 @@ inline fun <T> ValueSelectorSettingsEntry(
         }
     )
 }
-
 
 @Composable
 fun SwitchSettingEntry(

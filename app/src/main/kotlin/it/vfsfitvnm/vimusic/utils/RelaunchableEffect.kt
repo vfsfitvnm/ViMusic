@@ -1,10 +1,14 @@
-
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @file:OptIn(InternalComposeApi::class)
 
 package it.vfsfitvnm.vimusic.utils
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.InternalComposeApi
+import androidx.compose.runtime.LaunchedEffectImpl
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.currentComposer
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 
 @Composable

@@ -1,9 +1,18 @@
 package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -16,9 +25,17 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.screens.*
+import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
+import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
+import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
+import it.vfsfitvnm.vimusic.utils.rememberPreference
+import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 
 @ExperimentalAnimationApi
 @Composable
@@ -45,7 +62,10 @@ fun AppearanceSettingsScreen() {
             val (colorPalette, typography) = LocalAppearance.current
 
             var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.System)
-            var thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+            var thumbnailRoundness by rememberPreference(
+                thumbnailRoundnessKey,
+                ThumbnailRoundness.Light
+            )
 
             Column(
                 modifier = Modifier

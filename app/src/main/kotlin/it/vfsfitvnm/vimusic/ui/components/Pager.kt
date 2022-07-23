@@ -4,9 +4,16 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.calculateTargetValue
 import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.runtime.*
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -18,9 +25,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.center
 import androidx.compose.ui.util.lerp
-import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
-
+import kotlinx.coroutines.launch
 
 @Composable
 fun Pager(
@@ -59,7 +65,10 @@ fun Pager(
                     {},
                     {
                         val velocity = -velocityTracker.calculateVelocity().x
-                        val initialTargetValue = splineBasedDecay<Float>(this).calculateTargetValue(state.value, velocity)
+                        val initialTargetValue = splineBasedDecay<Float>(this).calculateTargetValue(
+                            state.value,
+                            velocity
+                        )
 
                         velocityTracker.resetTracking()
 
@@ -129,7 +138,10 @@ fun Pager(
             }
         }
 
-        state.updateBounds(lowerBound = steps.first().toFloat(), upperBound = steps.last().toFloat())
+        state.updateBounds(
+            lowerBound = steps.first().toFloat(),
+            upperBound = steps.last().toFloat()
+        )
 
         val layoutDimension = IntSize(
             width = if (constraints.minWidth > 0 || placeables.isEmpty()) {

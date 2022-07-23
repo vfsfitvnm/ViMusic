@@ -1,6 +1,13 @@
 package it.vfsfitvnm.vimusic.utils
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.DisposableEffectResult
+import androidx.compose.runtime.DisposableEffectScope
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -8,7 +15,6 @@ import androidx.media3.common.Timeline
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-
 
 context(DisposableEffectScope)
 fun Player.listener(listener: Player.Listener): DisposableEffectResult {
@@ -27,11 +33,13 @@ fun rememberMediaItemIndex(player: Player): State<Int> {
     DisposableEffect(player) {
         player.listener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                mediaItemIndexState.value = if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex
+                mediaItemIndexState.value =
+                    if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                mediaItemIndexState.value = if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex
+                mediaItemIndexState.value =
+                    if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex
             }
         })
     }
@@ -187,6 +195,7 @@ fun rememberError(player: Player): State<PlaybackException?> {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 errorState.value = player.playerError
             }
+
             override fun onPlayerError(playbackException: PlaybackException) {
                 errorState.value = playbackException
             }

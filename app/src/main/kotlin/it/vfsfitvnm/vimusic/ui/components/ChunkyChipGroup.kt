@@ -13,7 +13,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun <T>ChipGroup(
+fun <T> ChipGroup(
     items: List<ChipItem<T>>,
     value: T,
     selectedBackgroundColor: Color,
@@ -27,7 +27,7 @@ fun <T>ChipGroup(
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
-            .horizontalScroll(rememberScrollState().also {  })
+            .horizontalScroll(rememberScrollState())
             .then(modifier)
     ) {
         items.forEach { chipItem ->

@@ -2,10 +2,25 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import android.text.format.Formatter
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -20,7 +35,14 @@ import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.screens.*
+import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
+import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
+import it.vfsfitvnm.vimusic.ui.screens.DisabledSettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
+import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.coilDiskCacheMaxSizeKey
 import it.vfsfitvnm.vimusic.utils.exoPlayerDiskCacheMaxSizeKey
@@ -56,8 +78,14 @@ fun CacheSettingsScreen() {
             val (colorPalette, typography) = LocalAppearance.current
             val binder = LocalPlayerServiceBinder.current
 
-            var coilDiskCacheMaxSize by rememberPreference(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
-            var exoPlayerDiskCacheMaxSize by rememberPreference(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
+            var coilDiskCacheMaxSize by rememberPreference(
+                coilDiskCacheMaxSizeKey,
+                CoilDiskCacheMaxSize.`128MB`
+            )
+            var exoPlayerDiskCacheMaxSize by rememberPreference(
+                exoPlayerDiskCacheMaxSizeKey,
+                ExoPlayerDiskCacheMaxSize.`2GB`
+            )
 
             val coroutineScope = rememberCoroutineScope()
 

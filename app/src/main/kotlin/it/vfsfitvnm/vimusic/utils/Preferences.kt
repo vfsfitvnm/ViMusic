@@ -2,10 +2,13 @@ package it.vfsfitvnm.vimusic.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SnapshotMutationPolicy
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
-
 
 const val colorPaletteModeKey = "colorPaletteMode"
 const val thumbnailRoundnessKey = "thumbnailRoundness"
@@ -36,13 +39,14 @@ inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
         }
     } ?: defaultValue
 
-inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(key: String, value: T) =
+inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
+    key: String,
+    value: T
+): SharedPreferences.Editor =
     putString(key, value.name)
-
 
 val Context.preferences: SharedPreferences
     get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
-
 
 @Composable
 fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean> {
@@ -65,7 +69,7 @@ fun rememberPreference(key: String, defaultValue: String): MutableState<String> 
 }
 
 @Composable
-inline fun <reified T: Enum<T>> rememberPreference(key: String, defaultValue: T): MutableState<T> {
+inline fun <reified T : Enum<T>> rememberPreference(key: String, defaultValue: T): MutableState<T> {
     val context = LocalContext.current
     return remember {
         mutableStatePreferenceOf(context.preferences.getEnum(key, defaultValue)) {
@@ -74,7 +78,10 @@ inline fun <reified T: Enum<T>> rememberPreference(key: String, defaultValue: T)
     }
 }
 
-inline fun <T> mutableStatePreferenceOf(value: T, crossinline onStructuralInequality: (newValue: T) -> Unit) =
+inline fun <T> mutableStatePreferenceOf(
+    value: T,
+    crossinline onStructuralInequality: (newValue: T) -> Unit
+) =
     mutableStateOf(
         value = value,
         policy = object : SnapshotMutationPolicy<T> {

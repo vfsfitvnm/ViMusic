@@ -9,7 +9,6 @@ import it.vfsfitvnm.vimusic.utils.coilDiskCacheMaxSizeKey
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.preferences
 
-
 class MainApplication : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
@@ -22,7 +21,12 @@ class MainApplication : Application(), ImageLoaderFactory {
             .diskCache(
                 DiskCache.Builder()
                     .directory(filesDir.resolve("coil"))
-                    .maxSizeBytes(preferences.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`).bytes)
+                    .maxSizeBytes(
+                        preferences.getEnum(
+                            coilDiskCacheMaxSizeKey,
+                            CoilDiskCacheMaxSize.`128MB`
+                        ).bytes
+                    )
                     .build()
             )
             .build()

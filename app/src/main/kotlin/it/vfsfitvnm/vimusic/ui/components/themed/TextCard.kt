@@ -22,7 +22,6 @@ import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 
-
 @Composable
 fun TextCard(
     modifier: Modifier = Modifier,

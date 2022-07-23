@@ -2,7 +2,6 @@ package it.vfsfitvnm.vimusic.models
 
 import androidx.room.Relation
 
-
 class DetailedSongWithContentLength(
     song: Song,
     albumId: String?,

@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.drawCircle
 
-
 @Composable
 fun Switch(
     isChecked: Boolean,

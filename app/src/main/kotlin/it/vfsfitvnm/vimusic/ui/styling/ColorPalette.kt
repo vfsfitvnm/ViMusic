@@ -1,6 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.styling
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 @Immutable

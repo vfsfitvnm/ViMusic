@@ -5,7 +5,19 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,24 +44,40 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.*
+import it.vfsfitvnm.vimusic.models.Album
+import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Playlist
+import it.vfsfitvnm.vimusic.models.SongAlbumMap
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.*
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
+import it.vfsfitvnm.vimusic.ui.components.themed.Menu
+import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
+import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
-import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.vimusic.utils.asMediaItem
+import it.vfsfitvnm.vimusic.utils.bold
+import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.enqueue
+import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
+import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
+import it.vfsfitvnm.vimusic.utils.secondary
+import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.thumbnail
+import it.vfsfitvnm.vimusic.utils.toMediaItem
 import it.vfsfitvnm.youtubemusic.YouTube
+import java.text.DateFormat
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
-import java.text.DateFormat
-import java.util.*
-
 
 @ExperimentalAnimationApi
 @Composable
@@ -143,27 +171,29 @@ fun AlbumScreen(
                                                 onClick = {
                                                     menuState.hide()
 
-                                                    albumResult?.getOrNull()?.let { album ->
-                                                        query {
-                                                            val playlistId =
-                                                                Database.insert(
-                                                                    Playlist(
-                                                                        name = album.title
-                                                                            ?: "Unknown"
+                                                    albumResult
+                                                        ?.getOrNull()
+                                                        ?.let { album ->
+                                                            query {
+                                                                val playlistId =
+                                                                    Database.insert(
+                                                                        Playlist(
+                                                                            name = album.title
+                                                                                ?: "Unknown"
+                                                                        )
                                                                     )
-                                                                )
 
-                                                            songs.forEachIndexed { index, song ->
-                                                                Database.insert(
-                                                                    SongPlaylistMap(
-                                                                        songId = song.song.id,
-                                                                        playlistId = playlistId,
-                                                                        position = index
+                                                                songs.forEachIndexed { index, song ->
+                                                                    Database.insert(
+                                                                        SongPlaylistMap(
+                                                                            songId = song.song.id,
+                                                                            playlistId = playlistId,
+                                                                            position = index
+                                                                        )
                                                                     )
-                                                                )
+                                                                }
                                                             }
                                                         }
-                                                    }
                                                 }
                                             )
 
@@ -194,14 +224,20 @@ fun AlbumScreen(
                                                 icon = R.drawable.download,
                                                 text = "Refetch",
                                                 secondaryText = albumResult?.getOrNull()?.timestamp?.let { timestamp ->
-                                                    "Last updated on ${DateFormat.getDateTimeInstance().format(Date(timestamp))}"
+                                                    "Last updated on ${
+                                                        DateFormat
+                                                            .getDateTimeInstance()
+                                                            .format(Date(timestamp))
+                                                    }"
                                                 },
                                                 isEnabled = albumResult?.getOrNull() != null,
                                                 onClick = {
                                                     menuState.hide()
 
                                                     query {
-                                                        albumResult?.getOrNull()?.let(Database::delete)
+                                                        albumResult
+                                                            ?.getOrNull()
+                                                            ?.let(Database::delete)
                                                         runBlocking(Dispatchers.IO) {
                                                             fetchAlbum(browseId)
                                                         }
@@ -275,7 +311,9 @@ fun AlbumScreen(
                                             .clickable {
                                                 binder?.stopRadio()
                                                 binder?.player?.forcePlayFromBeginning(
-                                                    songs.shuffled().map(DetailedSong::asMediaItem)
+                                                    songs
+                                                        .shuffled()
+                                                        .map(DetailedSong::asMediaItem)
                                                 )
                                             }
                                             .shadow(elevation = 2.dp, shape = CircleShape)
@@ -325,7 +363,10 @@ fun AlbumScreen(
                         durationText = song.song.durationText,
                         onClick = {
                             binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(songs.map(DetailedSong::asMediaItem), index)
+                            binder?.player?.forcePlayAtIndex(
+                                songs.map(DetailedSong::asMediaItem),
+                                index
+                            )
                         },
                         startContent = {
                             BasicText(
@@ -349,7 +390,6 @@ fun AlbumScreen(
         }
     }
 }
-
 
 @Composable
 private fun LoadingOrError(

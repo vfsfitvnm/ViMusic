@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-
 interface TimerJob {
     val millisLeft: StateFlow<Long?>
     fun cancel()
@@ -16,14 +15,12 @@ interface TimerJob {
 
 fun CoroutineScope.timer(delayMillis: Long, onCompletion: () -> Unit): TimerJob {
     val millisLeft = MutableStateFlow<Long?>(delayMillis)
-
     val job = launch {
         while (isActive && millisLeft.value != null) {
             delay(1000)
             millisLeft.emit(millisLeft.value?.minus(1000)?.takeIf { it > 0 })
         }
     }
-
     val disposableHandle = job.invokeOnCompletion {
         if (it == null) {
             onCompletion()

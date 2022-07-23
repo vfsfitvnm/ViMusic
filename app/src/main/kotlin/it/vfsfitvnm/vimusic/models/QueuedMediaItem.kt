@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.models
 
-
 import androidx.media3.common.MediaItem
 import androidx.room.ColumnInfo
 import androidx.room.Entity

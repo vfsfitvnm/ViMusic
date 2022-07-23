@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.core.graphics.applyCanvas
-import coil.Coil
+import coil.imageLoader
 import coil.request.Disposable
 import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.utils.thumbnail
@@ -39,9 +39,10 @@ class BitmapProvider(
 
         lastIsSystemInDarkMode = isSystemInDarkMode
 
-        defaultBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888).applyCanvas {
-            drawColor(colorProvider(isSystemInDarkMode))
-        }
+        defaultBitmap =
+            Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888).applyCanvas {
+                drawColor(colorProvider(isSystemInDarkMode))
+            }
 
         return lastBitmap == null
     }
@@ -52,7 +53,7 @@ class BitmapProvider(
         lastEnqueued?.dispose()
         lastUri = uri
 
-        lastEnqueued = Coil.imageLoader(applicationContext).enqueue(
+        lastEnqueued = applicationContext.imageLoader.enqueue(
             ImageRequest.Builder(applicationContext)
                 .data(uri.thumbnail(bitmapSize))
                 .listener(
