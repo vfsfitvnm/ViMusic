@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,13 +19,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +53,7 @@ import androidx.core.net.toUri
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
@@ -72,38 +74,6 @@ fun SearchScreen(
     onSearch: (String) -> Unit,
     onUri: (Uri) -> Unit,
 ) {
-    var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue(
-                text = initialTextInput,
-                selection = TextRange(initialTextInput.length)
-            )
-        )
-    }
-
-    val focusRequester = remember {
-        FocusRequester()
-    }
-
-    val searchSuggestionsResult by produceState<Result<List<String>?>?>(
-        initialValue = null,
-        key1 = textFieldValue
-    ) {
-        value = if (textFieldValue.text.isNotEmpty()) {
-            withContext(Dispatchers.IO) {
-                YouTube.getSearchSuggestions(textFieldValue.text)
-            }
-        } else {
-            null
-        }
-    }
-
-    val history by remember(textFieldValue.text) {
-        Database.queries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
-            old.size == new.size
-        }
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
     val albumRoute = rememberAlbumRoute()
     val artistRoute = rememberArtistRoute()
 
@@ -122,6 +92,39 @@ fun SearchScreen(
 
         host {
             val (colorPalette, typography) = LocalAppearance.current
+
+            var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
+                mutableStateOf(
+                    TextFieldValue(
+                        text = initialTextInput,
+                        selection = TextRange(initialTextInput.length)
+                    )
+                )
+            }
+
+            val focusRequester = remember {
+                FocusRequester()
+            }
+
+            val searchSuggestionsResult by produceState<Result<List<String>?>?>(
+                initialValue = null,
+                key1 = textFieldValue
+            ) {
+                value = if (textFieldValue.text.isNotEmpty()) {
+                    withContext(Dispatchers.IO) {
+                        YouTube.getSearchSuggestions(textFieldValue.text)
+                    }
+                } else {
+                    null
+                }
+            }
+
+            val history by remember(textFieldValue.text) {
+                Database.queries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
+                    old.size == new.size
+                }
+            }.collectAsState(initial = null, context = Dispatchers.IO)
+
 
             val isOpenableUrl = remember(textFieldValue.text) {
                 listOf(
@@ -264,12 +267,13 @@ fun SearchScreen(
                     }
                 }
 
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .padding(bottom = Dimensions.collapsedPlayer)
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer)
                 ) {
-                    history?.forEach { searchQuery ->
+                    items(
+                        items = history ?: emptyList(),
+                        key = SearchQuery::id
+                    ) { searchQuery ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -332,7 +336,7 @@ fun SearchScreen(
                     }
 
                     searchSuggestionsResult?.getOrNull()?.let { suggestions ->
-                        suggestions.forEach { suggestion ->
+                        items(items = suggestions) { suggestion ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
@@ -378,7 +382,9 @@ fun SearchScreen(
                             }
                         }
                     } ?: searchSuggestionsResult?.exceptionOrNull()?.let { throwable ->
-                        LoadingOrError(errorMessage = throwable.javaClass.canonicalName) {}
+                        item {
+                            LoadingOrError(errorMessage = throwable.javaClass.canonicalName) {}
+                        }
                     }
                 }
             }
