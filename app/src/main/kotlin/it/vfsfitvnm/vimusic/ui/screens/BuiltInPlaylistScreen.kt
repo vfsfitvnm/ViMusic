@@ -144,7 +144,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
                             BasicText(
                                 text = when (builtInPlaylist) {
                                     BuiltInPlaylist.Favorites -> "Favorites"
-                                    BuiltInPlaylist.Cached -> "Cached"
+                                    BuiltInPlaylist.Cached -> "Offline"
                                 },
                                 style = typography.m.semiBold
                             )
