@@ -166,7 +166,7 @@ interface Database {
     fun playlistThumbnailUrls(id: Long): Flow<List<String?>>
 
     @Transaction
-    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
+    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
     @RewriteQueriesToDropUnusedColumns
     fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
