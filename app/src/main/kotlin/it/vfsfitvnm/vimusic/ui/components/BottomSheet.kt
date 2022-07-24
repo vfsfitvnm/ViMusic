@@ -76,6 +76,10 @@ fun BottomSheet(
                         velocityTracker.addPointerInputChange(change)
                         state.dispatchRawDelta(dragAmount)
                     },
+                    onDragCancel = {
+                        velocityTracker.resetTracking()
+                        state.snapTo(initialValue)
+                    },
                     onDragEnd = {
                         val velocity = velocityTracker.calculateVelocity().y.absoluteValue
                         velocityTracker.resetTracking()
@@ -149,7 +153,7 @@ class BottomSheetState(
         1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - animatable.lowerBound!!)
     }
 
-    fun collapse(animationSpec: AnimationSpec<Dp>) {
+    private fun collapse(animationSpec: AnimationSpec<Dp>) {
         onWasExpandedChanged(false)
         coroutineScope.launch {
             animatable.animateTo(animatable.lowerBound!!, animationSpec)
@@ -177,6 +181,12 @@ class BottomSheetState(
 
     fun expandSoft() {
         expand(tween(300))
+    }
+
+    fun snapTo(value: Dp) {
+        coroutineScope.launch {
+            animatable.snapTo(value)
+        }
     }
 
     fun nestedScrollConnection(initialIsTopReached: Boolean = true): NestedScrollConnection {
