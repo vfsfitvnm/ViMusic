@@ -63,26 +63,11 @@ import kotlinx.coroutines.runBlocking
 
 @ExperimentalAnimationApi
 @Composable
-fun ArtistScreen(
-    browseId: String,
-) {
+fun ArtistScreen(browseId: String) {
     val lazyListState = rememberLazyListState()
 
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val binder = LocalPlayerServiceBinder.current

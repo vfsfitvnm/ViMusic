@@ -43,10 +43,7 @@ import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
-import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -59,23 +56,11 @@ import kotlin.system.exitProcess
 @ExperimentalAnimationApi
 @Composable
 fun BackupAndRestoreScreen() {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val (colorPalette, typography) = LocalAppearance.current

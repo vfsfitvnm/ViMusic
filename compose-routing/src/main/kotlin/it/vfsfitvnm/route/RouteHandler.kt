@@ -7,7 +7,12 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
 @ExperimentalAnimationApi
@@ -45,9 +50,14 @@ fun RouteHandler(
 ) {
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
+    val parameters = rememberSaveable {
+        arrayOfNulls<Any?>(2)
+    }
+
     val scope = remember(route) {
         RouteHandlerScope(
             route = route,
+            parameters = parameters,
             push = onRouteChanged,
             pop = { if (handleBackPress) backDispatcher?.onBackPressed() else onRouteChanged(null) }
         )
@@ -55,7 +65,10 @@ fun RouteHandler(
 
     if (listenToGlobalEmitter) {
         LaunchedEffect(route) {
-            Route.GlobalEmitter.listener = if (route == null) onRouteChanged else null
+            Route.GlobalEmitter.listener = if (route == null) ({ newRoute, newParameters ->
+                newParameters.forEachIndexed(parameters::set)
+                onRouteChanged(newRoute)
+            }) else null
         }
     }
 
@@ -65,7 +78,7 @@ fun RouteHandler(
 
     updateTransition(targetState = scope, label = null).AnimatedContent(
         transitionSpec = transitionSpec,
-        contentKey = { it.route?.tag },
+        contentKey = RouteHandlerScope::route,
         modifier = modifier,
     ) {
         it.content()

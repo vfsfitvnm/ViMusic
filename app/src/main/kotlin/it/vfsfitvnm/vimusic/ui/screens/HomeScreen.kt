@@ -108,15 +108,6 @@ fun HomeScreen() {
     val lazyListState = rememberLazyListState()
     val lazyHorizontalGridState = rememberLazyGridState()
 
-    val intentUriRoute = rememberIntentUriRoute()
-    val settingsRoute = rememberSettingsRoute()
-    val playlistRoute = rememberLocalPlaylistRoute()
-    val builtInPlaylistRoute = rememberBuiltInPlaylistRoute()
-    val searchRoute = rememberSearchRoute()
-    val searchResultRoute = rememberSearchResultRoute()
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
     var playlistSortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
     var playlistSortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
     var playlistGridExpanded by rememberPreference(playlistGridExpandedKey, false)
@@ -137,7 +128,7 @@ fun HomeScreen() {
             SettingsScreen()
         }
 
-        playlistRoute { playlistId ->
+        localPlaylistRoute { playlistId ->
             LocalPlaylistScreen(
                 playlistId = playlistId ?: error("playlistId cannot be null")
             )
@@ -520,7 +511,7 @@ fun HomeScreen() {
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
                                         interactionSource = remember { MutableInteractionSource() },
-                                        onClick = { playlistRoute(playlistPreview.playlist.id) }
+                                        onClick = { localPlaylistRoute(playlistPreview.playlist.id) }
                                     )
                             )
                         }

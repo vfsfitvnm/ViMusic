@@ -35,14 +35,11 @@ import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
-import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.DisabledSettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.coilDiskCacheMaxSizeKey
 import it.vfsfitvnm.vimusic.utils.exoPlayerDiskCacheMaxSizeKey
@@ -55,23 +52,11 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @Composable
 fun CacheSettingsScreen() {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val context = LocalContext.current

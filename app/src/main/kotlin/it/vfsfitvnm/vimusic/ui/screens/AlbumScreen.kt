@@ -81,9 +81,7 @@ import kotlinx.coroutines.runBlocking
 
 @ExperimentalAnimationApi
 @Composable
-fun AlbumScreen(
-    browseId: String
-) {
+fun AlbumScreen(browseId: String) {
     val lazyListState = rememberLazyListState()
 
     val albumResult by remember(browseId) {
@@ -99,21 +97,8 @@ fun AlbumScreen(
         Database.albumSongs(browseId)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val context = LocalContext.current

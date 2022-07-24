@@ -71,10 +71,7 @@ import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-fun SearchResultScreen(
-    query: String,
-    onSearchAgain: () -> Unit,
-) {
+fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
@@ -107,10 +104,6 @@ fun SearchResultScreen(
 
     val thumbnailSizePx = Dimensions.thumbnails.song.px
 
-    val albumRoute = rememberAlbumRoute()
-    val playlistRoute = rememberPlaylistRoute()
-    val artistRoute = rememberArtistRoute()
-
     RouteHandler(listenToGlobalEmitter = true) {
         albumRoute { browseId ->
             AlbumScreen(
@@ -118,14 +111,14 @@ fun SearchResultScreen(
             )
         }
 
-        playlistRoute { browseId ->
-            PlaylistScreen(
+        artistRoute { browseId ->
+            ArtistScreen(
                 browseId = browseId ?: "browseId cannot be null"
             )
         }
 
-        artistRoute { browseId ->
-            ArtistScreen(
+        playlistRoute { browseId ->
+            PlaylistScreen(
                 browseId = browseId ?: "browseId cannot be null"
             )
         }

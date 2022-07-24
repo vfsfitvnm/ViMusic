@@ -25,12 +25,9 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
-import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
@@ -40,23 +37,11 @@ import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 @ExperimentalAnimationApi
 @Composable
 fun AppearanceSettingsScreen() {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val (colorPalette, typography) = LocalAppearance.current

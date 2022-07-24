@@ -54,26 +54,11 @@ import kotlinx.coroutines.flow.map
 
 @ExperimentalAnimationApi
 @Composable
-fun BuiltInPlaylistScreen(
-    builtInPlaylist: BuiltInPlaylist,
-) {
+fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
     val lazyListState = rememberLazyListState()
 
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val menuState = LocalMenuState.current

@@ -69,26 +69,9 @@ import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-fun SearchScreen(
-    initialTextInput: String,
-    onSearch: (String) -> Unit,
-    onUri: (Uri) -> Unit,
-) {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
+fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (Uri) -> Unit) {
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val (colorPalette, typography) = LocalAppearance.current

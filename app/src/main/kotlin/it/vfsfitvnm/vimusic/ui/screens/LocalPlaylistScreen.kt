@@ -65,30 +65,15 @@ import kotlinx.coroutines.flow.map
 
 @ExperimentalAnimationApi
 @Composable
-fun LocalPlaylistScreen(
-    playlistId: Long,
-) {
+fun LocalPlaylistScreen(playlistId: Long) {
     val playlistWithSongs by remember(playlistId) {
         Database.playlistWithSongs(playlistId).map { it ?: PlaylistWithSongs.NotFound }
     }.collectAsState(initial = PlaylistWithSongs.Empty, context = Dispatchers.IO)
 
     val lazyListState = rememberLazyListState()
 
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val hapticFeedback = LocalHapticFeedback.current

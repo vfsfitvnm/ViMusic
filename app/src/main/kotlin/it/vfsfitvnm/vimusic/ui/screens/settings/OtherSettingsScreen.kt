@@ -35,13 +35,10 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.screens.AlbumScreen
-import it.vfsfitvnm.vimusic.ui.screens.ArtistScreen
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
 import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
@@ -51,23 +48,11 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 @ExperimentalAnimationApi
 @Composable
 fun OtherSettingsScreen() {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
 
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val context = LocalContext.current

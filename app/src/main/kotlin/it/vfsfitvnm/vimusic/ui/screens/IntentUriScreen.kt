@@ -54,8 +54,6 @@ import kotlinx.coroutines.withContext
 @ExperimentalAnimationApi
 @Composable
 fun IntentUriScreen(uri: Uri) {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
 
     val lazyListState = rememberLazyListState()
 
@@ -98,17 +96,7 @@ fun IntentUriScreen(uri: Uri) {
     }
 
     RouteHandler(listenToGlobalEmitter = true) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         host {
             val menuState = LocalMenuState.current

@@ -29,15 +29,6 @@ import it.vfsfitvnm.vimusic.utils.*
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen() {
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-    val appearanceSettingsRoute = rememberAppearanceSettingsRoute()
-    val playerSettingsRoute = rememberPlayerSettingsRoute()
-    val backupAndRestoreRoute = rememberBackupAndRestoreRoute()
-    val cacheSettingsRoute = rememberCacheSettingsRoute()
-    val otherSettingsRoute = rememberOtherSettingsRoute()
-    val aboutRoute = rememberAboutRoute()
-
     val scrollState = rememberScrollState()
 
     RouteHandler(
@@ -53,17 +44,7 @@ fun SettingsScreen() {
             }
         }
     ) {
-        albumRoute { browseId ->
-            AlbumScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
-
-        artistRoute { browseId ->
-            ArtistScreen(
-                browseId = browseId ?: error("browseId cannot be null")
-            )
-        }
+        globalRoutes()
 
         appearanceSettingsRoute {
             AppearanceSettingsScreen()

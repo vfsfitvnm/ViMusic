@@ -1,10 +1,15 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package it.vfsfitvnm.route
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 
-@Stable
+@Immutable
 open class Route internal constructor(val tag: String) {
     override fun equals(other: Any?): Boolean {
         return when {
@@ -19,7 +24,7 @@ open class Route internal constructor(val tag: String) {
     }
 
     object GlobalEmitter {
-        var listener: ((Route) -> Unit)? = null
+        var listener: ((Route, Array<Any?>) -> Unit)? = null
     }
 
     object Saver : androidx.compose.runtime.saveable.Saver<Route?, String> {
@@ -35,10 +40,8 @@ fun rememberRoute(route: Route? = null): MutableState<Route?> {
     }
 }
 
-@Stable
-class Route0(
-    tag: String
-) : Route(tag) {
+@Immutable
+class Route0(tag: String) : Route(tag) {
     context(RouteHandlerScope)
     @Composable
     operator fun invoke(content: @Composable () -> Unit) {
@@ -48,64 +51,36 @@ class Route0(
     }
 
     fun global() {
-        GlobalEmitter.listener?.invoke(this)
+        GlobalEmitter.listener?.invoke(this, emptyArray())
     }
 }
 
-@Stable
-class Route1<P0>(
-    tag: String,
-    state0: MutableState<P0>
-) : Route(tag) {
-    var p0 by state0
-
+@Immutable
+class Route1<P0>(tag: String) : Route(tag) {
     context(RouteHandlerScope)
     @Composable
     operator fun invoke(content: @Composable (P0) -> Unit) {
         if (this == route) {
-            if (route is Route1<*>) {
-                @Suppress("UNCHECKED_CAST")
-                (route as Route1<P0>).let { route ->
-                    this.p0 = route.p0
-                }
-            }
-            content(this.p0)
+            content(parameters[0] as P0)
         }
     }
 
-    fun global(p0: P0 = this.p0) {
-        this.p0 = p0
-        GlobalEmitter.listener?.invoke(this)
+    fun global(p0: P0) {
+        GlobalEmitter.listener?.invoke(this, arrayOf(p0))
     }
 }
 
-@Stable
-class Route2<P0, P1>(
-    tag: String,
-    state0: MutableState<P0>,
-    state1: MutableState<P1>
-) : Route(tag) {
-    var p0 by state0
-    var p1 by state1
-
+@Immutable
+class Route2<P0, P1>(tag: String) : Route(tag) {
     context(RouteHandlerScope)
     @Composable
     operator fun invoke(content: @Composable (P0, P1) -> Unit) {
         if (this == route) {
-            if (route is Route2<*, *>) {
-                @Suppress("UNCHECKED_CAST")
-                (route as Route2<P0, P1>).let { route ->
-                    this.p0 = route.p0
-                    this.p1 = route.p1
-                }
-            }
-            content(this.p0, this.p1)
+            content(parameters[0] as P0, parameters[1] as P1)
         }
     }
 
-    fun global(p0: P0 = this.p0, p1: P1 = this.p1) {
-        this.p0 = p0
-        this.p1 = p1
-        GlobalEmitter.listener?.invoke(this)
+    fun global(p0: P0, p1: P1) {
+        GlobalEmitter.listener?.invoke(this, arrayOf(p0, p1))
     }
 }

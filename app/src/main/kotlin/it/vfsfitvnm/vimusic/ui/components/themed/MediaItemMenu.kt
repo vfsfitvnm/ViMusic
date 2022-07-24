@@ -43,9 +43,9 @@ import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.Pager
-import it.vfsfitvnm.vimusic.ui.screens.rememberAlbumRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberArtistRoute
-import it.vfsfitvnm.vimusic.ui.screens.rememberCreatePlaylistRoute
+import it.vfsfitvnm.vimusic.ui.screens.albumRoute
+import it.vfsfitvnm.vimusic.ui.screens.artistRoute
+import it.vfsfitvnm.vimusic.ui.screens.viewPlaylistsRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.addNext
 import it.vfsfitvnm.vimusic.utils.asMediaItem
@@ -235,9 +235,6 @@ fun BaseMediaItemMenu(
 ) {
     val context = LocalContext.current
 
-    val albumRoute = rememberAlbumRoute()
-    val artistRoute = rememberArtistRoute()
-
     MediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
@@ -298,8 +295,6 @@ fun MediaItemMenu(
     val playlistPreviews by remember {
         Database.playlistPreviews(PlaylistSortBy.DateAdded, SortOrder.Descending)
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-
-    val viewPlaylistsRoute = rememberCreatePlaylistRoute()
 
     Menu(modifier = modifier) {
         RouteHandler(
