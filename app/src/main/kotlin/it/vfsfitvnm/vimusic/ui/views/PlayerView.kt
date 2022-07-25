@@ -147,7 +147,7 @@ fun PlayerView(
     BottomSheet(
         state = layoutState,
         modifier = modifier,
-        onSwiped = binder.player::clearMediaItems,
+        onDismiss = binder.player::clearMediaItems,
         collapsedContent = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -315,7 +315,7 @@ fun PlayerView(
         }
 
         PlayerBottomSheet(
-            layoutState = rememberBottomSheetState(64.dp, layoutState.upperBound),
+            layoutState = rememberBottomSheetState(64.dp, layoutState.expandedBound),
             isShowingLyrics = isShowingLyrics,
             onShowLyrics = {
                 isShowingStatsForNerds = false

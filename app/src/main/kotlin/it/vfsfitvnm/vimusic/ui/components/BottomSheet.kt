@@ -52,14 +52,14 @@ fun BottomSheet(
     modifier: Modifier = Modifier,
     peekHeight: Dp = 0.dp,
     elevation: Dp = 8.dp,
-    onSwiped: (() -> Unit)? = null,
+    onDismiss: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
             .offset {
-                val y = (state.upperBound - state.value + peekHeight)
+                val y = (state.expandedBound - state.value + peekHeight)
                     .roundToPx()
                     .coerceAtLeast(0)
                 IntOffset(x = 0, y = y)
@@ -87,25 +87,25 @@ fun BottomSheet(
 
                         if (velocity.absoluteValue > 300 && initialValue != state.value) {
                             when (initialValue) {
-                                state.upperBound -> state.collapse()
-                                state.collapsedBound -> if (initialValue > state.value && onSwiped != null) {
-                                    state.swipe()
-                                    onSwiped.invoke()
+                                state.expandedBound -> state.collapse()
+                                state.collapsedBound -> if (initialValue > state.value && onDismiss != null) {
+                                    state.dismiss()
+                                    onDismiss.invoke()
                                 } else {
                                     state.expand()
                                 }
                             }
                         } else {
-                            val l0 = state.lowerBound
-                            val l1 = (state.collapsedBound - state.lowerBound) / 2
-                            val l2 = (state.upperBound - state.collapsedBound) / 2
-                            val l3 = state.upperBound
+                            val l0 = state.dismissedBound
+                            val l1 = (state.collapsedBound - state.dismissedBound) / 2
+                            val l2 = (state.expandedBound - state.collapsedBound) / 2
+                            val l3 = state.expandedBound
 
                             when (state.value) {
                                 in l0..l1 -> {
-                                    if (onSwiped != null) {
-                                        state.swipe()
-                                        onSwiped.invoke()
+                                    if (onDismiss != null) {
+                                        state.dismiss()
+                                        onDismiss.invoke()
                                     } else {
                                         state.collapse()
                                     }
@@ -126,7 +126,7 @@ fun BottomSheet(
             content()
         }
 
-        if (!state.isExpanded && (onSwiped == null || !state.isDismissed)) {
+        if (!state.isExpanded && (onDismiss == null || !state.isDismissed)) {
             Box(
                 modifier = Modifier
                     .graphicsLayer {
@@ -150,13 +150,13 @@ class BottomSheetState(
     draggableState: DraggableState,
     private val coroutineScope: CoroutineScope,
     private val animatable: Animatable<Dp, AnimationVector1D>,
-    private val onWasExpandedChanged: (Boolean) -> Unit,
+    private val onAnchorChanged: (Int) -> Unit,
     val collapsedBound: Dp,
 ) : DraggableState by draggableState {
-    val lowerBound: Dp
+    val dismissedBound: Dp
         get() = animatable.lowerBound!!
 
-    val upperBound: Dp
+    val expandedBound: Dp
         get() = animatable.upperBound!!
 
     val value by animatable.asState()
@@ -178,14 +178,14 @@ class BottomSheetState(
     }
 
     private fun collapse(animationSpec: AnimationSpec<Dp>) {
-        onWasExpandedChanged(false)
+        onAnchorChanged(collapsedAnchor)
         coroutineScope.launch {
             animatable.animateTo(collapsedBound, animationSpec)
         }
     }
 
     fun expand(animationSpec: AnimationSpec<Dp>) {
-        onWasExpandedChanged(true)
+        onAnchorChanged(expandedAnchor)
         coroutineScope.launch {
             animatable.animateTo(animatable.upperBound!!, animationSpec)
         }
@@ -207,8 +207,8 @@ class BottomSheetState(
         expand(tween(300))
     }
 
-    fun swipe() {
-        onWasExpandedChanged(false)
+    fun dismiss() {
+        onAnchorChanged(dismissedAnchor)
         coroutineScope.launch {
             animatable.animateTo(animatable.lowerBound!!)
         }
@@ -277,24 +277,34 @@ class BottomSheetState(
     }
 }
 
+private const val expandedAnchor = 2
+private const val collapsedAnchor = 1
+private const val dismissedAnchor = 0
+
 @Composable
 fun rememberBottomSheetState(
-    lowerBound: Dp,
-    upperBound: Dp,
-    collapsedBound: Dp = lowerBound,
+    dismissedBound: Dp,
+    expandedBound: Dp,
+    collapsedBound: Dp = dismissedBound,
     isExpanded: Boolean = false
 ): BottomSheetState {
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
-    var wasExpanded by rememberSaveable {
-        mutableStateOf(isExpanded)
+    var previousAnchor by rememberSaveable {
+        mutableStateOf(if (isExpanded) expandedAnchor else collapsedAnchor)
     }
 
-    return remember(lowerBound, upperBound, collapsedBound, coroutineScope) {
-        val animatable =
-            Animatable(if (wasExpanded) upperBound else lowerBound, Dp.VectorConverter).also {
-                it.updateBounds(lowerBound.coerceAtMost(upperBound), upperBound)
+    return remember(dismissedBound, expandedBound, collapsedBound, coroutineScope) {
+        val initialValue = when (previousAnchor) {
+            expandedAnchor -> expandedBound
+            collapsedAnchor -> collapsedBound
+            dismissedAnchor -> dismissedBound
+            else -> error("Unknown BottomSheet anchor")
+        }
+
+        val animatable = Animatable(initialValue, Dp.VectorConverter).also {
+                it.updateBounds(dismissedBound.coerceAtMost(expandedBound), expandedBound)
             }
 
         BottomSheetState(
@@ -303,9 +313,7 @@ fun rememberBottomSheetState(
                     animatable.snapTo(animatable.value - with(density) { delta.toDp() })
                 }
             },
-            onWasExpandedChanged = {
-                wasExpanded = it
-            },
+            onAnchorChanged = { previousAnchor = it },
             coroutineScope = coroutineScope,
             animatable = animatable,
             collapsedBound = collapsedBound

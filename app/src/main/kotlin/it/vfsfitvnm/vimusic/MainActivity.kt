@@ -216,9 +216,9 @@ class MainActivity : ComponentActivity() {
                     when (val uri = uri) {
                         null -> {
                             val playerBottomSheetState = rememberBottomSheetState(
-                                lowerBound = 0.dp,
+                                dismissedBound = 0.dp,
                                 collapsedBound = Dimensions.collapsedPlayer,
-                                upperBound = maxHeight,
+                                expandedBound = maxHeight,
                                 isExpanded = expandPlayerBottomSheet
                             )
 
