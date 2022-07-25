@@ -8,7 +8,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -20,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -43,7 +51,13 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
+import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
+import it.vfsfitvnm.vimusic.utils.rememberWindows
+import it.vfsfitvnm.vimusic.utils.secondary
+import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.shuffleQueue
 
 @ExperimentalAnimationApi
 @Composable
@@ -191,7 +205,7 @@ fun CurrentPlaylistView(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .clickable(
                     indication = rememberRipple(bounded = true),
@@ -202,14 +216,11 @@ fun CurrentPlaylistView(
                 .height(64.dp)
                 .background(colorPalette.elevatedBackground)
                 .fillMaxWidth()
+                .padding(horizontal = 8.dp)
                 .align(Alignment.BottomCenter)
         ) {
-            Image(
-                painter = painterResource(R.drawable.chevron_up),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.text),
+            Spacer(
                 modifier = Modifier
-                    .rotate(180f)
                     .padding(all = 16.dp)
                     .size(18.dp)
             )
@@ -227,10 +238,14 @@ fun CurrentPlaylistView(
                 )
             }
 
-            Spacer(
+            Image(
+                painter = painterResource(R.drawable.shuffle),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
-                    .padding(all = 16.dp)
-                    .size(18.dp)
+                    .clickable(onClick = binder.player::shuffleQueue)
+                    .padding(all = 8.dp)
+                    .size(20.dp)
             )
         }
     }
