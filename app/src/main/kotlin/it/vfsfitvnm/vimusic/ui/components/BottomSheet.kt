@@ -52,6 +52,7 @@ fun BottomSheet(
     modifier: Modifier = Modifier,
     peekHeight: Dp = 0.dp,
     elevation: Dp = 8.dp,
+    onSwiped: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -85,18 +86,36 @@ fun BottomSheet(
                         velocityTracker.resetTracking()
 
                         if (velocity.absoluteValue > 300 && initialValue != state.value) {
-                            if (initialValue > state.value) {
-                                state.collapse()
-                            } else {
-                                state.expand()
+                            when (initialValue) {
+                                state.upperBound -> state.collapse()
+                                state.collapsedBound -> if (initialValue > state.value && onSwiped != null) {
+                                    state.swipe()
+                                    onSwiped.invoke()
+                                } else {
+                                    state.expand()
+                                }
                             }
                         } else {
-                            if (state.upperBound - state.value > state.value - state.lowerBound) {
-                                state.collapse()
-                            } else {
-                                state.expand()
+                            val l0 = state.lowerBound
+                            val l1 = (state.collapsedBound - state.lowerBound) / 2
+                            val l2 = (state.upperBound - state.collapsedBound) / 2
+                            val l3 = state.upperBound
+
+                            when (state.value) {
+                                in l0..l1 -> {
+                                    if (onSwiped != null) {
+                                        state.swipe()
+                                        onSwiped.invoke()
+                                    } else {
+                                        state.collapse()
+                                    }
+                                }
+                                in l1..l2 -> state.collapse()
+                                in l2..l3 -> state.expand()
+                                else -> {}
                             }
                         }
+
                     }
                 )
             }
@@ -107,7 +126,7 @@ fun BottomSheet(
             content()
         }
 
-        if (!state.isExpanded) {
+        if (!state.isExpanded && (onSwiped == null || !state.isDismissed)) {
             Box(
                 modifier = Modifier
                     .graphicsLayer {
@@ -119,7 +138,7 @@ fun BottomSheet(
                         onClick = state::expandSoft
                     )
                     .fillMaxWidth()
-                    .height(state.lowerBound),
+                    .height(state.collapsedBound),
                 content = collapsedContent
             )
         }
@@ -132,6 +151,7 @@ class BottomSheetState(
     private val coroutineScope: CoroutineScope,
     private val animatable: Animatable<Dp, AnimationVector1D>,
     private val onWasExpandedChanged: (Boolean) -> Unit,
+    val collapsedBound: Dp,
 ) : DraggableState by draggableState {
     val lowerBound: Dp
         get() = animatable.lowerBound!!
@@ -141,8 +161,12 @@ class BottomSheetState(
 
     val value by animatable.asState()
 
+    val isDismissed by derivedStateOf {
+        value == animatable.lowerBound!!
+    }
+
     val isCollapsed by derivedStateOf {
-        value == animatable.lowerBound
+        value == collapsedBound
     }
 
     val isExpanded by derivedStateOf {
@@ -150,13 +174,13 @@ class BottomSheetState(
     }
 
     val progress by derivedStateOf {
-        1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - animatable.lowerBound!!)
+        1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
     }
 
     private fun collapse(animationSpec: AnimationSpec<Dp>) {
         onWasExpandedChanged(false)
         coroutineScope.launch {
-            animatable.animateTo(animatable.lowerBound!!, animationSpec)
+            animatable.animateTo(collapsedBound, animationSpec)
         }
     }
 
@@ -181,6 +205,13 @@ class BottomSheetState(
 
     fun expandSoft() {
         expand(tween(300))
+    }
+
+    fun swipe() {
+        onWasExpandedChanged(false)
+        coroutineScope.launch {
+            animatable.animateTo(animatable.lowerBound!!)
+        }
     }
 
     fun snapTo(value: Dp) {
@@ -224,7 +255,7 @@ class BottomSheetState(
                         if (available.y.absoluteValue > 1000) {
                             collapse()
                         } else {
-                            if (animatable.upperBound!! - value > value - animatable.lowerBound!!) {
+                            if (animatable.upperBound!! - value > value - collapsedBound) {
                                 collapse()
                             } else {
                                 expand()
@@ -250,6 +281,7 @@ class BottomSheetState(
 fun rememberBottomSheetState(
     lowerBound: Dp,
     upperBound: Dp,
+    collapsedBound: Dp = lowerBound,
     isExpanded: Boolean = false
 ): BottomSheetState {
     val density = LocalDensity.current
@@ -259,7 +291,7 @@ fun rememberBottomSheetState(
         mutableStateOf(isExpanded)
     }
 
-    return remember(lowerBound, upperBound, coroutineScope) {
+    return remember(lowerBound, upperBound, collapsedBound, coroutineScope) {
         val animatable =
             Animatable(if (wasExpanded) upperBound else lowerBound, Dp.VectorConverter).also {
                 it.updateBounds(lowerBound.coerceAtMost(upperBound), upperBound)
@@ -275,7 +307,8 @@ fun rememberBottomSheetState(
                 wasExpanded = it
             },
             coroutineScope = coroutineScope,
-            animatable = animatable
+            animatable = animatable,
+            collapsedBound = collapsedBound
         )
     }
 }

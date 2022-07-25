@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -215,7 +216,8 @@ class MainActivity : ComponentActivity() {
                     when (val uri = uri) {
                         null -> {
                             val playerBottomSheetState = rememberBottomSheetState(
-                                lowerBound = Dimensions.collapsedPlayer,
+                                lowerBound = 0.dp,
+                                collapsedBound = Dimensions.collapsedPlayer,
                                 upperBound = maxHeight,
                                 isExpanded = expandPlayerBottomSheet
                             )
@@ -263,7 +265,7 @@ fun ExpandPlayerOnPlaylistChange(player: Player, expand: () -> Unit) {
     DisposableEffect(player, expand) {
         player.listener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                     expand()
                 }
             }

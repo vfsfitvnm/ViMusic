@@ -147,6 +147,7 @@ fun PlayerView(
     BottomSheet(
         state = layoutState,
         modifier = modifier,
+        onSwiped = binder.player::clearMediaItems,
         collapsedContent = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
