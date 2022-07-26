@@ -82,10 +82,10 @@ fun BottomSheet(
                         state.snapTo(initialValue)
                     },
                     onDragEnd = {
-                        val velocity = velocityTracker.calculateVelocity().y.absoluteValue
+                        val velocity = velocityTracker.calculateVelocity().y
                         velocityTracker.resetTracking()
 
-                        if (velocity.absoluteValue > 300 && initialValue != state.value) {
+                        if (velocity.absoluteValue > 250 && initialValue != state.value) {
                             when (initialValue) {
                                 state.expandedBound -> state.collapse()
                                 state.collapsedBound -> if (initialValue > state.value && onDismiss != null) {
@@ -94,6 +94,7 @@ fun BottomSheet(
                                 } else {
                                     state.expand()
                                 }
+                                else -> state.expand()
                             }
                         } else {
                             val l0 = state.dismissedBound
@@ -112,7 +113,9 @@ fun BottomSheet(
                                 }
                                 in l1..l2 -> state.collapse()
                                 in l2..l3 -> state.expand()
-                                else -> {}
+                                else -> {
+
+                                }
                             }
                         }
 
@@ -304,8 +307,8 @@ fun rememberBottomSheetState(
         }
 
         val animatable = Animatable(initialValue, Dp.VectorConverter).also {
-                it.updateBounds(dismissedBound.coerceAtMost(expandedBound), expandedBound)
-            }
+            it.updateBounds(dismissedBound.coerceAtMost(expandedBound), expandedBound)
+        }
 
         BottomSheetState(
             draggableState = DraggableState { delta ->
