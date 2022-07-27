@@ -373,7 +373,7 @@ private fun LoadingOrError(
             modifier = Modifier
                 .height(IntrinsicSize.Max)
                 .padding(vertical = 8.dp, horizontal = 16.dp)
-                .padding(bottom = 16.dp)
+                .padding(bottom = 8.dp)
         ) {
             Spacer(
                 modifier = Modifier
