@@ -36,9 +36,9 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.Menu
 import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
-import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -225,7 +225,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
                         menuContent = {
                             when (builtInPlaylist) {
                                 BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(song = song)
-                                BuiltInPlaylist.Cached -> NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                BuiltInPlaylist.Cached -> InHistoryMediaItemMenu(song = song)
                             }
                         }
                     )
