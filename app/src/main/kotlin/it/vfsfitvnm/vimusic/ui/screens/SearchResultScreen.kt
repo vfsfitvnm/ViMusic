@@ -343,7 +343,7 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-                .padding(vertical = 5.dp, horizontal = 16.dp)
+                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
         )
         is YouTube.Item.Song -> SmallSongItem(
             song = item,
@@ -361,7 +361,7 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-                .padding(vertical = 5.dp, horizontal = 16.dp)
+                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
         )
         is YouTube.Item.Video -> SmallVideoItem(
             video = item,
@@ -379,7 +379,7 @@ fun SmallItem(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = onClick
                 )
-                .padding(vertical = 5.dp, horizontal = 16.dp)
+                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
         )
     }
 }
@@ -584,7 +584,7 @@ private fun LoadingOrError(
                     modifier = Modifier
                         .alpha(1f - index * 0.125f)
                         .fillMaxWidth()
-                        .padding(vertical = 5.dp, horizontal = 16.dp)
+                        .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
                 )
             } else {
                 SmallSongItemShimmer(
@@ -592,7 +592,7 @@ private fun LoadingOrError(
                     modifier = Modifier
                         .alpha(1f - index * 0.125f)
                         .fillMaxWidth()
-                        .padding(vertical = 5.dp, horizontal = 16.dp)
+                        .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
                 )
             }
         }

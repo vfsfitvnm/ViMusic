@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.dp
 
 @Suppress("ClassName")
 object Dimensions {
+    val itemsVerticalPadding = 8.dp
+
     object thumbnails {
         val album = 128.dp
         val artist = 192.dp

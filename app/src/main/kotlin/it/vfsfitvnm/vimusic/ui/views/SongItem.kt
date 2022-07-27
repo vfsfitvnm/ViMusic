@@ -170,7 +170,7 @@ fun SongItem(
                 onClick = onClick
             )
             .fillMaxWidth()
-            .padding(vertical = 5.dp)
+            .padding(vertical = Dimensions.itemsVerticalPadding)
             .background(backgroundColor ?: colorPalette.background)
             .padding(start = 16.dp, end = if (trailingContent == null) 16.dp else 8.dp)
     ) {
