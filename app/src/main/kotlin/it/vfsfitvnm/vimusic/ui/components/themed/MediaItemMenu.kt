@@ -292,10 +292,6 @@ fun MediaItemMenu(
     onShare: (() -> Unit)? = null,
     onGlobalRouteEmitted: (() -> Unit)? = null,
 ) {
-    val playlistPreviews by remember {
-        Database.playlistPreviews(PlaylistSortBy.DateAdded, SortOrder.Descending)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-
     Menu(modifier = modifier) {
         RouteHandler(
             transitionSpec = {
@@ -311,6 +307,10 @@ fun MediaItemMenu(
             }
         ) {
             viewPlaylistsRoute {
+                val playlistPreviews by remember {
+                    Database.playlistPreviews(PlaylistSortBy.DateAdded, SortOrder.Descending)
+                }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+
                 var isCreatingNewPlaylist by rememberSaveable {
                     mutableStateOf(false)
                 }
