@@ -212,7 +212,6 @@ fun CurrentPlaylistView(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = layoutState::collapseSoft
                 )
-                .shadow(elevation = 8.dp)
                 .height(64.dp)
                 .background(colorPalette.elevatedBackground)
                 .fillMaxWidth()

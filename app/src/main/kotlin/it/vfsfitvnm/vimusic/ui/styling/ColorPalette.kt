@@ -61,8 +61,8 @@ val BlackColorPalette = DarkColorPalette.copy(
 
 val LightColorPalette = ColorPalette(
     background = Color(0xfffdfdfe),
-    lightBackground = Color(0xFFf8f8fc),
-    elevatedBackground = Color(0xfffdfdfe),
+    lightBackground = Color(0xfff8f8fc),
+    elevatedBackground = Color(0xfff8f8fc),
     backgroundContainer = Color(0xffeaeaf5),
     lightGray = Color(0xfff8f8f8),
     gray = Color(0xFFE5E5E5),

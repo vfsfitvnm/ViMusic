@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -156,7 +155,6 @@ fun ArtistScreen(browseId: String) {
                                             }
                                         }
                                     }
-                                    .shadow(elevation = 2.dp, shape = CircleShape)
                                     .background(
                                         color = colorPalette.elevatedBackground,
                                         shape = CircleShape
@@ -185,8 +183,7 @@ fun ArtistScreen(browseId: String) {
                                             }
                                         }
                                     }
-                                    .shadow(elevation = 2.dp, shape = CircleShape)
-                                    .background(
+                                                                        .background(
                                         color = colorPalette.elevatedBackground,
                                         shape = CircleShape
                                     )

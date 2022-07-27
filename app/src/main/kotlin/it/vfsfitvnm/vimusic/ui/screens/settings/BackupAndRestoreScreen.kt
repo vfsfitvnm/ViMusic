@@ -27,7 +27,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -177,7 +176,6 @@ fun BackupAndRestoreScreen() {
                                     val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
                                     backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
                                 }
-                                .shadow(elevation = 8.dp, shape = CircleShape)
                                 .background(
                                     color = colorPalette.elevatedBackground,
                                     shape = CircleShape
@@ -212,8 +210,7 @@ fun BackupAndRestoreScreen() {
                                 .clickable {
                                     isShowingRestoreDialog = true
                                 }
-                                .shadow(elevation = 8.dp, shape = CircleShape)
-                                .background(
+                                                                .background(
                                     color = colorPalette.elevatedBackground,
                                     shape = CircleShape
                                 )
