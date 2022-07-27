@@ -1,18 +1,23 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,9 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
@@ -41,7 +49,6 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
-import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -50,6 +57,8 @@ import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
+import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.YouTube
@@ -132,7 +141,7 @@ fun ArtistScreen(browseId: String) {
                         )
 
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(32.dp),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
@@ -155,11 +164,7 @@ fun ArtistScreen(browseId: String) {
                                             }
                                         }
                                     }
-                                    .background(
-                                        color = colorPalette.elevatedBackground,
-                                        shape = CircleShape
-                                    )
-                                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                                    .padding(all = 8.dp)
                                     .size(20.dp)
                             )
 
@@ -183,11 +188,7 @@ fun ArtistScreen(browseId: String) {
                                             }
                                         }
                                     }
-                                                                        .background(
-                                        color = colorPalette.elevatedBackground,
-                                        shape = CircleShape
-                                    )
-                                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                                    .padding(all = 8.dp)
                                     .size(20.dp)
                             )
                         }
@@ -267,12 +268,56 @@ fun ArtistScreen(browseId: String) {
 
                 artistResult?.getOrNull()?.info?.let { description ->
                     item {
-                        TextCard(
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
+                                .background(colorPalette.background)
                                 .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
+                                .padding(top = 32.dp)
                         ) {
-                            Title(text = "Information")
-                            Text(text = description)
+                            BasicText(
+                                text = "Information",
+                                style = typography.m.semiBold,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .height(IntrinsicSize.Max)
+                                    .padding(all = 8.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Canvas(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .width(48.dp)
+                                ) {
+                                    drawLine(
+                                        color = colorPalette.backgroundContainer,
+                                        start = size.center.copy(y = 0f),
+                                        end = size.center.copy(y = size.height),
+                                        strokeWidth = 2.dp.toPx()
+                                    )
+
+                                    drawCircle(
+                                        color = colorPalette.backgroundContainer,
+                                        center = size.center.copy(y = size.height),
+                                        radius = 4.dp.toPx()
+                                    )
+                                }
+
+                                BasicText(
+                                    text = description,
+                                    style = typography.xxs.secondary.medium.copy(
+                                        lineHeight = 24.sp,
+                                        textAlign = TextAlign.Justify
+                                    ),
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp)
+                                )
+                            }
                         }
                     }
                 }
