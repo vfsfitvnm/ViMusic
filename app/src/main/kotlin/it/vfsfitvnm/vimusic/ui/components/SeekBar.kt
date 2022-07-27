@@ -1,5 +1,8 @@
 package it.vfsfitvnm.vimusic.ui.components
 
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -9,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -31,12 +36,21 @@ fun SeekBar(
     color: Color,
     backgroundColor: Color,
     modifier: Modifier = Modifier,
-    barHeight: Dp = 3.5.dp,
+    barHeight: Dp = 3.dp,
     scrubberColor: Color = color,
     scrubberRadius: Dp = 6.dp,
     shape: Shape = RectangleShape,
     drawSteps: Boolean = false,
 ) {
+    val isDragging = remember {
+        MutableTransitionState(false)
+    }
+
+    val transition = updateTransition(transitionState = isDragging, label = null)
+
+    val currentBarHeight by transition.animateDp(label = "") { if (it) scrubberRadius else barHeight }
+    val currentScrubberRadius by transition.animateDp(label = "") { if (it) 0.dp else scrubberRadius }
+
     Box(
         modifier = modifier
             .pointerInput(minimumValue, maximumValue) {
@@ -45,6 +59,9 @@ fun SeekBar(
                 var acc = 0f
 
                 detectHorizontalDragGestures(
+                    onDragStart = {
+                        isDragging.targetState = true
+                    },
                     onHorizontalDrag = { _, delta ->
                         acc += delta / size.width * (maximumValue - minimumValue)
 
@@ -54,10 +71,12 @@ fun SeekBar(
                         }
                     },
                     onDragEnd = {
+                        isDragging.targetState = false
                         acc = 0f
                         onDragEnd()
                     },
                     onDragCancel = {
+                        isDragging.targetState = false
                         acc = 0f
                         onDragEnd()
                     }
@@ -87,7 +106,7 @@ fun SeekBar(
 
                 drawCircle(
                     color = scrubberColor,
-                    radius = scrubberRadius.toPx(),
+                    radius = currentScrubberRadius.toPx(),
                     center = center.copy(x = scrubberPosition)
                 )
 
@@ -103,10 +122,11 @@ fun SeekBar(
                     }
                 }
             }
+            .height(scrubberRadius)
     ) {
         Spacer(
             modifier = Modifier
-                .height(barHeight)
+                .height(currentBarHeight)
                 .fillMaxWidth()
                 .background(color = backgroundColor, shape = shape)
                 .align(Alignment.Center)
@@ -114,9 +134,10 @@ fun SeekBar(
 
         Spacer(
             modifier = Modifier
-                .height(barHeight)
+                .height(currentBarHeight)
                 .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
                 .background(color = color, shape = shape)
+                .align(Alignment.CenterStart)
         )
     }
 }
