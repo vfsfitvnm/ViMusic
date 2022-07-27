@@ -224,7 +224,7 @@ fun HomeScreen() {
                             .height(52.dp)
                     ) {
                         Image(
-                            painter = painterResource(R.drawable.cog),
+                            painter = painterResource(R.drawable.equalizer),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
