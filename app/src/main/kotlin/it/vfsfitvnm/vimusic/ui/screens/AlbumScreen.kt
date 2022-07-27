@@ -192,7 +192,6 @@ fun AlbumScreen(browseId: String) {
                             .fillMaxWidth()
                             .zIndex(1f)
                             .padding(horizontal = 8.dp)
-//                            .padding(top = 8.dp)
                     ) {
                         Image(
                             painter = painterResource(R.drawable.shuffle),

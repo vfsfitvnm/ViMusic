@@ -33,13 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
@@ -125,28 +125,109 @@ fun PlaylistScreen(browseId: String) {
                                 .padding(horizontal = 16.dp)
                                 .size(24.dp)
                         )
+                    }
+                }
 
-                        Image(
-                            painter = painterResource(R.drawable.ellipsis_horizontal),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable {
-                                    menuState.display {
-                                        Menu {
-                                            MenuEntry(
-                                                icon = R.drawable.enqueue,
-                                                text = "Enqueue",
-                                                onClick = {
-                                                    menuState.hide()
-                                                    playlist
-                                                        ?.getOrNull()
-                                                        ?.let { album ->
-                                                            album.items
+                item {
+                    playlist?.getOrNull()?.let { playlist ->
+                        Column {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Max)
+                                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                AsyncImage(
+                                    model = playlist.thumbnail?.size(thumbnailSizePx),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .clip(ThumbnailRoundness.shape)
+                                        .size(Dimensions.thumbnails.playlist)
+                                )
+
+                                Column(
+                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    Column {
+                                        BasicText(
+                                            text = playlist.title ?: "Unknown",
+                                            style = typography.m.semiBold
+                                        )
+
+                                        BasicText(
+                                            text = playlist.authors?.joinToString("") { it.name }
+                                                ?: "",
+                                            style = typography.xs.secondary.semiBold,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
+
+                                    playlist.year?.let { year ->
+                                        BasicText(
+                                            text = year,
+                                            style = typography.xs.secondary,
+                                            maxLines = 1,
+                                            modifier = Modifier
+                                                .padding(top = 8.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .zIndex(1f)
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.shuffle),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(colorPalette.text),
+                                    modifier = Modifier
+                                        .clickable {
+                                            binder?.stopRadio()
+                                            playlist.items
+                                                ?.shuffled()
+                                                ?.mapNotNull { song ->
+                                                    song.toMediaItem(browseId, playlist)
+                                                }
+                                                ?.let { mediaItems ->
+                                                    binder?.player?.forcePlayFromBeginning(
+                                                        mediaItems
+                                                    )
+                                                }
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                                        .size(20.dp)
+                                )
+
+                                Image(
+                                    painter = painterResource(R.drawable.ellipsis_horizontal),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(colorPalette.text),
+                                    modifier = Modifier
+                                        .clickable {
+                                            menuState.display {
+                                                Menu {
+                                                    MenuEntry(
+                                                        icon = R.drawable.enqueue,
+                                                        text = "Enqueue",
+                                                        onClick = {
+                                                            menuState.hide()
+                                                            playlist.items
                                                                 ?.mapNotNull { song ->
                                                                     song.toMediaItem(
                                                                         browseId,
-                                                                        album
+                                                                        playlist
                                                                     )
                                                                 }
                                                                 ?.let { mediaItems ->
@@ -155,32 +236,27 @@ fun PlaylistScreen(browseId: String) {
                                                                     )
                                                                 }
                                                         }
-                                                }
-                                            )
+                                                    )
 
-                                            MenuEntry(
-                                                icon = R.drawable.playlist,
-                                                text = "Import",
-                                                onClick = {
-                                                    menuState.hide()
-
-                                                    playlist
-                                                        ?.getOrNull()
-                                                        ?.let { album ->
+                                                    MenuEntry(
+                                                        icon = R.drawable.playlist,
+                                                        text = "Import",
+                                                        onClick = {
+                                                            menuState.hide()
                                                             transaction {
                                                                 val playlistId =
                                                                     Database.insert(
                                                                         Playlist(
-                                                                            name = album.title
+                                                                            name = playlist.title
                                                                                 ?: "Unknown"
                                                                         )
                                                                     )
 
-                                                                album.items?.forEachIndexed { index, song ->
+                                                                playlist.items?.forEachIndexed { index, song ->
                                                                     song
                                                                         .toMediaItem(
                                                                             browseId,
-                                                                            album
+                                                                            playlist
                                                                         )
                                                                         ?.let { mediaItem ->
                                                                             Database.insert(
@@ -198,150 +274,41 @@ fun PlaylistScreen(browseId: String) {
                                                                 }
                                                             }
                                                         }
-                                                }
-                                            )
+                                                    )
 
-                                            MenuEntry(
-                                                icon = R.drawable.share_social,
-                                                text = "Share",
-                                                onClick = {
-                                                    menuState.hide()
+                                                    MenuEntry(
+                                                        icon = R.drawable.share_social,
+                                                        text = "Share",
+                                                        onClick = {
+                                                            menuState.hide()
 
-                                                    (playlist?.getOrNull()?.url
-                                                        ?: "https://music.youtube.com/playlist?list=${
-                                                            browseId.removePrefix(
-                                                                "VL"
-                                                            )
-                                                        }").let { url ->
-                                                        val sendIntent = Intent().apply {
-                                                            action = Intent.ACTION_SEND
-                                                            type = "text/plain"
-                                                            putExtra(Intent.EXTRA_TEXT, url)
+                                                            (playlist.url
+                                                                ?: "https://music.youtube.com/playlist?list=${
+                                                                    browseId.removePrefix(
+                                                                        "VL"
+                                                                    )
+                                                                }").let { url ->
+                                                                val sendIntent = Intent().apply {
+                                                                    action = Intent.ACTION_SEND
+                                                                    type = "text/plain"
+                                                                    putExtra(Intent.EXTRA_TEXT, url)
+                                                                }
+
+                                                                context.startActivity(
+                                                                    Intent.createChooser(
+                                                                        sendIntent,
+                                                                        null
+                                                                    )
+                                                                )
+                                                            }
                                                         }
-
-                                                        context.startActivity(
-                                                            Intent.createChooser(
-                                                                sendIntent,
-                                                                null
-                                                            )
-                                                        )
-                                                    }
+                                                    )
                                                 }
-                                            )
+                                            }
                                         }
-                                    }
-                                }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .size(24.dp)
-                        )
-                    }
-                }
-
-                item {
-                    playlist?.getOrNull()?.let { playlist ->
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Max)
-                                .padding(vertical = 8.dp, horizontal = 16.dp)
-                                .padding(bottom = 16.dp)
-                        ) {
-                            AsyncImage(
-                                model = playlist.thumbnail?.size(thumbnailSizePx),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .clip(ThumbnailRoundness.shape)
-                                    .size(Dimensions.thumbnails.playlist)
-                            )
-
-                            Column(
-                                verticalArrangement = Arrangement.SpaceEvenly,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                Column {
-                                    BasicText(
-                                        text = playlist.title ?: "Unknown",
-                                        style = typography.m.semiBold
-                                    )
-
-                                    BasicText(
-                                        text = buildString {
-                                            val authors =
-                                                playlist.authors?.joinToString("") { it.name }
-                                            append(authors)
-                                            if (authors?.isNotEmpty() == true && playlist.year != null) {
-                                                append(" • ")
-                                            }
-                                            append(playlist.year)
-                                        },
-                                        style = typography.xs.secondary.semiBold,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                    modifier = Modifier
-                                        .align(Alignment.End)
-                                        .padding(horizontal = 16.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.shuffle),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.text),
-                                        modifier = Modifier
-                                            .clickable {
-                                                binder?.stopRadio()
-                                                playlist.items
-                                                    ?.shuffled()
-                                                    ?.mapNotNull { song ->
-                                                        song.toMediaItem(browseId, playlist)
-                                                    }
-                                                    ?.let { mediaItems ->
-                                                        binder?.player?.forcePlayFromBeginning(
-                                                            mediaItems
-                                                        )
-                                                    }
-                                            }
-                                            .shadow(elevation = 2.dp, shape = CircleShape)
-                                            .background(
-                                                color = colorPalette.elevatedBackground,
-                                                shape = CircleShape
-                                            )
-                                            .padding(horizontal = 16.dp, vertical = 16.dp)
-                                            .size(20.dp)
-                                    )
-
-                                    Image(
-                                        painter = painterResource(R.drawable.play),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.text),
-                                        modifier = Modifier
-                                            .clickable {
-                                                binder?.stopRadio()
-                                                playlist.items
-                                                    ?.mapNotNull { song ->
-                                                        song.toMediaItem(browseId, playlist)
-                                                    }
-                                                    ?.let { mediaItems ->
-                                                        binder?.player?.forcePlayFromBeginning(
-                                                            mediaItems
-                                                        )
-                                                    }
-                                            }
-                                            .shadow(elevation = 2.dp, shape = CircleShape)
-                                            .background(
-                                                color = colorPalette.elevatedBackground,
-                                                shape = CircleShape
-                                            )
-                                            .padding(horizontal = 16.dp, vertical = 16.dp)
-                                            .size(20.dp)
-                                    )
-                                }
+                                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                                        .size(20.dp)
+                                )
                             }
                         }
                     } ?: playlist?.exceptionOrNull()?.let { throwable ->
