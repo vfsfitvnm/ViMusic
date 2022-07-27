@@ -32,11 +32,11 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.screens.DisabledSettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -96,6 +96,8 @@ fun CacheSettingsScreen() {
 
                 SettingsTitle(text = "Cache")
 
+                SettingsDescription(text = "The cache follows the LRU (Least Recently Used) strategy: when it runs out of space, the resources that haven't been accessed for the longest time are cleared to accommodate the new ones.")
+
                 Coil.imageLoader(context).diskCache?.let { diskCache ->
                     var diskCacheSize by remember(diskCache) {
                         mutableStateOf(diskCache.size)
@@ -103,24 +105,14 @@ fun CacheSettingsScreen() {
 
                     SettingsEntryGroupText(title = "IMAGE CACHE")
 
+                    SettingsGroupDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} used (${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(1)}%)")
+
                     EnumValueSelectorSettingsEntry(
                         title = "Max size",
                         selectedValue = coilDiskCacheMaxSize,
                         onValueSelected = {
                             coilDiskCacheMaxSize = it
                         }
-                    )
-
-                    DisabledSettingsEntry(
-                        title = "Space used",
-                        text = "${
-                            Formatter.formatShortFileSize(
-                                context,
-                                diskCacheSize
-                            )
-                        } (${
-                            diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(1)
-                        }%)",
                     )
 
                     SettingsEntry(
@@ -144,6 +136,17 @@ fun CacheSettingsScreen() {
 
                     SettingsEntryGroupText(title = "SONG CACHE")
 
+                    SettingsGroupDescription(
+                        text = buildString {
+                            append(Formatter.formatShortFileSize(context, diskCacheSize))
+                            append(" used")
+                            when (val size = exoPlayerDiskCacheMaxSize) {
+                                ExoPlayerDiskCacheMaxSize.Unlimited -> {}
+                                else -> append(" (${diskCacheSize * 100 / size.bytes}%)")
+                            }
+                        }
+                    )
+
                     EnumValueSelectorSettingsEntry(
                         title = "Max size",
                         selectedValue = exoPlayerDiskCacheMaxSize,
@@ -151,23 +154,6 @@ fun CacheSettingsScreen() {
                             exoPlayerDiskCacheMaxSize = it
                         }
                     )
-
-                    DisabledSettingsEntry(
-                        title = "Space used",
-                        text = buildString {
-                            append(Formatter.formatShortFileSize(context, diskCacheSize))
-
-                            when (val size = exoPlayerDiskCacheMaxSize) {
-                                ExoPlayerDiskCacheMaxSize.Unlimited -> {}
-                                else -> append("(${diskCacheSize * 100 / size.bytes}%)")
-                            }
-                        }
-                    )
-                }
-
-                TextCard(icon = R.drawable.alert_circle) {
-                    Title(text = "Cache strategy")
-                    Text(text = "The cache follows the LRU (Least Recently Used) strategy: when it runs out of space, the resources that haven't been accessed for the longest time are cleared to accommodate the new resource.")
                 }
             }
         }

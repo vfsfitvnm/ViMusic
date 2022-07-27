@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.R
@@ -373,50 +372,6 @@ fun SettingsEntry(
 }
 
 @Composable
-@NonRestartableComposable
-fun DisabledSettingsEntry(
-    title: String,
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    BaseSettingsEntry(
-        title = title,
-        text = text,
-        modifier = modifier,
-        titleTextStyle = { disabled },
-        textStyle = { disabled },
-    )
-}
-
-@Composable
-fun BaseSettingsEntry(
-    title: String,
-    text: String,
-    modifier: Modifier = Modifier,
-    titleTextStyle: @Composable TextStyle.() -> TextStyle = { this },
-    textStyle: @Composable TextStyle.() -> TextStyle = { this },
-) {
-    val (_, typography) = LocalAppearance.current
-
-    Column(
-        modifier = modifier
-            .padding(start = 24.dp)
-            .padding(horizontal = 32.dp, vertical = 16.dp)
-            .fillMaxWidth()
-    ) {
-        BasicText(
-            text = title,
-            style = typography.xs.semiBold.run { titleTextStyle() },
-        )
-
-        BasicText(
-            text = text,
-            style = typography.xs.semiBold.secondary.run { textStyle() }
-        )
-    }
-}
-
-@Composable
 fun SettingsTitle(
     text: String,
     modifier: Modifier = Modifier,
@@ -431,6 +386,39 @@ fun SettingsTitle(
             .padding(all = 16.dp)
     )
 }
+
+@Composable
+fun SettingsDescription(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    val (_, typography) = LocalAppearance.current
+
+    BasicText(
+        text = text,
+        style = typography.xxs.secondary,
+        modifier = modifier
+            .padding(start = 56.dp, end = 24.dp)
+            .padding(bottom = 16.dp)
+    )
+}
+
+@Composable
+fun SettingsGroupDescription(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    val (_, typography) = LocalAppearance.current
+
+    BasicText(
+        text = text,
+        style = typography.xxs.secondary,
+        modifier = modifier
+            .padding(start = 56.dp, end = 24.dp)
+            .padding(vertical = 8.dp)
+    )
+}
+
 @Composable
 fun SettingsEntryGroupText(
     title: String,

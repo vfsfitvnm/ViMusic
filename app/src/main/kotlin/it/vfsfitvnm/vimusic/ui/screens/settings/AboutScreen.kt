@@ -21,7 +21,7 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.BuildConfig
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.screens.DisabledSettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
 import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
@@ -64,12 +64,19 @@ fun AboutScreen() {
 
                 SettingsTitle(text = "About")
 
-                SettingsEntryGroupText(title = "INFO")
+                SettingsDescription(text = "v${BuildConfig.VERSION_NAME}\nby vfsfitvnm")
 
-                DisabledSettingsEntry(
-                    title = "ViMusic",
-                    text = "v${BuildConfig.VERSION_NAME}",
+                SettingsEntryGroupText(title = "SOCIAL")
+
+                SettingsEntry(
+                    title = "GitHub",
+                    text = "View the source code",
+                    onClick = {
+                        uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic")
+                    }
                 )
+
+                SettingsEntryGroupText(title = "TROUBLESHOOTING")
 
                 SettingsEntry(
                     title = "Report an issue",
@@ -84,16 +91,6 @@ fun AboutScreen() {
                     text = "You will be redirected to GitHub",
                     onClick = {
                         uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
-                    }
-                )
-
-                SettingsEntryGroupText(title = "SOCIAL")
-
-                SettingsEntry(
-                    title = "GitHub",
-                    text = "View the source code",
-                    onClick = {
-                        uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic")
                     }
                 )
             }

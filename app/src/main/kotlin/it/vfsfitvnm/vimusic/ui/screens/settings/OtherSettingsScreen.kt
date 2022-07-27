@@ -13,7 +13,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,9 +33,10 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
+import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupDescription
 import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -101,6 +101,12 @@ fun OtherSettingsScreen() {
 
                 SettingsEntryGroupText(title = "SERVICE LIFETIME")
 
+                SettingsGroupDescription(text = "Some device manufacturers may have an aggressive policy against stopped foreground services - the media notification can disappear suddenly when paused.\nThe gentle approach consists in disabling battery optimizations - this is enough for some devices and ROMs.\nHowever, if it's not, you can make the service \"invincible\" - which should keep the service alive.")
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    SettingsDescription(text = "Since Android 12, the invincible service works ONLY if battery optimizations are disabled for this application.")
+                }
+
                 SettingsEntry(
                     title = "Ignore battery optimizations",
                     isEnabled = !isIgnoringBatteryOptimizations,
@@ -145,21 +151,6 @@ fun OtherSettingsScreen() {
                         isInvincibilityEnabled = it
                     }
                 )
-
-                TextCard(icon = R.drawable.alert_circle) {
-                    Title(text = "Service lifetime")
-                    Text(text = "Some device manufacturers may have an aggressive policy against stopped foreground services - the media notification can disappear suddenly when paused.\nThe gentle approach consists in disabling battery optimizations - this is enough for some devices and ROMs.\nHowever, if it's not, you can make the service \"invincible\" - which should keep the service alive.")
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        Spacer(
-                            modifier = Modifier
-                                .height(32.dp)
-                        )
-
-                        Title(text = "Invincible service")
-                        Text(text = "Since Android 12, this option works ONLY if battery optimizations are disabled for this application.")
-                    }
-                }
             }
         }
     }

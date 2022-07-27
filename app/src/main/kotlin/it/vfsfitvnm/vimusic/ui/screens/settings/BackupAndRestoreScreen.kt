@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,9 +34,9 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
-import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -144,6 +143,8 @@ fun BackupAndRestoreScreen() {
 
                 SettingsEntryGroupText(title = "BACKUP")
 
+                SettingsGroupDescription(text = "Exports the application database to the external storage.\nThis means playlists, song history, favorites songs will exported.\nThis operation excludes personal preferences (i.e. the theme mode) and the cache.")
+
                 SettingsEntry(
                     title = "Backup",
                     text = "Export the database to the external storage",
@@ -156,6 +157,8 @@ fun BackupAndRestoreScreen() {
 
                 SettingsEntryGroupText(title = "RESTORE")
 
+                SettingsGroupDescription(text = "Replaces the existing application database with the selected one.\nThis means every currently existing data will be wiped: the two databases won't be merged.\nIt is recommended to restore the database immediately after the application is installed on a new device.")
+
                 SettingsEntry(
                     title = "Restore",
                     text = "Import the database from the external storage",
@@ -163,21 +166,6 @@ fun BackupAndRestoreScreen() {
                         isShowingRestoreDialog = true
                     }
                 )
-
-                TextCard(
-                    icon = R.drawable.alert_circle,
-                ) {
-                    Title(text = "Backup")
-                    Text(text = "The backup consists in exporting the application database to your device storage.\nThis means playlists, song history, favorites songs will exported.\nThis operation excludes personal preferences such as the theme mode and everything you can set in the Settings page.")
-
-                    Spacer(
-                        modifier = Modifier
-                            .height(32.dp)
-                    )
-
-                    Title(text = "Restore")
-                    Text(text = "The restore replaces the existing application database with the selected - previously exported - one.\nThis means every currently existing data will be wiped: THE TWO DATABASES WON'T BE MERGED.\nIt is recommended to restore the database immediately after the application is installed on a new device.")
-                }
             }
         }
     }
