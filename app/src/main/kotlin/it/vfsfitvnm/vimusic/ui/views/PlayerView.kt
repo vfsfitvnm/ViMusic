@@ -14,6 +14,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -38,7 +39,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
@@ -162,10 +162,7 @@ fun PlayerView(
 
                         drawLine(
                             color = colorPalette.text,
-                            start = Offset(
-                                x = offset,
-                                y = 1.dp.toPx()
-                            ),
+                            start = Offset(x = offset, y = 1.dp.toPx()),
                             end = Offset(
                                 x = ((size.width - offset) * progress) + offset,
                                 y = 1.dp.toPx()
@@ -201,31 +198,26 @@ fun PlayerView(
                     )
                 }
 
-                if (shouldBePlaying) {
-                    Image(
-                        painter = painterResource(R.drawable.pause),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .clickable(onClick = binder.player::pause)
-                            .padding(vertical = 8.dp)
-                            .padding(horizontal = 16.dp)
-                            .size(22.dp)
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(R.drawable.play),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .clickable {
+                Box(
+                    modifier = Modifier
+                        .clickable {
+                            if (shouldBePlaying) {
+                                binder.player.pause()
+                            } else {
                                 if (binder.player.playbackState == Player.STATE_IDLE) {
                                     binder.player.prepare()
                                 }
                                 binder.player.play()
                             }
-                            .padding(vertical = 8.dp)
-                            .padding(horizontal = 16.dp)
+                        }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Image(
+                        painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        modifier = Modifier
+                            .align(Alignment.Center)
                             .size(22.dp)
                     )
                 }
@@ -316,70 +308,105 @@ fun PlayerView(
 
         PlayerBottomSheet(
             layoutState = rememberBottomSheetState(64.dp, layoutState.expandedBound),
-            isShowingLyrics = isShowingLyrics,
-            onShowLyrics = {
-                isShowingStatsForNerds = false
-                isShowingLyrics = !isShowingLyrics
-            },
-            isShowingStatsForNerds = isShowingStatsForNerds,
-            onShowStatsForNerds = {
-                isShowingLyrics = false
-                isShowingStatsForNerds = !isShowingStatsForNerds
-            },
-            onShowMenu = {
-                menuState.display {
-                    val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+            onGlobalRouteEmitted = layoutState::collapseSoft,
+            content = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(horizontal = 8.dp)
+                        .fillMaxHeight()
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.text),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(if (isShowingLyrics) colorPalette.text else colorPalette.textDisabled),
+                        modifier = Modifier
+                            .clickable {
+                                isShowingStatsForNerds = false
+                                isShowingLyrics = !isShowingLyrics
+                            }
+                            .padding(all = 8.dp)
+                            .size(20.dp)
+                    )
 
-                    BaseMediaItemMenu(
-                        mediaItem = mediaItem,
-                        onStartRadio = {
-                            binder.stopRadio()
-                            binder.player.seamlessPlay(mediaItem)
-                            binder.setupRadio(
-                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                            )
-                        },
-                        onGoToEqualizer = {
-                            val intent =
-                                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                                    putExtra(
-                                        AudioEffect.EXTRA_AUDIO_SESSION,
-                                        binder.player.audioSessionId
-                                    )
-                                    putExtra(
-                                        AudioEffect.EXTRA_PACKAGE_NAME,
-                                        context.packageName
-                                    )
-                                    putExtra(
-                                        AudioEffect.EXTRA_CONTENT_TYPE,
-                                        AudioEffect.CONTENT_TYPE_MUSIC
+                    Image(
+                        painter = painterResource(R.drawable.information),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(if (isShowingStatsForNerds) colorPalette.text else colorPalette.textDisabled),
+                        modifier = Modifier
+                            .clickable {
+                                isShowingLyrics = false
+                                isShowingStatsForNerds = !isShowingStatsForNerds
+                            }
+                            .padding(all = 8.dp)
+                            .size(20.dp)
+                    )
+
+                    Image(
+                        painter = painterResource(R.drawable.ellipsis_horizontal),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        modifier = Modifier
+                            .clickable {
+                                menuState.display {
+                                    val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+
+                                    BaseMediaItemMenu(
+                                        mediaItem = mediaItem,
+                                        onStartRadio = {
+                                            binder.stopRadio()
+                                            binder.player.seamlessPlay(mediaItem)
+                                            binder.setupRadio(
+                                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                            )
+                                        },
+                                        onGoToEqualizer = {
+                                            val intent =
+                                                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                                    putExtra(
+                                                        AudioEffect.EXTRA_AUDIO_SESSION,
+                                                        binder.player.audioSessionId
+                                                    )
+                                                    putExtra(
+                                                        AudioEffect.EXTRA_PACKAGE_NAME,
+                                                        context.packageName
+                                                    )
+                                                    putExtra(
+                                                        AudioEffect.EXTRA_CONTENT_TYPE,
+                                                        AudioEffect.CONTENT_TYPE_MUSIC
+                                                    )
+                                                }
+
+                                            if (intent.resolveActivity(context.packageManager) != null) {
+                                                val contract =
+                                                    ActivityResultContracts.StartActivityForResult()
+
+                                                resultRegistryOwner?.activityResultRegistry
+                                                    ?.register("", contract) {}
+                                                    ?.launch(intent)
+                                            } else {
+                                                Toast
+                                                    .makeText(
+                                                        context,
+                                                        "No equalizer app found!",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
+                                            }
+                                        },
+                                        onSetSleepTimer = {},
+                                        onDismiss = menuState::hide,
+                                        onGlobalRouteEmitted = layoutState::collapseSoft,
                                     )
                                 }
-
-                            if (intent.resolveActivity(context.packageManager) != null) {
-                                val contract =
-                                    ActivityResultContracts.StartActivityForResult()
-
-                                resultRegistryOwner?.activityResultRegistry
-                                    ?.register("", contract) {}
-                                    ?.launch(intent)
-                            } else {
-                                Toast
-                                    .makeText(
-                                        context,
-                                        "No equalizer app found!",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                    .show()
                             }
-                        },
-                        onSetSleepTimer = {},
-                        onDismiss = menuState::hide,
-                        onGlobalRouteEmitted = layoutState::collapseSoft,
+                            .padding(all = 8.dp)
+                            .size(20.dp)
                     )
                 }
             },
-            onGlobalRouteEmitted = layoutState::collapseSoft,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )
@@ -900,6 +927,8 @@ private fun Controls(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
+    val playPauseRoundness by animateDpAsState(if (shouldBePlaying) 32.dp else 16.dp)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -949,7 +978,7 @@ private fun Controls(
                 scrubbingPosition = null
             },
             color = colorPalette.text,
-            backgroundColor = colorPalette.textDisabled,
+            backgroundColor = colorPalette.backgroundContainer,
             shape = RoundedCornerShape(8.dp)
         )
 
@@ -981,7 +1010,6 @@ private fun Controls(
             }
         }
 
-
         Spacer(
             modifier = Modifier
                 .weight(1f)
@@ -1009,7 +1037,7 @@ private fun Controls(
                         }
                     }
                     .weight(1f)
-                    .size(28.dp)
+                    .size(24.dp)
             )
 
             Image(
@@ -1019,7 +1047,7 @@ private fun Controls(
                 modifier = Modifier
                     .clickable(onClick = binder.player::seekToPrevious)
                     .weight(1f)
-                    .size(28.dp)
+                    .size(24.dp)
             )
 
             Spacer(
@@ -1029,6 +1057,7 @@ private fun Controls(
 
             Box(
                 modifier = Modifier
+                    .clip(RoundedCornerShape(playPauseRoundness))
                     .clickable {
                         if (shouldBePlaying) {
                             binder.player.pause()
@@ -1039,13 +1068,13 @@ private fun Controls(
                             binder.player.play()
                         }
                     }
-                    .background(color = colorPalette.text, shape = CircleShape)
+                    .background(color = colorPalette.backgroundContainer)
                     .size(64.dp)
             ) {
                 Image(
                     painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                     contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.background),
+                    colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .size(28.dp)
@@ -1064,7 +1093,7 @@ private fun Controls(
                 modifier = Modifier
                     .clickable(onClick = binder.player::seekToNext)
                     .weight(1f)
-                    .size(28.dp)
+                    .size(24.dp)
             )
 
             Image(
@@ -1093,7 +1122,7 @@ private fun Controls(
                             }
                     }
                     .weight(1f)
-                    .size(28.dp)
+                    .size(24.dp)
             )
         }
 

@@ -28,7 +28,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -50,8 +49,6 @@ import kotlinx.coroutines.launch
 fun BottomSheet(
     state: BottomSheetState,
     modifier: Modifier = Modifier,
-    peekHeight: Dp = 0.dp,
-    elevation: Dp = 8.dp,
     onDismiss: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit
@@ -59,12 +56,11 @@ fun BottomSheet(
     Box(
         modifier = modifier
             .offset {
-                val y = (state.expandedBound - state.value + peekHeight)
+                val y = (state.expandedBound - state.value)
                     .roundToPx()
                     .coerceAtLeast(0)
                 IntOffset(x = 0, y = y)
             }
-            .shadow(elevation = elevation)
             .pointerInput(state) {
                 var initialValue = 0.dp
                 val velocityTracker = VelocityTracker()
