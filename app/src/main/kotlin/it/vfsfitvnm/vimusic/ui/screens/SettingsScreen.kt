@@ -99,7 +99,7 @@ fun SettingsScreen() {
 
                 BasicText(
                     text = "Settings",
-                    style = typography.m.semiBold,
+                    style = typography.l.semiBold,
                     modifier = Modifier
                         .padding(start = 48.dp)
                         .padding(all = 16.dp)
@@ -157,7 +157,7 @@ fun SettingsScreen() {
                             BasicText(
                                 text = description,
                                 style = typography.xs.secondary.medium,
-                                maxLines = 1
+                                maxLines = 2
                             )
                         }
 
@@ -184,7 +184,7 @@ fun SettingsScreen() {
                     color = colorPalette.magenta,
                     icon = R.drawable.color_palette,
                     title = "Appearance",
-                    description = "Change the colors and shapes of the app",
+                    description = "Change the colors and shapes",
                     route = appearanceSettingsRoute,
                 )
 
@@ -208,7 +208,7 @@ fun SettingsScreen() {
                     color = colorPalette.orange,
                     icon = R.drawable.save,
                     title = "Backup & Restore",
-                    description = "Backup and restore the app database",
+                    description = "Backup and restore the database",
                     route = backupAndRestoreRoute
                 )
 
