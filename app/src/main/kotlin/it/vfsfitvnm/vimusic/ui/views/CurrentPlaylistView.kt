@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -220,11 +219,11 @@ fun CurrentPlaylistView(
         ) {
             Spacer(
                 modifier = Modifier
-                    .padding(all = 16.dp)
-                    .size(18.dp)
+                    .padding(all = 8.dp)
+                    .size(20.dp)
             )
 
-            Column {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 BasicText(
                     text = "Queue",
                     style = typography.s.medium,
