@@ -7,25 +7,19 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -42,10 +36,12 @@ import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
+import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
+import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
-import it.vfsfitvnm.vimusic.utils.semiBold
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -55,14 +51,13 @@ import kotlin.system.exitProcess
 @ExperimentalAnimationApi
 @Composable
 fun BackupAndRestoreScreen() {
-
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
         globalRoutes()
 
         host {
-            val (colorPalette, typography) = LocalAppearance.current
+            val (colorPalette) = LocalAppearance.current
             val context = LocalContext.current
 
             val backupLauncher =
@@ -143,95 +138,31 @@ fun BackupAndRestoreScreen() {
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .size(24.dp)
                     )
-
-                    BasicText(
-                        text = "Backup & Restore",
-                        style = typography.m.semiBold
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(vertical = 16.dp, horizontal = 32.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .clickable {
-                                    @SuppressLint("SimpleDateFormat")
-                                    val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                                    backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
-                                }
-                                .background(
-                                    color = colorPalette.elevatedBackground,
-                                    shape = CircleShape
-                                )
-                                .size(92.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.share),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.blue),
-                                modifier = Modifier
-                                    .size(32.dp)
-                            )
-                        }
+                SettingsTitle(text = "Backup & Restore")
 
-                        BasicText(
-                            text = "Backup",
-                            style = typography.xs.semiBold,
-                            modifier = Modifier
-                        )
+                SettingsEntryGroupText(title = "BACKUP")
+
+                SettingsEntry(
+                    title = "Backup",
+                    text = "Export the database to the external storage",
+                    onClick = {
+                        @SuppressLint("SimpleDateFormat")
+                        val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
+                        backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
                     }
+                )
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(vertical = 16.dp, horizontal = 32.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .clickable {
-                                    isShowingRestoreDialog = true
-                                }
-                                                                .background(
-                                    color = colorPalette.elevatedBackground,
-                                    shape = CircleShape
-                                )
-                                .size(92.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.download),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.orange),
-                                modifier = Modifier
-                                    .size(32.dp)
-                            )
-                        }
+                SettingsEntryGroupText(title = "RESTORE")
 
-                        BasicText(
-                            text = "Restore",
-                            style = typography.xs.semiBold,
-                            modifier = Modifier
-                        )
+                SettingsEntry(
+                    title = "Restore",
+                    text = "Import the database from the external storage",
+                    onClick = {
+                        isShowingRestoreDialog = true
                     }
-                }
+                )
 
                 TextCard(
                     icon = R.drawable.alert_circle,

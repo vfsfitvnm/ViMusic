@@ -89,18 +89,15 @@ fun OtherSettingsScreen() {
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .size(24.dp)
                     )
-
-                    BasicText(
-                        text = "Other",
-                        style = typography.m.semiBold
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
                 }
+
+                BasicText(
+                    text = "Other",
+                    style = typography.m.semiBold,
+                    modifier = Modifier
+                        .padding(start = 40.dp)
+                        .padding(all = 16.dp)
+                )
 
                 SettingsEntryGroupText(title = "SERVICE LIFETIME")
 

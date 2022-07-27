@@ -10,13 +10,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,12 +30,12 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
+import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
 import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
 
@@ -52,7 +50,7 @@ fun PlayerSettingsScreen() {
 
         host {
             val context = LocalContext.current
-            val (colorPalette, typography) = LocalAppearance.current
+            val (colorPalette) = LocalAppearance.current
             val binder = LocalPlayerServiceBinder.current
 
             var persistentQueue by rememberPreference(persistentQueueKey, false)
@@ -83,18 +81,9 @@ fun PlayerSettingsScreen() {
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .size(24.dp)
                     )
-
-                    BasicText(
-                        text = "Player & Audio",
-                        style = typography.m.semiBold
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
                 }
+
+                SettingsTitle(text = "Player & Audio")
 
                 SettingsEntryGroupText(title = "PLAYER")
 

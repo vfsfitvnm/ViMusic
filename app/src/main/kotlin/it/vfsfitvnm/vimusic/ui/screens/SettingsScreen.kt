@@ -95,18 +95,15 @@ fun SettingsScreen() {
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .size(24.dp)
                     )
-
-                    BasicText(
-                        text = "Settings",
-                        style = typography.m.semiBold
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
                 }
+
+                BasicText(
+                    text = "Settings",
+                    style = typography.m.semiBold,
+                    modifier = Modifier
+                        .padding(start = 48.dp)
+                        .padding(all = 16.dp)
+                )
 
                 @Composable
                 fun Entry(
@@ -419,6 +416,21 @@ fun BaseSettingsEntry(
     }
 }
 
+@Composable
+fun SettingsTitle(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    val (_, typography) = LocalAppearance.current
+
+    BasicText(
+        text = text,
+        style = typography.m.semiBold,
+        modifier = modifier
+            .padding(start = 40.dp)
+            .padding(all = 16.dp)
+    )
+}
 @Composable
 fun SettingsEntryGroupText(
     title: String,
