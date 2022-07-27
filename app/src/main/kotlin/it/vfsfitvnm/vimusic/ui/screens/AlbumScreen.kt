@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,13 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
@@ -107,7 +106,6 @@ fun AlbumScreen(browseId: String) {
             val (colorPalette, typography) = LocalAppearance.current
             val menuState = LocalMenuState.current
 
-
             LazyColumn(
                 state = lazyListState,
                 contentPadding = PaddingValues(bottom = 72.dp),
@@ -130,6 +128,89 @@ fun AlbumScreen(browseId: String) {
                                 .padding(horizontal = 16.dp)
                                 .size(24.dp)
                         )
+                    }
+                }
+
+                item {
+                    albumResult?.getOrNull()?.let { album ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max)
+                                .padding(vertical = 8.dp, horizontal = 16.dp)
+                                .padding(bottom = 8.dp)
+                        ) {
+                            AsyncImage(
+                                model = album.thumbnailUrl?.thumbnail(Dimensions.thumbnails.album.px),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .clip(ThumbnailRoundness.shape)
+                                    .size(Dimensions.thumbnails.album)
+                            )
+
+                            Column(
+                                verticalArrangement = Arrangement.SpaceEvenly,
+                                modifier = Modifier
+                                    .weight(1f)
+                            ) {
+                                BasicText(
+                                    text = album.title ?: "Unknown",
+                                    style = typography.m.semiBold
+                                )
+
+                                BasicText(
+                                    text = album.authorsText ?: "",
+                                    style = typography.xs.secondary.semiBold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+
+                                album.year?.let { year ->
+                                    BasicText(
+                                        text = year,
+                                        style = typography.xs.secondary,
+                                        maxLines = 1,
+                                        modifier = Modifier
+                                            .padding(top = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    } ?: albumResult?.exceptionOrNull()?.let { throwable ->
+                        LoadingOrError(errorMessage = throwable.javaClass.canonicalName)
+                    } ?: LoadingOrError()
+                }
+
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .zIndex(1f)
+                            .padding(horizontal = 8.dp)
+//                            .padding(top = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.shuffle),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .clickable(enabled = songs.isNotEmpty()) {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayFromBeginning(
+                                        songs
+                                            .shuffled()
+                                            .map(DetailedSong::asMediaItem)
+                                    )
+                                }
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .size(20.dp)
+                        )
+
 
                         Image(
                             painter = painterResource(R.drawable.ellipsis_horizontal),
@@ -232,109 +313,10 @@ fun AlbumScreen(browseId: String) {
                                         }
                                     }
                                 }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .size(24.dp)
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .size(20.dp)
                         )
                     }
-                }
-
-                item {
-                    albumResult?.getOrNull()?.let { album ->
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Max)
-                                .padding(vertical = 8.dp, horizontal = 16.dp)
-                                .padding(bottom = 16.dp)
-                        ) {
-                            AsyncImage(
-                                model = album.thumbnailUrl?.thumbnail(Dimensions.thumbnails.album.px),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .clip(ThumbnailRoundness.shape)
-                                    .size(Dimensions.thumbnails.album)
-                            )
-
-                            Column(
-                                verticalArrangement = Arrangement.SpaceEvenly,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                Column {
-                                    BasicText(
-                                        text = album.title ?: "Unknown",
-                                        style = typography.m.semiBold
-                                    )
-
-                                    BasicText(
-                                        text = buildString {
-                                            append(album.authorsText)
-                                            if (album.authorsText?.isNotEmpty() == true && album.year != null) {
-                                                append(" • ")
-                                            }
-                                            append(album.year)
-                                        },
-                                        style = typography.xs.secondary.semiBold,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                    modifier = Modifier
-                                        .align(Alignment.End)
-                                        .padding(horizontal = 16.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.shuffle),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.text),
-                                        modifier = Modifier
-                                            .clickable {
-                                                binder?.stopRadio()
-                                                binder?.player?.forcePlayFromBeginning(
-                                                    songs
-                                                        .shuffled()
-                                                        .map(DetailedSong::asMediaItem)
-                                                )
-                                            }
-                                            .shadow(elevation = 2.dp, shape = CircleShape)
-                                            .background(
-                                                color = colorPalette.elevatedBackground,
-                                                shape = CircleShape
-                                            )
-                                            .padding(horizontal = 16.dp, vertical = 16.dp)
-                                            .size(20.dp)
-                                    )
-
-                                    Image(
-                                        painter = painterResource(R.drawable.play),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(colorPalette.text),
-                                        modifier = Modifier
-                                            .clickable {
-                                                binder?.stopRadio()
-                                                binder?.player?.forcePlayFromBeginning(
-                                                    songs.map(DetailedSong::asMediaItem)
-                                                )
-                                            }
-                                            .shadow(elevation = 2.dp, shape = CircleShape)
-                                            .background(
-                                                color = colorPalette.elevatedBackground,
-                                                shape = CircleShape
-                                            )
-                                            .padding(horizontal = 16.dp, vertical = 16.dp)
-                                            .size(20.dp)
-                                    )
-                                }
-                            }
-                        }
-                    } ?: albumResult?.exceptionOrNull()?.let { throwable ->
-                        LoadingOrError(errorMessage = throwable.javaClass.canonicalName)
-                    } ?: LoadingOrError()
                 }
 
                 itemsIndexed(
