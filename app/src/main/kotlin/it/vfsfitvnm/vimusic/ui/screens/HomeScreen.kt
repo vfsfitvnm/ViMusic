@@ -482,9 +482,9 @@ fun HomeScreen() {
                         }
 
                         if (playlistGridExpanded) {
-                            item(key = "cached") {
+                            item(key = "offline") {
                                 BuiltInPlaylistItem(
-                                    icon = R.drawable.download,
+                                    icon = R.drawable.airplane,
                                     colorTint = colorPalette.blue,
                                     name = "Offline",
                                     modifier = Modifier
