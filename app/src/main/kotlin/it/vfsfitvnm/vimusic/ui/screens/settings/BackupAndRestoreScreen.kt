@@ -143,7 +143,7 @@ fun BackupAndRestoreScreen() {
 
                 SettingsEntryGroupText(title = "BACKUP")
 
-                SettingsGroupDescription(text = "Exports the application database to the external storage.\nThis means playlists, song history, favorites songs will exported.\nThis operation excludes personal preferences (i.e. the theme mode) and the cache.")
+                SettingsGroupDescription(text = "Personal preferences (i.e. the theme mode) and the cache are excluded.")
 
                 SettingsEntry(
                     title = "Backup",
@@ -157,7 +157,7 @@ fun BackupAndRestoreScreen() {
 
                 SettingsEntryGroupText(title = "RESTORE")
 
-                SettingsGroupDescription(text = "Replaces the existing application database with the selected one.\nThis means every currently existing data will be wiped: the two databases won't be merged.\nIt is recommended to restore the database immediately after the application is installed on a new device.")
+                SettingsGroupDescription(text = "Existing data will be overwritten.")
 
                 SettingsEntry(
                     title = "Restore",

@@ -96,7 +96,7 @@ fun CacheSettingsScreen() {
 
                 SettingsTitle(text = "Cache")
 
-                SettingsDescription(text = "The cache follows the LRU (Least Recently Used) strategy: when it runs out of space, the resources that haven't been accessed for the longest time are cleared to accommodate the new ones.")
+                SettingsDescription(text = "When the cache runs out of space, the resources that haven't been accessed for the longest time are cleared.")
 
                 Coil.imageLoader(context).diskCache?.let { diskCache ->
                     var diskCacheSize by remember(diskCache) {

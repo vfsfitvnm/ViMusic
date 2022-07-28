@@ -101,10 +101,10 @@ fun OtherSettingsScreen() {
 
                 SettingsEntryGroupText(title = "SERVICE LIFETIME")
 
-                SettingsGroupDescription(text = "Some device manufacturers may have an aggressive policy against stopped foreground services - the media notification can disappear suddenly when paused.\nThe gentle approach consists in disabling battery optimizations - this is enough for some devices and ROMs.\nHowever, if it's not, you can make the service \"invincible\" - which should keep the service alive.")
+                SettingsGroupDescription(text = "If battery optimizations are applied, the playback notification can suddenly disappear when paused.")
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    SettingsDescription(text = "Since Android 12, the invincible service works ONLY if battery optimizations are disabled for this application.")
+                    SettingsDescription(text = "Since Android 12, disabling battery optimizations is required for the \"Invincible service\" option to take effect.")
                 }
 
                 SettingsEntry(
