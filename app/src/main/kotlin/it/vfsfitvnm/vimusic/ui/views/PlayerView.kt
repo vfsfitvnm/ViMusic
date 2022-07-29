@@ -147,7 +147,10 @@ fun PlayerView(
     BottomSheet(
         state = layoutState,
         modifier = modifier,
-        onDismiss = binder.player::clearMediaItems,
+        onDismiss = {
+            binder.stopRadio()
+            binder.player.clearMediaItems()
+        },
         collapsedContent = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
