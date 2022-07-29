@@ -71,7 +71,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
             val songs by remember(binder?.cache, builtInPlaylist) {
                 when (builtInPlaylist) {
                     BuiltInPlaylist.Favorites -> Database.favorites()
-                    BuiltInPlaylist.Cached -> Database.songsWithContentLength().map { songs ->
+                    BuiltInPlaylist.Offline -> Database.songsWithContentLength().map { songs ->
                         songs.filter { song ->
                             song.contentLength?.let {
                                 binder?.cache?.isCached(song.song.id, 0, song.contentLength)
@@ -114,7 +114,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
                         BasicText(
                             text = when (builtInPlaylist) {
                                 BuiltInPlaylist.Favorites -> "Favorites"
-                                BuiltInPlaylist.Cached -> "Offline"
+                                BuiltInPlaylist.Offline -> "Offline"
                             },
                             style = typography.m.semiBold
                         )
@@ -196,7 +196,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
                         menuContent = {
                             when (builtInPlaylist) {
                                 BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(song = song)
-                                BuiltInPlaylist.Cached -> InHistoryMediaItemMenu(song = song)
+                                BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(song = song)
                             }
                         }
                     )

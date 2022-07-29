@@ -37,6 +37,7 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun PlaylistPreviewItem(
@@ -52,7 +53,11 @@ fun PlaylistPreviewItem(
     }
 
     val thumbnails by remember(playlistPreview.playlist.id) {
-        Database.playlistThumbnailUrls(playlistPreview.playlist.id).distinctUntilChanged()
+        Database.playlistThumbnailUrls(playlistPreview.playlist.id).distinctUntilChanged().map {
+            it.map { url ->
+                url.thumbnail(thumbnailSizePx)
+            }
+        }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
     PlaylistItem(
@@ -62,7 +67,7 @@ fun PlaylistPreviewItem(
         imageContent = {
             if (thumbnails.toSet().size == 1) {
                 AsyncImage(
-                    model = thumbnails.first().thumbnail(thumbnailSizePx),
+                    model = thumbnails.first(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -81,7 +86,7 @@ fun PlaylistPreviewItem(
                         Alignment.BottomEnd
                     ).forEachIndexed { index, alignment ->
                         AsyncImage(
-                            model = thumbnails.getOrNull(index).thumbnail(thumbnailSizePx),
+                            model = thumbnails.getOrNull(index),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier

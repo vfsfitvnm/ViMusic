@@ -492,7 +492,7 @@ fun HomeScreen() {
                                         .clickable(
                                             indication = rememberRipple(bounded = true),
                                             interactionSource = remember { MutableInteractionSource() },
-                                            onClick = { builtInPlaylistRoute(BuiltInPlaylist.Cached) }
+                                            onClick = { builtInPlaylistRoute(BuiltInPlaylist.Offline) }
                                         )
                                 )
                             }
