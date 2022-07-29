@@ -1,0 +1,7 @@
+* The radio can now be started from the playing song
+* The queue can now be shuffled
+* The collapsed player can now be dismissed to stop the playback
+* The player is automatically expanded when a new queue is started
+* The player is automatically expanded when opening the app when clicking the playback notification
+* Many age restricted videos can now be played
+* The player and settings UIs have been redesigned
