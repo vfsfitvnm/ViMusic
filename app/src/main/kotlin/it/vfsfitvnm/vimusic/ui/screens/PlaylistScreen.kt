@@ -99,6 +99,8 @@ fun PlaylistScreen(browseId: String) {
                 playlist = withContext(Dispatchers.IO) {
                     YouTube.playlistOrAlbum(browseId)?.map {
                         it.next()
+                    }?.map { playlist ->
+                        playlist.copy(items = playlist.items?.filter { it.info.endpoint != null })
                     }
                 }
             }
