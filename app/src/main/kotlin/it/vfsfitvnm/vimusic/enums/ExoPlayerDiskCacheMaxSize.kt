@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.enums
 
 enum class ExoPlayerDiskCacheMaxSize {
+    `32MB`,
     `512MB`,
     `1GB`,
     `2GB`,
@@ -10,6 +11,7 @@ enum class ExoPlayerDiskCacheMaxSize {
 
     val bytes: Long
         get() = when (this) {
+            `32MB` -> 32
             `512MB` -> 512
             `1GB` -> 1024
             `2GB` -> 2048
