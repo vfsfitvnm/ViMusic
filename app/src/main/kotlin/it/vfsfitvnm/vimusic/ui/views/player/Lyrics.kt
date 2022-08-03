@@ -226,8 +226,6 @@ fun Lyrics(
                             val synchronizedLyrics = remember(lyrics) {
                                 SynchronizedLyrics(lyrics) {
                                     player.currentPosition
-                                }.also {
-                                    println("index: ${it.index}")
                                 }
                             }
 
