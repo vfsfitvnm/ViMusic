@@ -90,6 +90,8 @@ import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
+import it.vfsfitvnm.vimusic.ui.components.themed.Menu
+import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
@@ -354,7 +356,8 @@ fun PlayerView(
                         modifier = Modifier
                             .clickable {
                                 menuState.display {
-                                    val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+                                    val resultRegistryOwner =
+                                        LocalActivityResultRegistryOwner.current
 
                                     BaseMediaItemMenu(
                                         mediaItem = mediaItem,
@@ -667,58 +670,72 @@ private fun Lyrics(
                         )
                     }
 
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .size(size)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.search),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(DarkColorPalette.text),
-                            modifier = Modifier
-                                .padding(all = 4.dp)
-                                .clickable {
-                                    val mediaMetadata = mediaMetadataProvider()
+                    val menuState = LocalMenuState.current
 
-                                    val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                        putExtra(
-                                            SearchManager.QUERY,
-                                            "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
+                    Image(
+                        painter = painterResource(R.drawable.ellipsis_horizontal),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(DarkColorPalette.text),
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .clickable {
+                                menuState.display {
+                                    Menu {
+                                        MenuEntry(
+                                            icon = R.drawable.pencil,
+                                            text = "Edit lyrics",
+                                            onClick = {
+                                                menuState.hide()
+                                                isEditingLyrics = true
+                                            }
+                                        )
+
+                                        MenuEntry(
+                                            icon = R.drawable.search,
+                                            text = "Search lyrics online",
+                                            onClick = {
+                                                menuState.hide()
+                                                val mediaMetadata = mediaMetadataProvider()
+
+                                                val intent =
+                                                    Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                                        putExtra(
+                                                            SearchManager.QUERY,
+                                                            "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
+                                                        )
+                                                    }
+
+                                                if (intent.resolveActivity(context.packageManager) != null) {
+                                                    context.startActivity(intent)
+                                                } else {
+                                                    Toast
+                                                        .makeText(
+                                                            context,
+                                                            "No browser app found!",
+                                                            Toast.LENGTH_SHORT
+                                                        )
+                                                        .show()
+                                                }
+                                            }
+                                        )
+
+                                        MenuEntry(
+                                            icon = R.drawable.download,
+                                            text = "Fetch lyrics again",
+                                            onClick = {
+                                                menuState.hide()
+                                                query {
+                                                    Database.updateLyrics(mediaId, null)
+                                                }
+                                            }
                                         )
                                     }
-
-                                    if (intent.resolveActivity(context.packageManager) != null) {
-                                        context.startActivity(intent)
-                                    } else {
-                                        Toast
-                                            .makeText(
-                                                context,
-                                                "No browser app found!",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                            .show()
-                                    }
                                 }
-                                .padding(all = 8.dp)
-                                .size(20.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(R.drawable.pencil),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(DarkColorPalette.text),
-                            modifier = Modifier
-                                .padding(all = 4.dp)
-                                .clickable {
-                                    isEditingLyrics = true
-                                }
-                                .padding(all = 8.dp)
-                                .size(20.dp)
-                        )
-                    }
+                            }
+                            .padding(all = 8.dp)
+                            .size(20.dp)
+                            .align(Alignment.BottomEnd)
+                    )
                 }
             }
         }

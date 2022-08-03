@@ -119,7 +119,7 @@ interface Database {
     fun lyrics(songId: String): Flow<String?>
 
     @Query("UPDATE Song SET lyrics = :lyrics WHERE id = :songId")
-    fun updateLyrics(songId: String, lyrics: String): Int
+    fun updateLyrics(songId: String, lyrics: String?): Int
 
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
