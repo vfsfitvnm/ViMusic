@@ -442,8 +442,8 @@ fun HomeScreen() {
                                 DropDownSection {
                                     DropDownTextItem(
                                         text = when (playlistGridExpanded) {
-                                            true -> "EXPAND"
-                                            false -> "COMPACT"
+                                            true -> "COLLAPSE"
+                                            false -> "EXPAND"
                                         },
                                         onClick = {
                                             isSortMenuDisplayed = false
