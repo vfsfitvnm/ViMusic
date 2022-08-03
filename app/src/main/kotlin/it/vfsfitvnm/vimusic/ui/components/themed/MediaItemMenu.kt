@@ -70,7 +70,7 @@ fun InFavoritesMediaItemMenu(
         onDismiss = onDismiss,
         onRemoveFromFavorites = {
             query {
-                Database.like(song.id, if (song.likedAt == null) System.currentTimeMillis() else null)
+                Database.like(song.id, null)
             }
         },
         modifier = modifier
@@ -341,6 +341,20 @@ fun MediaItemMenu(
                     }
 
                     onAddToPlaylist?.let { onAddToPlaylist ->
+                        if (onRemoveFromFavorites == null) {
+                            MenuEntry(
+                                icon = R.drawable.heart,
+                                text = "Favorites",
+                                onClick = {
+                                    onDismiss()
+                                    query {
+                                        Database.insert(mediaItem)
+                                        Database.like(mediaItem.mediaId, System.currentTimeMillis())
+                                    }
+                                }
+                            )
+                        }
+
                         playlistPreviews.forEach { playlistPreview ->
                             MenuEntry(
                                 icon = R.drawable.playlist,
