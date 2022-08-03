@@ -101,7 +101,7 @@ fun TextFieldDialog(
             textStyle = typography.xs.semiBold.center,
             singleLine = singleLine,
             maxLines = maxLines,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions(imeAction = if (singleLine) ImeAction.Done else ImeAction.None),
             keyboardActions = KeyboardActions(
                 onDone = {
                     if (isTextInputValid(textFieldValue.text)) {
