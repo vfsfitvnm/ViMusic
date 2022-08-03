@@ -15,9 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -34,7 +32,6 @@ import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
-import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
 import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
@@ -43,8 +40,6 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.coilDiskCacheMaxSizeKey
 import it.vfsfitvnm.vimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoilApi::class)
 @ExperimentalAnimationApi
@@ -69,8 +64,6 @@ fun CacheSettingsScreen() {
                 exoPlayerDiskCacheMaxSizeKey,
                 ExoPlayerDiskCacheMaxSize.`2GB`
             )
-
-            val coroutineScope = rememberCoroutineScope()
 
             Column(
                 modifier = Modifier
@@ -99,8 +92,8 @@ fun CacheSettingsScreen() {
                 SettingsDescription(text = "When the cache runs out of space, the resources that haven't been accessed for the longest time are cleared.")
 
                 Coil.imageLoader(context).diskCache?.let { diskCache ->
-                    var diskCacheSize by remember(diskCache) {
-                        mutableStateOf(diskCache.size)
+                    val diskCacheSize = remember(diskCache) {
+                        diskCache.size
                     }
 
                     SettingsEntryGroupText(title = "IMAGE CACHE")
@@ -112,17 +105,6 @@ fun CacheSettingsScreen() {
                         selectedValue = coilDiskCacheMaxSize,
                         onValueSelected = {
                             coilDiskCacheMaxSize = it
-                        }
-                    )
-
-                    SettingsEntry(
-                        title = "Clear space",
-                        text = "Wipe every cached image",
-                        onClick = {
-                            coroutineScope.launch(Dispatchers.IO) {
-                                diskCache.clear()
-                                diskCacheSize = diskCache.size
-                            }
                         }
                     )
                 }
