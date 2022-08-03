@@ -481,21 +481,19 @@ fun HomeScreen() {
                             )
                         }
 
-                        if (playlistGridExpanded) {
-                            item(key = "offline") {
-                                BuiltInPlaylistItem(
-                                    icon = R.drawable.airplane,
-                                    colorTint = colorPalette.blue,
-                                    name = "Offline",
-                                    modifier = Modifier
-                                        .padding(all = 8.dp)
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            onClick = { builtInPlaylistRoute(BuiltInPlaylist.Offline) }
-                                        )
-                                )
-                            }
+                        item(key = "offline") {
+                            BuiltInPlaylistItem(
+                                icon = R.drawable.airplane,
+                                colorTint = colorPalette.blue,
+                                name = "Offline",
+                                modifier = Modifier
+                                    .padding(all = 8.dp)
+                                    .clickable(
+                                        indication = rememberRipple(bounded = true),
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = { builtInPlaylistRoute(BuiltInPlaylist.Offline) }
+                                    )
+                            )
                         }
 
                         items(
