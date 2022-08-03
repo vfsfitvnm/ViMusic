@@ -18,7 +18,7 @@ class SynchronizedLyrics(text: String, private val positionProvider: () -> Long)
                 if (item.first >= positionProvider()) break
                 index++
             }
-            return index
+            return if (index == -1) 0 else index
         }
 
     fun update(): Boolean {
