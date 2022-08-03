@@ -104,11 +104,21 @@ fun Thumbnail(
                     onDismiss = {
                         onShowLyrics(false)
                     },
-                    onLyricsUpdate = { mediaId, lyrics ->
-                        if (Database.updateLyrics(mediaId, lyrics) == 0) {
-                            if (mediaId == mediaItem.mediaId) {
-                                Database.insert(mediaItem) { song ->
-                                    song.copy(lyrics = lyrics)
+                    onLyricsUpdate = { areSynchronized, mediaId, lyrics ->
+                        if (areSynchronized) {
+                            if (Database.updateSynchronizedLyrics(mediaId, lyrics) == 0) {
+                                if (mediaId == mediaItem.mediaId) {
+                                    Database.insert(mediaItem) { song ->
+                                        song.copy(synchronizedLyrics = lyrics)
+                                    }
+                                }
+                            }
+                        } else {
+                            if (Database.updateLyrics(mediaId, lyrics) == 0) {
+                                if (mediaId == mediaItem.mediaId) {
+                                    Database.insert(mediaItem) { song ->
+                                        song.copy(lyrics = lyrics)
+                                    }
                                 }
                             }
                         }

@@ -14,15 +14,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,12 +40,15 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaMetadata
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.synchronizedlyrics.LujjjhLyrics
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -52,14 +59,20 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.DarkColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.SynchronizedLyrics
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
+import it.vfsfitvnm.vimusic.utils.isShowingSynchronizedLyricsKey
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.verticalFadingEdge
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 
 @Composable
 fun Lyrics(
@@ -68,7 +81,7 @@ fun Lyrics(
     onDismiss: () -> Unit,
     size: Dp,
     mediaMetadataProvider: () -> MediaMetadata,
-    onLyricsUpdate: (String, String) -> Unit,
+    onLyricsUpdate: (Boolean, String, String) -> Unit,
     nestedScrollConnectionProvider: () -> NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
@@ -80,32 +93,45 @@ fun Lyrics(
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        var isLoading by remember(mediaId) {
+        var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)
+
+        var isLoading by remember(mediaId, isShowingSynchronizedLyrics) {
             mutableStateOf(false)
         }
 
-        var isEditingLyrics by remember(mediaId) {
+        var isEditingLyrics by remember(mediaId, isShowingSynchronizedLyrics) {
             mutableStateOf(false)
         }
 
-        val lyrics by remember(mediaId) {
-            Database.lyrics(mediaId).distinctUntilChanged().map flowMap@{ lyrics ->
+        var lyrics by remember(mediaId, isShowingSynchronizedLyrics) {
+            mutableStateOf<String?>(".")
+        }
+
+        LaunchedEffect(mediaId, isShowingSynchronizedLyrics) {
+            if (isShowingSynchronizedLyrics) {
+                Database.synchronizedLyrics(mediaId)
+            } else {
+                Database.lyrics(mediaId)
+            }.distinctUntilChanged().map flowMap@{ lyrics ->
                 if (lyrics != null) return@flowMap lyrics
 
                 isLoading = true
 
-                YouTube.next(mediaId, null)?.map { nextResult ->
-                    nextResult.lyrics?.text()?.map { newLyrics ->
-                        onLyricsUpdate(mediaId, newLyrics ?: "")
-                        isLoading = false
-                        return@flowMap newLyrics ?: ""
-                    }
+                if (isShowingSynchronizedLyrics) {
+                    val mediaMetadata = mediaMetadataProvider()
+                    LujjjhLyrics.forSong(mediaMetadata.artist?.toString() ?: "", mediaMetadata.title?.toString() ?: "")
+                } else {
+                    YouTube.next(mediaId, null)?.map { nextResult -> nextResult.lyrics?.text()?.getOrNull() }
+                }?.map { newLyrics ->
+                    onLyricsUpdate(isShowingSynchronizedLyrics, mediaId, newLyrics ?: "")
+                    isLoading = false
+                    return@flowMap newLyrics ?: ""
                 }
 
                 isLoading = false
                 null
-            }.distinctUntilChanged()
-        }.collectAsState(initial = ".", context = Dispatchers.IO)
+            }.flowOn(Dispatchers.IO).collect { lyrics = it }
+        }
 
         if (isEditingLyrics) {
             TextFieldDialog(
@@ -119,7 +145,12 @@ fun Lyrics(
                 },
                 onDone = {
                     query {
-                        Database.updateLyrics(mediaId, it)
+                        if (isShowingSynchronizedLyrics) {
+                            Database.updateSynchronizedLyrics(mediaId, it)
+                        } else {
+                            Database.updateLyrics(mediaId, it)
+                        }
+
                     }
                 }
             )
@@ -146,7 +177,7 @@ fun Lyrics(
                     .align(Alignment.TopCenter)
             ) {
                 BasicText(
-                    text = "An error has occurred while fetching the lyrics",
+                    text = "An error has occurred while fetching the ${if (isShowingSynchronizedLyrics) "synchronized " else ""}lyrics",
                     style = typography.xs.center.medium.color(BlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
@@ -163,7 +194,7 @@ fun Lyrics(
                     .align(Alignment.TopCenter)
             ) {
                 BasicText(
-                    text = "Lyrics are not available for this song",
+                    text = "${if (isShowingSynchronizedLyrics) "Synchronized l" else "L"}yrics are not available for this song",
                     style = typography.xs.center.medium.color(BlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
@@ -187,16 +218,60 @@ fun Lyrics(
                 }
             } else {
                 lyrics?.let { lyrics ->
-                    if (lyrics.isNotEmpty()) {
-                        BasicText(
-                            text = lyrics,
-                            style = typography.xs.center.medium.color(BlackColorPalette.text),
-                            modifier = Modifier
-                                .nestedScroll(remember { nestedScrollConnectionProvider() })
-                                .verticalFadingEdge()
-                                .verticalScroll(rememberScrollState())
-                                .padding(vertical = size / 4, horizontal = 32.dp)
-                        )
+                    if (lyrics.isNotEmpty() && lyrics != ".") {
+                        if (isShowingSynchronizedLyrics) {
+                            val density = LocalDensity.current
+                            val player = LocalPlayerServiceBinder.current?.player ?: return@AnimatedVisibility
+
+                            val synchronizedLyrics = remember(lyrics) {
+                                SynchronizedLyrics(lyrics) {
+                                    player.currentPosition
+                                }.also {
+                                    println("index: ${it.index}")
+                                }
+                            }
+
+                            val lazyListState = rememberLazyListState(synchronizedLyrics.index, with (density) { size.roundToPx() } / 6)
+
+                            LaunchedEffect(synchronizedLyrics) {
+                                while (isActive) {
+                                    delay(50)
+                                    if (synchronizedLyrics.update()) {
+                                        synchronizedLyrics.sentences.getOrNull(synchronizedLyrics.index)?.first?.let {
+                                            lazyListState.animateScrollToItem(synchronizedLyrics.index, with (density) { size.roundToPx() } / 6)
+                                        }
+                                    }
+                                }
+                            }
+
+                            LazyColumn(
+                                state = lazyListState,
+                                userScrollEnabled = false,
+                                contentPadding = PaddingValues(vertical = size / 2),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .verticalFadingEdge()
+                            ) {
+                                itemsIndexed(items = synchronizedLyrics.sentences) { index, sentence ->
+                                    BasicText(
+                                        text = sentence.second,
+                                        style = typography.xs.center.medium.color(if (index == synchronizedLyrics.index) BlackColorPalette.text else BlackColorPalette.textDisabled),
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp, horizontal = 32.dp)
+                                    )
+                                }
+                            }
+                        } else {
+                            BasicText(
+                                text = lyrics,
+                                style = typography.xs.center.medium.color(BlackColorPalette.text),
+                                modifier = Modifier
+                                    .nestedScroll(remember { nestedScrollConnectionProvider() })
+                                    .verticalFadingEdge()
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(vertical = size / 4, horizontal = 32.dp)
+                            )
+                        }
                     }
 
                     val menuState = LocalMenuState.current
@@ -210,6 +285,15 @@ fun Lyrics(
                             .clickable {
                                 menuState.display {
                                     Menu {
+                                        MenuEntry(
+                                            icon = R.drawable.time,
+                                            text = "Show ${if (isShowingSynchronizedLyrics) "static" else "synchronized"} lyrics",
+                                            onClick = {
+                                                menuState.hide()
+                                                isShowingSynchronizedLyrics = !isShowingSynchronizedLyrics
+                                            }
+                                        )
+
                                         MenuEntry(
                                             icon = R.drawable.pencil,
                                             text = "Edit lyrics",
@@ -237,11 +321,12 @@ fun Lyrics(
                                                 if (intent.resolveActivity(context.packageManager) != null) {
                                                     context.startActivity(intent)
                                                 } else {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "No browser app found!",
-                                                        Toast.LENGTH_SHORT
-                                                    )
+                                                    Toast
+                                                        .makeText(
+                                                            context,
+                                                            "No browser app found!",
+                                                            Toast.LENGTH_SHORT
+                                                        )
                                                         .show()
                                                 }
                                             }

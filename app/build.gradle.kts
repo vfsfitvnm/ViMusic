@@ -93,6 +93,7 @@ dependencies {
     kapt(libs.room.compiler)
 
     implementation(projects.youtubeMusic)
+    implementation(projects.synchronizedLyrics)
 
     coreLibraryDesugaring(libs.desugaring)
 }

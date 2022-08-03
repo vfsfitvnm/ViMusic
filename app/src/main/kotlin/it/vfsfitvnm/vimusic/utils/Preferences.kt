@@ -26,6 +26,7 @@ const val repeatModeKey = "repeatMode"
 const val skipSilenceKey = "skipSilence"
 const val volumeNormalizationKey = "volumeNormalization"
 const val persistentQueueKey = "persistentQueue"
+const val isShowingSynchronizedLyricsKey = "isShowingSynchronizedLyrics"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

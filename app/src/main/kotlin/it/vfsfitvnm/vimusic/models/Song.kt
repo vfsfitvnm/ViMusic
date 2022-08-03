@@ -11,6 +11,7 @@ data class Song(
     val durationText: String,
     val thumbnailUrl: String?,
     val lyrics: String? = null,
+    val synchronizedLyrics: String? = null,
     val likedAt: Long? = null,
     val totalPlayTimeMs: Long = 0
 ) {

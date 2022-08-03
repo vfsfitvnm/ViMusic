@@ -13,6 +13,8 @@ dependencyResolutionManagement {
             version("kotlin", "1.7.0")
             plugin("kotlin-serialization","org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
+            library("kotlin-coroutines","org.jetbrains.kotlinx", "kotlinx-coroutines-core").version("1.6.4")
+
             version("compose-compiler", "1.2.0")
 
             version("compose", "1.3.0-alpha02")
@@ -62,3 +64,4 @@ include(":compose-routing")
 include(":compose-reordering")
 include(":youtube-music")
 include(":ktor-client-brotli")
+include(":synchronized-lyrics")

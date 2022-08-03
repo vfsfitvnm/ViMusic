@@ -118,8 +118,14 @@ interface Database {
     @Query("SELECT lyrics FROM Song WHERE id = :songId")
     fun lyrics(songId: String): Flow<String?>
 
+    @Query("SELECT synchronizedLyrics FROM Song WHERE id = :songId")
+    fun synchronizedLyrics(songId: String): Flow<String?>
+
     @Query("UPDATE Song SET lyrics = :lyrics WHERE id = :songId")
     fun updateLyrics(songId: String, lyrics: String?): Int
+
+    @Query("UPDATE Song SET synchronizedLyrics = :lyrics WHERE id = :songId")
+    fun updateSynchronizedLyrics(songId: String, lyrics: String?): Int
 
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
@@ -344,7 +350,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -358,6 +364,7 @@ interface Database {
         AutoMigration(from = 11, to = 12, spec = DatabaseInitializer.From11To12Migration::class),
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
+        AutoMigration(from = 15, to = 16),
     ],
 )
 @TypeConverters(Converters::class)
