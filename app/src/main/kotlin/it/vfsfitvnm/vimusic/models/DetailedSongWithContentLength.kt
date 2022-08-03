@@ -3,7 +3,13 @@ package it.vfsfitvnm.vimusic.models
 import androidx.room.Relation
 
 class DetailedSongWithContentLength(
-    song: Song,
+    id: String,
+    title: String,
+    artistsText: String? = null,
+    durationText: String,
+    thumbnailUrl: String?,
+    likedAt: Long? = null,
+    totalPlayTimeMs: Long = 0,
     albumId: String?,
     artists: List<Artist>?,
     @Relation(
@@ -13,4 +19,4 @@ class DetailedSongWithContentLength(
         projection = ["contentLength"]
     )
     val contentLength: Long?
-) : DetailedSong(song, albumId, artists)
+) : DetailedSong(id, title, artistsText, durationText, thumbnailUrl, likedAt, totalPlayTimeMs, albumId, artists)

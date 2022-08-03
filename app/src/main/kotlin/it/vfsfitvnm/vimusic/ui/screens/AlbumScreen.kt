@@ -251,7 +251,7 @@ fun AlbumScreen(browseId: String) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.insert(
                                                                         SongPlaylistMap(
-                                                                            songId = song.song.id,
+                                                                            songId = song.id,
                                                                             playlistId = playlistId,
                                                                             position = index
                                                                         )
@@ -320,13 +320,13 @@ fun AlbumScreen(browseId: String) {
 
                 itemsIndexed(
                     items = songs,
-                    key = { _, song -> song.song.id },
+                    key = { _, song -> song.id },
                     contentType = { _, song -> song }
                 ) { index, song ->
                     SongItem(
-                        title = song.song.title,
-                        authors = song.song.artistsText ?: albumResult?.getOrNull()?.authorsText,
-                        durationText = song.song.durationText,
+                        title = song.title,
+                        authors = song.artistsText ?: albumResult?.getOrNull()?.authorsText,
+                        durationText = song.durationText,
                         onClick = {
                             binder?.stopRadio()
                             binder?.player?.forcePlayAtIndex(

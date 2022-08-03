@@ -70,23 +70,23 @@ val DetailedSong.asMediaItem: MediaItem
     get() = MediaItem.Builder()
         .setMediaMetadata(
             MediaMetadata.Builder()
-                .setTitle(song.title)
-                .setArtist(song.artistsText)
-                .setArtworkUri(song.thumbnailUrl?.toUri())
+                .setTitle(title)
+                .setArtist(artistsText)
+                .setArtworkUri(thumbnailUrl?.toUri())
                 .setExtras(
                     bundleOf(
-                        "videoId" to song.id,
+                        "videoId" to id,
                         "albumId" to albumId,
                         "artistNames" to artists?.map { it.name },
                         "artistIds" to artists?.map { it.id },
-                        "durationText" to song.durationText
+                        "durationText" to durationText
                     )
                 )
                 .build()
         )
-        .setMediaId(song.id)
-        .setUri(song.id)
-        .setCustomCacheKey(song.id)
+        .setMediaId(id)
+        .setUri(id)
+        .setCustomCacheKey(id)
         .build()
 
 fun YouTube.PlaylistOrAlbum.Item.toMediaItem(

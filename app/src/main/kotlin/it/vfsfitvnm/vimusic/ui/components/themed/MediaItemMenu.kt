@@ -70,7 +70,7 @@ fun InFavoritesMediaItemMenu(
         onDismiss = onDismiss,
         onRemoveFromFavorites = {
             query {
-                Database.update(song.song.toggleLike())
+                Database.like(song.id, if (song.likedAt == null) System.currentTimeMillis() else null)
             }
         },
         modifier = modifier
@@ -94,15 +94,13 @@ fun InHistoryMediaItemMenu(
     if (isHiding) {
         ConfirmationDialog(
             text = "Do you really hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.",
-            onDismiss = {
-                isHiding = false
-            },
+            onDismiss = { isHiding = false },
             onConfirm = {
                 (onDismiss ?: menuState::hide).invoke()
                 query {
                     // Not sure we can to this here
-                    binder?.cache?.removeResource(song.song.id)
-                    Database.update(song.song.copy(totalPlayTimeMs = 0))
+                    binder?.cache?.removeResource(song.id)
+                    Database.incrementTotalPlayTimeMs(song.id, -song.totalPlayTimeMs)
                 }
             }
         )
@@ -111,9 +109,7 @@ fun InHistoryMediaItemMenu(
     NonQueuedMediaItemMenu(
         mediaItem = song.asMediaItem,
         onDismiss = onDismiss,
-        onHideFromDatabase = {
-            isHiding = true
-        },
+        onHideFromDatabase = { isHiding = true },
         modifier = modifier
     )
 }
@@ -134,7 +130,7 @@ fun InPlaylistMediaItemMenu(
             transaction {
                 Database.delete(
                     SongPlaylistMap(
-                        songId = song.song.id,
+                        songId = song.id,
                         playlistId = playlistId,
                         position = positionInPlaylist
                     )
@@ -182,9 +178,7 @@ fun NonQueuedMediaItemMenu(
         onPlayNext = {
             binder?.player?.addNext(mediaItem)
         },
-        onEnqueue = {
-            binder?.player?.enqueue(mediaItem)
-        },
+        onEnqueue = { binder?.player?.enqueue(mediaItem) },
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
         onRemoveFromFavorites = onRemoveFromFavorites,

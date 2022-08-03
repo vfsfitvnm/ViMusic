@@ -242,7 +242,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
 
                 itemsIndexed(
                     items = playlistWithSongs.songs,
-                    key = { _, song -> song.song.id },
+                    key = { _, song -> song.id },
                     contentType = { _, song -> song },
                 ) { index, song ->
                     SongItem(
@@ -301,7 +301,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
 
                                         Database.update(
                                             SongPlaylistMap(
-                                                songId = playlistWithSongs.songs[index].song.id,
+                                                songId = playlistWithSongs.songs[index].id,
                                                 playlistId = playlistWithSongs.playlist.id,
                                                 position = reachedIndex
                                             )

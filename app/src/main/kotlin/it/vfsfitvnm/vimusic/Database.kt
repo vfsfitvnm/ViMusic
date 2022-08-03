@@ -54,26 +54,32 @@ interface Database {
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID ASC")
+    @RewriteQueriesToDropUnusedColumns
     fun songsByRowIdAsc(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
+    @RewriteQueriesToDropUnusedColumns
     fun songsByRowIdDesc(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title ASC")
+    @RewriteQueriesToDropUnusedColumns
     fun songsByTitleAsc(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title DESC")
+    @RewriteQueriesToDropUnusedColumns
     fun songsByTitleDesc(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs ASC")
+    @RewriteQueriesToDropUnusedColumns
     fun songsByPlayTimeAsc(): Flow<List<DetailedSong>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs DESC")
+    @RewriteQueriesToDropUnusedColumns
     fun songsByPlayTimeDesc(): Flow<List<DetailedSong>>
 
     fun songs(sortBy: SongSortBy, sortOrder: SortOrder): Flow<List<DetailedSong>> {
@@ -95,6 +101,7 @@ interface Database {
 
     @Transaction
     @Query("SELECT * FROM Song WHERE likedAt IS NOT NULL ORDER BY likedAt DESC")
+    @RewriteQueriesToDropUnusedColumns
     fun favorites(): Flow<List<DetailedSong>>
 
     @Query("SELECT * FROM QueuedMediaItem")

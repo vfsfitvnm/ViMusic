@@ -74,7 +74,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
                     BuiltInPlaylist.Offline -> Database.songsWithContentLength().map { songs ->
                         songs.filter { song ->
                             song.contentLength?.let {
-                                binder?.cache?.isCached(song.song.id, 0, song.contentLength)
+                                binder?.cache?.isCached(song.id, 0, song.contentLength)
                             } ?: false
                         }
                     }
@@ -180,7 +180,7 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
 
                 itemsIndexed(
                     items = songs,
-                    key = { _, song -> song.song.id },
+                    key = { _, song -> song.id },
                     contentType = { _, song -> song },
                 ) { index, song ->
                     SongItem(

@@ -625,9 +625,7 @@ fun HomeScreen() {
 
                 itemsIndexed(
                     items = songCollection,
-                    key = { _, song ->
-                        song.song.id
-                    },
+                    key = { _, song -> song.id },
                     contentType = { _, song -> song }
                 ) { index, song ->
                     SongItem(
@@ -652,7 +650,7 @@ fun HomeScreen() {
                                     .align(Alignment.BottomCenter)
                             ) {
                                 BasicText(
-                                    text = song.song.formattedTotalPlayTime,
+                                    text = song.formattedTotalPlayTime,
                                     style = typography.xxs.semiBold.center.color(Color.White),
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,

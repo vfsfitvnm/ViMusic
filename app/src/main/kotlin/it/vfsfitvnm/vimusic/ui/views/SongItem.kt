@@ -83,10 +83,10 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     SongItem(
-        thumbnailModel = song.song.thumbnailUrl?.thumbnail(thumbnailSize),
-        title = song.song.title,
-        authors = song.song.artistsText ?: "",
-        durationText = song.song.durationText,
+        thumbnailModel = song.thumbnailUrl?.thumbnail(thumbnailSize),
+        title = song.title,
+        authors = song.artistsText ?: "",
+        durationText = song.durationText,
         menuContent = menuContent,
         onClick = onClick,
         onThumbnailContent = onThumbnailContent,
