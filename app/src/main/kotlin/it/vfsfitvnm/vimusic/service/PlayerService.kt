@@ -76,6 +76,7 @@ import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
+import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.mediaItems
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.preferences
@@ -132,6 +133,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     private var isVolumeNormalizationEnabled = false
     private var isPersistentQueueEnabled = false
+    private var isShowingThumbnailInLockscreen = true
     override var isInvincibilityEnabled = false
 
     private val binder = Binder()
@@ -166,6 +168,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
         isVolumeNormalizationEnabled = preferences.getBoolean(volumeNormalizationKey, false)
         isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
+        isShowingThumbnailInLockscreen = preferences.getBoolean(isShowingThumbnailInLockscreenKey, true)
 
         val cacheEvictor = when (val size =
             preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {
@@ -354,6 +357,12 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         }
     }
 
+    private fun maybeShowSongCoverInLockScreen() {
+        val bitmap = if (isShowingThumbnailInLockscreen) bitmapProvider.bitmap else null
+        metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, bitmap)
+        mediaSession.setMetadata(metadataBuilder.build())
+    }
+
     private val Player.androidPlaybackState: Int
         get() = when (playbackState) {
             Player.STATE_BUFFERING -> if (playWhenReady) PlaybackState.STATE_BUFFERING else PlaybackState.STATE_PAUSED
@@ -377,6 +386,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                 .putText(
                     MediaMetadata.METADATA_KEY_ARTIST,
                     player.currentMediaItem?.mediaMetadata?.artist
+                )
+                .putText(
+                    MediaMetadata.METADATA_KEY_ALBUM,
+                    player.currentMediaItem?.mediaMetadata?.albumTitle
                 )
                 .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
                 .build().let(mediaSession::setMetadata)
@@ -432,6 +445,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             isInvincibilityEnabledKey -> isInvincibilityEnabled =
                 sharedPreferences.getBoolean(key, isInvincibilityEnabled)
             skipSilenceKey -> player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
+            isShowingThumbnailInLockscreenKey -> {
+                isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
+                maybeShowSongCoverInLockScreen()
+            }
         }
     }
 
@@ -482,6 +499,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .addAction(R.drawable.play_skip_forward, "Skip forward", nextIntent)
 
         bitmapProvider.load(mediaMetadata.artworkUri) { bitmap ->
+            maybeShowSongCoverInLockScreen()
             notificationManager?.notify(NotificationId, builder.setLargeIcon(bitmap).build())
         }
 
