@@ -27,6 +27,7 @@ const val skipSilenceKey = "skipSilence"
 const val volumeNormalizationKey = "volumeNormalization"
 const val persistentQueueKey = "persistentQueue"
 const val isShowingSynchronizedLyricsKey = "isShowingSynchronizedLyrics"
+const val isShowingThumbnailInLockscreenKey = "isShowingThumbnailInLockscreen"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

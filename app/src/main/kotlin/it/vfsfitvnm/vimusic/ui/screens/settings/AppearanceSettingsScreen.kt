@@ -26,9 +26,11 @@ import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
 import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
+import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
+import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 
@@ -47,6 +49,10 @@ fun AppearanceSettingsScreen() {
             var thumbnailRoundness by rememberPreference(
                 thumbnailRoundnessKey,
                 ThumbnailRoundness.Light
+            )
+            var isShowingThumbnailInLockscreen by rememberPreference(
+                isShowingThumbnailInLockscreenKey,
+                true
             )
 
             Column(
@@ -91,6 +97,15 @@ fun AppearanceSettingsScreen() {
                     onValueSelected = {
                         thumbnailRoundness = it
                     }
+                )
+
+                SettingsEntryGroupText(title = "LOCKSCREEN")
+
+                SwitchSettingEntry(
+                    title = "Show song cover",
+                    text = "Use the playing song cover as the lockscreen wallpaper",
+                    isChecked = isShowingThumbnailInLockscreen,
+                    onCheckedChange = { isShowingThumbnailInLockscreen = it }
                 )
             }
         }
