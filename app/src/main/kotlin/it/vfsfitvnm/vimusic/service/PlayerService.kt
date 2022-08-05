@@ -378,6 +378,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     MediaMetadata.METADATA_KEY_ARTIST,
                     player.currentMediaItem?.mediaMetadata?.artist
                 )
+                .putText(
+                    MediaMetadata.METADATA_KEY_ALBUM,
+                    player.currentMediaItem?.mediaMetadata?.albumTitle
+                )
                 .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
                 .build().let(mediaSession::setMetadata)
         }
