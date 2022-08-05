@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -83,24 +84,24 @@ fun PlayerSettingsScreen() {
                     )
                 }
 
-                SettingsTitle(text = "Player & Audio")
+                SettingsTitle(text = stringResource(R.string.player_audio))
 
-                SettingsEntryGroupText(title = "PLAYER")
+                SettingsEntryGroupText(title = stringResource(R.string.player))
 
                 SwitchSettingEntry(
-                    title = "Persistent queue",
-                    text = "Save and restore playing songs",
+                    title = stringResource(R.string.pers_queue),
+                    text = stringResource(R.string.pers_queue_desc),
                     isChecked = persistentQueue,
                     onCheckedChange = {
                         persistentQueue = it
                     }
                 )
 
-                SettingsEntryGroupText(title = "AUDIO")
+                SettingsEntryGroupText(title = stringResource(R.string.audio))
 
                 SwitchSettingEntry(
-                    title = "Skip silence",
-                    text = "Skip silent parts during playback",
+                    title = stringResource(R.string.skip_silence),
+                    text = stringResource(R.string.skip_silence_desc),
                     isChecked = skipSilence,
                     onCheckedChange = {
                         skipSilence = it
@@ -108,8 +109,8 @@ fun PlayerSettingsScreen() {
                 )
 
                 SwitchSettingEntry(
-                    title = "Loudness normalization",
-                    text = "Lower the volume to a standard level",
+                    title = stringResource(R.string.loud_norm),
+                    text = stringResource(R.string.loud_norm_desc),
                     isChecked = volumeNormalization,
                     onCheckedChange = {
                         volumeNormalization = it
@@ -117,8 +118,8 @@ fun PlayerSettingsScreen() {
                 )
 
                 SettingsEntry(
-                    title = "Equalizer",
-                    text = "Interact with the system equalizer",
+                    title = stringResource(R.string.equalizer),
+                    text = stringResource(R.string.equalizer_desc),
                     onClick = {
                         val intent =
                             Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {

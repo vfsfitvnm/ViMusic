@@ -42,6 +42,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaMetadata
@@ -135,7 +136,7 @@ fun Lyrics(
 
         if (isEditingLyrics) {
             TextFieldDialog(
-                hintText = "Enter the lyrics",
+                hintText = stringResource(R.string.enter_lyrics),
                 initialTextInput = lyrics ?: "",
                 singleLine = false,
                 maxLines = 10,
@@ -294,7 +295,7 @@ fun Lyrics(
 
                                         MenuEntry(
                                             icon = R.drawable.pencil,
-                                            text = "Edit lyrics",
+                                            text = stringResource(R.string.edit_lyrics),
                                             onClick = {
                                                 menuState.hide()
                                                 isEditingLyrics = true
@@ -303,7 +304,7 @@ fun Lyrics(
 
                                         MenuEntry(
                                             icon = R.drawable.search,
-                                            text = "Search lyrics online",
+                                            text = stringResource(R.string.search_lyrics),
                                             onClick = {
                                                 menuState.hide()
                                                 val mediaMetadata = mediaMetadataProvider()
@@ -332,7 +333,7 @@ fun Lyrics(
 
                                         MenuEntry(
                                             icon = R.drawable.download,
-                                            text = "Fetch lyrics again",
+                                            text = stringResource(R.string.fetch_lyrics_again),
                                             onClick = {
                                                 menuState.hide()
                                                 query {

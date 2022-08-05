@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
@@ -112,7 +113,7 @@ fun IntentUriScreen(uri: Uri) {
 
             if (isImportingAsPlaylist) {
                 TextFieldDialog(
-                    hintText = "Enter the playlist name",
+                    hintText = stringResource(R.string.enter_playlist_name),
                     onDismiss = {
                         isImportingAsPlaylist = false
                     },
@@ -175,7 +176,7 @@ fun IntentUriScreen(uri: Uri) {
                                         Menu {
                                             MenuEntry(
                                                 icon = R.drawable.enqueue,
-                                                text = "Enqueue",
+                                                text = stringResource(R.string.enqueue),
                                                 onClick = {
                                                     menuState.hide()
 
@@ -192,7 +193,7 @@ fun IntentUriScreen(uri: Uri) {
 
                                             MenuEntry(
                                                 icon = R.drawable.playlist,
-                                                text = "Import as playlist",
+                                                text = stringResource(R.string.import_as_playlist),
                                                 onClick = {
                                                     isImportingAsPlaylist = true
                                                 }
@@ -210,8 +211,8 @@ fun IntentUriScreen(uri: Uri) {
                     if (items.isEmpty()) {
                         item {
                             TextCard(icon = R.drawable.sad) {
-                                Title(text = "No songs found")
-                                Text(text = "Please try a different query or category.")
+                                Title(text = stringResource(R.string.no_songs))
+                                Text(text = stringResource(R.string.other_category))
                             }
                         }
                     } else {
