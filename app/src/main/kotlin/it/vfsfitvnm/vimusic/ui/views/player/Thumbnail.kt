@@ -60,7 +60,7 @@ fun Thumbnail(
 
     val error by rememberError(player)
 
-    var changed = false
+    var xOffset = 0f
 
     if (error == null) {
         AnimatedContent(
@@ -93,21 +93,21 @@ fun Thumbnail(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .pointerInput(Unit) {
-                            detectHorizontalDragGestures { change, dragAmount ->
+                            detectHorizontalDragGestures(
+                                onDragStart = {
+                                    xOffset = 0f
+                                },
+                                onDragEnd = {
+                                    if (xOffset >= 30){
+                                        binder.player.seekToPrevious()
+                                    } else if (xOffset <= -30) {
+                                        binder.player.seekToNext()
+                                    }
+                                }
+                            ) { change, dragAmount ->
                                 change.consume()
 
-                                val x = dragAmount
-                                if (x >= 30 && !changed) {
-                                    Log.d("TAG", x.toString())
-                                    binder.player.seekToPrevious()
-                                    changed = true
-                                    return@detectHorizontalDragGestures
-                                } else if (x <= -30 && !changed) {
-                                    Log.d("TAG", x.toString())
-                                    binder.player.seekToNext()
-                                    changed = true
-                                    return@detectHorizontalDragGestures
-                                }
+                                xOffset += dragAmount
                             }
                         }
                         .combinedClickable(
