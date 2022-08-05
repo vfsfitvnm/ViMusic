@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.views.player
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -7,6 +8,9 @@ import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -34,6 +38,7 @@ import it.vfsfitvnm.vimusic.utils.rememberError
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.thumbnail
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalAnimationApi
 @Composable
 fun Thumbnail(
@@ -54,6 +59,8 @@ fun Thumbnail(
     val mediaItemIndex by rememberMediaItemIndex(player)
 
     val error by rememberError(player)
+
+    var changed = false
 
     if (error == null) {
         AnimatedContent(
@@ -86,15 +93,27 @@ fun Thumbnail(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .pointerInput(Unit) {
-                            detectTapGestures(
-                                onTap = {
-                                    onShowLyrics(true)
-                                },
-                                onLongPress = {
-                                    onShowStatsForNerds(true)
+                            detectHorizontalDragGestures { change, dragAmount ->
+                                change.consume()
+
+                                val x = dragAmount
+                                if (x >= 30 && !changed) {
+                                    Log.d("TAG", x.toString())
+                                    binder.player::seekToPreviousMediaItem
+                                    changed = true
+                                    return@detectHorizontalDragGestures
+                                } else if (x <= -30 && !changed) {
+                                    Log.d("TAG", x.toString())
+                                    binder.player::seekToNextMediaItem
+                                    changed = true
+                                    return@detectHorizontalDragGestures
                                 }
-                            )
+                            }
                         }
+                        .combinedClickable(
+                            onClick = { onShowLyrics(true) },
+                            onLongClick = { onShowStatsForNerds(true) }
+                        )
                         .fillMaxSize()
                 )
 
