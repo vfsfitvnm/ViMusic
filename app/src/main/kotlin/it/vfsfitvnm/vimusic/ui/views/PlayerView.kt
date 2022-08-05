@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.views
 import android.content.Intent
 import android.content.res.Configuration
 import android.media.audiofx.AudioEffect
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,6 +11,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -82,6 +85,8 @@ fun PlayerView(
     val shouldBePlaying by rememberShouldBePlaying(binder.player)
     val positionAndDuration by rememberPositionAndDuration(binder.player)
 
+    var xOffset = 0f
+
     BottomSheet(
         state = layoutState,
         modifier = modifier,
@@ -94,6 +99,24 @@ fun PlayerView(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = {
+                                xOffset = 0f
+                            },
+                            onDragEnd = {
+                                if (xOffset >= 30) {
+                                    binder.player.seekToPrevious()
+                                } else if (xOffset <= -30) {
+                                    binder.player.seekToNext()
+                                }
+                            }
+                        ) { change, dragAmount ->
+                            change.consume()
+
+                            xOffset += dragAmount
+                        }
+                    }
                     .background(colorPalette.elevatedBackground)
                     .fillMaxSize()
                     .drawBehind {
@@ -352,5 +375,5 @@ fun PlayerView(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )
-    }
+   }
 }
