@@ -12,15 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -162,29 +154,54 @@ fun PlayerView(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clickable {
-                            if (shouldBePlaying) {
-                                binder.player.pause()
-                            } else {
-                                if (binder.player.playbackState == Player.STATE_IDLE) {
-                                    binder.player.prepare()
-                                }
-                                binder.player.play()
-                            }
-                        }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Image(
-                        painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(22.dp)
+                            .clickable {
+                                if (shouldBePlaying) {
+                                    binder.player.pause()
+                                } else {
+                                    if (binder.player.playbackState == Player.STATE_IDLE) {
+                                        binder.player.prepare()
+                                    }
+                                    binder.player.play()
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(22.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clickable(onClick = binder.player::seekToNext)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.play_skip_forward),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(22.dp)
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier
+                            .width(8.dp)
                     )
                 }
+
             }
         }
     ) {
