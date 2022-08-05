@@ -99,12 +99,12 @@ fun Thumbnail(
                                 val x = dragAmount
                                 if (x >= 30 && !changed) {
                                     Log.d("TAG", x.toString())
-                                    binder.player::seekToPreviousMediaItem
+                                    binder.player.seekToPrevious()
                                     changed = true
                                     return@detectHorizontalDragGestures
                                 } else if (x <= -30 && !changed) {
                                     Log.d("TAG", x.toString())
-                                    binder.player::seekToNextMediaItem
+                                    binder.player.seekToNext()
                                     changed = true
                                     return@detectHorizontalDragGestures
                                 }
