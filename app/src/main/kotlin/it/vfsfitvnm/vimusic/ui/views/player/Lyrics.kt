@@ -44,9 +44,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import com.valentinilk.shimmer.shimmer
-import it.vfsfitvnm.synchronizedlyrics.LujjjhLyrics
+import it.vfsfitvnm.kugou.KuGou
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -73,6 +74,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Lyrics(
@@ -81,6 +83,7 @@ fun Lyrics(
     onDismiss: () -> Unit,
     size: Dp,
     mediaMetadataProvider: () -> MediaMetadata,
+    durationProvider: () -> Long,
     onLyricsUpdate: (Boolean, String, String) -> Unit,
     nestedScrollConnectionProvider: () -> NestedScrollConnection,
     modifier: Modifier = Modifier
@@ -119,7 +122,20 @@ fun Lyrics(
 
                 if (isShowingSynchronizedLyrics) {
                     val mediaMetadata = mediaMetadataProvider()
-                    LujjjhLyrics.forSong(mediaMetadata.artist?.toString() ?: "", mediaMetadata.title?.toString() ?: "")
+                    var duration = withContext(Dispatchers.Main) {
+                        durationProvider()
+                    }
+
+                    while (duration == C.TIME_UNSET) {
+                        delay(100)
+                        duration = withContext(Dispatchers.Main) {
+                            durationProvider()
+                        }
+                    }
+
+                    KuGou.lyrics(mediaMetadata.artist?.toString() ?: "", mediaMetadata.title?.toString() ?: "", duration)?.map {
+                        it?.value
+                    }
                 } else {
                     YouTube.next(mediaId, null)?.map { nextResult -> nextResult.lyrics?.text()?.getOrNull() }
                 }?.map { newLyrics ->
@@ -224,7 +240,7 @@ fun Lyrics(
                             val player = LocalPlayerServiceBinder.current?.player ?: return@AnimatedVisibility
 
                             val synchronizedLyrics = remember(lyrics) {
-                                SynchronizedLyrics(lyrics) {
+                                SynchronizedLyrics(KuGou.Lyrics(lyrics).sentences) {
                                     player.currentPosition
                                 }
                             }
@@ -285,7 +301,8 @@ fun Lyrics(
                                     Menu {
                                         MenuEntry(
                                             icon = R.drawable.time,
-                                            text = "Show ${if (isShowingSynchronizedLyrics) "static" else "synchronized"} lyrics",
+                                            text = "Show ${if (isShowingSynchronizedLyrics) "un" else ""}synchronized lyrics",
+                                            secondaryText = if (isShowingSynchronizedLyrics) null else "Provided by kugou.com",
                                             onClick = {
                                                 menuState.hide()
                                                 isShowingSynchronizedLyrics = !isShowingSynchronizedLyrics
@@ -336,7 +353,11 @@ fun Lyrics(
                                             onClick = {
                                                 menuState.hide()
                                                 query {
-                                                    Database.updateLyrics(mediaId, null)
+                                                    if (isShowingSynchronizedLyrics) {
+                                                        Database.updateSynchronizedLyrics(mediaId, null)
+                                                    } else {
+                                                        Database.updateLyrics(mediaId, null)
+                                                    }
                                                 }
                                             }
                                         )
