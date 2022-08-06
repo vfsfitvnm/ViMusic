@@ -39,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.reordering.rememberReorderingState
-import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
+import it.vfsfitvnm.reordering.verticalDragToReorder
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -100,6 +100,7 @@ fun CurrentPlaylistView(
                 val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
 
                 SongItem(
+                    swipeShow = false,
                     mediaItem = window.mediaItem,
                     thumbnailSize = thumbnailSize,
                     onClick = {
@@ -168,7 +169,7 @@ fun CurrentPlaylistView(
                     backgroundColor = colorPalette.background,
                     modifier = Modifier
 //                        .animateItemPlacement()
-                        .verticalDragAfterLongPressToReorder(
+                        .verticalDragToReorder(
                             reorderingState = reorderingState,
                             index = window.firstPeriodIndex,
                             onDragStart = {

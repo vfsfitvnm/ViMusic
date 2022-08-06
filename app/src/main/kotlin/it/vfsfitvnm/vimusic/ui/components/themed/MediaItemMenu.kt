@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import it.vfsfitvnm.route.RouteHandler
@@ -601,7 +600,7 @@ fun MediaItemMenu(
                                                 if (authorId != null) {
                                                     MenuEntry(
                                                         icon = R.drawable.person,
-                                                        text = stringResource(R.string.more_of) + "$authorName",
+                                                        text = stringResource(R.string.more_of) + " $authorName",
                                                         onClick = {
                                                             onDismiss()
                                                             onGlobalRouteEmitted?.invoke()

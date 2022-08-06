@@ -326,6 +326,8 @@ fun AlbumScreen(browseId: String) {
                         title = song.title,
                         authors = song.artistsText ?: albumResult?.getOrNull()?.authorsText,
                         durationText = song.durationText,
+                        mediaItem = song.asMediaItem,
+                        swipeShow = true,
                         onClick = {
                             binder?.stopRadio()
                             binder?.player?.forcePlayAtIndex(

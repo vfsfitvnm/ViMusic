@@ -249,6 +249,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                     SongItem(
                         song = song,
                         thumbnailSize = thumbnailSize,
+                        swipeShow = true,
                         onClick = {
                             binder?.stopRadio()
                             binder?.player?.forcePlayAtIndex(

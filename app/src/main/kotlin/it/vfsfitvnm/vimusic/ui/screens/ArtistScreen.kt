@@ -254,6 +254,7 @@ fun ArtistScreen(browseId: String) {
                     SongItem(
                         song = song,
                         thumbnailSize = songThumbnailSizePx,
+                        swipeShow = true,
                         onClick = {
                             binder?.stopRadio()
                             binder?.player?.forcePlayAtIndex(

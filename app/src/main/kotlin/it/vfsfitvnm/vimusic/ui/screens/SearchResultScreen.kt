@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -398,6 +399,8 @@ fun SmallSongItem(
         title = song.info.name,
         authors = song.authors.joinToString("") { it.name },
         durationText = song.durationText,
+        mediaItem = song.asMediaItem,
+        swipeShow = true,
         onClick = onClick,
         menuContent = {
             NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
@@ -420,6 +423,8 @@ fun SmallVideoItem(
         authors = (if (video.isOfficialMusicVideo) video.authors else video.views)
             .joinToString("") { it.name },
         durationText = video.durationText,
+        mediaItem = MediaItem.EMPTY,
+        swipeShow = false,
         onClick = onClick,
         menuContent = {
             NonQueuedMediaItemMenu(mediaItem = video.asMediaItem)
