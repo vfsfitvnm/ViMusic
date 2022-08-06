@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -139,6 +141,11 @@ fun PlayerView(
                     )
                 }
 
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
+
                 Box(
                     modifier = Modifier
                         .clickable {
@@ -151,7 +158,7 @@ fun PlayerView(
                                 binder.player.play()
                             }
                         }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 4.dp, vertical = 8.dp)
                 ) {
                     Image(
                         painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
@@ -159,9 +166,29 @@ fun PlayerView(
                         colorFilter = ColorFilter.tint(colorPalette.text),
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .size(22.dp)
+                            .size(20.dp)
                     )
                 }
+
+                Box(
+                    modifier = Modifier
+                        .clickable(onClick = binder.player::seekToNext)
+                        .padding(horizontal = 4.dp, vertical = 8.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.play_skip_forward),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(20.dp)
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
             }
         }
     ) {
