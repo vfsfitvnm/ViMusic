@@ -2,25 +2,19 @@ package it.vfsfitvnm.vimusic.ui.views
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.media.audiofx.AudioEffect
-import android.util.Log
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,8 +35,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.Player
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -56,16 +54,14 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.player.Controls
 import it.vfsfitvnm.vimusic.ui.views.player.Thumbnail
-import it.vfsfitvnm.vimusic.utils.rememberMediaItem
-import it.vfsfitvnm.vimusic.utils.rememberPositionAndDuration
-import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
-import it.vfsfitvnm.vimusic.utils.seamlessPlay
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.thumbnail
+import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlin.math.absoluteValue
+import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColor
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 @Composable
 fun PlayerView(
@@ -88,6 +84,32 @@ fun PlayerView(
     val shouldBePlaying by rememberShouldBePlaying(binder.player)
     val positionAndDuration by rememberPositionAndDuration(binder.player)
 
+    var xOffset = 0f
+
+
+    var backgroundColor : Color = colorPalette.elevatedBackground
+    var elevatedBackgroundColor : Color = colorPalette.background
+
+    val imageRequest = ImageRequest.Builder(context)
+        .data(mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px))
+        .allowHardware(false)
+        .target() { drawable ->
+            var img = drawable.toBitmap()
+            var bitmap = Bitmap.createBitmap(img)
+            Palette.from(bitmap).generate { palette ->
+                if (palette?.getDarkMutedColor(0x000000) == 0x000000) {
+                    backgroundColor = Color(palette.getDominantColor(0x000000)!!.toColor().toArgb()+(0xff16171d).toInt())
+                    elevatedBackgroundColor = Color(palette!!.getDominantColor(0x000000)!!.toColor().toArgb())
+                }else {
+                    backgroundColor = Color(palette!!.getDarkMutedColor(0x000000)!!.toColor().toArgb()+(0xff16171d).toInt())
+                    elevatedBackgroundColor = Color(palette!!.getDarkMutedColor(0x000000)!!.toColor().toArgb())
+                }
+
+            }
+        }
+        .build()
+    ImageLoader(context).enqueue(imageRequest)
+
     BottomSheet(
         state = layoutState,
         modifier = modifier,
@@ -100,7 +122,26 @@ fun PlayerView(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(colorPalette.elevatedBackground)
+                    .pointerInput(Unit) {
+
+                        detectHorizontalDragGestures(
+                            onDragStart = {
+                                xOffset = 0f
+                            },
+                            onDragEnd = {
+                                if (xOffset >= 30) {
+                                    binder.player.seekToPreviousMediaItem()
+                                } else if (xOffset <= -30) {
+                                    binder.player.seekToNextMediaItem()
+                                }
+                            }
+                        ) { change, dragAmount ->
+                            change.consume()
+
+                            xOffset += dragAmount
+                        }
+                    }
+                    .background(backgroundColor)
                     .fillMaxSize()
                     .drawBehind {
                         val progress =
@@ -145,29 +186,54 @@ fun PlayerView(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clickable {
-                            if (shouldBePlaying) {
-                                binder.player.pause()
-                            } else {
-                                if (binder.player.playbackState == Player.STATE_IDLE) {
-                                    binder.player.prepare()
-                                }
-                                binder.player.play()
-                            }
-                        }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Image(
-                        painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(22.dp)
+                            .clickable {
+                                if (shouldBePlaying) {
+                                    binder.player.pause()
+                                } else {
+                                    if (binder.player.playbackState == Player.STATE_IDLE) {
+                                        binder.player.prepare()
+                                    }
+                                    binder.player.play()
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(22.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clickable(onClick = binder.player::seekToNext)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.play_skip_forward),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(22.dp)
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier
+                            .width(8.dp)
                     )
                 }
+
             }
         }
     ) {
@@ -185,7 +251,7 @@ fun PlayerView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(bottom = 64.dp)
-                        .background(colorPalette.background)
+                        .background(backgroundColor)
                         .padding(top = 16.dp)
                 ) {
                     Box(
@@ -207,6 +273,7 @@ fun PlayerView(
                     Controls(
                         mediaItem = mediaItem,
                         shouldBePlaying = shouldBePlaying,
+                        backgroundColor = elevatedBackgroundColor,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
                         modifier = Modifier
@@ -222,7 +289,7 @@ fun PlayerView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .padding(bottom = 64.dp)
-                        .background(colorPalette.background)
+                        .background(backgroundColor)
                         .padding(top = 32.dp)
                 ) {
                     Box(
@@ -243,6 +310,7 @@ fun PlayerView(
                     Controls(
                         mediaItem = mediaItem,
                         shouldBePlaying = shouldBePlaying,
+                        backgroundColor = elevatedBackgroundColor,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
                         modifier = Modifier
@@ -258,6 +326,7 @@ fun PlayerView(
         PlayerBottomSheet(
             layoutState = rememberBottomSheetState(64.dp, layoutState.expandedBound),
             onGlobalRouteEmitted = layoutState::collapseSoft,
+            backgroundColor = elevatedBackgroundColor,
             content = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -360,5 +429,5 @@ fun PlayerView(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )
-    }
+   }
 }
