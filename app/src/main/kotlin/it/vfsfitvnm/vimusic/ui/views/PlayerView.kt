@@ -127,9 +127,9 @@ fun PlayerView(
                             },
                             onDragEnd = {
                                 if (xOffset >= 30) {
-                                    binder.player.seekToPrevious()
+                                    binder.player.seekToPreviousMediaItem()
                                 } else if (xOffset <= -30) {
-                                    binder.player.seekToNext()
+                                    binder.player.seekToNextMediaItem()
                                 }
                             }
                         ) { change, dragAmount ->
