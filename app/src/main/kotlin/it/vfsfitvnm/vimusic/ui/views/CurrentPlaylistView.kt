@@ -35,6 +35,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.reordering.rememberReorderingState
@@ -225,12 +226,12 @@ fun CurrentPlaylistView(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 BasicText(
-                    text = "Queue",
+                    text = stringResource(R.string.queue),
                     style = typography.s.medium,
                     modifier = Modifier
                 )
                 BasicText(
-                    text = "${windows.size} songs",
+                    text = "${windows.size} " + stringResource(R.string.songs),
                     style = typography.xxs.semiBold.secondary,
                     modifier = Modifier
                 )

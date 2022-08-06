@@ -40,6 +40,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
+import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.rememberRepeatMode
@@ -55,7 +56,8 @@ fun Controls(
     backgroundColor: Color,
     position: Long,
     duration: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onGlobalRouteEmitted: (() -> Unit)? = null,
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
@@ -73,6 +75,8 @@ fun Controls(
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     val playPauseRoundness by animateDpAsState(if (shouldBePlaying) 32.dp else 16.dp)
+
+    val onGoToArtist = artistRoute::global
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -96,7 +100,26 @@ fun Controls(
             text = mediaItem.mediaMetadata.artist?.toString() ?: "",
             style = typography.s.semiBold.secondary,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .clickable {
+                    onGoToArtist?.let { onGoToArtist ->
+                        mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")
+                            ?.let { artistNames ->
+                                mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")
+                                    ?.let { artistIds ->
+                                        artistNames.zip(artistIds)
+                                            .forEach { (authorName, authorId) ->
+                                                if(authorId != null){
+                                                    onGlobalRouteEmitted?.invoke()
+                                                    onGoToArtist(authorId)
+                                                }
+                                            }
+                                    }
+                            }
+                    }
+                }
+
         )
 
         Spacer(
@@ -277,3 +300,4 @@ fun Controls(
         )
     }
 }
+

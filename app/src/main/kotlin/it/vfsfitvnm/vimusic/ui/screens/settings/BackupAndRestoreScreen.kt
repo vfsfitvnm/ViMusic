@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
@@ -100,7 +101,7 @@ fun BackupAndRestoreScreen() {
 
             if (isShowingRestoreDialog) {
                 ConfirmationDialog(
-                    text = "The application will automatically close itself to avoid problems after restoring the database.",
+                    text = stringResource(R.string.restore_dialog),
                     onDismiss = {
                         isShowingRestoreDialog = false
                     },
@@ -139,15 +140,15 @@ fun BackupAndRestoreScreen() {
                     )
                 }
 
-                SettingsTitle(text = "Backup & Restore")
+                SettingsTitle(text = stringResource(R.string.backup_restore))
 
-                SettingsEntryGroupText(title = "BACKUP")
+                SettingsEntryGroupText(title = stringResource(R.string.backup))
 
-                SettingsGroupDescription(text = "Personal preferences (i.e. the theme mode) and the cache are excluded.")
+                SettingsGroupDescription(text = stringResource(R.string.backup_sub_desc))
 
                 SettingsEntry(
-                    title = "Backup",
-                    text = "Export the database to the external storage",
+                    title = stringResource(R.string.backup),
+                    text = stringResource(R.string.backup_export),
                     onClick = {
                         @SuppressLint("SimpleDateFormat")
                         val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
@@ -155,13 +156,13 @@ fun BackupAndRestoreScreen() {
                     }
                 )
 
-                SettingsEntryGroupText(title = "RESTORE")
+                SettingsEntryGroupText(title = stringResource(R.string.restore))
 
-                SettingsGroupDescription(text = "Existing data will be overwritten.")
+                SettingsGroupDescription(text = stringResource(R.string.restore_warning))
 
                 SettingsEntry(
-                    title = "Restore",
-                    text = "Import the database from the external storage",
+                    title = stringResource(R.string.restore),
+                    text = stringResource(R.string.restore_import),
                     onClick = {
                         isShowingRestoreDialog = true
                     }

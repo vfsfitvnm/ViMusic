@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -222,7 +223,7 @@ fun PlaylistScreen(browseId: String) {
                                                 Menu {
                                                     MenuEntry(
                                                         icon = R.drawable.enqueue,
-                                                        text = "Enqueue",
+                                                        text = stringResource(R.string.enqueue),
                                                         onClick = {
                                                             menuState.hide()
                                                             playlist.items
@@ -242,7 +243,7 @@ fun PlaylistScreen(browseId: String) {
 
                                                     MenuEntry(
                                                         icon = R.drawable.playlist,
-                                                        text = "Import",
+                                                        text = stringResource(R.string.import_playlist),
                                                         onClick = {
                                                             menuState.hide()
                                                             transaction {
@@ -280,7 +281,7 @@ fun PlaylistScreen(browseId: String) {
 
                                                     MenuEntry(
                                                         icon = R.drawable.share_social,
-                                                        text = "Share",
+                                                        text = stringResource(R.string.share),
                                                         onClick = {
                                                             menuState.hide()
 

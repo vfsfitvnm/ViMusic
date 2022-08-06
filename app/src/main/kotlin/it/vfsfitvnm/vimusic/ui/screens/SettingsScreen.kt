@@ -24,6 +24,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
+import androidx.compose.ui.res.stringResource
 
 @ExperimentalAnimationApi
 @Composable
@@ -97,7 +98,7 @@ fun SettingsScreen() {
                 }
 
                 BasicText(
-                    text = "Settings",
+                    text = stringResource(R.string.settings),
                     style = typography.l.semiBold,
                     modifier = Modifier
                         .padding(start = 48.dp)
@@ -182,40 +183,40 @@ fun SettingsScreen() {
                 Entry(
                     color = colorPalette.magenta,
                     icon = R.drawable.color_palette,
-                    title = "Appearance",
-                    description = "Change the colors and shapes",
+                    title = stringResource(R.string.appearance),
+                    description = stringResource(R.string.appearance_desc),
                     route = appearanceSettingsRoute,
                 )
 
                 Entry(
                     color = colorPalette.blue,
                     icon = R.drawable.play,
-                    title = "Player & Audio",
-                    description = "Player and audio settings",
+                    title = stringResource(R.string.player_audio),
+                    description = stringResource(R.string.player_desc),
                     route = playerSettingsRoute,
                 )
 
                 Entry(
                     color = colorPalette.cyan,
                     icon = R.drawable.server,
-                    title = "Cache",
-                    description = "Manage the used space",
+                    title = stringResource(R.string.cache),
+                    description = stringResource(R.string.cache_desc),
                     route = cacheSettingsRoute
                 )
 
                 Entry(
                     color = colorPalette.orange,
                     icon = R.drawable.save,
-                    title = "Backup & Restore",
-                    description = "Backup and restore the database",
+                    title = stringResource(R.string.backup_restore),
+                    description = stringResource(R.string.backup_desc),
                     route = backupAndRestoreRoute
                 )
 
                 Entry(
                     color = colorPalette.green,
                     icon = R.drawable.shapes,
-                    title = "Other",
-                    description = "Advanced settings",
+                    title = stringResource(R.string.other),
+                    description = stringResource(R.string.other_desc),
                     route = otherSettingsRoute,
                     withAlert = isFirstLaunch,
                     onClick = {
@@ -226,8 +227,8 @@ fun SettingsScreen() {
                 Entry(
                     color = colorPalette.magenta,
                     icon = R.drawable.information,
-                    title = "About",
-                    description = "App version and social links",
+                    title = stringResource(R.string.about),
+                    description = stringResource(R.string.about_desc),
                     route = aboutRoute
                 )
             }

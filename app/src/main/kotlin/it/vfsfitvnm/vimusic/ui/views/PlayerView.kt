@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -41,6 +43,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -276,7 +279,8 @@ fun PlayerView(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxHeight()
-                            .weight(1f)
+                            .weight(1f),
+                        onGlobalRouteEmitted = layoutState::collapseSoft
                     )
                 }
             }
@@ -312,7 +316,8 @@ fun PlayerView(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxWidth()
-                            .weight(1f)
+                            .weight(1f),
+                        onGlobalRouteEmitted = layoutState::collapseSoft
                     )
                 }
             }
