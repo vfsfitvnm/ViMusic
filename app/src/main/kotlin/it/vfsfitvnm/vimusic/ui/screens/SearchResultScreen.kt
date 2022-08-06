@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -175,27 +176,27 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                     ChipGroup(
                         items = listOf(
                             ChipItem(
-                                text = "Songs",
+                                text = stringResource(R.string.songs),
                                 value = YouTube.Item.Song.Filter.value
                             ),
                             ChipItem(
-                                text = "Albums",
+                                text = stringResource(R.string.albums),
                                 value = YouTube.Item.Album.Filter.value
                             ),
                             ChipItem(
-                                text = "Artists",
+                                text = stringResource(R.string.artists),
                                 value = YouTube.Item.Artist.Filter.value
                             ),
                             ChipItem(
-                                text = "Videos",
+                                text = stringResource(R.string.videos),
                                 value = YouTube.Item.Video.Filter.value
                             ),
                             ChipItem(
-                                text = "Playlists",
+                                text = stringResource(R.string.playlists),
                                 value = YouTube.Item.CommunityPlaylist.Filter.value
                             ),
                             ChipItem(
-                                text = "Featured playlists",
+                                text = stringResource(R.string.featured_playlists),
                                 value = YouTube.Item.FeaturedPlaylist.Filter.value
                             ),
                         ),
@@ -260,8 +261,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                     if (items.isEmpty()) {
                         item {
                             TextCard(icon = R.drawable.sad) {
-                                Title(text = "No results found")
-                                Text(text = "Please try a different query or category.")
+                                Title(text = stringResource(R.string.no_results))
+                                Text(text = stringResource(R.string.other_category))
                             }
                         }
                     }
@@ -471,7 +472,7 @@ fun SmallPlaylistItem(
 
         playlist.songCount?.let { songCount ->
             BasicText(
-                text = "$songCount songs",
+                text = "$songCount" + stringResource(R.string.songs),
                 style = typography.xxs.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

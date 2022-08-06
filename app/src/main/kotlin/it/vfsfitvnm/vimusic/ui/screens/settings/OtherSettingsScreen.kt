@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
@@ -92,28 +93,28 @@ fun OtherSettingsScreen() {
                 }
 
                 BasicText(
-                    text = "Other",
+                    text = stringResource(R.string.other),
                     style = typography.m.semiBold,
                     modifier = Modifier
                         .padding(start = 40.dp)
                         .padding(all = 16.dp)
                 )
 
-                SettingsEntryGroupText(title = "SERVICE LIFETIME")
+                SettingsEntryGroupText(title = stringResource(R.string.service_lifetime))
 
-                SettingsGroupDescription(text = "If battery optimizations are applied, the playback notification can suddenly disappear when paused.")
+                SettingsGroupDescription(text = stringResource(R.string.other_group_desc))
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    SettingsDescription(text = "Since Android 12, disabling battery optimizations is required for the \"Invincible service\" option to take effect.")
+                    SettingsDescription(text = stringResource(R.string.other_android_12))
                 }
 
                 SettingsEntry(
-                    title = "Ignore battery optimizations",
+                    title = stringResource(R.string.ignore_battery_optia),
                     isEnabled = !isIgnoringBatteryOptimizations,
                     text = if (isIgnoringBatteryOptimizations) {
-                        "Already unrestricted"
+                        stringResource(R.string.disabled)
                     } else {
-                        "Disable background restrictions"
+                        stringResource(R.string.disable_bat_opt)
                     },
                     onClick = {
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return@SettingsEntry
@@ -144,8 +145,8 @@ fun OtherSettingsScreen() {
                 )
 
                 SwitchSettingEntry(
-                    title = "Invincible service",
-                    text = "When turning off battery optimizations is not enough",
+                    title = stringResource(R.string.invincible_service),
+                    text = stringResource(R.string.inv_ser_desc),
                     isChecked = isInvincibilityEnabled,
                     onCheckedChange = {
                         isInvincibilityEnabled = it
