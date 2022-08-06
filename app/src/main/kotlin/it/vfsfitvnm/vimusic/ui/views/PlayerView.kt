@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.views
 import android.content.Intent
 import android.content.res.Configuration
 import android.media.audiofx.AudioEffect
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,6 +11,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +45,7 @@ import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -206,7 +212,8 @@ fun PlayerView(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxHeight()
-                            .weight(1f)
+                            .weight(1f),
+                        onGlobalRouteEmitted = layoutState::collapseSoft
                     )
                 }
             }
@@ -241,7 +248,8 @@ fun PlayerView(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
                             .fillMaxWidth()
-                            .weight(1f)
+                            .weight(1f),
+                        onGlobalRouteEmitted = layoutState::collapseSoft
                     )
                 }
             }
