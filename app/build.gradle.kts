@@ -95,5 +95,7 @@ dependencies {
     implementation(projects.youtubeMusic)
     implementation(projects.synchronizedLyrics)
 
+    implementation("androidx.palette:palette:1.0.0")
+
     coreLibraryDesugaring(libs.desugaring)
 }

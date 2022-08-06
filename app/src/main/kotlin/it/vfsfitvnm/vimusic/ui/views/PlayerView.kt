@@ -2,11 +2,13 @@ package it.vfsfitvnm.vimusic.ui.views
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.media.audiofx.AudioEffect
-import android.util.Log
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,8 +33,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.Player
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
@@ -45,16 +51,14 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.player.Controls
 import it.vfsfitvnm.vimusic.ui.views.player.Thumbnail
-import it.vfsfitvnm.vimusic.utils.rememberMediaItem
-import it.vfsfitvnm.vimusic.utils.rememberPositionAndDuration
-import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
-import it.vfsfitvnm.vimusic.utils.seamlessPlay
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.thumbnail
+import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlin.math.absoluteValue
+import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColor
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalAnimationApi
 @Composable
 fun PlayerView(
@@ -79,6 +83,30 @@ fun PlayerView(
 
     var xOffset = 0f
 
+
+    var backgroundColor : Color = colorPalette.elevatedBackground
+    var elevatedBackgroundColor : Color = colorPalette.background
+
+    val imageRequest = ImageRequest.Builder(context)
+        .data(mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px))
+        .allowHardware(false)
+        .target() { drawable ->
+            var img = drawable.toBitmap()
+            var bitmap = Bitmap.createBitmap(img)
+            Palette.from(bitmap).generate { palette ->
+                if (palette?.getDarkMutedColor(0x000000) == 0x000000) {
+                    backgroundColor = Color(palette.getDominantColor(0x000000)!!.toColor().toArgb()+(0xff16171d).toInt())
+                    elevatedBackgroundColor = Color(palette!!.getDominantColor(0x000000)!!.toColor().toArgb())
+                }else {
+                    backgroundColor = Color(palette!!.getDarkMutedColor(0x000000)!!.toColor().toArgb()+(0xff16171d).toInt())
+                    elevatedBackgroundColor = Color(palette!!.getDarkMutedColor(0x000000)!!.toColor().toArgb())
+                }
+
+            }
+        }
+        .build()
+    ImageLoader(context).enqueue(imageRequest)
+
     BottomSheet(
         state = layoutState,
         modifier = modifier,
@@ -92,6 +120,7 @@ fun PlayerView(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .pointerInput(Unit) {
+
                         detectHorizontalDragGestures(
                             onDragStart = {
                                 xOffset = 0f
@@ -109,7 +138,7 @@ fun PlayerView(
                             xOffset += dragAmount
                         }
                     }
-                    .background(colorPalette.elevatedBackground)
+                    .background(backgroundColor)
                     .fillMaxSize()
                     .drawBehind {
                         val progress =
@@ -219,7 +248,7 @@ fun PlayerView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(bottom = 64.dp)
-                        .background(colorPalette.background)
+                        .background(backgroundColor)
                         .padding(top = 16.dp)
                 ) {
                     Box(
@@ -241,6 +270,7 @@ fun PlayerView(
                     Controls(
                         mediaItem = mediaItem,
                         shouldBePlaying = shouldBePlaying,
+                        backgroundColor = elevatedBackgroundColor,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
                         modifier = Modifier
@@ -255,7 +285,7 @@ fun PlayerView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .padding(bottom = 64.dp)
-                        .background(colorPalette.background)
+                        .background(backgroundColor)
                         .padding(top = 32.dp)
                 ) {
                     Box(
@@ -276,6 +306,7 @@ fun PlayerView(
                     Controls(
                         mediaItem = mediaItem,
                         shouldBePlaying = shouldBePlaying,
+                        backgroundColor = elevatedBackgroundColor,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
                         modifier = Modifier
@@ -290,6 +321,7 @@ fun PlayerView(
         PlayerBottomSheet(
             layoutState = rememberBottomSheetState(64.dp, layoutState.expandedBound),
             onGlobalRouteEmitted = layoutState::collapseSoft,
+            backgroundColor = elevatedBackgroundColor,
             content = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

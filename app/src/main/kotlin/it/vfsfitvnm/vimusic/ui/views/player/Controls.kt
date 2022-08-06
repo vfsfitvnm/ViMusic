@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +52,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun Controls(
     mediaItem: MediaItem,
     shouldBePlaying: Boolean,
+    backgroundColor: Color,
     position: Long,
     duration: Long,
     modifier: Modifier = Modifier
@@ -121,7 +123,7 @@ fun Controls(
                 scrubbingPosition = null
             },
             color = colorPalette.text,
-            backgroundColor = colorPalette.backgroundContainer,
+            backgroundColor = backgroundColor,
             shape = RoundedCornerShape(8.dp)
         )
 
@@ -211,7 +213,7 @@ fun Controls(
                             binder.player.play()
                         }
                     }
-                    .background(color = colorPalette.backgroundContainer)
+                    .background(color = backgroundColor)
                     .size(64.dp)
             ) {
                 Image(
