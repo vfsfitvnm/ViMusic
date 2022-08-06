@@ -66,7 +66,7 @@ fun AboutScreen() {
 
                 SettingsTitle(text = stringResource(R.string.about))
 
-                SettingsDescription(text = "v${BuildConfig.VERSION_NAME}\nby vfsfitvnm")
+                SettingsDescription(text = "v${BuildConfig.VERSION_NAME}\nby vfsfitvnm, forked by Malopieds")
 
                 SettingsEntryGroupText(title = stringResource(R.string.social))
 
@@ -74,7 +74,7 @@ fun AboutScreen() {
                     title = "GitHub",
                     text = stringResource(R.string.source_code),
                     onClick = {
-                        uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic")
+                        uriHandler.openUri("https://github.com/Malopieds/ViMusic")
                     }
                 )
 
@@ -84,7 +84,7 @@ fun AboutScreen() {
                     title = stringResource(R.string.report_issue),
                     text = stringResource(R.string.redir_gh),
                     onClick = {
-                        uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=bug&template=bug_report.yaml")
+                        uriHandler.openUri("https://github.com/Malopieds/ViMusic/issues/new?assignees=&labels=bug&template=bug_report.yaml")
                     }
                 )
 
@@ -92,7 +92,7 @@ fun AboutScreen() {
                     title = stringResource(R.string.feature_request),
                     text = stringResource(R.string.redir_gh),
                     onClick = {
-                        uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
+                        uriHandler.openUri("https://github.com/Malopieds/ViMusic/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
                     }
                 )
             }

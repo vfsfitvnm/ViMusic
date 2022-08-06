@@ -2,7 +2,7 @@
 <resources
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="MissingTranslation">
-    <string name="app_name" translatable="false">ViMusic</string>
+    <string name="app_name" translatable="false">Malo Music</string>
     <string name="settings">Settings</string>
     <string name="appearance">Appearance</string>
     <string name="player_audio">Player &amp; Audio</string>
