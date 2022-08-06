@@ -52,12 +52,18 @@ object KuGou {
 
     suspend fun lyrics(artist: String, title: String, duration: Long): Result<Lyrics?>? {
         return runCatching {
-            for (info in searchSong(keyword(artist, title))) {
-                if (info.duration >= duration / 1000 - 2 && info.duration <= duration / 1000 + 2) {
-                    searchLyrics(info.hash).firstOrNull()?.let { candidate ->
+            val keyword = keyword(artist, title)
+
+            for (info in searchSong(keyword)) {
+                if (info.duration >= duration - 2 && info.duration <= duration + 2) {
+                    searchLyricsByHash(info.hash).firstOrNull()?.let { candidate ->
                         return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
                     }
                 }
+            }
+
+            searchLyricsByKeyword(keyword).firstOrNull()?.let { candidate ->
+                return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
             }
 
             null
@@ -75,12 +81,21 @@ object KuGou {
         }.body<DownloadLyricsResponse>().content.decodeBase64String().let(::Lyrics)
     }
 
-    private suspend fun searchLyrics(hash: String): List<SearchLyricsResponse.Candidate> {
+    private suspend fun searchLyricsByHash(hash: String): List<SearchLyricsResponse.Candidate> {
         return client.get("/search") {
             parameter("ver", 1)
             parameter("man", "yes")
             parameter("client", "mobi")
             parameter("hash", hash)
+        }.body<SearchLyricsResponse>().candidates
+    }
+
+    private suspend fun searchLyricsByKeyword(keyword: String): List<SearchLyricsResponse.Candidate> {
+        return client.get("/search") {
+            parameter("ver", 1)
+            parameter("man", "yes")
+            parameter("client", "mobi")
+            url.encodedParameters.append("keyword", keyword.encodeURLParameter(spaceToPlus = false))
         }.body<SearchLyricsResponse>().candidates
     }
 

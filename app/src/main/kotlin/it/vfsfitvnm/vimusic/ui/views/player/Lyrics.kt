@@ -133,7 +133,7 @@ fun Lyrics(
                         }
                     }
 
-                    KuGou.lyrics(mediaMetadata.artist?.toString() ?: "", mediaMetadata.title?.toString() ?: "", duration)?.map {
+                    KuGou.lyrics(mediaMetadata.artist?.toString() ?: "", mediaMetadata.title?.toString() ?: "", duration / 1000)?.map {
                         it?.value
                     }
                 } else {
