@@ -374,6 +374,11 @@ fun PlayerView(
                             .padding(all = 8.dp)
                             .size(20.dp)
                     )
+
+                    Spacer(
+                        modifier = Modifier
+                            .width(2.dp)
+                    )
                 }
             },
             modifier = Modifier
