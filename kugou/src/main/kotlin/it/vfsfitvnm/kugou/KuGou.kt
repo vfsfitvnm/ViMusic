@@ -55,10 +55,7 @@ object KuGou {
             for (info in searchSong(keyword(artist, title))) {
                 if (info.duration >= duration / 1000 - 2 && info.duration <= duration / 1000 + 2) {
                     searchLyrics(info.hash).firstOrNull()?.let { candidate ->
-                        return@runCatching downloadLyrics(
-                            candidate.id,
-                            candidate.accessKey
-                        ).normalize(title)
+                        return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
                     }
                 }
             }
@@ -117,7 +114,10 @@ object KuGou {
 
         if (endIndex == -1) return this to ""
 
-        return removeRange(startIndex, endIndex + 1) to substring(startIndex + startDelimiter.length, endIndex)
+        return removeRange(
+            startIndex,
+            endIndex + 1
+        ) to substring(startIndex + startDelimiter.length, endIndex)
     }
 
     @JvmInline
@@ -141,7 +141,7 @@ object KuGou {
                 }
             }
 
-        fun normalize(title: String): Lyrics {
+        fun normalize(): Lyrics {
             var toDrop = 0
             var maybeToDrop = 0
 
@@ -163,8 +163,7 @@ object KuGou {
                     line.containsAt("]Composed by：", 9) ||
                     line.containsAt("]Producer：", 9) ||
                     line.containsAt("]作曲 : ", 9) ||
-                    line.containsAt("]作词 : ", 9) ||
-                    line.containsAt("]$title", 9)
+                    line.containsAt("]作词 : ", 9)
                 ) {
                     toDrop += line.length + 1 + maybeToDrop
                     maybeToDrop = 0
