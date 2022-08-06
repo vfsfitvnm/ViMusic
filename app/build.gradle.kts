@@ -93,7 +93,7 @@ dependencies {
     kapt(libs.room.compiler)
 
     implementation(projects.youtubeMusic)
-    implementation(projects.synchronizedLyrics)
+    implementation(projects.kugou)
 
     implementation("androidx.palette:palette:1.0.0")
     implementation("de.charlex.compose:revealswipe:1.0.0")

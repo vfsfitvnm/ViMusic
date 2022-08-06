@@ -1,4 +1,4 @@
-package it.vfsfitvnm.synchronizedlyrics
+package it.vfsfitvnm.kugou
 
 import kotlin.coroutines.cancellation.CancellationException
 

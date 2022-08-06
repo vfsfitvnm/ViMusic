@@ -428,5 +428,5 @@ fun PlayerView(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )
-   }
+    }
 }
