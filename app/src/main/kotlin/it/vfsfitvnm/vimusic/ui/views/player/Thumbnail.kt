@@ -144,6 +144,7 @@ fun Thumbnail(
                     },
                     size = thumbnailSizeDp,
                     mediaMetadataProvider = mediaItem::mediaMetadata,
+                    durationProvider = player::getDuration,
                     nestedScrollConnectionProvider = nestedScrollConnectionProvider,
                 )
 
