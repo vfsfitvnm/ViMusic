@@ -175,10 +175,10 @@ fun SongItem(
             modifier = Modifier.padding(vertical = 5.dp),
             directions = setOf(
                 RevealDirection.StartToEnd,
-                //RevealDirection.EndToStart
+                RevealDirection.EndToStart
             ),
             enableDismiss = swipeShow,
-            //onBackgroundEndClick = {binder?.player?.addNext(mediaItem)},
+            onBackgroundEndClick = { menuState.display(menuContent) },
             onBackgroundStartClick = { binder.player?.addNext(mediaItem) },
             hiddenContentStart = {
                 Image(
@@ -192,7 +192,7 @@ fun SongItem(
             },
             hiddenContentEnd = {
                 Image(
-                    painter = painterResource(R.drawable.play_skip_forward),
+                    painter = painterResource(R.drawable.ellipsis_horizontal),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(Color(0xffe1e1e2)),
                     modifier = Modifier

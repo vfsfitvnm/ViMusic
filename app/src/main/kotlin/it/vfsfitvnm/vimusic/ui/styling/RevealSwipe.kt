@@ -140,7 +140,11 @@ fun RevealSwipe(
         if (state.targetValue != RevealValue.Default && closeOnContentClick) {
             coroutineScope.launch {
                 if (!swiped){
-                    onBackgroundStartClick()
+                    if (state.targetValue == RevealValue.FullyRevealedStart){
+                        onBackgroundEndClick()
+                    }else {
+                        onBackgroundStartClick()
+                    }
                 }
                 swiped = true
                 state.reset()

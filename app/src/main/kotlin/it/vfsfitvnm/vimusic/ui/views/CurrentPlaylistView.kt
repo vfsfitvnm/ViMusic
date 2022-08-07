@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.reordering.rememberReorderingState
+import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
 import it.vfsfitvnm.reordering.verticalDragToReorder
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -170,7 +171,7 @@ fun CurrentPlaylistView(
                     backgroundColor = colorPalette.background,
                     modifier = Modifier
 //                        .animateItemPlacement()
-                        .verticalDragToReorder(
+                        .verticalDragAfterLongPressToReorder(
                             reorderingState = reorderingState,
                             index = window.firstPeriodIndex,
                             onDragStart = {
@@ -247,11 +248,6 @@ fun CurrentPlaylistView(
                     .clickable(onClick = binder.player::shuffleQueue)
                     .padding(all = 8.dp)
                     .size(20.dp)
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .width(2.dp)
             )
         }
     }
