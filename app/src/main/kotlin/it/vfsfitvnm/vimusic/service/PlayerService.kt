@@ -268,8 +268,15 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        maybeRecoverPlaybackError()
         maybeNormalizeVolume()
         maybeProcessRadio()
+    }
+
+    private fun maybeRecoverPlaybackError() {
+        if (player.playerError != null) {
+            player.prepare()
+        }
     }
 
     private fun maybeProcessRadio() {
@@ -595,11 +602,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                     }
 
                                     format.url
-                                } ?: throw PlaybackException(
-                                    "Couldn't find a playable audio format",
-                                    null,
-                                    PlaybackException.ERROR_CODE_REMOTE_ERROR
-                                )
+                                } ?: throw PlayableFormatNotFoundException()
+                                "UNPLAYABLE" -> throw UnplayableException()
+                                "LOGIN_REQUIRED" -> throw LoginRequiredException()
                                 else -> throw PlaybackException(
                                     status,
                                     null,
@@ -614,7 +619,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                 .subrange(dataSpec.uriPositionOffset, chunkLength)
                         } ?: throw PlaybackException(
                             null,
-                            null,
+                            urlResult?.exceptionOrNull(),
                             PlaybackException.ERROR_CODE_REMOTE_ERROR
                         )
                     }
