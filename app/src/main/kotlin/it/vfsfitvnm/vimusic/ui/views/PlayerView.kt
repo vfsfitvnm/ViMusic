@@ -287,32 +287,6 @@ fun PlayerView(
                         .fillMaxHeight()
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.text),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (isShowingLyrics) colorPalette.text else colorPalette.textDisabled),
-                        modifier = Modifier
-                            .clickable {
-                                isShowingStatsForNerds = false
-                                isShowingLyrics = !isShowingLyrics
-                            }
-                            .padding(all = 8.dp)
-                            .size(20.dp)
-                    )
-
-                    Image(
-                        painter = painterResource(R.drawable.information),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (isShowingStatsForNerds) colorPalette.text else colorPalette.textDisabled),
-                        modifier = Modifier
-                            .clickable {
-                                isShowingLyrics = false
-                                isShowingStatsForNerds = !isShowingStatsForNerds
-                            }
-                            .padding(all = 8.dp)
-                            .size(20.dp)
-                    )
-
-                    Image(
                         painter = painterResource(R.drawable.ellipsis_horizontal),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette.text),
@@ -377,7 +351,7 @@ fun PlayerView(
 
                     Spacer(
                         modifier = Modifier
-                            .width(2.dp)
+                            .width(4.dp)
                     )
                 }
             },
