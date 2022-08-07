@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -205,7 +204,6 @@ fun CurrentPlaylistView(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .clickable(
                     indication = rememberRipple(bounded = true),
@@ -221,7 +219,12 @@ fun CurrentPlaylistView(
             Spacer(
                 modifier = Modifier
                     .padding(all = 8.dp)
-                    .size(20.dp)
+                    .size(22.dp)
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
             )
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -236,6 +239,11 @@ fun CurrentPlaylistView(
                     modifier = Modifier
                 )
             }
+
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+            )
 
             Image(
                 painter = painterResource(R.drawable.shuffle),
