@@ -241,19 +241,19 @@ fun Lyrics(
 
                             val synchronizedLyrics = remember(lyrics) {
                                 SynchronizedLyrics(KuGou.Lyrics(lyrics).sentences) {
-                                    player.currentPosition
+                                    player.currentPosition + 50
                                 }
                             }
 
                             val lazyListState = rememberLazyListState(synchronizedLyrics.index, with (density) { size.roundToPx() } / 6)
 
                             LaunchedEffect(synchronizedLyrics) {
+                                val center = with (density) { size.roundToPx() } / 6
+
                                 while (isActive) {
                                     delay(50)
                                     if (synchronizedLyrics.update()) {
-                                        synchronizedLyrics.sentences.getOrNull(synchronizedLyrics.index)?.first?.let {
-                                            lazyListState.animateScrollToItem(synchronizedLyrics.index, with (density) { size.roundToPx() } / 6)
-                                        }
+                                        lazyListState.animateScrollToItem(synchronizedLyrics.index, center)
                                     }
                                 }
                             }
