@@ -646,7 +646,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .setAudioProcessorChain(
                 DefaultAudioProcessorChain(
                     emptyArray(),
-                    SilenceSkippingAudioProcessor(1_000_000, 20_000, 256),
+                    SilenceSkippingAudioProcessor(2_000_000, 20_000, 256),
                     SonicAudioProcessor()
                 )
             )
