@@ -53,12 +53,21 @@ object KuGou {
     suspend fun lyrics(artist: String, title: String, duration: Long): Result<Lyrics?>? {
         return runCatching {
             val keyword = keyword(artist, title)
+            val infoByKeyword = searchSong(keyword)
 
-            for (info in searchSong(keyword)) {
-                if (info.duration >= duration - 2 && info.duration <= duration + 2) {
-                    searchLyricsByHash(info.hash).firstOrNull()?.let { candidate ->
-                        return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
+            if (infoByKeyword.isNotEmpty()) {
+                var tolerance = 0
+
+                while (tolerance <= 5) {
+                    for (info in infoByKeyword) {
+                        if (info.duration >= duration - tolerance && info.duration <= duration + tolerance) {
+                            searchLyricsByHash(info.hash).firstOrNull()?.let { candidate ->
+                                return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
+                            }
+                        }
                     }
+
+                    tolerance++
                 }
             }
 
