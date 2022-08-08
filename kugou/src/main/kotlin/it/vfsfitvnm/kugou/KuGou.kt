@@ -112,7 +112,7 @@ object KuGou {
         return client.get("https://mobileservice.kugou.com/api/v3/search/song") {
             parameter("version", 9108)
             parameter("plat", 0)
-            parameter("pagesize", 5)
+            parameter("pagesize", 8)
             parameter("showtype", 0)
             url.encodedParameters.append("keyword", keyword.encodeURLParameter(spaceToPlus = false))
         }.body<SearchSongResponse>().data.info
