@@ -7,9 +7,9 @@ import kotlinx.coroutines.withContext
 
 data class YouTubeRadio(
     private val videoId: String? = null,
-    private val playlistId: String? = null,
-    private val playlistSetVideoId: String? = null,
-    private val parameters: String? = null
+    private var playlistId: String? = null,
+    private var playlistSetVideoId: String? = null,
+    private var parameters: String? = null
 ) {
     private var nextContinuation: String? = null
 
@@ -24,6 +24,10 @@ data class YouTubeRadio(
                 playlistSetVideoId = playlistSetVideoId,
                 continuation = nextContinuation
             )?.getOrNull()?.let { nextResult ->
+                playlistId = nextResult.playlistId
+                parameters = nextResult.params
+                playlistSetVideoId = nextResult.playlistSetVideoId
+
                 mediaItems = nextResult.items?.map(YouTube.Item.Song::asMediaItem)
                 nextResult.continuation?.takeUnless { nextContinuation == nextResult.continuation }
             }

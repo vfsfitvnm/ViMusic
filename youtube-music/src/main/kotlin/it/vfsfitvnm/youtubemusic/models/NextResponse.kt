@@ -26,7 +26,8 @@ data class NextResponse(
             ) {
                 @Serializable
                 data class Content(
-                    val playlistPanelVideoRenderer: PlaylistPanelVideoRenderer?
+                    val playlistPanelVideoRenderer: PlaylistPanelVideoRenderer?,
+                    val automixPreviewVideoRenderer: AutomixPreviewVideoRenderer?,
                 ) {
                     @Serializable
                     data class PlaylistPanelVideoRenderer(
@@ -39,6 +40,20 @@ data class NextResponse(
                         val videoId: String,
                         val playlistSetVideoId: String?,
                     )
+                    @Serializable
+                    data class AutomixPreviewVideoRenderer(
+                        val content: Content?
+                    ) {
+                        @Serializable
+                        data class Content(
+                            val automixPlaylistVideoRenderer: AutomixPlaylistVideoRenderer?
+                        ) {
+                            @Serializable
+                            data class AutomixPlaylistVideoRenderer(
+                                val navigationEndpoint: NavigationEndpoint
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -631,6 +631,9 @@ object YouTube {
                 .tabs
 
             NextResult(
+                playlistId = playlistId,
+                playlistSetVideoId = playlistSetVideoId,
+                params = params,
                 continuation = (tabs
                     .getOrNull(0)
                     ?.tabRenderer
@@ -652,6 +655,23 @@ object YouTube {
                     ?: body.continuationContents)
                     ?.playlistPanelRenderer
                     ?.contents
+                    ?.also {
+                        // TODO: we should parse the MusicResponsiveListItemRenderer menu so we can
+                        //  avoid an extra network request
+                        it.lastOrNull()
+                            ?.automixPreviewVideoRenderer
+                            ?.content
+                            ?.automixPlaylistVideoRenderer
+                            ?.navigationEndpoint
+                            ?.watchPlaylistEndpoint
+                            ?.let { endpoint ->
+                                return next(
+                                    videoId = videoId,
+                                    playlistId = endpoint.playlistId,
+                                    params = endpoint.params
+                                )
+                            }
+                    }
                     ?.mapNotNull { it.playlistPanelVideoRenderer }
                     ?.mapNotNull { renderer ->
                         Item.Song(
@@ -706,6 +726,9 @@ object YouTube {
 
     data class NextResult(
         val continuation: String?,
+        val playlistId: String?,
+        val params: String? = null,
+        val playlistSetVideoId: String? = null,
         val items: List<Item.Song>?,
         val lyrics: Lyrics?,
         val related: Related?,
@@ -997,4 +1020,3 @@ object YouTube {
         }
     }
 }
-
