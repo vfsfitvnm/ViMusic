@@ -57,9 +57,10 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Menu
 import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
-import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
-import it.vfsfitvnm.vimusic.ui.styling.DarkColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.PureBlackColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.DefaultDarkColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.onOverlayShimmer
 import it.vfsfitvnm.vimusic.utils.SynchronizedLyrics
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
@@ -88,7 +89,7 @@ fun Lyrics(
     nestedScrollConnectionProvider: () -> NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
-    val (_, typography) = LocalAppearance.current
+    val (colorPalette, typography) = LocalAppearance.current
     val context = LocalContext.current
 
     AnimatedVisibility(
@@ -194,7 +195,7 @@ fun Lyrics(
             ) {
                 BasicText(
                     text = "An error has occurred while fetching the ${if (isShowingSynchronizedLyrics) "synchronized " else ""}lyrics",
-                    style = typography.xs.center.medium.color(BlackColorPalette.text),
+                    style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
                         .padding(all = 8.dp)
@@ -211,7 +212,7 @@ fun Lyrics(
             ) {
                 BasicText(
                     text = "${if (isShowingSynchronizedLyrics) "Synchronized l" else "L"}yrics are not available for this song",
-                    style = typography.xs.center.medium.color(BlackColorPalette.text),
+                    style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
                         .padding(all = 8.dp)
@@ -227,6 +228,7 @@ fun Lyrics(
                 ) {
                     repeat(4) { index ->
                         TextPlaceholder(
+                            color = colorPalette.onOverlayShimmer,
                             modifier = Modifier
                                 .alpha(1f - index * 0.05f)
                         )
@@ -269,7 +271,7 @@ fun Lyrics(
                                 itemsIndexed(items = synchronizedLyrics.sentences) { index, sentence ->
                                     BasicText(
                                         text = sentence.second,
-                                        style = typography.xs.center.medium.color(if (index == synchronizedLyrics.index) BlackColorPalette.text else BlackColorPalette.textDisabled),
+                                        style = typography.xs.center.medium.color(if (index == synchronizedLyrics.index) PureBlackColorPalette.text else PureBlackColorPalette.textDisabled),
                                         modifier = Modifier
                                             .padding(vertical = 4.dp, horizontal = 32.dp)
                                     )
@@ -278,7 +280,7 @@ fun Lyrics(
                         } else {
                             BasicText(
                                 text = lyrics,
-                                style = typography.xs.center.medium.color(BlackColorPalette.text),
+                                style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                                 modifier = Modifier
                                     .nestedScroll(remember { nestedScrollConnectionProvider() })
                                     .verticalFadingEdge()
@@ -293,7 +295,7 @@ fun Lyrics(
                     Image(
                         painter = painterResource(R.drawable.ellipsis_horizontal),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(DarkColorPalette.text),
+                        colorFilter = ColorFilter.tint(DefaultDarkColorPalette.text),
                         modifier = Modifier
                             .padding(all = 4.dp)
                             .clickable {

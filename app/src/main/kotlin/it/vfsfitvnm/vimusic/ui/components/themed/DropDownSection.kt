@@ -35,7 +35,7 @@ fun DropDownSection(content: @Composable ColumnScope.() -> Unit) {
                 elevation = 2.dp,
                 shape = RoundedCornerShape(16.dp)
             )
-            .background(colorPalette.elevatedBackground)
+            .background(colorPalette.background1)
             .width(IntrinsicSize.Max),
         content = content
     )
@@ -60,14 +60,14 @@ fun DropDownTextItem(
     DropDownTextItem(
         text = text,
         textColor = if (isSelected) {
-            colorPalette.onPrimaryContainer
+            colorPalette.onAccent
         } else {
             colorPalette.textSecondary
         },
         backgroundColor = if (isSelected) {
-            colorPalette.primaryContainer
+            colorPalette.accent
         } else {
-            colorPalette.elevatedBackground
+            colorPalette.background1
         },
         onClick = onClick
     )
@@ -95,7 +95,7 @@ fun DropDownTextItem(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = onClick
             )
-            .background(backgroundColor ?: colorPalette.elevatedBackground)
+            .background(backgroundColor ?: colorPalette.background1)
             .fillMaxWidth()
             .widthIn(min = 124.dp, max = 248.dp)
             .padding(

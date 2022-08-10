@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -18,6 +20,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 @ExperimentalAnimationApi
 @Composable
 fun PlayerBottomSheet(
+    backgroundColorProvider: () -> Color,
     layoutState: BottomSheetState,
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
@@ -31,7 +34,7 @@ fun PlayerBottomSheet(
         collapsedContent = {
             Box(
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .drawBehind { drawRect(backgroundColorProvider()) }
                     .fillMaxSize()
             ) {
                 Image(
@@ -40,7 +43,6 @@ fun PlayerBottomSheet(
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .padding(all = 8.dp)
                         .size(18.dp)
                 )
 
@@ -52,7 +54,7 @@ fun PlayerBottomSheet(
             layoutState = layoutState,
             onGlobalRouteEmitted = onGlobalRouteEmitted,
             modifier = Modifier
-                .background(colorPalette.background)
+                .background(colorPalette.background0)
                 .fillMaxSize()
         )
     }

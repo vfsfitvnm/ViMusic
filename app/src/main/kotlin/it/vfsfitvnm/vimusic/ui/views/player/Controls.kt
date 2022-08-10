@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.ui.views.player
 
 import android.text.format.DateUtils
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,6 +41,7 @@ import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.rememberRepeatMode
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -70,7 +72,7 @@ fun Controls(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    val playPauseRoundness by animateDpAsState(if (shouldBePlaying) 32.dp else 16.dp)
+    val playPauseRoundness by animateDpAsState(if (shouldBePlaying) 32.dp else 16.dp, tween())
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -121,7 +123,7 @@ fun Controls(
                 scrubbingPosition = null
             },
             color = colorPalette.text,
-            backgroundColor = colorPalette.backgroundContainer,
+            backgroundColor = colorPalette.background2,
             shape = RoundedCornerShape(8.dp)
         )
 
@@ -166,7 +168,7 @@ fun Controls(
             Image(
                 painter = painterResource(R.drawable.heart),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(if (likedAt != null) colorPalette.red else colorPalette.textDisabled),
+                colorFilter = ColorFilter.tint(if (likedAt == null) colorPalette.background2 else colorPalette.favoritesIcon),
                 modifier = Modifier
                     .clickable {
                         query {
@@ -211,7 +213,7 @@ fun Controls(
                             binder.player.play()
                         }
                     }
-                    .background(color = colorPalette.backgroundContainer)
+                    .background(colorPalette.background2)
                     .size(64.dp)
             ) {
                 Image(

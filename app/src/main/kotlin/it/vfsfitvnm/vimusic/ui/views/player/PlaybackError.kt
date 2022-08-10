@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
+import it.vfsfitvnm.vimusic.ui.styling.PureBlackColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
@@ -64,7 +64,7 @@ fun PlaybackError(
         ) {
             BasicText(
                 text = remember { messageProvider() },
-                style = typography.xs.center.medium.color(BlackColorPalette.text),
+                style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                 modifier = Modifier
                     .background(Color.Black.copy(0.4f))
                     .padding(all = 8.dp)

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
@@ -34,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -47,6 +49,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
@@ -58,14 +61,21 @@ import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.colorPaletteOf
+import it.vfsfitvnm.vimusic.ui.styling.dynamicColorPaletteOf
+import it.vfsfitvnm.vimusic.ui.styling.typographyOf
 import it.vfsfitvnm.vimusic.ui.views.PlayerView
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
+import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.listener
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.rememberHapticFeedback
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val serviceConnection = object : ServiceConnection {
@@ -103,36 +113,84 @@ class MainActivity : ComponentActivity() {
         uri = intent?.data
 
         setContent {
+            val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
             var appearance by remember(isSystemInDarkTheme) {
                 with(preferences) {
+                    val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
                     val thumbnailRoundness =
                         getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
+                    val colorPalette =
+                        colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
+
                     mutableStateOf(
                         Appearance(
-                            colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
-                            typography = colorPaletteMode.typography(isSystemInDarkTheme),
+                            colorPalette = colorPalette,
+                            typography = typographyOf(colorPalette.text),
                             thumbnailShape = thumbnailRoundness.shape()
                         )
                     )
                 }
             }
 
-            DisposableEffect(isSystemInDarkTheme) {
+            DisposableEffect(binder, isSystemInDarkTheme) {
+                var bitmapListenerJob: Job? = null
+
+                fun setDynamicPalette(colorPaletteMode: ColorPaletteMode) {
+                    val isDark =
+                        colorPaletteMode == ColorPaletteMode.Dark || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+
+                    binder?.setBitmapListener { bitmap: Bitmap? ->
+                        if (bitmap == null) {
+                            val colorPalette =
+                                colorPaletteOf(ColorPaletteName.Dynamic, colorPaletteMode, isSystemInDarkTheme)
+
+                            appearance = appearance.copy(
+                                colorPalette = colorPalette,
+                                typography = typographyOf(colorPalette.text)
+                            )
+
+                            return@setBitmapListener
+                        }
+
+                        bitmapListenerJob = coroutineScope.launch(Dispatchers.IO) {
+                            dynamicColorPaletteOf(bitmap, isDark)?.let {
+                                appearance = appearance.copy(colorPalette = it, typography = typographyOf(it.text))
+                            }
+                        }
+                    }
+                }
+
                 val listener =
                     SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
                         when (key) {
-                            colorPaletteModeKey -> {
-                                val colorPaletteMode =
-                                    sharedPreferences.getEnum(key, ColorPaletteMode.System)
+                            colorPaletteNameKey, colorPaletteModeKey -> {
+                                val colorPaletteName =
+                                    sharedPreferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
-                                appearance = appearance.copy(
-                                    colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
-                                    typography = colorPaletteMode.typography(isSystemInDarkTheme),
-                                )
+                                val colorPaletteMode =
+                                    sharedPreferences.getEnum(colorPaletteModeKey, ColorPaletteMode.System)
+
+                                if (colorPaletteName == ColorPaletteName.Dynamic) {
+                                    setDynamicPalette(colorPaletteMode)
+                                } else {
+                                    bitmapListenerJob?.cancel()
+                                    binder?.setBitmapListener(null)
+
+                                    val colorPalette = colorPaletteOf(
+                                        colorPaletteName,
+                                        colorPaletteMode,
+                                        isSystemInDarkTheme
+                                    )
+
+                                    appearance = appearance.copy(
+                                        colorPalette = colorPalette,
+                                        typography = typographyOf(colorPalette.text),
+                                    )
+                                }
                             }
                             thumbnailRoundnessKey -> {
                                 val thumbnailRoundness =
@@ -148,7 +206,14 @@ class MainActivity : ComponentActivity() {
                 with(preferences) {
                     registerOnSharedPreferenceChangeListener(listener)
 
+                    val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                    if (colorPaletteName == ColorPaletteName.Dynamic) {
+                        setDynamicPalette(getEnum(colorPaletteModeKey, ColorPaletteMode.System))
+                    }
+
                     onDispose {
+                        bitmapListenerJob?.cancel()
+                        binder?.setBitmapListener(null)
                         unregisterOnSharedPreferenceChangeListener(listener)
                     }
                 }
@@ -193,7 +258,7 @@ class MainActivity : ComponentActivity() {
 
             SideEffect {
                 systemUiController.setSystemBarsColor(
-                    appearance.colorPalette.background,
+                    appearance.colorPalette.background1,
                     !appearance.colorPalette.isDark
                 )
             }
@@ -211,7 +276,7 @@ class MainActivity : ComponentActivity() {
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(appearance.colorPalette.background)
+                        .background(appearance.colorPalette.background0)
                 ) {
                     when (val uri = uri) {
                         null -> {

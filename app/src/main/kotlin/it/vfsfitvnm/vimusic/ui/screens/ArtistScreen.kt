@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.center
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +54,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
@@ -102,7 +104,7 @@ fun ArtistScreen(browseId: String) {
                 contentPadding = PaddingValues(bottom = 72.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {
@@ -213,7 +215,7 @@ fun ArtistScreen(browseId: String) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
-                            .background(colorPalette.background)
+                            .background(colorPalette.background0)
                             .zIndex(1f)
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
@@ -271,7 +273,7 @@ fun ArtistScreen(browseId: String) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
-                                .background(colorPalette.background)
+                                .background(colorPalette.background0)
                                 .fillMaxWidth()
                                 .padding(horizontal = 8.dp)
                                 .padding(top = 32.dp)
@@ -295,14 +297,14 @@ fun ArtistScreen(browseId: String) {
                                         .width(48.dp)
                                 ) {
                                     drawLine(
-                                        color = colorPalette.backgroundContainer,
+                                        color = colorPalette.background2,
                                         start = size.center.copy(y = 0f),
                                         end = size.center.copy(y = size.height),
                                         strokeWidth = 2.dp.toPx()
                                     )
 
                                     drawCircle(
-                                        color = colorPalette.backgroundContainer,
+                                        color = colorPalette.background2,
                                         center = size.center.copy(y = size.height),
                                         radius = 4.dp.toPx()
                                     )
@@ -340,7 +342,7 @@ private fun LoadingOrError(
     ) {
         Spacer(
             modifier = Modifier
-                .background(color = colorPalette.darkGray, shape = CircleShape)
+                .background(color = colorPalette.shimmer, shape = CircleShape)
                 .size(Dimensions.thumbnails.artist)
         )
 

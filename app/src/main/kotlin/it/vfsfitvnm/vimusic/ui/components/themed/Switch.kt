@@ -26,8 +26,8 @@ fun Switch(
 ) {
     val (colorPalette) = LocalAppearance.current
 
-    val backgroundColor by animateColorAsState(if (isChecked) colorPalette.primaryContainer else colorPalette.lightBackground)
-    val color by animateColorAsState(if (isChecked) colorPalette.onPrimaryContainer else colorPalette.textDisabled)
+    val backgroundColor by animateColorAsState(if (isChecked) colorPalette.accent else colorPalette.background1)
+    val color by animateColorAsState(if (isChecked) colorPalette.onAccent else colorPalette.textDisabled)
     val offset by animateDpAsState(if (isChecked) 36.dp else 12.dp)
 
     Spacer(

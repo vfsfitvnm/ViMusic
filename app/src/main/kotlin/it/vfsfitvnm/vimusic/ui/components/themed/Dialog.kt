@@ -153,9 +153,9 @@ fun TextFieldDialog(
             )
 
             ChunkyButton(
-                backgroundColor = colorPalette.primaryContainer,
+                backgroundColor = colorPalette.accent,
                 text = doneText,
-                textStyle = typography.xs.semiBold.color(colorPalette.onPrimaryContainer),
+                textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
                 shape = RoundedCornerShape(36.dp),
                 onClick = {
                     if (isTextInputValid(textFieldValue.text)) {
@@ -210,9 +210,9 @@ fun ConfirmationDialog(
             )
 
             ChunkyButton(
-                backgroundColor = colorPalette.primaryContainer,
+                backgroundColor = colorPalette.accent,
                 text = confirmText,
-                textStyle = typography.xs.semiBold.color(colorPalette.onPrimaryContainer),
+                textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
                 shape = RoundedCornerShape(36.dp),
                 onClick = {
                     onConfirm()
@@ -242,7 +242,7 @@ inline fun DefaultDialog(
             modifier = modifier
                 .padding(all = 48.dp)
                 .background(
-                    color = colorPalette.elevatedBackground,
+                    color = colorPalette.background1,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(horizontal = 24.dp, vertical = 16.dp),
@@ -268,7 +268,7 @@ inline fun <T> ValueSelectorDialog(
             modifier = modifier
                 .padding(all = 48.dp)
                 .background(
-                    color = colorPalette.elevatedBackground,
+                    color = colorPalette.background1,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(vertical = 16.dp),
@@ -305,12 +305,12 @@ inline fun <T> ValueSelectorDialog(
                                 modifier = Modifier
                                     .size(18.dp)
                                     .background(
-                                        color = colorPalette.primaryContainer,
+                                        color = colorPalette.accent,
                                         shape = CircleShape
                                     )
                             ) {
                                 drawCircle(
-                                    color = colorPalette.onPrimaryContainer,
+                                    color = colorPalette.onAccent,
                                     radius = 4.dp.toPx(),
                                     center = size.center,
                                     shadow = Shadow(

@@ -146,7 +146,7 @@ fun IntentUriScreen(uri: Uri) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {

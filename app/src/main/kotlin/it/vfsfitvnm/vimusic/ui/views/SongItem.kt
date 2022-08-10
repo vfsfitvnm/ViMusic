@@ -2,7 +2,6 @@ package it.vfsfitvnm.vimusic.ui.views
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,7 +46,6 @@ fun SongItem(
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color? = null,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
@@ -64,7 +61,6 @@ fun SongItem(
         onClick = onClick,
         onThumbnailContent = onThumbnailContent,
         trailingContent = trailingContent,
-        backgroundColor = backgroundColor,
         modifier = modifier,
     )
 }
@@ -78,7 +74,6 @@ fun SongItem(
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color? = null,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
@@ -90,7 +85,6 @@ fun SongItem(
         menuContent = menuContent,
         onClick = onClick,
         onThumbnailContent = onThumbnailContent,
-        backgroundColor = backgroundColor,
         trailingContent = trailingContent,
         modifier = modifier,
     )
@@ -107,7 +101,6 @@ fun SongItem(
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color? = null,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
@@ -134,7 +127,6 @@ fun SongItem(
             }
         },
         menuContent = menuContent,
-        backgroundColor = backgroundColor,
         trailingContent = trailingContent,
         modifier = modifier,
     )
@@ -151,11 +143,10 @@ fun SongItem(
     startContent: @Composable () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     val menuState = LocalMenuState.current
-    val (colorPalette, typography) = LocalAppearance.current
+    val (_, typography) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -171,7 +162,6 @@ fun SongItem(
             )
             .fillMaxWidth()
             .padding(vertical = Dimensions.itemsVerticalPadding)
-            .background(backgroundColor ?: colorPalette.background)
             .padding(start = 16.dp, end = if (trailingContent == null) 16.dp else 8.dp)
     ) {
         startContent()

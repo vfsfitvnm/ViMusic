@@ -59,6 +59,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.bold
@@ -110,7 +111,7 @@ fun AlbumScreen(browseId: String) {
                 state = lazyListState,
                 contentPadding = PaddingValues(bottom = 72.dp),
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {
@@ -377,7 +378,7 @@ private fun LoadingOrError(
         ) {
             Spacer(
                 modifier = Modifier
-                    .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
+                    .background(color = colorPalette.shimmer, shape = ThumbnailRoundness.shape)
                     .size(Dimensions.thumbnails.album)
             )
 

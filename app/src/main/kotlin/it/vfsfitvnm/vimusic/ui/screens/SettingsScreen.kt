@@ -76,7 +76,7 @@ fun SettingsScreen() {
 
             Column(
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(bottom = 72.dp)
@@ -137,10 +137,10 @@ fun SettingsScreen() {
                             Image(
                                 painter = painterResource(icon),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.background),
+                                colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .align(Alignment.Center)
-                                    .size(18.dp)
+                                    .size(16.dp)
                             )
                         }
 
@@ -166,11 +166,11 @@ fun SettingsScreen() {
                                     .size(8.dp)
                             ) {
                                 drawCircle(
-                                    color = colorPalette.red,
+                                    color = colorPalette.accent,
                                     center = size.center.copy(x = size.width),
                                     radius = 4.dp.toPx(),
                                     shadow = Shadow(
-                                        color = colorPalette.red,
+                                        color = colorPalette.accent,
                                         blurRadius = 4.dp.toPx()
                                     )
                                 )
@@ -180,7 +180,7 @@ fun SettingsScreen() {
                 }
 
                 Entry(
-                    color = colorPalette.magenta,
+                    color = colorPalette.background2,
                     icon = R.drawable.color_palette,
                     title = "Appearance",
                     description = "Change the colors and shapes",
@@ -188,7 +188,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.blue,
+                    color = colorPalette.background2,
                     icon = R.drawable.play,
                     title = "Player & Audio",
                     description = "Player and audio settings",
@@ -196,7 +196,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.cyan,
+                    color = colorPalette.background2,
                     icon = R.drawable.server,
                     title = "Cache",
                     description = "Manage the used space",
@@ -204,7 +204,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.orange,
+                    color = colorPalette.background2,
                     icon = R.drawable.save,
                     title = "Backup & Restore",
                     description = "Backup and restore the database",
@@ -212,7 +212,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.green,
+                    color = colorPalette.background2,
                     icon = R.drawable.shapes,
                     title = "Other",
                     description = "Advanced settings",
@@ -224,7 +224,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.magenta,
+                    color = colorPalette.background2,
                     icon = R.drawable.information,
                     title = "About",
                     description = "App version and social links",
@@ -241,6 +241,7 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
     selectedValue: T,
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     crossinline valueText: (T) -> String = Enum<T>::name
 ) {
     ValueSelectorSettingsEntry(
@@ -249,6 +250,7 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         values = enumValues<T>().toList(),
         onValueSelected = onValueSelected,
         modifier = modifier,
+        isEnabled = isEnabled,
         valueText = valueText
     )
 }
@@ -260,6 +262,7 @@ inline fun <T> ValueSelectorSettingsEntry(
     values: List<T>,
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     crossinline valueText: (T) -> String = { it.toString() }
 ) {
     var isShowingDialog by remember {
@@ -283,6 +286,7 @@ inline fun <T> ValueSelectorSettingsEntry(
         title = title,
         text = valueText(selectedValue),
         modifier = modifier,
+        isEnabled = isEnabled,
         onClick = {
             isShowingDialog = true
         }
@@ -428,7 +432,7 @@ fun SettingsEntryGroupText(
 
     BasicText(
         text = title.uppercase(),
-        style = typography.xxs.semiBold.copy(colorPalette.blue),
+        style = typography.xxs.semiBold.copy(colorPalette.accent),
         modifier = modifier
             .padding(start = 24.dp, top = 24.dp)
             .padding(horizontal = 32.dp)

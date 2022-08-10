@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 
+const val colorPaletteNameKey = "colorPaletteName"
 const val colorPaletteModeKey = "colorPaletteMode"
 const val thumbnailRoundnessKey = "thumbnailRoundness"
 const val coilDiskCacheMaxSizeKey = "coilDiskCacheMaxSize"

@@ -67,7 +67,7 @@ fun CacheSettingsScreen() {
 
             Column(
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(bottom = 72.dp)

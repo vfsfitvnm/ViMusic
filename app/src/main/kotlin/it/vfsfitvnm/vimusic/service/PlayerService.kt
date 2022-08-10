@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaMetadata
 import android.media.session.MediaSession
@@ -679,6 +680,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         var isLoadingRadio by mutableStateOf(false)
             private set
+
+        val lastBitmap: Bitmap?
+            get() = bitmapProvider.lastBitmap
+
+        fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
+            bitmapProvider.listener = listener
+        }
 
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
@@ -30,6 +31,7 @@ import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
+import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
@@ -45,6 +47,7 @@ fun AppearanceSettingsScreen() {
         host {
             val (colorPalette) = LocalAppearance.current
 
+            var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
             var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.System)
             var thumbnailRoundness by rememberPreference(
                 thumbnailRoundnessKey,
@@ -57,7 +60,7 @@ fun AppearanceSettingsScreen() {
 
             Column(
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     .padding(bottom = 72.dp)
@@ -82,8 +85,17 @@ fun AppearanceSettingsScreen() {
                 SettingsEntryGroupText(title = "COLORS")
 
                 EnumValueSelectorSettingsEntry(
+                    title = "Theme",
+                    selectedValue = colorPaletteName,
+                    onValueSelected = {
+                        colorPaletteName = it
+                    }
+                )
+
+                EnumValueSelectorSettingsEntry(
                     title = "Theme mode",
                     selectedValue = colorPaletteMode,
+                    isEnabled = colorPaletteName != ColorPaletteName.PureBlack,
                     onValueSelected = {
                         colorPaletteMode = it
                     }

@@ -47,8 +47,8 @@ import it.vfsfitvnm.vimusic.ui.components.MusicBars
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.screens.SmallSongItemShimmer
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
-import it.vfsfitvnm.vimusic.ui.styling.LightColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
@@ -91,6 +91,7 @@ fun CurrentPlaylistView(
                 .nestedScroll(remember {
                     layoutState.nestedScrollConnection(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
                 })
+                .background(colorPalette.background1)
         ) {
             items(
                 items = windows,
@@ -137,7 +138,7 @@ fun CurrentPlaylistView(
                             ) {
                                 if (shouldBePlaying) {
                                     MusicBars(
-                                        color = LightColorPalette.background,
+                                        color = colorPalette.onOverlay,
                                         modifier = Modifier
                                             .height(24.dp)
                                     )
@@ -145,7 +146,7 @@ fun CurrentPlaylistView(
                                     Image(
                                         painter = painterResource(R.drawable.play),
                                         contentDescription = null,
-                                        colorFilter = ColorFilter.tint(LightColorPalette.background),
+                                        colorFilter = ColorFilter.tint(colorPalette.onOverlay),
                                         modifier = Modifier
                                             .size(24.dp)
                                     )
@@ -164,7 +165,6 @@ fun CurrentPlaylistView(
                                 .size(20.dp)
                         )
                     },
-                    backgroundColor = colorPalette.background,
                     modifier = Modifier
 //                        .animateItemPlacement()
                         .verticalDragAfterLongPressToReorder(
@@ -211,7 +211,7 @@ fun CurrentPlaylistView(
                     onClick = layoutState::collapseSoft
                 )
                 .height(64.dp)
-                .background(colorPalette.elevatedBackground)
+                .background(colorPalette.background2)
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
                 .align(Alignment.BottomCenter)

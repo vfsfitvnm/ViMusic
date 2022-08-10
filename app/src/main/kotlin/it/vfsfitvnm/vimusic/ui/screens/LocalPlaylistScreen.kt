@@ -128,7 +128,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                 state = lazyListState,
                 contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {

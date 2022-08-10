@@ -44,7 +44,7 @@ inline fun Menu(
             .verticalScroll(rememberScrollState())
             .fillMaxWidth()
             .background(
-                color = colorPalette.elevatedBackground,
+                color = colorPalette.background1,
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
             .padding(top = 8.dp)

@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -59,6 +60,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.center
@@ -109,7 +111,7 @@ fun PlaylistScreen(browseId: String) {
                 state = lazyListState,
                 contentPadding = PaddingValues(bottom = 72.dp),
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {
@@ -396,7 +398,7 @@ private fun LoadingOrError(
         ) {
             Spacer(
                 modifier = Modifier
-                    .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
+                    .background(color = colorPalette.shimmer, shape = ThumbnailRoundness.shape)
                     .size(Dimensions.thumbnails.playlist)
             )
 
@@ -434,7 +436,7 @@ private fun LoadingOrError(
                     Spacer(
                         modifier = Modifier
                             .size(8.dp)
-                            .background(color = colorPalette.darkGray, shape = CircleShape)
+                            .background(color = Color.Black, shape = CircleShape)
                     )
                 }
 

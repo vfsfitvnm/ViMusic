@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
@@ -194,7 +195,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                         }
                                         .padding(horizontal = 14.dp, vertical = 6.dp)
                                         .background(
-                                            color = colorPalette.lightBackground,
+                                            color = colorPalette.background1,
                                             shape = CircleShape
                                         )
                                         .size(28.dp)
@@ -228,13 +229,13 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                 }
                             )
                             .fillMaxWidth()
-                            .background(colorPalette.lightBackground)
+                            .background(colorPalette.background1)
                             .padding(vertical = 16.dp, horizontal = 8.dp)
                     ) {
                         Image(
                             painter = painterResource(R.drawable.link),
                             contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.darkGray),
+                            colorFilter = ColorFilter.tint( Color.Black),
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .size(20.dp)
@@ -262,17 +263,16 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                             modifier = Modifier
                                 .clickable(
                                     indication = rememberRipple(bounded = true),
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) {
-                                    onSearch(searchQuery.query)
-                                }
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onClick = { onSearch(searchQuery.query) }
+                                )
                                 .fillMaxWidth()
                                 .padding(vertical = 16.dp, horizontal = 8.dp)
                         ) {
                             Image(
                                 painter = painterResource(R.drawable.time),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.darkGray),
+                                colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                                 modifier = Modifier
                                     .padding(horizontal = 8.dp)
                                     .size(20.dp)
@@ -289,7 +289,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                             Image(
                                 painter = painterResource(R.drawable.close),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.darkGray),
+                                colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                                 modifier = Modifier
                                     .clickable {
                                         query {
@@ -303,7 +303,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                             Image(
                                 painter = painterResource(R.drawable.arrow_forward),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.darkGray),
+                                colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                                 modifier = Modifier
                                     .clickable {
                                         textFieldValue = TextFieldValue(
@@ -325,10 +325,9 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                 modifier = Modifier
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() }
-                                    ) {
-                                        onSearch(suggestion)
-                                    }
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onClick = { onSearch(suggestion) }
+                                    )
                                     .fillMaxWidth()
                                     .padding(vertical = 16.dp, horizontal = 8.dp)
                             ) {
@@ -346,11 +345,10 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                         .weight(1f)
                                 )
 
-
                                 Image(
                                     painter = painterResource(R.drawable.arrow_forward),
                                     contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette.darkGray),
+                                    colorFilter = ColorFilter.tint(Color.Black),
                                     modifier = Modifier
                                         .clickable {
                                             textFieldValue = TextFieldValue(

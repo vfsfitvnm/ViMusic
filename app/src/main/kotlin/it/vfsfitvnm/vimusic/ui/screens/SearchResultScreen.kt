@@ -54,6 +54,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
@@ -129,7 +130,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {
@@ -200,9 +201,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             ),
                         ),
                         value = searchFilter,
-                        selectedBackgroundColor = colorPalette.primaryContainer,
-                        unselectedBackgroundColor = colorPalette.lightBackground,
-                        selectedTextStyle = typography.xs.medium.color(colorPalette.onPrimaryContainer),
+                        selectedBackgroundColor = colorPalette.accent,
+                        unselectedBackgroundColor = colorPalette.background1,
+                        selectedTextStyle = typography.xs.medium.color(colorPalette.onAccent),
                         unselectedTextStyle = typography.xs.medium,
                         shape = RoundedCornerShape(36.dp),
                         onValueChanged = {
@@ -281,7 +282,7 @@ fun SmallSongItemShimmer(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier
 ) {
-    val (colorPalette) = LocalAppearance.current
+    val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -290,7 +291,7 @@ fun SmallSongItemShimmer(
     ) {
         Spacer(
             modifier = Modifier
-                .background(color = colorPalette.darkGray, shape = ThumbnailRoundness.shape)
+                .background(color = colorPalette.shimmer, shape = thumbnailShape)
                 .size(thumbnailSizeDp)
         )
 
@@ -315,7 +316,7 @@ fun SmallArtistItemShimmer(
     ) {
         Spacer(
             modifier = Modifier
-                .background(color = colorPalette.darkGray, shape = CircleShape)
+                .background(color = colorPalette.shimmer, shape = CircleShape)
                 .size(thumbnailSizeDp)
         )
 

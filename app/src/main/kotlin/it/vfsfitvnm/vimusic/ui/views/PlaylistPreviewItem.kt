@@ -91,7 +91,7 @@ fun PlaylistPreviewItem(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .clip(thumbnailShape)
-                                .border(width = 1.dp, color = colorPalette.lightBackground)
+                                .border(width = 1.dp, color = colorPalette.background1)
                                 .align(alignment)
                                 .size(thumbnailSize)
                         )
@@ -143,7 +143,7 @@ fun PlaylistItem(
     Box(
         modifier = modifier
             .clip(thumbnailShape)
-            .background(colorPalette.lightBackground)
+            .background(colorPalette.background1)
             .size(thumbnailSize * 2)
     ) {
         Box(

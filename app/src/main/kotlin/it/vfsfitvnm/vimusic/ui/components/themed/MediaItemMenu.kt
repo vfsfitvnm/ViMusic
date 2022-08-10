@@ -536,9 +536,9 @@ fun MediaItemMenu(
                                         )
 
                                         ChunkyButton(
-                                            backgroundColor = colorPalette.primaryContainer,
+                                            backgroundColor = colorPalette.accent,
                                             text = "Set",
-                                            textStyle = typography.xs.semiBold.color(colorPalette.onPrimaryContainer),
+                                            textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
                                             shape = RoundedCornerShape(36.dp),
                                             isEnabled = hours > 0 || minutes > 0,
                                             onClick = {

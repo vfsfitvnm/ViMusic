@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ColorFilter
@@ -49,6 +50,7 @@ import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.collapsedPlayerProgressBar
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.player.Controls
 import it.vfsfitvnm.vimusic.ui.views.player.Thumbnail
@@ -70,7 +72,7 @@ fun PlayerView(
 ) {
     val menuState = LocalMenuState.current
 
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
@@ -96,30 +98,32 @@ fun PlayerView(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(colorPalette.elevatedBackground)
+                    .background(colorPalette.background1)
                     .fillMaxSize()
                     .drawBehind {
                         val progress =
                             positionAndDuration.first.toFloat() / positionAndDuration.second.absoluteValue
-                        val offset = Dimensions.thumbnails.player.songPreview.toPx()
 
                         drawLine(
-                            color = colorPalette.text,
-                            start = Offset(x = offset, y = 1.dp.toPx()),
-                            end = Offset(
-                                x = ((size.width - offset) * progress) + offset,
-                                y = 1.dp.toPx()
-                            ),
+                            color = colorPalette.collapsedPlayerProgressBar,
+                            start = Offset(x = 0f, y = 1.dp.toPx()),
+                            end = Offset(x = size.width * progress, y = 1.dp.toPx()),
                             strokeWidth = 2.dp.toPx()
                         )
                     }
             ) {
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
+
                 AsyncImage(
                     model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(Dimensions.thumbnails.player.songPreview)
+                        .clip(thumbnailShape)
+                        .size(48.dp)
                 )
 
                 Column(
@@ -206,7 +210,7 @@ fun PlayerView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(bottom = 64.dp)
-                        .background(colorPalette.background)
+                        .background(colorPalette.background1)
                         .padding(top = 16.dp)
                 ) {
                     Box(
@@ -242,7 +246,7 @@ fun PlayerView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .padding(bottom = 64.dp)
-                        .background(colorPalette.background)
+                        .background(colorPalette.background1)
                         .padding(top = 32.dp)
                 ) {
                     Box(
@@ -355,6 +359,7 @@ fun PlayerView(
                     )
                 }
             },
+            backgroundColorProvider = { colorPalette.background2 },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
         )
