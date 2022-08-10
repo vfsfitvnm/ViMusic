@@ -3,7 +3,7 @@
 * Background playback w/ notification
 * Search for songs, albums, artists, videos and playlists
 * Automatic cache system for offline playback and saving resources
-* Show and edit songs lyrics
+* Fetch and edit lyrics and synchronized lyrics
 * Open YouTube/YouTube Music links
 * Local playlists management
 * Queue management
