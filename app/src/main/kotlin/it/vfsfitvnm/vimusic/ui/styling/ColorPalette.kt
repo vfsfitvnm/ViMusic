@@ -105,9 +105,7 @@ private fun dynamicColorPaletteOf(hsl: FloatArray, isDark: Boolean): ColorPalett
         background0 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.1f), if (isDark) 0.10f else 0.925f),
         background1 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.3f), if (isDark) 0.15f else 0.90f),
         background2 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.4f), if (isDark) 0.2f else 0.85f),
-        accent = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.5f), 0.5f),
-//        background3 = Color.hsl(hue, saturation, if (isDark) 0.20f else 0.85f),
-//        background4 = Color.hsl(hue, saturation, if (isDark) 0.25f else 0.75f),
+        accent = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.5f), 0.5f)
     )
 }
 
