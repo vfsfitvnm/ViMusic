@@ -11,16 +11,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
@@ -54,8 +52,6 @@ import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
 import it.vfsfitvnm.vimusic.utils.rememberWindows
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.shuffleQueue
 
 @ExperimentalAnimationApi
@@ -202,8 +198,7 @@ fun CurrentPlaylistView(
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
             modifier = Modifier
                 .clickable(
                     indication = rememberRipple(bounded = true),
@@ -216,33 +211,23 @@ fun CurrentPlaylistView(
                 .padding(horizontal = 8.dp)
                 .align(Alignment.BottomCenter)
         ) {
-            Spacer(
+            BasicText(
+                text = "${windows.size} songs",
+                style = typography.xxs.medium,
                 modifier = Modifier
+                    .padding(start = 4.dp)
+                    .background(color = colorPalette.background1, shape = RoundedCornerShape(16.dp))
+                    .align(Alignment.CenterStart)
                     .padding(all = 8.dp)
-                    .size(22.dp)
             )
 
-            Spacer(
+            Image(
+                painter = painterResource(R.drawable.chevron_down),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
-                    .weight(1f)
-            )
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                BasicText(
-                    text = "Queue",
-                    style = typography.s.medium,
-                    modifier = Modifier
-                )
-                BasicText(
-                    text = "${windows.size} songs",
-                    style = typography.xxs.semiBold.secondary,
-                    modifier = Modifier
-                )
-            }
-
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
+                    .align(Alignment.Center)
+                    .size(18.dp)
             )
 
             Image(
@@ -250,14 +235,11 @@ fun CurrentPlaylistView(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
+                    .padding(end = 2.dp)
                     .clickable(onClick = binder.player::shuffleQueue)
+                    .align(Alignment.CenterEnd)
                     .padding(all = 8.dp)
                     .size(20.dp)
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .width(2.dp)
             )
         }
     }
