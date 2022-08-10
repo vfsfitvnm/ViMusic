@@ -30,7 +30,6 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -76,6 +75,7 @@ import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val serviceConnection = object : ServiceConnection {
@@ -115,6 +115,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
+            val systemUiController = rememberSystemUiController()
 
             var appearance by remember(isSystemInDarkTheme) {
                 with(preferences) {
@@ -125,6 +126,8 @@ class MainActivity : ComponentActivity() {
 
                     val colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
+
+                    systemUiController.setSystemBarsColor(colorPalette.background0)
 
                     mutableStateOf(
                         Appearance(
@@ -148,6 +151,8 @@ class MainActivity : ComponentActivity() {
                             val colorPalette =
                                 colorPaletteOf(ColorPaletteName.Dynamic, colorPaletteMode, isSystemInDarkTheme)
 
+                            systemUiController.setSystemBarsColor(colorPalette.background0)
+
                             appearance = appearance.copy(
                                 colorPalette = colorPalette,
                                 typography = typographyOf(colorPalette.text)
@@ -158,6 +163,9 @@ class MainActivity : ComponentActivity() {
 
                         bitmapListenerJob = coroutineScope.launch(Dispatchers.IO) {
                             dynamicColorPaletteOf(bitmap, isDark)?.let {
+                                withContext(Dispatchers.Main) {
+                                    systemUiController.setSystemBarsColor(it.background0)
+                                }
                                 appearance = appearance.copy(colorPalette = it, typography = typographyOf(it.text))
                             }
                         }
@@ -185,6 +193,8 @@ class MainActivity : ComponentActivity() {
                                         colorPaletteMode,
                                         isSystemInDarkTheme
                                     )
+
+                                    systemUiController.setSystemBarsColor(colorPalette.background0)
 
                                     appearance = appearance.copy(
                                         colorPalette = colorPalette,
@@ -219,8 +229,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            val systemUiController = rememberSystemUiController()
-
             val rippleTheme =
                 remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
                     object : RippleTheme {
@@ -253,13 +261,6 @@ class MainActivity : ComponentActivity() {
                         Color.White.copy(alpha = 0.50f),
                         Color.Unspecified.copy(alpha = 0.25f),
                     ),
-                )
-            }
-
-            SideEffect {
-                systemUiController.setSystemBarsColor(
-                    appearance.colorPalette.background1,
-                    !appearance.colorPalette.isDark
                 )
             }
 
