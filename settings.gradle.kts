@@ -25,21 +25,21 @@ dependencyResolutionManagement {
 
             library("compose-shimmer", "com.valentinilk.shimmer", "compose-shimmer").version("1.0.3")
 
-            library("compose-activity", "androidx.activity", "activity-compose").version("1.5.0-rc01")
+            library("compose-activity", "androidx.activity", "activity-compose").version("1.5.1")
 
             library("compose-coil", "io.coil-kt", "coil-compose").version("2.1.0")
 
-            version("accompanist", "0.24.12-rc")
+            version("accompanist", "0.26.0-alpha")
             library("accompanist-systemuicontroller", "com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
 
             version("room", "2.5.0-alpha02")
             library("room", "androidx.room", "room-ktx").versionRef("room")
             library("room-compiler", "androidx.room", "room-compiler").versionRef("room")
 
-            version("media3", "1.0.0-beta01")
+            version("media3", "1.0.0-beta02")
             library("exoplayer", "androidx.media3", "media3-exoplayer").versionRef("media3")
 
-            version("ktor", "2.0.2")
+            version("ktor", "2.0.3")
             library("ktor-client-core", "io.ktor", "ktor-client-core").versionRef("ktor")
             library("ktor-client-cio", "io.ktor", "ktor-client-cio").versionRef("ktor")
             library("ktor-client-content-negotiation", "io.ktor", "ktor-client-content-negotiation").versionRef("ktor")
