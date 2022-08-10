@@ -166,9 +166,9 @@ fun Controls(
                 .fillMaxWidth()
         ) {
             Image(
-                painter = painterResource(R.drawable.heart),
+                painter = painterResource(if (likedAt == null) R.drawable.heart_outline else R.drawable.heart),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(if (likedAt == null) colorPalette.background2 else colorPalette.favoritesIcon),
+                colorFilter = ColorFilter.tint(colorPalette.favoritesIcon),
                 modifier = Modifier
                     .clickable {
                         query {
