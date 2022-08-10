@@ -1,25 +1,41 @@
 package it.vfsfitvnm.youtubemusic
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.compression.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import it.vfsfitvnm.youtubemusic.models.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.BrowserUserAgent
+import io.ktor.client.plugins.compression.ContentEncoding
+import io.ktor.client.plugins.compression.brotli
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
+import it.vfsfitvnm.youtubemusic.models.BrowseResponse
+import it.vfsfitvnm.youtubemusic.models.ContinuationResponse
+import it.vfsfitvnm.youtubemusic.models.GetQueueResponse
+import it.vfsfitvnm.youtubemusic.models.GetSearchSuggestionsResponse
+import it.vfsfitvnm.youtubemusic.models.MusicResponsiveListItemRenderer
+import it.vfsfitvnm.youtubemusic.models.MusicShelfRenderer
+import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.youtubemusic.models.NextResponse
+import it.vfsfitvnm.youtubemusic.models.PlayerResponse
+import it.vfsfitvnm.youtubemusic.models.Runs
+import it.vfsfitvnm.youtubemusic.models.SearchResponse
+import it.vfsfitvnm.youtubemusic.models.ThumbnailRenderer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-
 
 object YouTube {
     private const val Key = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 
     @OptIn(ExperimentalSerializationApi::class)
-    val client = HttpClient(CIO) {
+    val client = HttpClient(OkHttp) {
         BrowserUserAgent()
 
         expectSuccess = true
