@@ -38,7 +38,7 @@ fun PlayerBottomSheet(
                     .fillMaxSize()
             ) {
                 Image(
-                    painter = painterResource(R.drawable.chevron_up),
+                    painter = painterResource(R.drawable.playlist),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
