@@ -21,8 +21,17 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
@@ -41,10 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
@@ -107,6 +117,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         val expandPlayerBottomSheet =
             intent?.extras?.getBoolean("expandPlayerBottomSheet", false) ?: false
 
@@ -115,7 +127,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
-            val systemUiController = rememberSystemUiController()
 
             var appearance by remember(isSystemInDarkTheme) {
                 with(preferences) {
@@ -127,7 +138,7 @@ class MainActivity : ComponentActivity() {
                     val colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
 
-                    systemUiController.setSystemBarsColor(colorPalette.background0)
+                    setSystemBarAppearance(colorPalette.isDark)
 
                     mutableStateOf(
                         Appearance(
@@ -151,7 +162,7 @@ class MainActivity : ComponentActivity() {
                             val colorPalette =
                                 colorPaletteOf(ColorPaletteName.Dynamic, colorPaletteMode, isSystemInDarkTheme)
 
-                            systemUiController.setSystemBarsColor(colorPalette.background0)
+                            setSystemBarAppearance(colorPalette.isDark)
 
                             appearance = appearance.copy(
                                 colorPalette = colorPalette,
@@ -164,7 +175,7 @@ class MainActivity : ComponentActivity() {
                         bitmapListenerJob = coroutineScope.launch(Dispatchers.IO) {
                             dynamicColorPaletteOf(bitmap, isDark)?.let {
                                 withContext(Dispatchers.Main) {
-                                    systemUiController.setSystemBarsColor(it.background0)
+                                    setSystemBarAppearance(it.isDark)
                                 }
                                 appearance = appearance.copy(colorPalette = it, typography = typographyOf(it.text))
                             }
@@ -194,7 +205,7 @@ class MainActivity : ComponentActivity() {
                                         isSystemInDarkTheme
                                     )
 
-                                    systemUiController.setSystemBarsColor(colorPalette.background0)
+                                    setSystemBarAppearance(colorPalette.isDark)
 
                                     appearance = appearance.copy(
                                         colorPalette = colorPalette,
@@ -281,9 +292,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     when (val uri = uri) {
                         null -> {
+                            val paddingValues = WindowInsets.navigationBars.asPaddingValues()
+
                             val playerBottomSheetState = rememberBottomSheetState(
                                 dismissedBound = 0.dp,
-                                collapsedBound = Dimensions.collapsedPlayer,
+                                collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
                                 expandedBound = maxHeight,
                                 isExpanded = expandPlayerBottomSheet
                             )
@@ -321,6 +334,13 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         uri = intent?.data
+    }
+
+    private fun setSystemBarAppearance(isDark: Boolean) {
+        with(WindowCompat.getInsetsController(window, window.decorView.rootView)) {
+            isAppearanceLightStatusBars = !isDark
+            isAppearanceLightNavigationBars = !isDark
+        }
     }
 }
 

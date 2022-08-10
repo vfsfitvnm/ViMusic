@@ -14,11 +14,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -44,6 +50,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -76,6 +83,8 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
 
         host {
             val (colorPalette, typography) = LocalAppearance.current
+            val layoutDirection = LocalLayoutDirection.current
+            val paddingValues = WindowInsets.systemBars.asPaddingValues()
 
             var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
                 mutableStateOf(
@@ -109,7 +118,6 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                 }
             }.collectAsState(initial = null, context = Dispatchers.IO)
 
-
             val isOpenableUrl = remember(textFieldValue.text) {
                 listOf(
                     "https://www.youtube.com/watch?",
@@ -130,6 +138,12 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .imePadding()
+                    .padding(
+                        start = paddingValues.calculateStartPadding(layoutDirection),
+                        end = paddingValues.calculateEndPadding(layoutDirection),
+                        top = paddingValues.calculateTopPadding(),
+                    )
             ) {
                 TopAppBar(
                     modifier = Modifier
@@ -252,7 +266,9 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                 }
 
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = Dimensions.collapsedPlayer)
+                    contentPadding = PaddingValues(
+                        bottom = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding()
+                    )
                 ) {
                     items(
                         items = history ?: emptyList(),

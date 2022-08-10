@@ -15,9 +15,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,6 +43,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -76,6 +84,7 @@ fun PlayerView(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
+    val layoutDirection = LocalLayoutDirection.current
 
     binder?.player ?: return
 
@@ -96,10 +105,11 @@ fun PlayerView(
         collapsedContent = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier
                     .background(colorPalette.background1)
                     .fillMaxSize()
+                    .navigationBarsPadding()
                     .drawBehind {
                         val progress =
                             positionAndDuration.first.toFloat() / positionAndDuration.second.absoluteValue
@@ -117,18 +127,25 @@ fun PlayerView(
                         .width(2.dp)
                 )
 
-                AsyncImage(
-                    model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .clip(thumbnailShape)
-                        .size(48.dp)
-                )
+                        .height(Dimensions.collapsedPlayer)
+                ) {
+                    AsyncImage(
+                        model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(thumbnailShape)
+                            .size(48.dp)
+                    )
+                }
 
                 Column(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
+                        .height(Dimensions.collapsedPlayer)
                         .weight(1f)
                 ) {
                     BasicText(
@@ -150,43 +167,50 @@ fun PlayerView(
                         .width(2.dp)
                 )
 
-                Box(
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clickable {
-                            if (shouldBePlaying) {
-                                binder.player.pause()
-                            } else {
-                                if (binder.player.playbackState == Player.STATE_IDLE) {
-                                    binder.player.prepare()
+                        .height(Dimensions.collapsedPlayer)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clickable {
+                                if (shouldBePlaying) {
+                                    binder.player.pause()
+                                } else {
+                                    if (binder.player.playbackState == Player.STATE_IDLE) {
+                                        binder.player.prepare()
+                                    }
+                                    binder.player.play()
                                 }
-                                binder.player.play()
                             }
-                        }
-                        .padding(horizontal = 4.dp, vertical = 8.dp)
-                ) {
-                    Image(
-                        painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(20.dp)
-                    )
-                }
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(20.dp)
+                        )
+                    }
 
-                Box(
-                    modifier = Modifier
-                        .clickable(onClick = binder.player::seekToNext)
-                        .padding(horizontal = 4.dp, vertical = 8.dp)
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.play_skip_forward),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(20.dp)
-                    )
+                            .clickable(onClick = binder.player::seekToNext)
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.play_skip_forward),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.text),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(20.dp)
+                        )
+                    }
                 }
 
                 Spacer(
@@ -204,14 +228,21 @@ fun PlayerView(
             mutableStateOf(false)
         }
 
+        val paddingValues = WindowInsets.navigationBars.asPaddingValues()
+        val playerBottomSheetState = rememberBottomSheetState(64.dp + paddingValues.calculateBottomPadding(), layoutState.expandedBound)
+
         when (configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(bottom = 64.dp)
                         .background(colorPalette.background1)
-                        .padding(top = 16.dp)
+                        .padding(
+                            top = 32.dp + paddingValues.calculateTopPadding(),
+                            start = paddingValues.calculateStartPadding(layoutDirection),
+                            end = paddingValues.calculateEndPadding(layoutDirection),
+                            bottom = playerBottomSheetState.collapsedBound
+                        )
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -245,9 +276,13 @@ fun PlayerView(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(bottom = 64.dp)
                         .background(colorPalette.background1)
-                        .padding(top = 32.dp)
+                        .padding(
+                            top = 54.dp + paddingValues.calculateTopPadding(),
+                            start = paddingValues.calculateStartPadding(layoutDirection),
+                            end = paddingValues.calculateEndPadding(layoutDirection),
+                            bottom = playerBottomSheetState.collapsedBound
+                        )
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -279,7 +314,7 @@ fun PlayerView(
         }
 
         PlayerBottomSheet(
-            layoutState = rememberBottomSheetState(64.dp, layoutState.expandedBound),
+            layoutState = playerBottomSheetState,
             onGlobalRouteEmitted = layoutState::collapseSoft,
             content = {
                 Row(

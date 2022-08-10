@@ -36,6 +36,7 @@ fun PlayerBottomSheet(
                 modifier = Modifier
                     .drawBehind { drawRect(backgroundColorProvider()) }
                     .fillMaxSize()
+                    .navigationBarsPadding()
             ) {
                 Image(
                     painter = painterResource(R.drawable.playlist),

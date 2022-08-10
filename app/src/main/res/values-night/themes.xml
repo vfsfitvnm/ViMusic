@@ -7,8 +7,9 @@
         <item name="android:windowMinWidthMajor">100%</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">#14161f</item>
-        <item name="android:statusBarColor">#14161f</item>
-        <item name="android:navigationBarColor">#14161f</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <style name="Theme.ViMusic.NoActionBar" parent="Theme.ViMusic">

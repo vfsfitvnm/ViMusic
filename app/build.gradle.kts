@@ -85,7 +85,6 @@ dependencies {
     implementation(libs.compose.shimmer)
     implementation(libs.compose.coil)
 
-    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.palette)
 
     implementation(libs.exoplayer)

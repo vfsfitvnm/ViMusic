@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.views
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,11 +9,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -48,6 +49,7 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.add
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
@@ -78,16 +80,20 @@ fun CurrentPlaylistView(
 
     val reorderingState = rememberReorderingState(windows)
 
-    Box {
+    val paddingValues = WindowInsets.systemBars.asPaddingValues()
+    val bottomPadding = paddingValues.calculateBottomPadding()
+
+    Column {
         LazyColumn(
             state = lazyListState,
-            contentPadding = PaddingValues(top = 16.dp, bottom = 64.dp),
+            contentPadding = paddingValues.add(bottom = -bottomPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .nestedScroll(remember {
                     layoutState.nestedScrollConnection(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
                 })
                 .background(colorPalette.background1)
+                .weight(1f)
         ) {
             items(
                 items = windows,
@@ -118,7 +124,7 @@ fun CurrentPlaylistView(
                         )
                     },
                     onThumbnailContent = {
-                        AnimatedVisibility(
+                        androidx.compose.animation.AnimatedVisibility(
                             visible = isPlayingThisMediaItem,
                             enter = fadeIn(),
                             exit = fadeOut(),
@@ -205,11 +211,11 @@ fun CurrentPlaylistView(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = layoutState::collapseSoft
                 )
-                .height(64.dp)
+                .height(64.dp + bottomPadding)
                 .background(colorPalette.background2)
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
-                .align(Alignment.BottomCenter)
+                .padding(bottom = bottomPadding)
         ) {
             BasicText(
                 text = "${windows.size} songs",

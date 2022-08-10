@@ -29,9 +29,6 @@ dependencyResolutionManagement {
 
             library("compose-coil", "io.coil-kt", "coil-compose").version("2.1.0")
 
-            version("accompanist", "0.26.0-alpha")
-            library("accompanist-systemuicontroller", "com.google.accompanist", "accompanist-systemuicontroller").versionRef("accompanist")
-
             version("room", "2.5.0-alpha02")
             library("room", "androidx.room", "room-ktx").versionRef("room")
             library("room-compiler", "androidx.room", "room-compiler").versionRef("room")

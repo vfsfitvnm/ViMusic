@@ -22,6 +22,7 @@ import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 
@@ -79,7 +80,8 @@ fun SettingsScreen() {
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = 72.dp)
+                    .padding(bottom = Dimensions.collapsedPlayer)
+                    .systemBarsPadding()
             ) {
                 TopAppBar(
                     modifier = Modifier
