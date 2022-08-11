@@ -22,6 +22,7 @@ import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
+import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 import androidx.compose.ui.res.stringResource
@@ -77,10 +78,11 @@ fun SettingsScreen() {
 
             Column(
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = 72.dp)
+                    .padding(bottom = Dimensions.collapsedPlayer)
+                    .systemBarsPadding()
             ) {
                 TopAppBar(
                     modifier = Modifier
@@ -138,10 +140,10 @@ fun SettingsScreen() {
                             Image(
                                 painter = painterResource(icon),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.background),
+                                colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .align(Alignment.Center)
-                                    .size(18.dp)
+                                    .size(16.dp)
                             )
                         }
 
@@ -167,11 +169,11 @@ fun SettingsScreen() {
                                     .size(8.dp)
                             ) {
                                 drawCircle(
-                                    color = colorPalette.red,
+                                    color = colorPalette.accent,
                                     center = size.center.copy(x = size.width),
                                     radius = 4.dp.toPx(),
                                     shadow = Shadow(
-                                        color = colorPalette.red,
+                                        color = colorPalette.accent,
                                         blurRadius = 4.dp.toPx()
                                     )
                                 )
@@ -181,7 +183,7 @@ fun SettingsScreen() {
                 }
 
                 Entry(
-                    color = colorPalette.magenta,
+                    color = colorPalette.background2,
                     icon = R.drawable.color_palette,
                     title = stringResource(R.string.appearance),
                     description = stringResource(R.string.appearance_desc),
@@ -189,7 +191,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.blue,
+                    color = colorPalette.background2,
                     icon = R.drawable.play,
                     title = stringResource(R.string.player_audio),
                     description = stringResource(R.string.player_desc),
@@ -197,7 +199,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.cyan,
+                    color = colorPalette.background2,
                     icon = R.drawable.server,
                     title = stringResource(R.string.cache),
                     description = stringResource(R.string.cache_desc),
@@ -205,7 +207,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.orange,
+                    color = colorPalette.background2,
                     icon = R.drawable.save,
                     title = stringResource(R.string.backup_restore),
                     description = stringResource(R.string.backup_desc),
@@ -213,7 +215,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.green,
+                    color = colorPalette.background2,
                     icon = R.drawable.shapes,
                     title = stringResource(R.string.other),
                     description = stringResource(R.string.other_desc),
@@ -225,7 +227,7 @@ fun SettingsScreen() {
                 )
 
                 Entry(
-                    color = colorPalette.magenta,
+                    color = colorPalette.background2,
                     icon = R.drawable.information,
                     title = stringResource(R.string.about),
                     description = stringResource(R.string.about_desc),
@@ -242,6 +244,7 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
     selectedValue: T,
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     crossinline valueText: (T) -> String = Enum<T>::name
 ) {
     ValueSelectorSettingsEntry(
@@ -250,6 +253,7 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         values = enumValues<T>().toList(),
         onValueSelected = onValueSelected,
         modifier = modifier,
+        isEnabled = isEnabled,
         valueText = valueText
     )
 }
@@ -261,6 +265,7 @@ inline fun <T> ValueSelectorSettingsEntry(
     values: List<T>,
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     crossinline valueText: (T) -> String = { it.toString() }
 ) {
     var isShowingDialog by remember {
@@ -284,6 +289,7 @@ inline fun <T> ValueSelectorSettingsEntry(
         title = title,
         text = valueText(selectedValue),
         modifier = modifier,
+        isEnabled = isEnabled,
         onClick = {
             isShowingDialog = true
         }
@@ -429,7 +435,7 @@ fun SettingsEntryGroupText(
 
     BasicText(
         text = title.uppercase(),
-        style = typography.xxs.semiBold.copy(colorPalette.blue),
+        style = typography.xxs.semiBold.copy(colorPalette.accent),
         modifier = modifier
             .padding(start = 24.dp, top = 24.dp)
             .padding(horizontal = 32.dp)

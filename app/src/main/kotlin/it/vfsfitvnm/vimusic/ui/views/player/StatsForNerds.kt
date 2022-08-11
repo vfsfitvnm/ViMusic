@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -37,8 +36,9 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.ui.styling.BlackColorPalette
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.onOverlay
+import it.vfsfitvnm.vimusic.ui.styling.overlay
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberVolume
@@ -55,7 +55,7 @@ fun StatsForNerds(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val (_, typography) = LocalAppearance.current
+    val (colorPalette, typography) = LocalAppearance.current
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current ?: return
 
@@ -107,7 +107,7 @@ fun StatsForNerds(
                         }
                     )
                 }
-                .background(Color.Black.copy(alpha = 0.8f))
+                .background(colorPalette.overlay)
                 .fillMaxSize()
         ) {
             Row(
@@ -119,50 +119,50 @@ fun StatsForNerds(
                 Column(horizontalAlignment = Alignment.End) {
                     BasicText(
                         text = stringResource(R.string.id),
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = stringResource(R.string.volume),
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = stringResource(R.string.loudness),
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = stringResource(R.string.bitrate),
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = stringResource(R.string.size),
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = stringResource(R.string.cached),
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                 }
 
                 Column {
                     BasicText(
                         text = mediaId,
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = "${volume.times(100).roundToInt()}%",
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = format?.loudnessDb?.let { loudnessDb ->
                             "%.2f dB".format(loudnessDb)
                         } ?: "Unknown",
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = format?.bitrate?.let { bitrate ->
                             "${bitrate / 1000} kbps"
                         } ?: "Unknown",
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = format?.contentLength?.let { contentLength ->
@@ -171,7 +171,7 @@ fun StatsForNerds(
                                 contentLength
                             )
                         } ?: "Unknown",
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = buildString {
@@ -181,7 +181,7 @@ fun StatsForNerds(
                                 append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
                             }
                         },
-                        style = typography.xs.medium.color(BlackColorPalette.text)
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                 }
             }
@@ -189,7 +189,7 @@ fun StatsForNerds(
             if (format != null && format?.itag == null) {
                 BasicText(
                     text = stringResource(R.string.fetch_missing_data),
-                    style = typography.xxs.medium.color(BlackColorPalette.text),
+                    style = typography.xxs.medium.color(colorPalette.onOverlay),
                     modifier = Modifier
                         .clickable(
                             indication = rememberRipple(bounded = true),

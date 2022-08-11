@@ -9,13 +9,13 @@
 ---
 
 <p align="center">
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="30%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="30%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="30%" />
 
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="30%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" width="30%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="30%" />
 </p>
 
 ## Features
@@ -23,10 +23,10 @@
 - Background playback
 - Cache audio chunks for offline playback
 - Search for songs, albums, artists videos and playlists
-- Display and edit songs lyrics
+- Fetch, display and edit songs lyrics or synchronized lyrics
 - Local playlist management
 - Reorder songs in playlist or queue
-- Light/Dark theme
+- Light/Dark/Dynamic theme
 - Skip silence
 - Sleep timer
 - Audio normalization

@@ -3,7 +3,6 @@ package it.vfsfitvnm.vimusic.ui.views
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +45,7 @@ fun PlaylistPreviewItem(
     thumbnailSize: Dp = Dimensions.thumbnails.song
 ) {
     val density = LocalDensity.current
-    val (colorPalette, _, thumbnailShape) = LocalAppearance.current
+    val (_, _, thumbnailShape) = LocalAppearance.current
 
     val thumbnailSizePx = with(density) {
         thumbnailSize.roundToPx()
@@ -91,7 +90,6 @@ fun PlaylistPreviewItem(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .clip(thumbnailShape)
-                                .border(width = 1.dp, color = colorPalette.lightBackground)
                                 .align(alignment)
                                 .size(thumbnailSize)
                         )
@@ -143,7 +141,7 @@ fun PlaylistItem(
     Box(
         modifier = modifier
             .clip(thumbnailShape)
-            .background(colorPalette.lightBackground)
+            .background(colorPalette.background1)
             .size(thumbnailSize * 2)
     ) {
         Box(

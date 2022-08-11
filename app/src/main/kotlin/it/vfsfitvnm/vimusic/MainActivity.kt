@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
@@ -20,8 +21,17 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
@@ -29,24 +39,26 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
@@ -58,14 +70,22 @@ import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.colorPaletteOf
+import it.vfsfitvnm.vimusic.ui.styling.dynamicColorPaletteOf
+import it.vfsfitvnm.vimusic.ui.styling.typographyOf
 import it.vfsfitvnm.vimusic.ui.views.PlayerView
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
+import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.listener
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.rememberHapticFeedback
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val serviceConnection = object : ServiceConnection {
@@ -97,42 +117,101 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         val expandPlayerBottomSheet =
             intent?.extras?.getBoolean("expandPlayerBottomSheet", false) ?: false
 
         uri = intent?.data
 
         setContent {
+            val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
             var appearance by remember(isSystemInDarkTheme) {
                 with(preferences) {
+                    val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
                     val thumbnailRoundness =
                         getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
+                    val colorPalette =
+                        colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
+
+                    setSystemBarAppearance(colorPalette.isDark)
+
                     mutableStateOf(
                         Appearance(
-                            colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
-                            typography = colorPaletteMode.typography(isSystemInDarkTheme),
+                            colorPalette = colorPalette,
+                            typography = typographyOf(colorPalette.text),
                             thumbnailShape = thumbnailRoundness.shape()
                         )
                     )
                 }
             }
 
-            DisposableEffect(isSystemInDarkTheme) {
+            DisposableEffect(binder, isSystemInDarkTheme) {
+                var bitmapListenerJob: Job? = null
+
+                fun setDynamicPalette(colorPaletteMode: ColorPaletteMode) {
+                    val isDark =
+                        colorPaletteMode == ColorPaletteMode.Dark || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+
+                    binder?.setBitmapListener { bitmap: Bitmap? ->
+                        if (bitmap == null) {
+                            val colorPalette =
+                                colorPaletteOf(ColorPaletteName.Dynamic, colorPaletteMode, isSystemInDarkTheme)
+
+                            setSystemBarAppearance(colorPalette.isDark)
+
+                            appearance = appearance.copy(
+                                colorPalette = colorPalette,
+                                typography = typographyOf(colorPalette.text)
+                            )
+
+                            return@setBitmapListener
+                        }
+
+                        bitmapListenerJob = coroutineScope.launch(Dispatchers.IO) {
+                            dynamicColorPaletteOf(bitmap, isDark)?.let {
+                                withContext(Dispatchers.Main) {
+                                    setSystemBarAppearance(it.isDark)
+                                }
+                                appearance = appearance.copy(colorPalette = it, typography = typographyOf(it.text))
+                            }
+                        }
+                    }
+                }
+
                 val listener =
                     SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
                         when (key) {
-                            colorPaletteModeKey -> {
-                                val colorPaletteMode =
-                                    sharedPreferences.getEnum(key, ColorPaletteMode.System)
+                            colorPaletteNameKey, colorPaletteModeKey -> {
+                                val colorPaletteName =
+                                    sharedPreferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
-                                appearance = appearance.copy(
-                                    colorPalette = colorPaletteMode.palette(isSystemInDarkTheme),
-                                    typography = colorPaletteMode.typography(isSystemInDarkTheme),
-                                )
+                                val colorPaletteMode =
+                                    sharedPreferences.getEnum(colorPaletteModeKey, ColorPaletteMode.System)
+
+                                if (colorPaletteName == ColorPaletteName.Dynamic) {
+                                    setDynamicPalette(colorPaletteMode)
+                                } else {
+                                    bitmapListenerJob?.cancel()
+                                    binder?.setBitmapListener(null)
+
+                                    val colorPalette = colorPaletteOf(
+                                        colorPaletteName,
+                                        colorPaletteMode,
+                                        isSystemInDarkTheme
+                                    )
+
+                                    setSystemBarAppearance(colorPalette.isDark)
+
+                                    appearance = appearance.copy(
+                                        colorPalette = colorPalette,
+                                        typography = typographyOf(colorPalette.text),
+                                    )
+                                }
                             }
                             thumbnailRoundnessKey -> {
                                 val thumbnailRoundness =
@@ -148,13 +227,18 @@ class MainActivity : ComponentActivity() {
                 with(preferences) {
                     registerOnSharedPreferenceChangeListener(listener)
 
+                    val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                    if (colorPaletteName == ColorPaletteName.Dynamic) {
+                        setDynamicPalette(getEnum(colorPaletteModeKey, ColorPaletteMode.System))
+                    }
+
                     onDispose {
+                        bitmapListenerJob?.cancel()
+                        binder?.setBitmapListener(null)
                         unregisterOnSharedPreferenceChangeListener(listener)
                     }
                 }
             }
-
-            val systemUiController = rememberSystemUiController()
 
             val rippleTheme =
                 remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
@@ -191,13 +275,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            SideEffect {
-                systemUiController.setSystemBarsColor(
-                    appearance.colorPalette.background,
-                    !appearance.colorPalette.isDark
-                )
-            }
-
             CompositionLocalProvider(
                 LocalAppearance provides appearance,
                 LocalOverscrollConfiguration provides null,
@@ -211,13 +288,15 @@ class MainActivity : ComponentActivity() {
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(appearance.colorPalette.background)
+                        .background(appearance.colorPalette.background0)
                 ) {
                     when (val uri = uri) {
                         null -> {
+                            val paddingValues = WindowInsets.navigationBars.asPaddingValues()
+
                             val playerBottomSheetState = rememberBottomSheetState(
                                 dismissedBound = 0.dp,
-                                collapsedBound = Dimensions.collapsedPlayer,
+                                collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
                                 expandedBound = maxHeight,
                                 isExpanded = expandPlayerBottomSheet
                             )
@@ -255,6 +334,13 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         uri = intent?.data
+    }
+
+    private fun setSystemBarAppearance(isDark: Boolean) {
+        with(WindowCompat.getInsetsController(window, window.decorView.rootView)) {
+            isAppearanceLightStatusBars = !isDark
+            isAppearanceLightNavigationBars = !isDark
+        }
     }
 }
 

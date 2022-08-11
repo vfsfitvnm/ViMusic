@@ -108,9 +108,9 @@ fun RevealSwipe(
     contentColor: Color = Color.White,
     backgroundCardModifier: Modifier = modifier,
     backgroundCardElevation: Dp = 0.dp,
-    backgroundCardStartColor: Color = colorPalette.background,  //
-    backgroundCardEndColor: Color = colorPalette.background,    //  Changed by @Malopieds, not in default
-    backgroundCardContentColor: Color = colorPalette.background,//
+    backgroundCardStartColor: Color = colorPalette.background0,  //
+    backgroundCardEndColor: Color = colorPalette.background0,    //  Changed by @Malopieds, not in default
+    backgroundCardContentColor: Color = colorPalette.background0,//
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     state: RevealState = rememberRevealState(),
     hiddenContentEnd: @Composable RowScope.() -> Unit = {},

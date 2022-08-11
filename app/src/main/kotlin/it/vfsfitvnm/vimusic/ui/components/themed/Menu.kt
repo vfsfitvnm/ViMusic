@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -44,11 +45,12 @@ inline fun Menu(
             .verticalScroll(rememberScrollState())
             .fillMaxWidth()
             .background(
-                color = colorPalette.elevatedBackground,
+                color = colorPalette.background1,
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
             .padding(top = 8.dp)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .navigationBarsPadding(),
         content = content
     )
 }

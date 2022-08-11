@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaMetadata
 import android.media.session.MediaSession
@@ -268,8 +269,15 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        maybeRecoverPlaybackError()
         maybeNormalizeVolume()
         maybeProcessRadio()
+    }
+
+    private fun maybeRecoverPlaybackError() {
+        if (player.playerError != null) {
+            player.prepare()
+        }
     }
 
     private fun maybeProcessRadio() {
@@ -595,11 +603,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                     }
 
                                     format.url
-                                } ?: throw PlaybackException(
-                                    "Couldn't find a playable audio format",
-                                    null,
-                                    PlaybackException.ERROR_CODE_REMOTE_ERROR
-                                )
+                                } ?: throw PlayableFormatNotFoundException()
+                                "UNPLAYABLE" -> throw UnplayableException()
+                                "LOGIN_REQUIRED" -> throw LoginRequiredException()
                                 else -> throw PlaybackException(
                                     status,
                                     null,
@@ -614,7 +620,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                 .subrange(dataSpec.uriPositionOffset, chunkLength)
                         } ?: throw PlaybackException(
                             null,
-                            null,
+                            urlResult?.exceptionOrNull(),
                             PlaybackException.ERROR_CODE_REMOTE_ERROR
                         )
                     }
@@ -641,7 +647,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .setAudioProcessorChain(
                 DefaultAudioProcessorChain(
                     emptyArray(),
-                    SilenceSkippingAudioProcessor(1_000_000, 20_000, 256),
+                    SilenceSkippingAudioProcessor(2_000_000, 20_000, 256),
                     SonicAudioProcessor()
                 )
             )
@@ -674,6 +680,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         var isLoadingRadio by mutableStateOf(false)
             private set
+
+        val lastBitmap: Bitmap?
+            get() = bitmapProvider.lastBitmap
+
+        fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
+            bitmapProvider.listener = listener
+        }
 
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()

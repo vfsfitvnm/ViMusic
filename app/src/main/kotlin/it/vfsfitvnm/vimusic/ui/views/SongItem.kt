@@ -82,20 +82,20 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null
 ) {
 
-        SongItem(
-            thumbnailModel = song.thumbnailUrl?.thumbnail(thumbnailSize),
-            title = song.title,
-            authors = song.artistsText ?: "",
-            durationText = song.durationText,
-            mediaItem = song.asMediaItem,
-            swipeShow = swipeShow,
-            menuContent = menuContent,
-            onClick = onClick,
-            onThumbnailContent = onThumbnailContent,
-            backgroundColor = backgroundColor,
-            trailingContent = trailingContent,
-            modifier = modifier,
-        )
+    SongItem(
+        thumbnailModel = song.thumbnailUrl?.thumbnail(thumbnailSize),
+        title = song.title,
+        authors = song.artistsText ?: "",
+        durationText = song.durationText,
+        mediaItem = song.asMediaItem,
+        swipeShow = swipeShow,
+        menuContent = menuContent,
+        onClick = onClick,
+        onThumbnailContent = onThumbnailContent,
+        backgroundColor = backgroundColor,
+        trailingContent = trailingContent,
+        modifier = modifier,
+    )
 }
 
 @ExperimentalAnimationApi
@@ -213,7 +213,6 @@ fun SongItem(
                     )
                     .fillMaxWidth()
                     .padding(vertical = Dimensions.itemsVerticalPadding)
-                    .background(backgroundColor ?: colorPalette.background)
                     .padding(start = 16.dp, end = if (trailingContent == null) 16.dp else 8.dp)
             ) {
                 startContent()
@@ -262,7 +261,6 @@ fun SongItem(
                 )
                 .fillMaxWidth()
                 .padding(vertical = Dimensions.itemsVerticalPadding)
-                .background(backgroundColor ?: colorPalette.background)
                 .padding(start = 16.dp, end = if (trailingContent == null) 16.dp else 8.dp)
         ) {
             startContent()

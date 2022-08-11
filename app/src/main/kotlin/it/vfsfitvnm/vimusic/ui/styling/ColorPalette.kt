@@ -1,83 +1,140 @@
 package it.vfsfitvnm.vimusic.ui.styling
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.palette.graphics.Palette
+import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
+import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 
 @Immutable
 data class ColorPalette(
-    val background: Color,
-    val elevatedBackground: Color,
-    val lightBackground: Color,
-    val backgroundContainer: Color,
+    val background0: Color,
+    val background1: Color,
+    val background2: Color,
+    val accent: Color,
+    val onAccent: Color,
+    val red: Color = Color(0xffbf4040),
+    val blue: Color = Color(0xFF4472CF),
     val text: Color,
     val textSecondary: Color,
     val textDisabled: Color,
-    val lightGray: Color,
-    val gray: Color,
-    val darkGray: Color,
-    val blue: Color,
-    val red: Color,
-    val green: Color,
-    val orange: Color,
-    val magenta: Color,
-    val cyan: Color,
-
-    val primaryContainer: Color,
-    val onPrimaryContainer: Color,
-    val iconOnPrimaryContainer: Color,
-
     val isDark: Boolean
 )
 
-val DarkColorPalette = ColorPalette(
-    background = Color(0xff16171d),
-    lightBackground = Color(0xff1f2029),
-    elevatedBackground = Color(0xff1f2029),
-    backgroundContainer = Color(0xff2b2d3b),
+val DefaultDarkColorPalette = ColorPalette(
+    background0 = Color(0xff16171d),
+    background1 = Color(0xff1f2029),
+    background2 = Color(0xff2b2d3b),
     text = Color(0xffe1e1e2),
     textSecondary = Color(0xffa3a4a6),
     textDisabled = Color(0xff6f6f73),
-    lightGray = Color(0xfff8f8f8),
-    gray = Color(0xFFE5E5E5),
-    darkGray = Color(0xFF838383),
-    blue = Color(0xff507fdd),
-    red = Color(0xffbf4040),
-    green = Color(0xff82b154),
-    orange = Color(0xffe9a033),
-    magenta = Color(0xffbb4da4),
-    cyan = Color(0xFF4DA5BB),
-    primaryContainer = Color(0xff4046bf),
-    onPrimaryContainer = Color.White,
-    iconOnPrimaryContainer = Color.White,
+    accent = Color(0xff4046bf),
+    onAccent = Color.White,
     isDark = true
 )
 
-val BlackColorPalette = DarkColorPalette.copy(
-    background = Color.Black,
-    lightBackground = Color(0xff0d0d12),
-    elevatedBackground = Color(0xff0d0d12),
-    backgroundContainer = Color(0xff0d0d12)
-)
-
-val LightColorPalette = ColorPalette(
-    background = Color(0xfffdfdfe),
-    lightBackground = Color(0xfff8f8fc),
-    elevatedBackground = Color(0xfff8f8fc),
-    backgroundContainer = Color(0xffeaeaf5),
-    lightGray = Color(0xfff8f8f8),
-    gray = Color(0xFFE5E5E5),
-    darkGray = Color(0xFF838383),
+val DefaultLightColorPalette = ColorPalette(
+    background0 = Color(0xfffdfdfe),
+    background1 = Color(0xfff8f8fc),
+    background2 = Color(0xffeaeaf5),
     text = Color(0xff212121),
     textSecondary = Color(0xFF656566),
     textDisabled = Color(0xFF9d9d9d),
-    blue = Color(0xff4059bf),
-    red = Color(0xffbf4040),
-    green = Color(0xff7fbf40),
-    orange = Color(0xffe8730e),
-    magenta = Color(0xffbb4da4),
-    cyan = Color(0xFF4DBBB2),
-    primaryContainer = Color(0xff4046bf),
-    onPrimaryContainer = Color.White,
-    iconOnPrimaryContainer = Color.White,
+    accent = Color(0xff4046bf),
+    onAccent = Color.White,
     isDark = false
 )
+
+val PureBlackColorPalette = DefaultDarkColorPalette.copy(
+    background0 = Color.Black,
+    background1 = Color.Black,
+    background2 = Color.Black
+)
+
+fun colorPaletteOf(
+    colorPaletteName: ColorPaletteName,
+    colorPaletteMode: ColorPaletteMode,
+    isSystemInDarkMode: Boolean
+): ColorPalette {
+    return when (colorPaletteName) {
+        ColorPaletteName.Default, ColorPaletteName.Dynamic -> when (colorPaletteMode) {
+            ColorPaletteMode.Light -> DefaultLightColorPalette
+            ColorPaletteMode.Dark -> DefaultDarkColorPalette
+            ColorPaletteMode.System -> when (isSystemInDarkMode) {
+                true -> DefaultDarkColorPalette
+                false -> DefaultLightColorPalette
+            }
+        }
+        ColorPaletteName.PureBlack -> PureBlackColorPalette
+    }
+}
+
+fun dynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPalette? {
+    val palette = Palette
+        .from(bitmap)
+        .maximumColorCount(8)
+        .addFilter(if (isDark) ({ _, hsl -> hsl[0] !in 36f..100f }) else null)
+        .generate()
+
+    val hsl = if (isDark) {
+        palette.dominantSwatch ?: Palette
+            .from(bitmap)
+            .maximumColorCount(8)
+            .generate()
+            .dominantSwatch
+    } else {
+        palette.dominantSwatch
+    }?.hsl ?: return null
+
+    return if (hsl[1] < 0.08) {
+        val newHsl = palette.swatches
+            .map(Palette.Swatch::getHsl)
+            .sortedByDescending(FloatArray::component2)
+            .find { it[1] != 0f }
+            ?: hsl
+
+        dynamicColorPaletteOf(newHsl, isDark)
+    } else {
+        dynamicColorPaletteOf(hsl, isDark)
+    }
+}
+
+private fun dynamicColorPaletteOf(hsl: FloatArray, isDark: Boolean): ColorPalette {
+    return colorPaletteOf(ColorPaletteName.Dynamic, if (isDark) ColorPaletteMode.Dark else ColorPaletteMode.Light, false).copy(
+        background0 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.1f), if (isDark) 0.10f else 0.925f),
+        background1 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.3f), if (isDark) 0.15f else 0.90f),
+        background2 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.4f), if (isDark) 0.2f else 0.85f),
+        accent = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.5f), 0.5f)
+    )
+}
+
+inline val ColorPalette.collapsedPlayerProgressBar: Color
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+        text
+    } else {
+        accent
+    }
+
+inline val ColorPalette.favoritesIcon: Color
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+        red
+    } else {
+        accent
+    }
+
+inline val ColorPalette.shimmer: Color
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+        Color(0xff838383)
+    } else {
+        accent
+    }
+
+inline val ColorPalette.overlay: Color
+    get() = PureBlackColorPalette.background0.copy(alpha = 0.75f)
+
+inline val ColorPalette.onOverlay: Color
+    get() = PureBlackColorPalette.text
+
+inline val ColorPalette.onOverlayShimmer: Color
+    get() = PureBlackColorPalette.shimmer

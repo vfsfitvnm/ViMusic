@@ -1,7 +1,10 @@
 package it.vfsfitvnm.vimusic.ui.views.player
 
 import android.text.format.DateUtils
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +45,7 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.rememberRepeatMode
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -53,7 +57,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun Controls(
     mediaItem: MediaItem,
     shouldBePlaying: Boolean,
-    backgroundColor: Color,
     position: Long,
     duration: Long,
     modifier: Modifier = Modifier,
@@ -74,7 +77,13 @@ fun Controls(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    val playPauseRoundness by animateDpAsState(if (shouldBePlaying) 32.dp else 16.dp)
+    val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
+
+    val playPauseRoundness by shouldBePlayingTransition.animateDp(
+        transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
+        label = "playPauseRoundness",
+        targetValueByState = { if (it) 32.dp else 16.dp }
+    )
 
     val onGoToArtist = artistRoute::global
 
@@ -146,7 +155,7 @@ fun Controls(
                 scrubbingPosition = null
             },
             color = colorPalette.text,
-            backgroundColor = backgroundColor,
+            backgroundColor = colorPalette.background2,
             shape = RoundedCornerShape(8.dp)
         )
 
@@ -189,9 +198,9 @@ fun Controls(
                 .fillMaxWidth()
         ) {
             Image(
-                painter = painterResource(R.drawable.heart),
+                painter = painterResource(if (likedAt == null) R.drawable.heart_outline else R.drawable.heart),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(if (likedAt != null) colorPalette.red else colorPalette.textDisabled),
+                colorFilter = ColorFilter.tint(colorPalette.favoritesIcon),
                 modifier = Modifier
                     .clickable {
                         query {
@@ -236,7 +245,7 @@ fun Controls(
                             binder.player.play()
                         }
                     }
-                    .background(color = backgroundColor)
+                    .background(colorPalette.background2)
                     .size(64.dp)
             ) {
                 Image(

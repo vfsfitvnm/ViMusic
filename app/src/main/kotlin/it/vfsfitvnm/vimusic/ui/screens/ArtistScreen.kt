@@ -8,15 +8,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -54,7 +56,9 @@ import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.utils.add
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
@@ -100,10 +104,10 @@ fun ArtistScreen(browseId: String) {
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(bottom = 72.dp),
+                contentPadding = WindowInsets.systemBars.asPaddingValues().add(bottom = Dimensions.collapsedPlayer),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item {
@@ -214,7 +218,7 @@ fun ArtistScreen(browseId: String) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
-                            .background(colorPalette.background)
+                            .background(colorPalette.background0)
                             .zIndex(1f)
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
@@ -273,7 +277,7 @@ fun ArtistScreen(browseId: String) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
-                                .background(colorPalette.background)
+                                .background(colorPalette.background0)
                                 .fillMaxWidth()
                                 .padding(horizontal = 8.dp)
                                 .padding(top = 32.dp)
@@ -297,14 +301,14 @@ fun ArtistScreen(browseId: String) {
                                         .width(48.dp)
                                 ) {
                                     drawLine(
-                                        color = colorPalette.backgroundContainer,
+                                        color = colorPalette.background2,
                                         start = size.center.copy(y = 0f),
                                         end = size.center.copy(y = size.height),
                                         strokeWidth = 2.dp.toPx()
                                     )
 
                                     drawCircle(
-                                        color = colorPalette.backgroundContainer,
+                                        color = colorPalette.background2,
                                         center = size.center.copy(y = size.height),
                                         radius = 4.dp.toPx()
                                     )
@@ -342,7 +346,7 @@ private fun LoadingOrError(
     ) {
         Spacer(
             modifier = Modifier
-                .background(color = colorPalette.darkGray, shape = CircleShape)
+                .background(color = colorPalette.shimmer, shape = CircleShape)
                 .size(Dimensions.thumbnails.artist)
         )
 

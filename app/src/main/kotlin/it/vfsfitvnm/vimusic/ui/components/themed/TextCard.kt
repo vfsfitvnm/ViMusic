@@ -13,6 +13,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -41,14 +42,14 @@ fun TextCard(
                 enabled = onClick != null,
                 onClick = onClick ?: {}
             )
-            .background(colorPalette.lightBackground)
+            .background(colorPalette.background1)
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         icon?.let {
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
-                colorFilter = iconColor ?: ColorFilter.tint(colorPalette.red),
+                colorFilter = iconColor ?: ColorFilter.tint(Color.Red),
                 modifier = Modifier
                     .padding(bottom = 16.dp)
                     .size(24.dp)

@@ -2,7 +2,7 @@ package it.vfsfitvnm.kugou
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.BrowserUserAgent
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -22,7 +22,7 @@ import kotlinx.serialization.json.Json
 object KuGou {
     @OptIn(ExperimentalSerializationApi::class)
     private val client by lazy {
-        HttpClient(CIO) {
+        HttpClient(OkHttp) {
             BrowserUserAgent()
 
             expectSuccess = true
@@ -52,12 +52,27 @@ object KuGou {
 
     suspend fun lyrics(artist: String, title: String, duration: Long): Result<Lyrics?>? {
         return runCatching {
-            for (info in searchSong(keyword(artist, title))) {
-                if (info.duration >= duration / 1000 - 2 && info.duration <= duration / 1000 + 2) {
-                    searchLyrics(info.hash).firstOrNull()?.let { candidate ->
-                        return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
+            val keyword = keyword(artist, title)
+            val infoByKeyword = searchSong(keyword)
+
+            if (infoByKeyword.isNotEmpty()) {
+                var tolerance = 0
+
+                while (tolerance <= 5) {
+                    for (info in infoByKeyword) {
+                        if (info.duration >= duration - tolerance && info.duration <= duration + tolerance) {
+                            searchLyricsByHash(info.hash).firstOrNull()?.let { candidate ->
+                                return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
+                            }
+                        }
                     }
+
+                    tolerance++
                 }
+            }
+
+            searchLyricsByKeyword(keyword).firstOrNull()?.let { candidate ->
+                return@runCatching downloadLyrics(candidate.id, candidate.accessKey).normalize()
             }
 
             null
@@ -75,7 +90,7 @@ object KuGou {
         }.body<DownloadLyricsResponse>().content.decodeBase64String().let(::Lyrics)
     }
 
-    private suspend fun searchLyrics(hash: String): List<SearchLyricsResponse.Candidate> {
+    private suspend fun searchLyricsByHash(hash: String): List<SearchLyricsResponse.Candidate> {
         return client.get("/search") {
             parameter("ver", 1)
             parameter("man", "yes")
@@ -84,11 +99,20 @@ object KuGou {
         }.body<SearchLyricsResponse>().candidates
     }
 
+    private suspend fun searchLyricsByKeyword(keyword: String): List<SearchLyricsResponse.Candidate> {
+        return client.get("/search") {
+            parameter("ver", 1)
+            parameter("man", "yes")
+            parameter("client", "mobi")
+            url.encodedParameters.append("keyword", keyword.encodeURLParameter(spaceToPlus = false))
+        }.body<SearchLyricsResponse>().candidates
+    }
+
     private suspend fun searchSong(keyword: String): List<SearchSongResponse.Data.Info> {
         return client.get("https://mobileservice.kugou.com/api/v3/search/song") {
             parameter("version", 9108)
             parameter("plat", 0)
-            parameter("pagesize", 5)
+            parameter("pagesize", 8)
             parameter("showtype", 0)
             url.encodedParameters.append("keyword", keyword.encodeURLParameter(spaceToPlus = false))
         }.body<SearchSongResponse>().data.info

@@ -14,11 +14,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -38,26 +41,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.core.content.res.ResourcesCompat
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -84,6 +77,7 @@ import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.BuiltInPlaylistItem
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.utils.add
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
@@ -187,7 +181,6 @@ fun HomeScreen() {
             @Suppress("UNUSED_EXPRESSION") playlistPreviews
             @Suppress("UNUSED_EXPRESSION") songCollection
 
-            val context = LocalContext.current
             val binder = LocalPlayerServiceBinder.current
 
             val isFirstLaunch by rememberPreference(isFirstLaunchKey, true)
@@ -214,9 +207,9 @@ fun HomeScreen() {
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(bottom = 72.dp),
+                contentPadding = WindowInsets.systemBars.asPaddingValues().add(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
-                    .background(colorPalette.background)
+                    .background(colorPalette.background0)
                     .fillMaxSize()
             ) {
                 item("topAppBar") {
@@ -229,22 +222,20 @@ fun HomeScreen() {
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
-                                .clickable {
-                                    settingsRoute()
-                                }
+                                .clickable { settingsRoute() }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .run {
                                     if (isFirstLaunch) {
                                         drawBehind {
                                             drawCircle(
-                                                color = colorPalette.red,
+                                                color = colorPalette.accent,
                                                 center = Offset(
                                                     x = size.width,
                                                     y = 0.dp.toPx()
                                                 ),
                                                 radius = 4.dp.toPx(),
                                                 shadow = Shadow(
-                                                    color = colorPalette.red,
+                                                    color = colorPalette.accent,
                                                     blurRadius = 4.dp.toPx()
                                                 )
                                             )
@@ -255,89 +246,12 @@ fun HomeScreen() {
                                 }
                                 .size(24.dp)
                         )
-
-                        BasicText(
-                            text = stringResource(R.string.app_name),
-                            style = typography.l.semiBold,
-                            modifier = Modifier
-                                .drawWithCache {
-                                    val decorationPath = Path().apply {
-                                        with(asAndroidPath()) {
-                                            addCircle(
-                                                8.dp.toPx(),
-                                                size.center.y,
-                                                16.dp.toPx(),
-                                                android.graphics.Path.Direction.CCW
-                                            )
-                                            addCircle(
-                                                32.dp.toPx(),
-                                                -2.dp.toPx(),
-                                                8.dp.toPx(),
-                                                android.graphics.Path.Direction.CCW
-                                            )
-                                        }
-                                    }
-
-                                    if (colorPalette.isDark) {
-                                        return@drawWithCache onDrawBehind {
-                                            drawPath(
-                                                path = decorationPath,
-                                                color = colorPalette.primaryContainer
-                                            )
-                                        }
-                                    }
-
-                                    val textPaint = Paint()
-                                        .asFrameworkPaint()
-                                        .apply {
-                                            isAntiAlias = true
-                                            textSize = typography.l.fontSize.toPx()
-                                            color = colorPalette.text.toArgb()
-                                            typeface = ResourcesCompat.getFont(
-                                                context,
-                                                R.font.poppins_w500
-                                            )
-                                            textAlign = android.graphics.Paint.Align.CENTER
-                                        }
-
-                                    val textY =
-                                        ((textPaint.fontMetrics.descent - textPaint.fontMetrics.ascent) / 2) - textPaint.fontMetrics.descent
-
-                                    val textPath = Path().apply {
-                                        textPaint.getTextPath(
-                                            "ViMusic",
-                                            0,
-                                            7,
-                                            size.width / 2,
-                                            size.height / 2 + textY,
-                                            asAndroidPath()
-                                        )
-                                    }
-
-                                    onDrawWithContent {
-                                        clipPath(textPath, ClipOp.Difference) {
-                                            drawPath(
-                                                path = decorationPath,
-                                                color = colorPalette.primaryContainer
-                                            )
-                                        }
-
-                                        clipPath(decorationPath, ClipOp.Difference) {
-                                            this@onDrawWithContent.drawContent()
-                                        }
-                                    }
-                                }
-                                .padding(horizontal = 8.dp)
-                        )
-
                         Image(
                             painter = painterResource(R.drawable.search),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
-                                .clickable {
-                                    searchRoute("")
-                                }
+                                .clickable { searchRoute("") }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .size(24.dp)
                         )
@@ -365,9 +279,7 @@ fun HomeScreen() {
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.text),
                             modifier = Modifier
-                                .clickable {
-                                    isCreatingANewPlaylist = true
-                                }
+                                .clickable { isCreatingANewPlaylist = true }
                                 .padding(all = 8.dp)
                                 .size(20.dp)
                         )
@@ -382,18 +294,14 @@ fun HomeScreen() {
                                 contentDescription = null,
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
-                                    .clickable {
-                                        isSortMenuDisplayed = true
-                                    }
+                                    .clickable { isSortMenuDisplayed = true }
                                     .padding(horizontal = 8.dp, vertical = 8.dp)
                                     .size(20.dp)
                             )
 
                             DropdownMenu(
                                 isDisplayed = isSortMenuDisplayed,
-                                onDismissRequest = {
-                                    isSortMenuDisplayed = false
-                                }
+                                onDismissRequest = { isSortMenuDisplayed = false }
                             ) {
                                 DropDownSection {
                                     DropDownTextItem(
@@ -521,7 +429,7 @@ fun HomeScreen() {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .background(colorPalette.background)
+                            .background(colorPalette.background0)
                             .zIndex(1f)
                             .padding(horizontal = 8.dp)
                             .padding(top = 32.dp)

@@ -15,8 +15,8 @@ android {
         applicationId = "com.vfsfitvnm.vimusic"
         minSdk = 21
         targetSdk = 32
-        versionCode = 11
-        versionName = "0.3.1"
+        versionCode = 12
+        versionName = "0.4.1"
     }
 
     splits {
@@ -85,7 +85,7 @@ dependencies {
     implementation(libs.compose.shimmer)
     implementation(libs.compose.coil)
 
-    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.palette)
 
     implementation(libs.exoplayer)
 

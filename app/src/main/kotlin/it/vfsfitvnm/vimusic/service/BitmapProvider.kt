@@ -17,7 +17,7 @@ class BitmapProvider(
     private val colorProvider: (isSystemInDarkMode: Boolean) -> Int
 ) {
     private var lastUri: Uri? = null
-    private var lastBitmap: Bitmap? = null
+    var lastBitmap: Bitmap? = null
     private var lastIsSystemInDarkMode = false
 
     private var lastEnqueued: Disposable? = null
@@ -26,6 +26,12 @@ class BitmapProvider(
 
     val bitmap: Bitmap
         get() = lastBitmap ?: defaultBitmap
+
+    var listener: ((Bitmap?) -> Unit)? = null
+        set(value) {
+            field = value
+            value?.invoke(lastBitmap)
+        }
 
     init {
         setDefaultBitmap()
@@ -56,14 +62,18 @@ class BitmapProvider(
         lastEnqueued = applicationContext.imageLoader.enqueue(
             ImageRequest.Builder(applicationContext)
                 .data(uri.thumbnail(bitmapSize))
+                .allowHardware(false)
                 .listener(
                     onError = { _, _ ->
                         lastBitmap = null
                         onDone(bitmap)
+                        listener?.invoke(lastBitmap)
                     },
                     onSuccess = { _, result ->
                         lastBitmap = (result.drawable as BitmapDrawable).bitmap
                         onDone(bitmap)
+                        println("invoking listener")
+                        listener?.invoke(lastBitmap)
                     }
                 )
                 .build()
