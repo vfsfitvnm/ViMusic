@@ -10,14 +10,14 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.7.0")
+            version("kotlin", "1.7.10")
             plugin("kotlin-serialization","org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
             library("kotlin-coroutines","org.jetbrains.kotlinx", "kotlinx-coroutines-core").version("1.6.4")
 
-            version("compose-compiler", "1.2.0")
+            version("compose-compiler", "1.3.0")
 
-            version("compose", "1.3.0-alpha02")
+            version("compose", "1.3.0-alpha03")
             library("compose-foundation", "androidx.compose.foundation", "foundation").versionRef("compose")
             library("compose-ui", "androidx.compose.ui", "ui").versionRef("compose")
             library("compose-ui-util", "androidx.compose.ui", "ui-util").versionRef("compose")
