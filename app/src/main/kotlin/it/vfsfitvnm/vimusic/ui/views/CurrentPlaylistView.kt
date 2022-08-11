@@ -173,6 +173,7 @@ fun CurrentPlaylistView(
 //                        .animateItemPlacement()
                         .verticalDragAfterLongPressToReorder(
                             reorderingState = reorderingState,
+                            lazyListState = lazyListState,
                             index = window.firstPeriodIndex,
                             onDragStart = {
                                 hapticFeedback.performHapticFeedback(

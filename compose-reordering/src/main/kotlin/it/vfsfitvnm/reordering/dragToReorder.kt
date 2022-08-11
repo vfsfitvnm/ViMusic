@@ -1,9 +1,11 @@
 package it.vfsfitvnm.reordering
 
+import android.util.Log
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -21,6 +23,7 @@ import kotlin.reflect.KSuspendFunction5
 
 private fun Modifier.dragToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     orientation: Orientation,
     function: KSuspendFunction5<PointerInputScope, (Offset) -> Unit, () -> Unit, () -> Unit, (change: PointerInputChange, dragAmount: Offset) -> Unit, Unit>,
@@ -36,6 +39,7 @@ private fun Modifier.dragToReorder(
 
         var previousItemSize = 0
         var nextItemSize = 0
+
 
         function(
             this,
@@ -88,13 +92,17 @@ private fun Modifier.dragToReorder(
                         nextItemSize += reorderingState.draggingItemSize
                         previousItemSize += reorderingState.draggingItemSize
                         onMove?.invoke()
+                        Log.d("TAG", reorderingState.reachedIndex.toString()) // next
                     }
                 } else if (targetOffset < previousItemSize) {
                     if (reorderingState.reachedIndex > 0) {
                         reorderingState.reachedIndex -= 1
-                        previousItemSize -= reorderingState.draggingItemSize
-                        nextItemSize -= reorderingState.draggingItemSize
+                        previousItemSize -= (reorderingState.draggingItemSize)
+                        nextItemSize -= (reorderingState.draggingItemSize)
                         onMove?.invoke()
+                        while( reorderingState.reachedIndex == lazyListState.firstVisibleItemIndex) {
+                            Log.d("TAG", "object is at the top") // TODO add the fact that the object is going upper
+                        }
                     }
                 }
 
@@ -115,6 +123,7 @@ private fun Modifier.dragToReorder(
 
 fun Modifier.dragToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     orientation: Orientation,
     onDragStart: (() -> Unit)? = null,
@@ -122,6 +131,7 @@ fun Modifier.dragToReorder(
     onDragEnd: ((Int) -> Unit)? = null
 ): Modifier = dragToReorder(
     reorderingState = reorderingState,
+    lazyListState = lazyListState,
     index = index,
     orientation = orientation,
     function = PointerInputScope::detectDragGestures,
@@ -132,12 +142,14 @@ fun Modifier.dragToReorder(
 
 fun Modifier.verticalDragToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     onDragStart: (() -> Unit)? = null,
     onMove: (() -> Unit)? = null,
     onDragEnd: ((Int) -> Unit)? = null
 ): Modifier = dragToReorder(
     reorderingState = reorderingState,
+    lazyListState = lazyListState,
     index = index,
     orientation = Orientation.Vertical,
     onDragStart = onDragStart,
@@ -147,12 +159,14 @@ fun Modifier.verticalDragToReorder(
 
 fun Modifier.horizontalDragToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     onDragStart: (() -> Unit)? = null,
     onMove: (() -> Unit)? = null,
     onDragEnd: ((Int) -> Unit)? = null
 ): Modifier = dragToReorder(
     reorderingState = reorderingState,
+    lazyListState,
     index = index,
     orientation = Orientation.Horizontal,
     onDragStart = onDragStart,
@@ -162,6 +176,7 @@ fun Modifier.horizontalDragToReorder(
 
 fun Modifier.dragAfterLongPressToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     orientation: Orientation,
     onDragStart: (() -> Unit)? = null,
@@ -169,6 +184,7 @@ fun Modifier.dragAfterLongPressToReorder(
     onDragEnd: ((Int) -> Unit)? = null
 ): Modifier = dragToReorder(
     reorderingState = reorderingState,
+    lazyListState = lazyListState,
     index = index,
     orientation = orientation,
     function = PointerInputScope::detectDragGesturesAfterLongPress,
@@ -179,12 +195,14 @@ fun Modifier.dragAfterLongPressToReorder(
 
 fun Modifier.verticalDragAfterLongPressToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     onDragStart: (() -> Unit)? = null,
     onMove: (() -> Unit)? = null,
     onDragEnd: ((Int) -> Unit)? = null
 ): Modifier = dragAfterLongPressToReorder(
     reorderingState = reorderingState,
+    lazyListState = lazyListState,
     index = index,
     orientation = Orientation.Vertical,
     onDragStart = onDragStart,
@@ -194,12 +212,14 @@ fun Modifier.verticalDragAfterLongPressToReorder(
 
 fun Modifier.horizontalDragAfterLongPressToReorder(
     reorderingState: ReorderingState,
+    lazyListState: LazyListState,
     index: Int,
     onDragStart: (() -> Unit)? = null,
     onMove: (() -> Unit)? = null,
     onDragEnd: ((Int) -> Unit)? = null
 ): Modifier = dragAfterLongPressToReorder(
     reorderingState = reorderingState,
+    lazyListState = lazyListState,
     index = index,
     orientation = Orientation.Horizontal,
     onDragStart = onDragStart,

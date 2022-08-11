@@ -172,7 +172,6 @@ fun SongItem(
     if (swipeShow) {
 
         RevealSwipe(
-            modifier = Modifier.padding(vertical = 5.dp),
             directions = setOf(
                 RevealDirection.StartToEnd,
                 RevealDirection.EndToStart

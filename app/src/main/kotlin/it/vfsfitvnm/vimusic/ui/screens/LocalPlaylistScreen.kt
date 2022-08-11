@@ -279,6 +279,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                         modifier = Modifier
                             .verticalDragAfterLongPressToReorder(
                                 reorderingState = reorderingState,
+                                lazyListState = lazyListState,
                                 index = index,
                                 onDragStart = {
                                     hapticFeedback.performHapticFeedback(
