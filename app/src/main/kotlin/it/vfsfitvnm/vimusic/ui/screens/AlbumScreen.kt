@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,23 +79,22 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import java.text.DateFormat
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
 fun AlbumScreen(browseId: String) {
     val lazyListState = rememberLazyListState()
 
-    val albumResult by remember(browseId) {
-        Database.album(browseId).map { album ->
-            album
-                ?.takeIf { album.timestamp != null }
+    val albumResult by produceState<Result<Album>?>(initialValue = null, browseId) {
+        value = withContext(Dispatchers.IO) {
+            Database.album(browseId)
+                ?.takeIf { it.timestamp != null }
                 ?.let(Result.Companion::success)
                 ?: fetchAlbum(browseId)
-        }.distinctUntilChanged()
-    }.collectAsState(initial = null, context = Dispatchers.IO)
+        }
+    }
 
     val songs by remember(browseId) {
         Database.albumSongs(browseId)
@@ -404,9 +404,9 @@ private fun LoadingOrError(
 }
 
 private suspend fun fetchAlbum(browseId: String): Result<Album>? {
-    return YouTube.playlistOrAlbum(browseId)
+    return YouTube.album(browseId)
         ?.map { youtubeAlbum ->
-            Album(
+            val album = Album(
                 id = browseId,
                 title = youtubeAlbum.title,
                 thumbnailUrl = youtubeAlbum.thumbnail?.url,
@@ -414,19 +414,23 @@ private suspend fun fetchAlbum(browseId: String): Result<Album>? {
                 authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
                 shareUrl = youtubeAlbum.url,
                 timestamp = System.currentTimeMillis()
-            ).also(Database::upsert).also {
-                youtubeAlbum.withAudioSources()?.getOrNull()?.items?.forEachIndexed { position, albumItem ->
-                    albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
-                        Database.insert(mediaItem)
-                        Database.upsert(
-                            SongAlbumMap(
-                                songId = mediaItem.mediaId,
-                                albumId = browseId,
-                                position = position
-                            )
+            )
+
+            Database.upsert(album)
+
+            youtubeAlbum.items?.forEachIndexed { position, albumItem ->
+                albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
+                    Database.insert(mediaItem)
+                    Database.upsert(
+                        SongAlbumMap(
+                            songId = mediaItem.mediaId,
+                            albumId = browseId,
+                            position = position
                         )
-                    }
+                    )
                 }
             }
+
+            album
         }
 }

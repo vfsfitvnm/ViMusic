@@ -882,17 +882,23 @@ object YouTube {
                 }.recoverIfCancelled()?.getOrNull()
             } ?: this
         }
+    }
 
-        suspend fun withAudioSources(): Result<PlaylistOrAlbum>? {
-            return url?.let { Url(it).parameters["list"] }?.let { playlistId ->
-                playlistOrAlbum("VL$playlistId")?.map { playlist ->
-                    copy(items = playlist.items)
+    suspend fun album(browseId: String): Result<PlaylistOrAlbum>? {
+        return playlistOrAlbum(browseId)?.map { album ->
+           album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
+                playlistOrAlbum("VL$playlistId")?.getOrNull()?.let { playlist ->
+                    album.copy(items = playlist.items)
                 }
-            }
+            } ?: album
         }
     }
 
-    suspend fun playlistOrAlbum(browseId: String): Result<PlaylistOrAlbum>? {
+    suspend fun playlist(browseId: String): Result<PlaylistOrAlbum>? {
+        return playlistOrAlbum(browseId)
+    }
+
+    private suspend fun playlistOrAlbum(browseId: String): Result<PlaylistOrAlbum>? {
         return browse(browseId)?.map { body ->
             PlaylistOrAlbum(
                 title = body

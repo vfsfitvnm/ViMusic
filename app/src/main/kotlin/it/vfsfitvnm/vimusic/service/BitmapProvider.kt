@@ -72,7 +72,6 @@ class BitmapProvider(
                     onSuccess = { _, result ->
                         lastBitmap = (result.drawable as BitmapDrawable).bitmap
                         onDone(bitmap)
-                        println("invoking listener")
                         listener?.invoke(lastBitmap)
                     }
                 )

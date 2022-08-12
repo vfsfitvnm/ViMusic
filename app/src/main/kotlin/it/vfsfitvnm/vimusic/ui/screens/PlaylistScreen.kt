@@ -102,7 +102,7 @@ fun PlaylistScreen(browseId: String) {
 
             val onLoad = relaunchableEffect(Unit) {
                 playlist = withContext(Dispatchers.IO) {
-                    YouTube.playlistOrAlbum(browseId)?.map {
+                    YouTube.playlist(browseId)?.map {
                         it.next()
                     }?.map { playlist ->
                         playlist.copy(items = playlist.items?.filter { it.info.endpoint != null })
