@@ -27,7 +27,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,22 +78,23 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import java.text.DateFormat
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
 fun AlbumScreen(browseId: String) {
     val lazyListState = rememberLazyListState()
 
-    val albumResult by produceState<Result<Album>?>(initialValue = null, browseId) {
-        value = withContext(Dispatchers.IO) {
-            Database.album(browseId)
-                ?.takeIf { it.timestamp != null }
+    val albumResult by remember(browseId) {
+        Database.album(browseId).map { album ->
+            album
+                ?.takeIf { album.timestamp != null }
                 ?.let(Result.Companion::success)
                 ?: fetchAlbum(browseId)
-        }
-    }
+        }.distinctUntilChanged()
+    }.collectAsState(initial = null, context = Dispatchers.IO)
 
     val songs by remember(browseId) {
         Database.albumSongs(browseId)

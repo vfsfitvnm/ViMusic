@@ -138,7 +138,7 @@ interface Database {
     fun artist(id: String): Flow<Artist?>
 
     @Query("SELECT * FROM Album WHERE id = :id")
-    fun album(id: String): Album?
+    fun album(id: String): Flow<Album?>
 
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
