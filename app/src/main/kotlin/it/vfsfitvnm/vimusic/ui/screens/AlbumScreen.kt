@@ -415,7 +415,7 @@ private suspend fun fetchAlbum(browseId: String): Result<Album>? {
                 shareUrl = youtubeAlbum.url,
                 timestamp = System.currentTimeMillis()
             ).also(Database::upsert).also {
-                youtubeAlbum.withAudioSources().items?.forEachIndexed { position, albumItem ->
+                youtubeAlbum.withAudioSources()?.getOrNull()?.items?.forEachIndexed { position, albumItem ->
                     albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
                         Database.insert(mediaItem)
                         Database.upsert(

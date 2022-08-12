@@ -13,6 +13,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import it.vfsfitvnm.youtubemusic.models.BrowseResponse
@@ -878,43 +879,16 @@ object YouTube {
                                 ?.continuation
                         ).next()
                     }
-                }?.recoverIfCancelled()?.getOrNull()
+                }.recoverIfCancelled()?.getOrNull()
             } ?: this
         }
 
-        suspend fun withAudioSources(): PlaylistOrAlbum {
-            @Serializable
-            data class RelatedStream(
-                val url: String,
-                val title: String
-            )
-
-            @Serializable
-            data class Response(
-                val relatedStreams: List<RelatedStream>
-            )
-
-            return url?.replace("https://music.youtube.com/playlist?list=", "https://pipedapi.kavin.rocks/playlists/")?.let { url ->
-                val sources = client.get(url).body<Response>().relatedStreams
-
-                copy(
-                    items = items?.mapIndexed { index, item ->
-                        if (item.info.endpoint?.type != "MUSIC_VIDEO_TYPE_ATV") {
-                            sources.getOrNull(index)?.let { source ->
-                                item.copy(
-                                    info = item.info.copy(
-                                        endpoint = item.info.endpoint?.copy(
-                                            videoId = source.url.removePrefix("/watch?v=")
-                                        )
-                                    )
-                                )
-                            } ?: item
-                        } else {
-                            item
-                        }
-                    }
-                )
-            } ?: this
+        suspend fun withAudioSources(): Result<PlaylistOrAlbum>? {
+            return url?.let { Url(it).parameters["list"] }?.let { playlistId ->
+                playlistOrAlbum("VL$playlistId")?.map { playlist ->
+                    copy(items = playlist.items)
+                }
+            }
         }
     }
 
