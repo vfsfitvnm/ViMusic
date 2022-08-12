@@ -527,7 +527,7 @@ object YouTube {
                     return@runCatching playerResponse
                 }
 
-                val audioStreams = client.get("https://pipedapi.kavin.rocks/streams/$videoId") {
+                val audioStreams = client.get("https://watchapi.whatever.social/streams/$videoId") {
                     contentType(ContentType.Application.Json)
                 }.body<PipedResponse>().audioStreams
 
