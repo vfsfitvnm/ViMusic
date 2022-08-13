@@ -47,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -249,7 +248,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                         Image(
                             painter = painterResource(R.drawable.link),
                             contentDescription = null,
-                            colorFilter = ColorFilter.tint( Color.Black),
+                            colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .size(20.dp)
@@ -364,7 +363,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                 Image(
                                     painter = painterResource(R.drawable.arrow_forward),
                                     contentDescription = null,
-                                    colorFilter = ColorFilter.tint(Color.Black),
+                                    colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                                     modifier = Modifier
                                         .clickable {
                                             textFieldValue = TextFieldValue(
