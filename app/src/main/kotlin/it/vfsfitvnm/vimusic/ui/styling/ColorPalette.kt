@@ -15,7 +15,7 @@ data class ColorPalette(
     val accent: Color,
     val onAccent: Color,
     val red: Color = Color(0xffbf4040),
-    val blue: Color = Color(0xFF4472CF),
+    val blue: Color = Color(0xff4472cf),
     val text: Color,
     val textSecondary: Color,
     val textDisabled: Color,
@@ -39,8 +39,8 @@ val DefaultLightColorPalette = ColorPalette(
     background1 = Color(0xfff8f8fc),
     background2 = Color(0xffeaeaf5),
     text = Color(0xff212121),
-    textSecondary = Color(0xFF656566),
-    textDisabled = Color(0xFF9d9d9d),
+    textSecondary = Color(0xff656566),
+    textDisabled = Color(0xff9d9d9d),
     accent = Color(0xff4046bf),
     onAccent = Color.White,
     isDark = false
@@ -105,7 +105,10 @@ private fun dynamicColorPaletteOf(hsl: FloatArray, isDark: Boolean): ColorPalett
         background0 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.1f), if (isDark) 0.10f else 0.925f),
         background1 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.3f), if (isDark) 0.15f else 0.90f),
         background2 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.4f), if (isDark) 0.2f else 0.85f),
-        accent = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.5f), 0.5f)
+        accent = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.5f), 0.5f),
+        text = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.02f), if (isDark) 0.88f else 0.12f),
+        textSecondary = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.1f), if (isDark) 0.65f else 0.40f),
+        textDisabled = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.2f), if (isDark) 0.40f else 0.65f),
     )
 }
 
