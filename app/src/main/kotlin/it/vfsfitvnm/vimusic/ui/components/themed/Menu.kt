@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
@@ -44,11 +43,8 @@ inline fun Menu(
             .padding(top = 48.dp)
             .verticalScroll(rememberScrollState())
             .fillMaxWidth()
-            .background(
-                color = colorPalette.background1,
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-            )
-            .padding(top = 8.dp)
+            .background(colorPalette.background1)
+            .padding(top = 2.dp)
             .padding(vertical = 8.dp)
             .navigationBarsPadding(),
         content = content
@@ -82,9 +78,9 @@ fun MenuEntry(
         Image(
             painter = painterResource(icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+            colorFilter = ColorFilter.tint(colorPalette.text),
             modifier = Modifier
-                .size(16.dp)
+                .size(14.dp)
         )
 
         Column {
