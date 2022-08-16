@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,6 +67,7 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun LocalPlaylistScreen(playlistId: Long) {
@@ -278,6 +280,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                             )
                         },
                         modifier = Modifier
+                            .animateItemPlacement()
                             .verticalDragAfterLongPressToReorder(
                                 reorderingState = reorderingState,
                                 index = index,
