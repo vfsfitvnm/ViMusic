@@ -80,7 +80,6 @@ import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
 
 @ExperimentalAnimationApi
 @Composable
@@ -92,7 +91,34 @@ fun AlbumScreen(browseId: String) {
             album
                 ?.takeIf { album.timestamp != null }
                 ?.let(Result.Companion::success)
-                ?: fetchAlbum(browseId)
+                ?: YouTube.album(browseId)?.map { youtubeAlbum ->
+                    Database.upsert(
+                        Album(
+                            id = browseId,
+                            title = youtubeAlbum.title,
+                            thumbnailUrl = youtubeAlbum.thumbnail?.url,
+                            year = youtubeAlbum.year,
+                            authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
+                            shareUrl = youtubeAlbum.url,
+                            timestamp = System.currentTimeMillis()
+                        )
+                    )
+
+                    youtubeAlbum.items?.forEachIndexed { position, albumItem ->
+                        albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
+                            Database.insert(mediaItem)
+                            Database.upsert(
+                                SongAlbumMap(
+                                    songId = mediaItem.mediaId,
+                                    albumId = browseId,
+                                    position = position
+                                )
+                            )
+                        }
+                    }
+
+                    null
+                }
         }.distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
@@ -112,7 +138,8 @@ fun AlbumScreen(browseId: String) {
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = WindowInsets.systemBars.asPaddingValues().add(bottom = Dimensions.collapsedPlayer),
+                contentPadding = WindowInsets.systemBars.asPaddingValues()
+                    .add(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
                     .background(colorPalette.background0)
                     .fillMaxSize()
@@ -307,9 +334,6 @@ fun AlbumScreen(browseId: String) {
                                                         albumResult
                                                             ?.getOrNull()
                                                             ?.let(Database::delete)
-                                                        runBlocking(Dispatchers.IO) {
-                                                            fetchAlbum(browseId)
-                                                        }
                                                     }
                                                 }
                                             )
@@ -401,36 +425,4 @@ private fun LoadingOrError(
             }
         }
     }
-}
-
-private suspend fun fetchAlbum(browseId: String): Result<Album>? {
-    return YouTube.album(browseId)
-        ?.map { youtubeAlbum ->
-            val album = Album(
-                id = browseId,
-                title = youtubeAlbum.title,
-                thumbnailUrl = youtubeAlbum.thumbnail?.url,
-                year = youtubeAlbum.year,
-                authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
-                shareUrl = youtubeAlbum.url,
-                timestamp = System.currentTimeMillis()
-            )
-
-            Database.upsert(album)
-
-            youtubeAlbum.items?.forEachIndexed { position, albumItem ->
-                albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
-                    Database.insert(mediaItem)
-                    Database.upsert(
-                        SongAlbumMap(
-                            songId = mediaItem.mediaId,
-                            albumId = browseId,
-                            position = position
-                        )
-                    )
-                }
-            }
-
-            album
-        }
 }
