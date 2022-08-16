@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.views
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun PlayerBottomSheet(

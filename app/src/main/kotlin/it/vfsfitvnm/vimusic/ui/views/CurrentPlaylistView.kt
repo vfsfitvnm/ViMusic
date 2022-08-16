@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.views
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,8 +37,10 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.reordering.animateItemPlacement
+import it.vfsfitvnm.reordering.draggedItem
 import it.vfsfitvnm.reordering.rememberReorderingState
-import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
+import it.vfsfitvnm.reordering.verticalDragToReorder
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -56,6 +59,7 @@ import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
 import it.vfsfitvnm.vimusic.utils.rememberWindows
 import it.vfsfitvnm.vimusic.utils.shuffleQueue
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun CurrentPlaylistView(
@@ -78,7 +82,22 @@ fun CurrentPlaylistView(
     val lazyListState =
         rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex)
 
-    val reorderingState = rememberReorderingState(windows)
+    val reorderingState = rememberReorderingState(
+        items = windows,
+        onDragStart = {
+            hapticFeedback.performHapticFeedback(
+                HapticFeedbackType.LongPress
+            )
+        },
+        onDragEnd = { fromIndex, toIndex ->
+            binder.player.moveMediaItem(fromIndex, toIndex)
+        },
+        itemSizeProvider = { index ->
+            lazyListState.layoutInfo.visibleItemsInfo.find {
+                it.index == index
+            }?.size
+        }
+    )
 
     val paddingValues = WindowInsets.systemBars.asPaddingValues()
     val bottomPadding = paddingValues.calculateBottomPadding()
@@ -162,24 +181,20 @@ fun CurrentPlaylistView(
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(colorPalette.textSecondary),
                             modifier = Modifier
-                                .clickable {}
+                                .clickable { }
+                                .verticalDragToReorder(
+                                    reorderingState = reorderingState,
+                                    index = window.firstPeriodIndex
+                                )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                                 .size(20.dp)
                         )
                     },
                     modifier = Modifier
-//                        .animateItemPlacement()
-                        .verticalDragAfterLongPressToReorder(
+                        .animateItemPlacement(reorderingState)
+                        .draggedItem(
                             reorderingState = reorderingState,
-                            index = window.firstPeriodIndex,
-                            onDragStart = {
-                                hapticFeedback.performHapticFeedback(
-                                    HapticFeedbackType.LongPress
-                                )
-                            },
-                            onDragEnd = { reachedIndex ->
-                                binder.player.moveMediaItem(window.firstPeriodIndex, reachedIndex)
-                            }
+                            index = window.firstPeriodIndex
                         )
                 )
             }

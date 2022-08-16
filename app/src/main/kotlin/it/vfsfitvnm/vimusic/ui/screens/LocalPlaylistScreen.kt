@@ -35,8 +35,10 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import it.vfsfitvnm.reordering.animateItemPlacement
+import it.vfsfitvnm.reordering.draggedItem
 import it.vfsfitvnm.reordering.rememberReorderingState
-import it.vfsfitvnm.reordering.verticalDragAfterLongPressToReorder
+import it.vfsfitvnm.reordering.verticalDragToReorder
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -89,7 +91,44 @@ fun LocalPlaylistScreen(playlistId: Long) {
 
             val thumbnailSize = Dimensions.thumbnails.song.px
 
-            val reorderingState = rememberReorderingState(playlistWithSongs.songs)
+            val reorderingState = rememberReorderingState(
+                items = playlistWithSongs.songs,
+                onDragStart = {
+                    hapticFeedback.performHapticFeedback(
+                        HapticFeedbackType.LongPress
+                    )
+                },
+                onDragEnd = { fromIndex, toIndex ->
+                    transaction {
+                        if (fromIndex > toIndex) {
+                            Database.incrementSongPositions(
+                                playlistId = playlistWithSongs.playlist.id,
+                                fromPosition = toIndex,
+                                toPosition = fromIndex - 1
+                            )
+                        } else if (fromIndex < toIndex) {
+                            Database.decrementSongPositions(
+                                playlistId = playlistWithSongs.playlist.id,
+                                fromPosition = fromIndex + 1,
+                                toPosition = toIndex
+                            )
+                        }
+
+                        Database.update(
+                            SongPlaylistMap(
+                                songId = playlistWithSongs.songs[fromIndex].id,
+                                playlistId = playlistWithSongs.playlist.id,
+                                position = toIndex
+                            )
+                        )
+                    }
+                },
+                itemSizeProvider = { index ->
+                    lazyListState.layoutInfo.visibleItemsInfo.find {
+                        it.index == index + 3
+                    }?.size
+                }
+            )
 
             var isRenaming by rememberSaveable {
                 mutableStateOf(false)
@@ -99,9 +138,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                 TextFieldDialog(
                     hintText = "Enter the playlist name",
                     initialTextInput = playlistWithSongs.playlist.name,
-                    onDismiss = {
-                        isRenaming = false
-                    },
+                    onDismiss = { isRenaming = false },
                     onDone = { text ->
                         query {
                             Database.update(playlistWithSongs.playlist.copy(name = text))
@@ -117,9 +154,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
             if (isDeleting) {
                 ConfirmationDialog(
                     text = "Do you really want to delete this playlist?",
-                    onDismiss = {
-                        isDeleting = false
-                    },
+                    onDismiss = { isDeleting = false },
                     onConfirm = {
                         query {
                             Database.delete(playlistWithSongs.playlist)
@@ -131,7 +166,8 @@ fun LocalPlaylistScreen(playlistId: Long) {
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = WindowInsets.systemBars.asPaddingValues().add(bottom = Dimensions.collapsedPlayer),
+                contentPadding = WindowInsets.systemBars.asPaddingValues()
+                    .add(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
                     .background(colorPalette.background0)
                     .fillMaxSize()
@@ -274,47 +310,18 @@ fun LocalPlaylistScreen(playlistId: Long) {
                                 contentDescription = null,
                                 colorFilter = ColorFilter.tint(colorPalette.textSecondary),
                                 modifier = Modifier
-                                    .clickable {}
+                                    .clickable { }
+                                    .verticalDragToReorder(
+                                        reorderingState = reorderingState,
+                                        index = index
+                                    )
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                                     .size(20.dp)
                             )
                         },
                         modifier = Modifier
-                            .animateItemPlacement()
-                            .verticalDragAfterLongPressToReorder(
-                                reorderingState = reorderingState,
-                                index = index,
-                                onDragStart = {
-                                    hapticFeedback.performHapticFeedback(
-                                        HapticFeedbackType.LongPress
-                                    )
-                                },
-                                onDragEnd = { reachedIndex ->
-                                    transaction {
-                                        if (index > reachedIndex) {
-                                            Database.incrementSongPositions(
-                                                playlistId = playlistWithSongs.playlist.id,
-                                                fromPosition = reachedIndex,
-                                                toPosition = index - 1
-                                            )
-                                        } else if (index < reachedIndex) {
-                                            Database.decrementSongPositions(
-                                                playlistId = playlistWithSongs.playlist.id,
-                                                fromPosition = index + 1,
-                                                toPosition = reachedIndex
-                                            )
-                                        }
-
-                                        Database.update(
-                                            SongPlaylistMap(
-                                                songId = playlistWithSongs.songs[index].id,
-                                                playlistId = playlistWithSongs.playlist.id,
-                                                position = reachedIndex
-                                            )
-                                        )
-                                    }
-                                }
-                            )
+                            .animateItemPlacement(reorderingState = reorderingState)
+                            .draggedItem(reorderingState = reorderingState, index = index)
                     )
                 }
             }

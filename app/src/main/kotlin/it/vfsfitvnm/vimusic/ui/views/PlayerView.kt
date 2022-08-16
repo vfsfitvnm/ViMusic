@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,6 +73,7 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlin.math.absoluteValue
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun PlayerView(
