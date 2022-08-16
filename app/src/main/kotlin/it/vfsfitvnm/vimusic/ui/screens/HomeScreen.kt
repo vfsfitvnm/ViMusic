@@ -381,6 +381,7 @@ fun HomeScreen() {
                                 colorTint = colorPalette.red,
                                 name = "Favorites",
                                 modifier = Modifier
+                                    .animateItemPlacement()
                                     .padding(all = 8.dp)
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
@@ -396,6 +397,7 @@ fun HomeScreen() {
                                 colorTint = colorPalette.blue,
                                 name = "Offline",
                                 modifier = Modifier
+                                    .animateItemPlacement()
                                     .padding(all = 8.dp)
                                     .clickable(
                                         indication = rememberRipple(bounded = true),
