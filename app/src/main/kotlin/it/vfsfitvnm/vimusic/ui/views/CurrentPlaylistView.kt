@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,10 +36,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.reordering.ReorderingLazyColumn
 import it.vfsfitvnm.reordering.animateItemPlacement
 import it.vfsfitvnm.reordering.draggedItem
 import it.vfsfitvnm.reordering.rememberReorderingState
-import it.vfsfitvnm.reordering.verticalDragToReorder
+import it.vfsfitvnm.reordering.reorder
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -79,11 +79,9 @@ fun CurrentPlaylistView(
     val windows by rememberWindows(binder.player)
     val shouldBePlaying by rememberShouldBePlaying(binder.player)
 
-    val lazyListState =
-        rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex)
-
     val reorderingState = rememberReorderingState(
-        items = windows,
+        lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex),
+        key = windows,
         onDragStart = {
             hapticFeedback.performHapticFeedback(
                 HapticFeedbackType.LongPress
@@ -92,24 +90,20 @@ fun CurrentPlaylistView(
         onDragEnd = { fromIndex, toIndex ->
             binder.player.moveMediaItem(fromIndex, toIndex)
         },
-        itemSizeProvider = { index ->
-            lazyListState.layoutInfo.visibleItemsInfo.find {
-                it.index == index
-            }?.size
-        }
+        extraItemCount = 0
     )
 
     val paddingValues = WindowInsets.systemBars.asPaddingValues()
     val bottomPadding = paddingValues.calculateBottomPadding()
 
     Column {
-        LazyColumn(
-            state = lazyListState,
+        ReorderingLazyColumn(
+            reorderingState = reorderingState,
             contentPadding = paddingValues.add(bottom = -bottomPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .nestedScroll(remember {
-                    layoutState.nestedScrollConnection(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
+                    layoutState.nestedScrollConnection(reorderingState.lazyListState.firstVisibleItemIndex == 0 && reorderingState.lazyListState.firstVisibleItemScrollOffset == 0)
                 })
                 .background(colorPalette.background1)
                 .weight(1f)
@@ -182,7 +176,7 @@ fun CurrentPlaylistView(
                             colorFilter = ColorFilter.tint(colorPalette.textSecondary),
                             modifier = Modifier
                                 .clickable { }
-                                .verticalDragToReorder(
+                                .reorder(
                                     reorderingState = reorderingState,
                                     index = window.firstPeriodIndex
                                 )

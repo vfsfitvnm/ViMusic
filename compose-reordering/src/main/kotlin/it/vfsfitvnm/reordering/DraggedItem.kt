@@ -15,7 +15,7 @@ fun Modifier.draggedItem(
     val translation by reorderingState.translationFor(index)
 
     offset {
-        when (reorderingState.orientation) {
+        when (reorderingState.lazyListState.layoutInfo.orientation) {
             Orientation.Vertical -> IntOffset(0, translation)
             Orientation.Horizontal -> IntOffset(translation, 0)
         }

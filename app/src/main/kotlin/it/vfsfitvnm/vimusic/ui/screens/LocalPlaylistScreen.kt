@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
@@ -35,10 +34,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import it.vfsfitvnm.reordering.ReorderingLazyColumn
 import it.vfsfitvnm.reordering.animateItemPlacement
 import it.vfsfitvnm.reordering.draggedItem
 import it.vfsfitvnm.reordering.rememberReorderingState
-import it.vfsfitvnm.reordering.verticalDragToReorder
+import it.vfsfitvnm.reordering.reorder
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -92,7 +92,8 @@ fun LocalPlaylistScreen(playlistId: Long) {
             val thumbnailSize = Dimensions.thumbnails.song.px
 
             val reorderingState = rememberReorderingState(
-                items = playlistWithSongs.songs,
+                lazyListState = lazyListState,
+                key = playlistWithSongs.songs,
                 onDragStart = {
                     hapticFeedback.performHapticFeedback(
                         HapticFeedbackType.LongPress
@@ -123,11 +124,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                         )
                     }
                 },
-                itemSizeProvider = { index ->
-                    lazyListState.layoutInfo.visibleItemsInfo.find {
-                        it.index == index + 3
-                    }?.size
-                }
+                extraItemCount = 3
             )
 
             var isRenaming by rememberSaveable {
@@ -164,8 +161,8 @@ fun LocalPlaylistScreen(playlistId: Long) {
                 )
             }
 
-            LazyColumn(
-                state = lazyListState,
+            ReorderingLazyColumn(
+                reorderingState = reorderingState,
                 contentPadding = WindowInsets.systemBars.asPaddingValues()
                     .add(bottom = Dimensions.collapsedPlayer),
                 modifier = Modifier
@@ -311,7 +308,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                                 colorFilter = ColorFilter.tint(colorPalette.textSecondary),
                                 modifier = Modifier
                                     .clickable { }
-                                    .verticalDragToReorder(
+                                    .reorder(
                                         reorderingState = reorderingState,
                                         index = index
                                     )
