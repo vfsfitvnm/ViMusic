@@ -25,10 +25,12 @@ fun relaunchableEffect(
 
 @Composable
 @NonRestartableComposable
-fun relaunchableEffect2(
+fun relaunchableEffect(
     key1: Any?,
+    key2: Any?,
     block: suspend CoroutineScope.() -> Unit
-): RememberObserver {
+): () -> Unit {
     val applyContext = currentComposer.applyCoroutineContext
-    return remember(key1) { LaunchedEffectImpl(applyContext, block) }
+    val launchedEffect = remember(key1, key2) { LaunchedEffectImpl(applyContext, block) }
+    return launchedEffect::onRemembered
 }
