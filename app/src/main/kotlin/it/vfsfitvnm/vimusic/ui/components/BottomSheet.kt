@@ -281,7 +281,7 @@ fun rememberBottomSheetState(
     val coroutineScope = rememberCoroutineScope()
 
     var previousAnchor by rememberSaveable {
-        mutableStateOf(if (isExpanded) expandedAnchor else collapsedAnchor)
+        mutableStateOf(if (isExpanded) expandedAnchor else dismissedAnchor)
     }
 
     return remember(dismissedBound, expandedBound, collapsedBound, coroutineScope) {

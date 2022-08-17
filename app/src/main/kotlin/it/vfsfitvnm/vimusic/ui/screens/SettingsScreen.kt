@@ -17,12 +17,12 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.*
+import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 
@@ -80,8 +80,7 @@ fun SettingsScreen() {
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = Dimensions.collapsedPlayer)
-                    .systemBarsPadding()
+                    .padding(LocalPlayerAwarePaddingValues.current)
             ) {
                 TopAppBar(
                     modifier = Modifier

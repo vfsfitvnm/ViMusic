@@ -115,9 +115,12 @@ class ReorderingState(
             }
         } else {
             val offsetInViewPort = targetOffset + itemInfo.offset - overscrolled
-            val topOverscroll = lazyListState.layoutInfo.viewportStartOffset - offsetInViewPort
-            val bottomOverscroll =
-                lazyListState.layoutInfo.viewportEndOffset - offsetInViewPort - itemInfo.size
+
+            val topOverscroll = lazyListState.layoutInfo.viewportStartOffset +
+                    lazyListState.layoutInfo.beforeContentPadding - offsetInViewPort
+
+            val bottomOverscroll = lazyListState.layoutInfo.viewportEndOffset -
+                    lazyListState.layoutInfo.afterContentPadding - offsetInViewPort - itemInfo.size
 
             if (topOverscroll > 0) {
                 overscroll(topOverscroll)

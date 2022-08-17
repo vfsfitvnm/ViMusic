@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -26,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
@@ -34,7 +34,6 @@ import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
 import it.vfsfitvnm.vimusic.ui.screens.SettingsTitle
 import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
@@ -68,8 +67,7 @@ fun PlayerSettingsScreen() {
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = Dimensions.collapsedPlayer)
-                    .systemBarsPadding()
+                    .padding(LocalPlayerAwarePaddingValues.current)
             ) {
                 TopAppBar(
                     modifier = Modifier

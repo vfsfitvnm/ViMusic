@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
+import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.checkpoint
 import it.vfsfitvnm.vimusic.internal
@@ -124,8 +125,7 @@ fun BackupAndRestoreScreen() {
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = Dimensions.collapsedPlayer)
-                    .systemBarsPadding()
+                    .padding(LocalPlayerAwarePaddingValues.current)
             ) {
                 TopAppBar(
                     modifier = Modifier

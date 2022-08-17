@@ -21,17 +21,12 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
@@ -50,7 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.unit.coerceAtMost
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.media3.common.MediaItem
@@ -275,32 +270,42 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            CompositionLocalProvider(
-                LocalAppearance provides appearance,
-                LocalOverscrollConfiguration provides null,
-                LocalIndication provides rememberRipple(bounded = false),
-                LocalRippleTheme provides rippleTheme,
-                LocalShimmerTheme provides shimmerTheme,
-                LocalPlayerServiceBinder provides binder,
-                LocalMenuState provides rememberMenuState(),
-                LocalHapticFeedback provides rememberHapticFeedback()
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(appearance.colorPalette.background0)
             ) {
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(appearance.colorPalette.background0)
+                val paddingValues = WindowInsets.systemBars.asPaddingValues()
+
+                val playerBottomSheetState = rememberBottomSheetState(
+                    dismissedBound = 0.dp,
+                    collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
+                    expandedBound = maxHeight,
+                    isExpanded = expandPlayerBottomSheet
+                )
+
+                val playerAwarePaddingValues = if (playerBottomSheetState.isDismissed) {
+                    paddingValues
+                } else {
+                    object : PaddingValues by paddingValues {
+                        override fun calculateBottomPadding(): Dp =
+                            paddingValues.calculateBottomPadding() + Dimensions.collapsedPlayer
+                    }
+                }
+
+                CompositionLocalProvider(
+                    LocalAppearance provides appearance,
+                    LocalOverscrollConfiguration provides null,
+                    LocalIndication provides rememberRipple(bounded = false),
+                    LocalRippleTheme provides rippleTheme,
+                    LocalShimmerTheme provides shimmerTheme,
+                    LocalPlayerServiceBinder provides binder,
+                    LocalMenuState provides rememberMenuState(),
+                    LocalHapticFeedback provides rememberHapticFeedback(),
+                    LocalPlayerAwarePaddingValues provides playerAwarePaddingValues
                 ) {
                     when (val uri = uri) {
                         null -> {
-                            val paddingValues = WindowInsets.navigationBars.asPaddingValues()
-
-                            val playerBottomSheetState = rememberBottomSheetState(
-                                dismissedBound = 0.dp,
-                                collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
-                                expandedBound = maxHeight,
-                                isExpanded = expandPlayerBottomSheet
-                            )
-
                             HomeScreen()
 
                             PlayerView(
@@ -358,3 +363,5 @@ fun ExpandPlayerOnPlaylistChange(player: Player, expand: () -> Unit) {
         })
     }
 }
+
+val LocalPlayerAwarePaddingValues = staticCompositionLocalOf<PaddingValues> { TODO() }

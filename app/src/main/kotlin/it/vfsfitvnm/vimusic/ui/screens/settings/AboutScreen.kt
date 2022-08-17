@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import coil.size.Dimension
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.BuildConfig
+import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
@@ -48,8 +49,7 @@ fun AboutScreen() {
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = Dimensions.collapsedPlayer)
-                    .systemBarsPadding()
+                    .padding(LocalPlayerAwarePaddingValues.current)
             ) {
                 TopAppBar(
                     modifier = Modifier
