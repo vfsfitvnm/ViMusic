@@ -33,9 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -70,9 +68,8 @@ fun CurrentPlaylistView(
     onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val binder = LocalPlayerServiceBinder.current
-    val hapticFeedback = LocalHapticFeedback.current
     val (colorPalette, typography) = LocalAppearance.current
+    val binder = LocalPlayerServiceBinder.current
     val layoutDirection = LocalLayoutDirection.current
 
     binder?.player ?: return
@@ -86,11 +83,6 @@ fun CurrentPlaylistView(
     val reorderingState = rememberReorderingState(
         lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex),
         key = windows,
-        onDragStart = {
-            hapticFeedback.performHapticFeedback(
-                HapticFeedbackType.LongPress
-            )
-        },
         onDragEnd = { fromIndex, toIndex ->
             binder.player.moveMediaItem(fromIndex, toIndex)
         },

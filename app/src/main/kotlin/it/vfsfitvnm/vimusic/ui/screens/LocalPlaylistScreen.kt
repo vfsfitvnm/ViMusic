@@ -26,8 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -80,22 +78,15 @@ fun LocalPlaylistScreen(playlistId: Long) {
         globalRoutes()
 
         host {
-            val hapticFeedback = LocalHapticFeedback.current
-            val menuState = LocalMenuState.current
-
-            val binder = LocalPlayerServiceBinder.current
             val (colorPalette, typography) = LocalAppearance.current
+            val menuState = LocalMenuState.current
+            val binder = LocalPlayerServiceBinder.current
 
             val thumbnailSize = Dimensions.thumbnails.song.px
 
             val reorderingState = rememberReorderingState(
                 lazyListState = lazyListState,
                 key = playlistWithSongs.songs,
-                onDragStart = {
-                    hapticFeedback.performHapticFeedback(
-                        HapticFeedbackType.LongPress
-                    )
-                },
                 onDragEnd = { fromIndex, toIndex ->
                     transaction {
                         if (fromIndex > toIndex) {
