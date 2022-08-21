@@ -5,14 +5,13 @@ package it.vfsfitvnm.reordering
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.lazy.LazyListBeyondBoundsInfo
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,35 +34,21 @@ class ReorderingState(
 ) {
     private lateinit var lazyListBeyondBoundsInfoInterval: LazyListBeyondBoundsInfo.Interval
     internal val lazyListBeyondBoundsInfo = LazyListBeyondBoundsInfo()
-    internal val offset: Animatable<Int, AnimationVector1D> = Animatable(0, Int.VectorConverter)
+    internal val offset = Animatable(0, Int.VectorConverter)
 
     internal var draggingIndex by mutableStateOf(-1)
-    private var reachedIndex by mutableStateOf(-1)
-    private var draggingItemSize by mutableStateOf(0)
+    internal var reachedIndex by mutableStateOf(-1)
+    internal var draggingItemSize by mutableStateOf(0)
 
     lateinit var itemInfo: LazyListItemInfo
 
-    var previousItemSize = 0
-    var nextItemSize = 0
+    private var previousItemSize = 0
+    private var nextItemSize = 0
 
     private var overscrolled = 0
 
-    private val noTranslation = object : State<Int> {
-        override val value = 0
-    }
-
-    @Composable
-    internal fun translationFor(index: Int): State<Int> = when (draggingIndex) {
-        -1 -> noTranslation
-        index -> offset.asState()
-        else -> animateIntAsState(
-            when (index) {
-                in (draggingIndex + 1)..reachedIndex -> -draggingItemSize
-                in reachedIndex until draggingIndex -> draggingItemSize
-                else -> 0
-            }
-        )
-    }
+    internal var indexesToAnimate = mutableStateMapOf<Int, Animatable<Int, AnimationVector1D>>()
+    private var animatablesPool: AnimatablesPool<Int, AnimationVector1D>? = null
 
     fun onDragStart(index: Int) {
         overscrolled = 0
@@ -85,6 +70,11 @@ class ReorderingState(
 
         lazyListBeyondBoundsInfoInterval =
             lazyListBeyondBoundsInfo.addInterval(index + extraItemCount, index + extraItemCount)
+
+        val size =
+            lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
+
+        animatablesPool = AnimatablesPool(size / draggingItemSize + 2, 0, Int.VectorConverter)
     }
 
     fun onDrag(change: PointerInputChange, dragAmount: Offset) {
@@ -106,12 +96,49 @@ class ReorderingState(
                 reachedIndex += 1
                 nextItemSize += draggingItemSize
                 previousItemSize += draggingItemSize
+
+                val indexToAnimate = reachedIndex - if (draggingIndex < reachedIndex) 0 else 1
+
+                coroutineScope.launch {
+                    val animatable = indexesToAnimate.getOrPut(indexToAnimate) {
+                        animatablesPool?.acquire() ?: return@launch
+                    }
+
+                    if (draggingIndex < reachedIndex) {
+                        animatable.snapTo(0)
+                        animatable.animateTo(-draggingItemSize)
+                    } else {
+                        animatable.snapTo(draggingItemSize)
+                        animatable.animateTo(0)
+                    }
+
+                    indexesToAnimate.remove(indexToAnimate)
+                    animatablesPool?.release(animatable)
+                }
             }
         } else if (targetOffset < previousItemSize) {
             if (reachedIndex > 0) {
                 reachedIndex -= 1
                 previousItemSize -= draggingItemSize
                 nextItemSize -= draggingItemSize
+
+                val indexToAnimate = reachedIndex + if (draggingIndex > reachedIndex) 0 else 1
+
+                coroutineScope.launch {
+                    val animatable = indexesToAnimate.getOrPut(indexToAnimate) {
+                        animatablesPool?.acquire() ?: return@launch
+                    }
+
+                    if (draggingIndex > reachedIndex) {
+                        animatable.snapTo(0)
+                        animatable.animateTo(draggingItemSize)
+                    } else {
+                        animatable.snapTo(-draggingItemSize)
+                        animatable.animateTo(0)
+                    }
+                    indexesToAnimate.remove(indexToAnimate)
+                    animatablesPool?.release(animatable)
+                }
             }
         } else {
             val offsetInViewPort = targetOffset + itemInfo.offset - overscrolled
@@ -146,6 +173,7 @@ class ReorderingState(
             }
 
             lazyListBeyondBoundsInfo.removeInterval(lazyListBeyondBoundsInfoInterval)
+            animatablesPool = null
         }
     }
 

@@ -1,24 +1,34 @@
 package it.vfsfitvnm.reordering
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.offset
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
 
+@SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.draggedItem(
     reorderingState: ReorderingState,
     index: Int
-): Modifier = composed {
-    val translation by reorderingState.translationFor(index)
-
-    offset {
+): Modifier = when (reorderingState.draggingIndex) {
+    -1 -> this
+    index -> offset {
         when (reorderingState.lazyListState.layoutInfo.orientation) {
-            Orientation.Vertical -> IntOffset(0, translation)
-            Orientation.Horizontal -> IntOffset(translation, 0)
+            Orientation.Vertical -> IntOffset(0, reorderingState.offset.value)
+            Orientation.Horizontal -> IntOffset(reorderingState.offset.value, 0)
+        }
+    }.zIndex(1f)
+    else -> offset {
+        val offset =  when (index) {
+            in reorderingState.indexesToAnimate -> reorderingState.indexesToAnimate.getValue(index).value
+            in (reorderingState.draggingIndex + 1)..reorderingState.reachedIndex -> -reorderingState.draggingItemSize
+            in reorderingState.reachedIndex until reorderingState.draggingIndex -> reorderingState.draggingItemSize
+            else -> 0
+        }
+        when (reorderingState.lazyListState.layoutInfo.orientation) {
+            Orientation.Vertical -> IntOffset(0, offset)
+            Orientation.Horizontal -> IntOffset(offset, 0)
         }
     }
-    .zIndex(if (reorderingState.draggingIndex == index) 1f else 0f)
 }
