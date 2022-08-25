@@ -1,13 +1,11 @@
 package it.vfsfitvnm.reordering
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
 
-@SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.draggedItem(
     reorderingState: ReorderingState,
     index: Int

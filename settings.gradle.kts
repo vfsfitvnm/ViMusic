@@ -17,7 +17,7 @@ dependencyResolutionManagement {
 
             version("compose-compiler", "1.3.0")
 
-            version("compose", "1.3.0-alpha03")
+            version("compose", "1.3.0-beta01")
             library("compose-foundation", "androidx.compose.foundation", "foundation").versionRef("compose")
             library("compose-ui", "androidx.compose.ui", "ui").versionRef("compose")
             library("compose-ui-util", "androidx.compose.ui", "ui-util").versionRef("compose")
@@ -27,7 +27,7 @@ dependencyResolutionManagement {
 
             library("compose-activity", "androidx.activity", "activity-compose").version("1.5.1")
 
-            library("compose-coil", "io.coil-kt", "coil-compose").version("2.1.0")
+            library("compose-coil", "io.coil-kt", "coil-compose").version("2.2.0")
 
             version("room", "2.5.0-alpha02")
             library("room", "androidx.room", "room-ktx").versionRef("room")
