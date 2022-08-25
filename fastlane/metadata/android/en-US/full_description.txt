@@ -1,4 +1,5 @@
-<b>Features</b>
+<b>Features:</b>
+
 * Search and play any song or video from YouTube Music
 * Background playback w/ notification
 * Search for songs, albums, artists, videos and playlists
