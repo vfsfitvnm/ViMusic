@@ -153,7 +153,11 @@ class MainActivity : ComponentActivity() {
                     binder?.setBitmapListener { bitmap: Bitmap? ->
                         if (bitmap == null) {
                             val colorPalette =
-                                colorPaletteOf(ColorPaletteName.Dynamic, colorPaletteMode, isSystemInDarkTheme)
+                                colorPaletteOf(
+                                    ColorPaletteName.Dynamic,
+                                    colorPaletteMode,
+                                    isSystemInDarkTheme
+                                )
 
                             setSystemBarAppearance(colorPalette.isDark)
 
@@ -170,7 +174,10 @@ class MainActivity : ComponentActivity() {
                                 withContext(Dispatchers.Main) {
                                     setSystemBarAppearance(it.isDark)
                                 }
-                                appearance = appearance.copy(colorPalette = it, typography = typographyOf(it.text))
+                                appearance = appearance.copy(
+                                    colorPalette = it,
+                                    typography = typographyOf(it.text)
+                                )
                             }
                         }
                     }
@@ -181,10 +188,16 @@ class MainActivity : ComponentActivity() {
                         when (key) {
                             colorPaletteNameKey, colorPaletteModeKey -> {
                                 val colorPaletteName =
-                                    sharedPreferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                                    sharedPreferences.getEnum(
+                                        colorPaletteNameKey,
+                                        ColorPaletteName.Dynamic
+                                    )
 
                                 val colorPaletteMode =
-                                    sharedPreferences.getEnum(colorPaletteModeKey, ColorPaletteMode.System)
+                                    sharedPreferences.getEnum(
+                                        colorPaletteModeKey,
+                                        ColorPaletteMode.System
+                                    )
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     setDynamicPalette(colorPaletteMode)
@@ -311,13 +324,17 @@ class MainActivity : ComponentActivity() {
                                     .align(Alignment.BottomCenter)
                             )
 
-                            binder?.player?.let { player ->
-                                ExpandPlayerOnPlaylistChange(
-                                    player = player,
-                                    expand = {
-                                        playerBottomSheetState.expand(tween(500))
+                            DisposableEffect(binder?.player) {
+                                binder?.player?.listener(object : Player.Listener {
+                                    override fun onMediaItemTransition(
+                                        mediaItem: MediaItem?,
+                                        reason: Int
+                                    ) {
+                                        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
+                                            playerBottomSheetState.expand(tween(500))
+                                        }
                                     }
-                                )
+                                }) ?: onDispose { }
                             }
                         }
                         else -> IntentUriScreen(uri = uri)
@@ -347,18 +364,5 @@ class MainActivity : ComponentActivity() {
 }
 
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }
-
-@Composable
-fun ExpandPlayerOnPlaylistChange(player: Player, expand: () -> Unit) {
-    DisposableEffect(player, expand) {
-        player.listener(object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                    expand()
-                }
-            }
-        })
-    }
-}
 
 val LocalPlayerAwarePaddingValues = staticCompositionLocalOf<PaddingValues> { TODO() }

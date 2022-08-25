@@ -272,6 +272,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         maybeRecoverPlaybackError()
         maybeNormalizeVolume()
         maybeProcessRadio()
+
+        if (mediaItem == null) {
+            bitmapProvider.listener?.invoke(null)
+        }
     }
 
     private fun maybeRecoverPlaybackError() {
@@ -680,9 +684,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         var isLoadingRadio by mutableStateOf(false)
             private set
-
-        val lastBitmap: Bitmap?
-            get() = bitmapProvider.lastBitmap
 
         fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
             bitmapProvider.listener = listener
