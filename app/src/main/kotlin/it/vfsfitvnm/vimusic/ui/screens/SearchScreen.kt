@@ -44,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -63,8 +64,8 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
-import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
+import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -85,7 +86,15 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
             val layoutDirection = LocalLayoutDirection.current
             val paddingValues = WindowInsets.systemBars.asPaddingValues()
 
-            var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
+            val timeIconPainter = painterResource(R.drawable.time)
+            val closeIconPainter = painterResource(R.drawable.close)
+            val arrowForwardIconPainter = painterResource(R.drawable.arrow_forward)
+            val rippleIndication = rememberRipple(bounded = true)
+
+            var textFieldValue by rememberSaveable(
+                initialTextInput,
+                stateSaver = TextFieldValue.Saver
+            ) {
                 mutableStateOf(
                     TextFieldValue(
                         text = initialTextInput,
@@ -115,7 +124,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                 Database.queries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
                     old.size == new.size
                 }
-            }.collectAsState(initial = null, context = Dispatchers.IO)
+            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
             val isOpenableUrl = remember(textFieldValue.text) {
                 listOf(
@@ -235,11 +244,9 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .clickable(
-                                indication = rememberRipple(bounded = true),
+                                indication = rippleIndication,
                                 interactionSource = remember { MutableInteractionSource() },
-                                onClick = {
-                                    onUri(textFieldValue.text.toUri())
-                                }
+                                onClick = { onUri(textFieldValue.text.toUri()) }
                             )
                             .fillMaxWidth()
                             .background(colorPalette.background1)
@@ -270,27 +277,28 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                     )
                 ) {
                     items(
-                        items = history ?: emptyList(),
+                        items = history,
                         key = SearchQuery::id
                     ) { searchQuery ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clickable(
-                                    indication = rememberRipple(bounded = true),
+                                    indication = rippleIndication,
                                     interactionSource = remember { MutableInteractionSource() },
                                     onClick = { onSearch(searchQuery.query) }
                                 )
                                 .fillMaxWidth()
                                 .padding(vertical = 16.dp, horizontal = 8.dp)
                         ) {
-                            Image(
-                                painter = painterResource(R.drawable.time),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.textDisabled),
+                            Spacer(
                                 modifier = Modifier
                                     .padding(horizontal = 8.dp)
                                     .size(20.dp)
+                                    .paint(
+                                        painter = timeIconPainter,
+                                        colorFilter = ColorFilter.tint(colorPalette.textDisabled)
+                                    )
                             )
 
                             BasicText(
@@ -301,10 +309,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                     .weight(1f)
                             )
 
-                            Image(
-                                painter = painterResource(R.drawable.close),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.textDisabled),
+                            Spacer(
                                 modifier = Modifier
                                     .clickable {
                                         query {
@@ -313,12 +318,13 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                     }
                                     .padding(horizontal = 8.dp)
                                     .size(20.dp)
+                                    .paint(
+                                        painter = closeIconPainter,
+                                        colorFilter = ColorFilter.tint(colorPalette.textDisabled)
+                                    )
                             )
 
-                            Image(
-                                painter = painterResource(R.drawable.arrow_forward),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.textDisabled),
+                            Spacer(
                                 modifier = Modifier
                                     .clickable {
                                         textFieldValue = TextFieldValue(
@@ -329,6 +335,10 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                     .rotate(225f)
                                     .padding(horizontal = 8.dp)
                                     .size(20.dp)
+                                    .paint(
+                                        painter = arrowForwardIconPainter,
+                                        colorFilter = ColorFilter.tint(colorPalette.textDisabled)
+                                    )
                             )
                         }
                     }
@@ -339,7 +349,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clickable(
-                                        indication = rememberRipple(bounded = true),
+                                        indication = rippleIndication,
                                         interactionSource = remember { MutableInteractionSource() },
                                         onClick = { onSearch(suggestion) }
                                     )
@@ -360,10 +370,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                         .weight(1f)
                                 )
 
-                                Image(
-                                    painter = painterResource(R.drawable.arrow_forward),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette.textDisabled),
+                                Spacer(
                                     modifier = Modifier
                                         .clickable {
                                             textFieldValue = TextFieldValue(
@@ -374,6 +381,10 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                         .rotate(225f)
                                         .padding(horizontal = 8.dp)
                                         .size(22.dp)
+                                        .paint(
+                                            painter = arrowForwardIconPainter,
+                                            colorFilter = ColorFilter.tint(colorPalette.textDisabled)
+                                        )
                                 )
                             }
                         }
