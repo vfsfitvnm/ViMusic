@@ -11,23 +11,24 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 
-val LocalMenuState = compositionLocalOf<MenuState> { TODO() }
+val LocalMenuState = staticCompositionLocalOf { MenuState() }
 
-class MenuState(isDisplayedState: MutableState<Boolean>) {
-    var isDisplayed by isDisplayedState
+@Stable
+class MenuState {
+    var isDisplayed by mutableStateOf(false)
         private set
 
-    var content: @Composable () -> Unit = {}
+    var content by mutableStateOf<@Composable () -> Unit>({})
+        private set
 
     fun display(content: @Composable () -> Unit) {
         this.content = content
@@ -36,19 +37,6 @@ class MenuState(isDisplayedState: MutableState<Boolean>) {
 
     fun hide() {
         isDisplayed = false
-    }
-}
-
-@Composable
-fun rememberMenuState(): MenuState {
-    val isDisplayedState = remember {
-        mutableStateOf(false)
-    }
-
-    return remember {
-        MenuState(
-            isDisplayedState = isDisplayedState
-        )
     }
 }
 
