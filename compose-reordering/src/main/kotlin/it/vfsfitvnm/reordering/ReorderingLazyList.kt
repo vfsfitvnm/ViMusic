@@ -33,7 +33,6 @@ import androidx.compose.foundation.lazy.rememberLazyListItemProvider
 import androidx.compose.foundation.overscroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +48,6 @@ import androidx.compose.ui.unit.offset
 @Composable
 internal fun ReorderingLazyList(
     modifier: Modifier,
-    state: LazyListState,
     reorderingState: ReorderingState,
     contentPadding: PaddingValues,
     reverseLayout: Boolean,
@@ -63,16 +61,16 @@ internal fun ReorderingLazyList(
     content: LazyListScope.() -> Unit
 ) {
     val overscrollEffect = ScrollableDefaults.overscrollEffect()
-    val itemProvider = rememberLazyListItemProvider(state, content)
-    val scope = rememberCoroutineScope()
-    val placementAnimator = remember(state, isVertical) {
-        LazyListItemPlacementAnimator(scope, isVertical)
+    val itemProvider = rememberLazyListItemProvider(reorderingState.lazyListState, content)
+    val placementAnimator = remember(reorderingState.lazyListState, isVertical) {
+        LazyListItemPlacementAnimator(reorderingState.coroutineScope, isVertical).also {
+            reorderingState.lazyListState.placementAnimator = it
+        }
     }
-    state.placementAnimator = placementAnimator
 
     val measurePolicy = rememberLazyListMeasurePolicy(
         itemProvider,
-        state,
+        reorderingState.lazyListState,
         reorderingState.lazyListBeyondBoundsInfo,
         overscrollEffect,
         contentPadding,
@@ -88,19 +86,26 @@ internal fun ReorderingLazyList(
     val orientation = if (isVertical) Orientation.Vertical else Orientation.Horizontal
     LazyLayout(
         modifier = modifier
-            .then(state.remeasurementModifier)
-            .then(state.awaitLayoutModifier)
+            .then(reorderingState.lazyListState.remeasurementModifier)
+            .then(reorderingState.lazyListState.awaitLayoutModifier)
             .lazyListSemantics(
                 itemProvider = itemProvider,
-                state = state,
-                coroutineScope = scope,
+                state = reorderingState.lazyListState,
+                coroutineScope = reorderingState.coroutineScope,
                 isVertical = isVertical,
                 reverseScrolling = reverseLayout,
                 userScrollEnabled = userScrollEnabled
             )
             .clipScrollableContainer(orientation)
-            .lazyListBeyondBoundsModifier(state, reorderingState.lazyListBeyondBoundsInfo, reverseLayout)
-            .lazyListPinningModifier(state, reorderingState.lazyListBeyondBoundsInfo)
+            .lazyListBeyondBoundsModifier(
+                state = reorderingState.lazyListState,
+                beyondBoundsInfo = reorderingState.lazyListBeyondBoundsInfo,
+                reverseLayout = reverseLayout
+            )
+            .lazyListPinningModifier(
+                state = reorderingState.lazyListState,
+                beyondBoundsInfo = reorderingState.lazyListBeyondBoundsInfo
+            )
             .overscroll(overscrollEffect)
             .scrollable(
                 orientation = orientation,
@@ -109,13 +114,13 @@ internal fun ReorderingLazyList(
                     orientation,
                     reverseLayout
                 ),
-                interactionSource = state.internalInteractionSource,
+                interactionSource = reorderingState.lazyListState.internalInteractionSource,
                 flingBehavior = flingBehavior,
-                state = state,
+                state = reorderingState.lazyListState,
                 overscrollEffect = overscrollEffect,
                 enabled = userScrollEnabled
             ),
-        prefetchState = state.prefetchState,
+        prefetchState = reorderingState.lazyListState.prefetchState,
         measurePolicy = measurePolicy,
         itemProvider = itemProvider
     )

@@ -27,7 +27,6 @@ fun ReorderingLazyColumn(
 ) {
     ReorderingLazyList(
         modifier = modifier,
-        state = reorderingState.lazyListState,
         reorderingState = reorderingState,
         contentPadding = contentPadding,
         flingBehavior = flingBehavior,
