@@ -34,12 +34,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -53,7 +51,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun Controls(
-    mediaItem: MediaItem,
+    mediaId: String,
+    title: String?,
+    artist: String?,
     shouldBePlaying: Boolean,
     position: Long,
     duration: Long,
@@ -66,12 +66,12 @@ fun Controls(
 
     val repeatMode by rememberRepeatMode(binder.player)
 
-    var scrubbingPosition by remember(mediaItem.mediaId) {
+    var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
 
-    val likedAt by remember(mediaItem.mediaId) {
-        Database.likedAt(mediaItem.mediaId).distinctUntilChanged()
+    val likedAt by remember(mediaId) {
+        Database.likedAt(mediaId).distinctUntilChanged()
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
@@ -94,14 +94,14 @@ fun Controls(
         )
 
         BasicText(
-            text = mediaItem.mediaMetadata.title?.toString() ?: "",
+            text = title ?: "",
             style = typography.l.bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
 
         BasicText(
-            text = mediaItem.mediaMetadata.artist?.toString() ?: "",
+            text = artist ?: "",
             style = typography.s.semiBold.secondary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -180,13 +180,7 @@ fun Controls(
                 modifier = Modifier
                     .clickable {
                         query {
-                            if (Database.like(
-                                    mediaItem.mediaId,
-                                    if (likedAt == null) System.currentTimeMillis() else null
-                                ) == 0
-                            ) {
-                                Database.insert(mediaItem, Song::toggleLike)
-                            }
+                            Database.like(mediaId, if (likedAt == null) System.currentTimeMillis() else null)
                         }
                     }
                     .weight(1f)

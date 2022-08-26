@@ -263,7 +263,9 @@ fun PlayerView(
                     }
 
                     Controls(
-                        mediaItem = mediaItem,
+                        mediaId = mediaItem.mediaId,
+                        title = mediaItem.mediaMetadata.title?.toString(),
+                        artist = mediaItem.mediaMetadata.artist?.toString(),
                         shouldBePlaying = shouldBePlaying,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
@@ -302,7 +304,9 @@ fun PlayerView(
                     }
 
                     Controls(
-                        mediaItem = mediaItem,
+                        mediaId = mediaItem.mediaId,
+                        title = mediaItem.mediaMetadata.title?.toString(),
+                        artist = mediaItem.mediaMetadata.artist?.toString(),
                         shouldBePlaying = shouldBePlaying,
                         position = positionAndDuration.first,
                         duration = positionAndDuration.second,
