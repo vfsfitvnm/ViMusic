@@ -11,7 +11,6 @@ open class DetailedSong(
     val artistsText: String? = null,
     val durationText: String,
     val thumbnailUrl: String?,
-    val likedAt: Long? = null,
     val totalPlayTimeMs: Long = 0,
     @Relation(
         entity = SongAlbumMap::class,

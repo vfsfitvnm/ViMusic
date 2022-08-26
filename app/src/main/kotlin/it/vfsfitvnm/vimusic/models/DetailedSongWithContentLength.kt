@@ -10,7 +10,6 @@ class DetailedSongWithContentLength(
     artistsText: String? = null,
     durationText: String,
     thumbnailUrl: String?,
-    likedAt: Long? = null,
     totalPlayTimeMs: Long = 0,
     albumId: String?,
     artists: List<Artist>?,
@@ -21,4 +20,4 @@ class DetailedSongWithContentLength(
         projection = ["contentLength"]
     )
     val contentLength: Long?
-) : DetailedSong(id, title, artistsText, durationText, thumbnailUrl, likedAt, totalPlayTimeMs, albumId, artists)
+) : DetailedSong(id, title, artistsText, durationText, thumbnailUrl, totalPlayTimeMs, albumId, artists)
