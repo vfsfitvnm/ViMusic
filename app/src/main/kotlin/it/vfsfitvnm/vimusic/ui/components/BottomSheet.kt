@@ -266,22 +266,22 @@ class BottomSheetState(
     }
 }
 
-private const val expandedAnchor = 2
-private const val collapsedAnchor = 1
-private const val dismissedAnchor = 0
+const val expandedAnchor = 2
+const val collapsedAnchor = 1
+const val dismissedAnchor = 0
 
 @Composable
 fun rememberBottomSheetState(
     dismissedBound: Dp,
     expandedBound: Dp,
     collapsedBound: Dp = dismissedBound,
-    isExpanded: Boolean = false
+    initialAnchor: Int = dismissedAnchor
 ): BottomSheetState {
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
     var previousAnchor by rememberSaveable {
-        mutableStateOf(if (isExpanded) expandedAnchor else dismissedAnchor)
+        mutableStateOf(initialAnchor)
     }
 
     return remember(dismissedBound, expandedBound, collapsedBound, coroutineScope) {

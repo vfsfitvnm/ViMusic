@@ -57,6 +57,9 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.collapsedAnchor
+import it.vfsfitvnm.vimusic.ui.components.dismissedAnchor
+import it.vfsfitvnm.vimusic.ui.components.expandedAnchor
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
@@ -80,6 +83,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        private var alreadyRunning = false
+    }
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
@@ -111,8 +118,11 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val expandPlayerBottomSheet =
-            intent?.extras?.getBoolean("expandPlayerBottomSheet", false) ?: false
+        val playerBottomSheetAnchor = when {
+            intent?.extras?.getBoolean("expandPlayerBottomSheet") == true -> expandedAnchor
+            alreadyRunning -> collapsedAnchor
+            else -> dismissedAnchor.also { alreadyRunning = true }
+        }
 
         uri = intent?.data
 
@@ -291,7 +301,7 @@ class MainActivity : ComponentActivity() {
                     dismissedBound = 0.dp,
                     collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
                     expandedBound = maxHeight,
-                    isExpanded = expandPlayerBottomSheet
+                    initialAnchor = playerBottomSheetAnchor
                 )
 
                 val playerAwarePaddingValues = if (playerBottomSheetState.isDismissed) {
