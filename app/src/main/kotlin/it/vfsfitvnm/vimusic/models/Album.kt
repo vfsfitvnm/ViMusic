@@ -1,8 +1,10 @@
 package it.vfsfitvnm.vimusic.models
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+@Immutable
 @Entity
 data class Album(
     @PrimaryKey val id: String,

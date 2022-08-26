@@ -1,9 +1,11 @@
 package it.vfsfitvnm.vimusic.models
 
+import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 
+@Immutable
 @Entity(
     primaryKeys = ["songId", "artistId"],
     foreignKeys = [

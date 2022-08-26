@@ -1,8 +1,10 @@
 package it.vfsfitvnm.vimusic.models
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Junction
 import androidx.room.Relation
 
+@Immutable
 open class DetailedSong(
     val id: String,
     val title: String,

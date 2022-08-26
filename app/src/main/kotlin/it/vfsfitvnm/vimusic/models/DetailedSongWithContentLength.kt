@@ -1,7 +1,9 @@
 package it.vfsfitvnm.vimusic.models
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Relation
 
+@Immutable
 class DetailedSongWithContentLength(
     id: String,
     title: String,
