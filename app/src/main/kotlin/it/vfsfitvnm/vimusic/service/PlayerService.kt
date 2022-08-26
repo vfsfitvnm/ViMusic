@@ -14,11 +14,13 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaMetadata
+import android.media.audiofx.AudioEffect
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -169,7 +171,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
         isVolumeNormalizationEnabled = preferences.getBoolean(volumeNormalizationKey, false)
         isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
-        isShowingThumbnailInLockscreen = preferences.getBoolean(isShowingThumbnailInLockscreenKey, true)
+        isShowingThumbnailInLockscreen =
+            preferences.getBoolean(isShowingThumbnailInLockscreenKey, true)
 
         val cacheEvictor = when (val size =
             preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {
@@ -375,6 +378,24 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         mediaSession.setMetadata(metadataBuilder.build())
     }
 
+    private fun sendOpenEqualizerIntent() {
+        sendBroadcast(
+            Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
+                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+            }
+        )
+    }
+
+    private fun sendCloseEqualizerIntent() {
+        sendBroadcast(
+            Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
+            }
+        )
+    }
+
     private val Player.androidPlaybackState: Int
         get() = when (playbackState) {
             Player.STATE_BUFFERING -> if (playWhenReady) PlaybackState.STATE_BUFFERING else PlaybackState.STATE_PAUSED
@@ -434,11 +455,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                 startForegroundService(this@PlayerService, intent<PlayerService>())
                 startForeground(NotificationId, notification())
                 makeInvincible(false)
+                sendOpenEqualizerIntent()
             } else {
                 if (!player.shouldBePlaying) {
                     isNotificationStarted = false
                     stopForeground(false)
                     makeInvincible(true)
+                    sendCloseEqualizerIntent()
                 }
                 notificationManager?.notify(NotificationId, notification)
             }
