@@ -66,7 +66,7 @@ fun PlaylistPreviewItem(
         imageContent = {
             if (thumbnails.toSet().size == 1) {
                 AsyncImage(
-                    model = thumbnails.first(),
+                    model = thumbnails.first().thumbnail(thumbnailSizePx * 2),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
