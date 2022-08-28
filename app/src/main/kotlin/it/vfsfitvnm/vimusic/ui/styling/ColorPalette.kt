@@ -29,7 +29,7 @@ val DefaultDarkColorPalette = ColorPalette(
     text = Color(0xffe1e1e2),
     textSecondary = Color(0xffa3a4a6),
     textDisabled = Color(0xff6f6f73),
-    accent = Color(0xff4046bf),
+    accent = Color(0xff5055c0),
     onAccent = Color.White,
     isDark = true
 )
@@ -41,7 +41,7 @@ val DefaultLightColorPalette = ColorPalette(
     text = Color(0xff212121),
     textSecondary = Color(0xff656566),
     textDisabled = Color(0xff9d9d9d),
-    accent = Color(0xff4046bf),
+    accent = Color(0xff5055c0),
     onAccent = Color.White,
     isDark = false
 )
@@ -129,6 +129,13 @@ inline val ColorPalette.favoritesIcon: Color
 inline val ColorPalette.shimmer: Color
     get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
         Color(0xff838383)
+    } else {
+        accent
+    }
+
+inline val ColorPalette.menuEntryIcon: Color
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+        text
     } else {
         accent
     }
