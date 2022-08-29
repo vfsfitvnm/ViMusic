@@ -17,9 +17,6 @@ fun TextStyle.align(align: TextAlign) = copy(textAlign = align)
 
 fun TextStyle.color(color: Color) = copy(color = color)
 
-inline val TextStyle.italic: TextStyle
-    get() = style(FontStyle.Italic)
-
 inline val TextStyle.medium: TextStyle
     get() = weight(FontWeight.Medium)
 
@@ -36,8 +33,3 @@ inline val TextStyle.secondary: TextStyle
     @Composable
     @ReadOnlyComposable
     get() = color(LocalAppearance.current.colorPalette.textSecondary)
-
-inline val TextStyle.disabled: TextStyle
-    @Composable
-    @ReadOnlyComposable
-    get() = color(LocalAppearance.current.colorPalette.textDisabled)
