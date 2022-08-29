@@ -1,6 +1,5 @@
 package it.vfsfitvnm.youtubemusic.models
 
-
 import kotlinx.serialization.Serializable
 
 @Serializable

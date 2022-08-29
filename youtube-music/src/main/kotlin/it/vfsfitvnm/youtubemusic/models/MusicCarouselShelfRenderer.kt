@@ -1,7 +1,9 @@
 package it.vfsfitvnm.youtubemusic.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class MusicCarouselShelfRenderer(
     val header: Header,
@@ -31,4 +33,3 @@ data class MusicCarouselShelfRenderer(
         }
     }
 }
-

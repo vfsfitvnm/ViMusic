@@ -32,10 +32,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+@OptIn(ExperimentalSerializationApi::class)
 object YouTube {
     private const val Key = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 
-    @OptIn(ExperimentalSerializationApi::class)
     val client = HttpClient(OkHttp) {
         BrowserUserAgent()
 
@@ -546,14 +546,14 @@ object YouTube {
 
     private suspend fun getQueue(body: GetQueueBody): Result<List<Item.Song>?>? {
         return runCatching {
-            val body = client.post("/youtubei/v1/music/get_queue") {
+            val response = client.post("/youtubei/v1/music/get_queue") {
                 contentType(ContentType.Application.Json)
                 setBody(body)
                 parameter("key", Key)
                 parameter("prettyPrint", false)
             }.body<GetQueueResponse>()
 
-            body.queueDatas?.mapNotNull { queueData ->
+            response.queueDatas?.mapNotNull { queueData ->
                 queueData.content?.playlistPanelVideoRenderer?.let { renderer ->
                     Item.Song(
                         info = Info(

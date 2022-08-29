@@ -1,8 +1,10 @@
 package it.vfsfitvnm.youtubemusic.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class Tabs(
     val tabs: List<Tab>
@@ -25,6 +27,7 @@ data class Tabs(
     }
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class SectionListRenderer(
     val contents: List<Content>,
@@ -48,6 +51,7 @@ data class SectionListRenderer(
                 val musicNavigationButtonRenderer: MusicNavigationButtonRenderer
             )
         }
+
         @Serializable
         data class MusicDescriptionShelfRenderer(
             val description: Runs,

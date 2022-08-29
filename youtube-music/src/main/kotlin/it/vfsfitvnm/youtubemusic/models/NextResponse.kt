@@ -1,9 +1,10 @@
 package it.vfsfitvnm.youtubemusic.models
 
-
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class NextResponse(
     val contents: Contents,
@@ -40,6 +41,7 @@ data class NextResponse(
                         val videoId: String,
                         val playlistSetVideoId: String?,
                     )
+
                     @Serializable
                     data class AutomixPreviewVideoRenderer(
                         val content: Content?

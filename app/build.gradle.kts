@@ -91,6 +91,7 @@ dependencies {
 
     implementation(libs.room)
     kapt(libs.room.compiler)
+    annotationProcessor(libs.room.compiler)
 
     implementation(projects.youtubeMusic)
     implementation(projects.kugou)

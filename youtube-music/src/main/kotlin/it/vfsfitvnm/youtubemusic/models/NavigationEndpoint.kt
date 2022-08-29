@@ -90,7 +90,6 @@ data class NavigationEndpoint(
             val playlistId: String,
         ) : Endpoint()
 
-
         @Serializable
         data class Browse(
             val params: String?,
@@ -113,7 +112,6 @@ data class NavigationEndpoint(
                 )
             }
         }
-
 
         @Serializable
         data class Search(
