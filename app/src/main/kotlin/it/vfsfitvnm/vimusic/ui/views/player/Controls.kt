@@ -38,6 +38,7 @@ import androidx.media3.common.Player
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -180,7 +181,11 @@ fun Controls(
                 modifier = Modifier
                     .clickable {
                         query {
-                            Database.like(mediaId, if (likedAt == null) System.currentTimeMillis() else null)
+                            if (Database.like(mediaId, if (likedAt == null) System.currentTimeMillis() else null) == 0) {
+                                binder.player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
+                                    Database.insert(mediaItem, Song::toggleLike)
+                                }
+                            }
                         }
                     }
                     .weight(1f)
