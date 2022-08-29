@@ -28,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.ui.styling.menuEntryIcon
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
 
@@ -79,7 +78,7 @@ fun MenuEntry(
         Image(
             painter = painterResource(icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(colorPalette.menuEntryIcon),
+            colorFilter = ColorFilter.tint(colorPalette.text),
             modifier = Modifier
                 .size(15.dp)
         )

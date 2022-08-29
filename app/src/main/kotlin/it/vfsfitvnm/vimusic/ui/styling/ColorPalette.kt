@@ -133,13 +133,6 @@ inline val ColorPalette.shimmer: Color
         accent
     }
 
-inline val ColorPalette.menuEntryIcon: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
-        text
-    } else {
-        accent
-    }
-
 inline val ColorPalette.overlay: Color
     get() = PureBlackColorPalette.background0.copy(alpha = 0.75f)
 
