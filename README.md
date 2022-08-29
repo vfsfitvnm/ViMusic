@@ -1,9 +1,7 @@
 <div align="center">
     <img src="./app/src/main/ic_launcher-playstore.png" width="128" height="128" style="display: block; margin: 0 auto"/>
     <h1>ViMusic</h1>
-    <p>A Jetpack Compose Android application for streaming music from YouTube Music</p>
-
-[![Downloads](https://img.shields.io/badge/-Jetpack%20Compose-3a83f9?style=for-the-badge&logo=jetpackcompose&logoColor=white&labelColor=2ec781)](https://developer.android.com/jetpack/compose)
+    <p>An Android application for streaming music from YouTube Music</p>
 </div>
 
 ---
@@ -46,13 +44,15 @@
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/it.vfsfitvnm.vimusic/)
 
-After installing, I recommend executing the following ADB command to neutralize some animation lags you may experience in cold starts:
-```
-adb shell cmd package compile -r bg-dexopt it.vfsfitvnm.vimusic
-```
-
 ## Similar projects, inspirations and acknowledgments
 - [**Beatbump**](https://github.com/snuffyDev/Beatbump): Alternative YouTube Music frontend built with Svelte/SvelteKit.
 - [**music**](https://github.com/z-huang/music): A material design music player with music from YouTube/YouTube Music.
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
 - [**ionicons**](https://github.com/ionic-team/ionicons): Premium hand-crafted icons built by Ionic, for Ionic apps and web apps everywhere.
+
+<a href="https://www.flaticon.com/free-icons/music" title="music icons">App icon based on icon created by Ilham Fitrotul Hayat - Flaticon</a>
+
+## Disclaimer
+This project and its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with YouTube, Google LLC or any of its affiliates and subsidiaries.
+
+Any trademark, service mark, trade name, or other intellectual property rights used in this project are owned by the respective owners.
