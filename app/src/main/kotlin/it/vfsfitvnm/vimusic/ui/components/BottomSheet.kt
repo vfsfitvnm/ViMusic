@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
-import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -240,14 +239,23 @@ class BottomSheetState(
 
             override suspend fun onPreFling(available: Velocity): Velocity {
                 if (isTopReached) {
+                    val velocity = -available.y
                     coroutineScope {
-                        if (available.y.absoluteValue > 1000) {
+                        if (velocity > 250) {
+                            expand()
+                        } else if (velocity < -250) {
                             collapse()
                         } else {
-                            if (animatable.upperBound!! - value > value - collapsedBound) {
-                                collapse()
-                            } else {
-                                expand()
+                            val l0 = dismissedBound
+                            val l1 = (collapsedBound - dismissedBound) / 2
+                            val l2 = (expandedBound - collapsedBound) / 2
+                            val l3 = expandedBound
+
+                            when (value) {
+                                in l0..l1 -> collapse()
+                                in l1..l2 -> collapse()
+                                in l2..l3 -> expand()
+                                else -> Unit
                             }
                         }
                     }
