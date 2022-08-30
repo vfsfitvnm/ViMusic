@@ -98,21 +98,18 @@ fun AlbumScreen(browseId: String) {
                             authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
                             shareUrl = youtubeAlbum.url,
                             timestamp = System.currentTimeMillis()
-                        )
-                    )
-
-                    youtubeAlbum.items?.forEachIndexed { position, albumItem ->
-                        albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
-                            Database.insert(mediaItem)
-                            Database.upsert(
+                        ),
+                        youtubeAlbum.items?.mapIndexedNotNull { position, albumItem ->
+                            albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
+                                Database.insert(mediaItem)
                                 SongAlbumMap(
                                     songId = mediaItem.mediaId,
                                     albumId = browseId,
                                     position = position
                                 )
-                            )
-                        }
-                    }
+                            }
+                        } ?: emptyList()
+                    )
 
                     null
                 }

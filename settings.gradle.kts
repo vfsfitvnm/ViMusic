@@ -29,7 +29,7 @@ dependencyResolutionManagement {
 
             library("compose-coil", "io.coil-kt", "coil-compose").version("2.2.0")
 
-            version("room", "2.5.0-alpha02")
+            version("room", "2.5.0-alpha03")
             library("room", "androidx.room", "room-ktx").versionRef("room")
             library("room-compiler", "androidx.room", "room-compiler").versionRef("room")
 

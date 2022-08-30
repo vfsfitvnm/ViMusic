@@ -23,6 +23,7 @@ import androidx.room.Transaction
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Update
+import androidx.room.Upsert
 import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
@@ -310,6 +311,15 @@ interface Database {
     @Update
     fun update(playlist: Playlist)
 
+    @Upsert
+    fun upsert(album: Album, songAlbumMaps: List<SongAlbumMap>)
+
+    @Upsert
+    fun upsert(songAlbumMap: SongAlbumMap)
+
+    @Upsert
+    fun upsert(artist: Artist)
+
     @Delete
     fun delete(searchQuery: SearchQuery)
 
@@ -321,24 +331,6 @@ interface Database {
 
     @Delete
     fun delete(songPlaylistMap: SongPlaylistMap)
-
-    fun upsert(songAlbumMap: SongAlbumMap) {
-        if (insert(songAlbumMap) == -1L) {
-            update(songAlbumMap)
-        }
-    }
-
-    fun upsert(artist: Artist) {
-        if (insert(artist) == -1L) {
-            update(artist)
-        }
-    }
-
-    fun upsert(album: Album) {
-        if (insert(album) == -1L) {
-            update(album)
-        }
-    }
 }
 
 @androidx.room.Database(
@@ -540,19 +532,19 @@ object Converters {
 val Database.internal: RoomDatabase
     get() = DatabaseInitializer.Instance
 
-fun query(block: () -> Unit) = DatabaseInitializer.Instance.getQueryExecutor().execute(block)
+fun query(block: () -> Unit) = DatabaseInitializer.Instance.queryExecutor.execute(block)
 
 fun transaction(block: () -> Unit) = with(DatabaseInitializer.Instance) {
-    getTransactionExecutor().execute {
+    transactionExecutor.execute {
         runInTransaction(block)
     }
 }
 
-val RoomDatabase.path: String
-    get() = getOpenHelper().writableDatabase.path
+val RoomDatabase.path: String?
+    get() = openHelper.writableDatabase.path
 
 fun RoomDatabase.checkpoint() {
-    getOpenHelper().writableDatabase.run {
+    openHelper.writableDatabase.run {
         query("PRAGMA journal_mode").use { cursor ->
             if (cursor.moveToFirst()) {
                 when (cursor.getString(0).lowercase()) {
