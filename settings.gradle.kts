@@ -17,7 +17,7 @@ dependencyResolutionManagement {
 
             version("compose-compiler", "1.3.0")
 
-            version("compose", "1.3.0-beta01")
+            version("compose", "1.3.0-alpha03")
             library("compose-foundation", "androidx.compose.foundation", "foundation").versionRef("compose")
             library("compose-ui", "androidx.compose.ui", "ui").versionRef("compose")
             library("compose-ui-util", "androidx.compose.ui", "ui-util").versionRef("compose")
