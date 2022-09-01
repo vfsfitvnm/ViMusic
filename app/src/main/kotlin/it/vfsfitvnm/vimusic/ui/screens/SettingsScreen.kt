@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -20,6 +19,7 @@ import it.vfsfitvnm.route.*
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.components.badge
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
@@ -134,6 +134,7 @@ fun SettingsScreen() {
                             modifier = Modifier
                                 .background(color = color, shape = CircleShape)
                                 .size(36.dp)
+                                .badge(color = colorPalette.red, isDisplayed = withAlert)
                         ) {
                             Image(
                                 painter = painterResource(icon),
@@ -159,23 +160,6 @@ fun SettingsScreen() {
                                 style = typography.xs.secondary.medium,
                                 maxLines = 2
                             )
-                        }
-
-                        if (withAlert) {
-                            Canvas(
-                                modifier = Modifier
-                                    .size(8.dp)
-                            ) {
-                                drawCircle(
-                                    color = colorPalette.accent,
-                                    center = size.center.copy(x = size.width),
-                                    radius = 4.dp.toPx(),
-                                    shadow = Shadow(
-                                        color = colorPalette.accent,
-                                        blurRadius = 4.dp.toPx()
-                                    )
-                                )
-                            }
                         }
                     }
                 }

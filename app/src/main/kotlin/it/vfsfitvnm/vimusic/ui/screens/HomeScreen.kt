@@ -37,12 +37,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -62,6 +59,7 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
+import it.vfsfitvnm.vimusic.ui.components.badge
 import it.vfsfitvnm.vimusic.ui.components.themed.DropDownSection
 import it.vfsfitvnm.vimusic.ui.components.themed.DropDownSectionSpacer
 import it.vfsfitvnm.vimusic.ui.components.themed.DropDownTextItem
@@ -77,7 +75,6 @@ import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
-import it.vfsfitvnm.vimusic.utils.drawCircle
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.isFirstLaunchKey
@@ -220,26 +217,7 @@ fun HomeScreen() {
                             modifier = Modifier
                                 .clickable { settingsRoute() }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .run {
-                                    if (isFirstLaunch) {
-                                        drawBehind {
-                                            drawCircle(
-                                                color = colorPalette.accent,
-                                                center = Offset(
-                                                    x = size.width,
-                                                    y = 0.dp.toPx()
-                                                ),
-                                                radius = 4.dp.toPx(),
-                                                shadow = Shadow(
-                                                    color = colorPalette.accent,
-                                                    blurRadius = 4.dp.toPx()
-                                                )
-                                            )
-                                        }
-                                    } else {
-                                        this
-                                    }
-                                }
+                                .badge(color = colorPalette.red, isDisplayed = isFirstLaunch)
                                 .size(24.dp)
                         )
 
