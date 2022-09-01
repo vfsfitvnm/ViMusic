@@ -52,7 +52,7 @@ fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
 
 fun Player.addNext(mediaItem: MediaItem) {
-    if (playbackState == Player.STATE_IDLE) {
+    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         forcePlay(mediaItem)
     } else {
         addMediaItem(currentMediaItemIndex + 1, mediaItem)
@@ -60,7 +60,7 @@ fun Player.addNext(mediaItem: MediaItem) {
 }
 
 fun Player.enqueue(mediaItem: MediaItem) {
-    if (playbackState == Player.STATE_IDLE) {
+    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         forcePlay(mediaItem)
     } else {
         addMediaItem(mediaItemCount, mediaItem)
@@ -68,7 +68,7 @@ fun Player.enqueue(mediaItem: MediaItem) {
 }
 
 fun Player.enqueue(mediaItems: List<MediaItem>) {
-    if (playbackState == Player.STATE_IDLE) {
+    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         forcePlayFromBeginning(mediaItems)
     } else {
         addMediaItems(mediaItemCount, mediaItems)

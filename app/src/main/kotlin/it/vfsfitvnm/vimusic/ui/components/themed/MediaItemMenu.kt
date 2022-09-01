@@ -175,13 +175,7 @@ fun NonQueuedMediaItemMenu(
                 )
             )
         },
-        onPlaySingle = {
-            binder?.stopRadio()
-            binder?.player?.forcePlay(mediaItem)
-        },
-        onPlayNext = {
-            binder?.player?.addNext(mediaItem)
-        },
+        onPlayNext = { binder?.player?.addNext(mediaItem) },
         onEnqueue = { binder?.player?.enqueue(mediaItem) },
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
@@ -222,7 +216,6 @@ fun BaseMediaItemMenu(
     onGoToEqualizer: (() -> Unit)? = null,
     onSetSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
-    onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
@@ -240,7 +233,6 @@ fun BaseMediaItemMenu(
         onSetSleepTimer = onSetSleepTimer,
         onStartRadio = onStartRadio,
         onPlayNext = onPlayNext,
-        onPlaySingle = onPlaySingle,
         onEnqueue = onEnqueue,
         onAddToPlaylist = { playlist, position ->
             transaction {
@@ -277,7 +269,6 @@ fun MediaItemMenu(
     onGoToEqualizer: (() -> Unit)? = null,
     onSetSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
-    onPlaySingle: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
@@ -391,17 +382,6 @@ fun MediaItemMenu(
                             onClick = {
                                 onDismiss()
                                 onStartRadio()
-                            }
-                        )
-                    }
-
-                    onPlaySingle?.let { onPlaySingle ->
-                        MenuEntry(
-                            icon = R.drawable.play,
-                            text = "Play single",
-                            onClick = {
-                                onDismiss()
-                                onPlaySingle()
                             }
                         )
                     }
