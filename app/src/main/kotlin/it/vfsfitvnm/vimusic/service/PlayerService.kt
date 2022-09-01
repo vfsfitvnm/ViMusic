@@ -220,11 +220,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         if (!player.shouldBePlaying) {
-            if (isPersistentQueueEnabled) {
-                broadCastPendingIntent<NotificationDismissReceiver>().send()
-            } else {
-                stopSelf()
-            }
+            broadCastPendingIntent<NotificationDismissReceiver>().send()
         }
         super.onTaskRemoved(rootIntent)
     }
