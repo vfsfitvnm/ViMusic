@@ -12,7 +12,7 @@ class DetailedSongWithContentLength(
     thumbnailUrl: String?,
     totalPlayTimeMs: Long = 0,
     albumId: String?,
-    artists: List<Artist>?,
+    artists: List<Info>?,
     @Relation(
         entity = Format::class,
         entityColumn = "songId",

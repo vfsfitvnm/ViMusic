@@ -27,9 +27,10 @@ open class DetailedSong(
             value = SongArtistMap::class,
             parentColumn = "songId",
             entityColumn = "artistId"
-        )
+        ),
+        projection = ["id", "name"]
     )
-    val artists: List<Artist>?
+    val artists: List<Info>?
 ) {
     val formattedTotalPlayTime: String
         get() {
