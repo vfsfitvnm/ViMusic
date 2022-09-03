@@ -261,8 +261,12 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
 
-        query {
-            Database.incrementTotalPlayTimeMs(mediaItem.mediaId, playbackStats.totalPlayTimeMs)
+        val totalPlayTimeMs = playbackStats.totalPlayTimeMs
+
+        if (totalPlayTimeMs > 2000) {
+            query {
+                Database.incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
+            }
         }
     }
 
