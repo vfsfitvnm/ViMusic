@@ -194,7 +194,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .setUsePlatformDiagnostics(false)
             .build()
 
-        player.repeatMode = preferences.getInt(repeatModeKey, Player.REPEAT_MODE_OFF)
+        player.repeatMode = when (preferences.getInt(repeatModeKey, Player.REPEAT_MODE_ALL)) {
+            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ONE
+            else -> Player.REPEAT_MODE_ALL
+        }
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this)
         player.addAnalyticsListener(PlaybackStatsListener(false, this))

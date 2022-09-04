@@ -249,29 +249,21 @@ fun Controls(
             )
 
             Image(
-                painter = painterResource(
-                    if (repeatMode == Player.REPEAT_MODE_ONE) {
-                        R.drawable.repeat_one
-                    } else {
-                        R.drawable.repeat
-                    }
-                ),
+                painter = painterResource(R.drawable.infinite),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(
-                    if (repeatMode == Player.REPEAT_MODE_OFF) {
-                        colorPalette.textDisabled
-                    } else {
+                    if (repeatMode == Player.REPEAT_MODE_ONE) {
                         colorPalette.text
+                    } else {
+                        colorPalette.textDisabled
                     }
                 ),
                 modifier = Modifier
                     .clickable {
-                        binder.player.repeatMode
-                            .plus(2)
-                            .mod(3)
-                            .let {
-                                binder.player.repeatMode = it
-                            }
+                        binder.player.repeatMode = when (binder.player.repeatMode) {
+                            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
+                            else -> Player.REPEAT_MODE_ONE
+                        }
                     }
                     .weight(1f)
                     .size(24.dp)
