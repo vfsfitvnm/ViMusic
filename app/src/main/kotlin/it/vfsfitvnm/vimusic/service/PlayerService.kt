@@ -171,7 +171,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         isVolumeNormalizationEnabled = preferences.getBoolean(volumeNormalizationKey, false)
         isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
         isShowingThumbnailInLockscreen =
-            preferences.getBoolean(isShowingThumbnailInLockscreenKey, true)
+            preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
 
         val cacheEvictor = when (val size =
             preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {

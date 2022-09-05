@@ -56,7 +56,7 @@ fun AppearanceSettingsScreen() {
             )
             var isShowingThumbnailInLockscreen by rememberPreference(
                 isShowingThumbnailInLockscreenKey,
-                true
+                false
             )
 
             Column(
