@@ -2,11 +2,14 @@ package it.vfsfitvnm.vimusic.ui.views.player
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -61,24 +64,41 @@ fun Thumbnail(
     AnimatedContent(
         targetState = mediaItemIndex,
         transitionSpec = {
+            val duration = 500
             val slideDirection =
                 if (targetState > initialState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
 
-            (slideIntoContainer(slideDirection) + fadeIn() with
-                    slideOutOfContainer(slideDirection) + fadeOut()).using(
-                SizeTransform(clip = false)
+            ContentTransform(
+                targetContentEnter = slideIntoContainer(
+                    towards = slideDirection,
+                    animationSpec = tween(duration)
+                ) + fadeIn(
+                    animationSpec = tween(duration)
+                ) + scaleIn(
+                    initialScale = 0.85f,
+                    animationSpec = tween(duration)
+                ),
+                initialContentExit = slideOutOfContainer(
+                    towards = slideDirection,
+                    animationSpec = tween(duration)
+                ) + fadeOut(
+                    animationSpec = tween(duration)
+                ) + scaleOut(
+                    targetScale = 0.85f,
+                    animationSpec = tween(duration)
+                ),
+                sizeTransform = SizeTransform(clip = false)
             )
         },
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .aspectRatio(1f)
+        contentAlignment = Alignment.Center
     ) { currentMediaItemIndex ->
         val mediaItem = remember(currentMediaItemIndex) {
             player.getMediaItemAt(currentMediaItemIndex)
         }
 
         Box(
-            modifier = Modifier
+            modifier = modifier
+                .aspectRatio(1f)
                 .clip(ThumbnailRoundness.shape)
                 .size(thumbnailSizeDp)
         ) {

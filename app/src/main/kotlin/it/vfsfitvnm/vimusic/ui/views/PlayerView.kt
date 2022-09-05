@@ -250,7 +250,6 @@ fun PlayerView(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .weight(0.66f)
-                            .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp)
                     ) {
                         Thumbnail(
@@ -259,6 +258,8 @@ fun PlayerView(
                             isShowingStatsForNerds = isShowingStatsForNerds,
                             onShowStatsForNerds = { isShowingStatsForNerds = it },
                             nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
                         )
                     }
 
@@ -292,7 +293,6 @@ fun PlayerView(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .weight(1.25f)
-                            .padding(horizontal = 32.dp, vertical = 8.dp)
                     ) {
                         Thumbnail(
                             isShowingLyrics = isShowingLyrics,
@@ -300,6 +300,8 @@ fun PlayerView(
                             isShowingStatsForNerds = isShowingStatsForNerds,
                             onShowStatsForNerds = { isShowingStatsForNerds = it },
                             nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
+                            modifier = Modifier
+                                .padding(horizontal = 32.dp, vertical = 8.dp)
                         )
                     }
 
