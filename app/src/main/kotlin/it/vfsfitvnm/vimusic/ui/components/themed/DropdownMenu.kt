@@ -133,7 +133,7 @@ private data class DropdownMenuPositionProvider(
         val toLeft = anchorBounds.right - contentOffsetX - popupContentSize.width
         val toDisplayRight = windowSize.width - popupContentSize.width
         val toDisplayLeft = 0
-        val x = if (layoutDirection == LayoutDirection.Ltr) {
+        val x =
             sequenceOf(
                 toRight,
                 toLeft,
@@ -141,15 +141,7 @@ private data class DropdownMenuPositionProvider(
                 // toDisplayLeft for proximity to the anchor. Otherwise, toDisplayRight.
                 if (anchorBounds.left >= 0) toDisplayRight else toDisplayLeft
             )
-        } else {
-            sequenceOf(
-                toLeft,
-                toRight,
-                // If the anchor gets outside of the window on the right, we want to position
-                // toDisplayRight for proximity to the anchor. Otherwise, toDisplayLeft.
-                if (anchorBounds.right <= windowSize.width) toDisplayLeft else toDisplayRight
-            )
-        }.firstOrNull {
+        .firstOrNull {
             it >= 0 && it + popupContentSize.width <= windowSize.width
         } ?: toLeft
 
