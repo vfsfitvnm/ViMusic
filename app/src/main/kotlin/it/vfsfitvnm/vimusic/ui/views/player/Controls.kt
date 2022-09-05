@@ -44,6 +44,8 @@ import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
 import it.vfsfitvnm.vimusic.utils.bold
+import it.vfsfitvnm.vimusic.utils.forceSeekToNext
+import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
 import it.vfsfitvnm.vimusic.utils.rememberRepeatMode
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -197,7 +199,7 @@ fun Controls(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
-                    .clickable(onClick = binder.player::seekToPrevious)
+                    .clickable(onClick = binder.player::forceSeekToPrevious)
                     .weight(1f)
                     .size(24.dp)
             )
@@ -243,7 +245,7 @@ fun Controls(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
-                    .clickable(onClick = binder.player::seekToNext)
+                    .clickable(onClick = binder.player::forceSeekToNext)
                     .weight(1f)
                     .size(24.dp)
             )

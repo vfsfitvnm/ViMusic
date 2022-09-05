@@ -75,6 +75,8 @@ import it.vfsfitvnm.vimusic.utils.broadCastPendingIntent
 import it.vfsfitvnm.vimusic.utils.exoPlayerDiskCacheMaxSizeKey
 import it.vfsfitvnm.vimusic.utils.findNextMediaItemById
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
+import it.vfsfitvnm.vimusic.utils.forceSeekToNext
+import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
@@ -778,8 +780,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     private class SessionCallback(private val player: Player) : MediaSession.Callback() {
         override fun onPlay() = player.play()
         override fun onPause() = player.pause()
-        override fun onSkipToPrevious() = player.seekToPrevious()
-        override fun onSkipToNext() = player.seekToNext()
+        override fun onSkipToPrevious() = player.forceSeekToPrevious()
+        override fun onSkipToNext() = player.forceSeekToNext()
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
     }
 
@@ -788,8 +790,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             when (intent.action) {
                 Action.pause.value -> player.pause()
                 Action.play.value -> player.play()
-                Action.next.value -> player.seekToNext()
-                Action.previous.value -> player.seekToPrevious()
+                Action.next.value -> player.forceSeekToNext()
+                Action.previous.value -> player.forceSeekToPrevious()
             }
         }
     }

@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.utils
 
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -50,6 +51,12 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
 
 fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
+
+fun Player.forceSeekToPrevious() =
+    if (hasPreviousMediaItem()) seekToPrevious() else seekTo(mediaItemCount - 1, C.TIME_UNSET)
+
+fun Player.forceSeekToNext() =
+    if (hasNextMediaItem()) seekToNext() else seekTo(0, C.TIME_UNSET)
 
 fun Player.addNext(mediaItem: MediaItem) {
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
