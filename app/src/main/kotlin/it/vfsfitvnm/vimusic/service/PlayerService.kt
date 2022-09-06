@@ -450,14 +450,16 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             if (notification == null) {
                 isNotificationStarted = false
                 makeInvincible(false)
-                stopForeground(true)
+                stopForeground(false)
+                sendCloseEqualizerIntent()
+                notificationManager?.cancel(NotificationId)
                 return
             }
 
             if (player.shouldBePlaying && !isNotificationStarted) {
                 isNotificationStarted = true
                 startForegroundService(this@PlayerService, intent<PlayerService>())
-                startForeground(NotificationId, notification())
+                startForeground(NotificationId, notification)
                 makeInvincible(false)
                 sendOpenEqualizerIntent()
             } else {

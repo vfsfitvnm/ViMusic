@@ -52,12 +52,13 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
 fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
 
-fun Player.forceSeekToPrevious() =
+fun Player.forceSeekToPrevious() {
     if (hasPreviousMediaItem() || currentPosition > maxSeekToPreviousPosition) {
         seekToPrevious()
-    }else {
+    } else if (mediaItemCount > 0) {
         seekTo(mediaItemCount - 1, C.TIME_UNSET)
     }
+}
 
 fun Player.forceSeekToNext() =
     if (hasNextMediaItem()) seekToNext() else seekTo(0, C.TIME_UNSET)
