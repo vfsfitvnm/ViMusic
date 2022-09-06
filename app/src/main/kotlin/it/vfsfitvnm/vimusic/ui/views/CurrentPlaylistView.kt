@@ -59,6 +59,7 @@ import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
 import it.vfsfitvnm.vimusic.utils.rememberWindows
 import it.vfsfitvnm.vimusic.utils.shuffleQueue
+import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -251,7 +252,13 @@ fun CurrentPlaylistView(
                 colorFilter = ColorFilter.tint(colorPalette.text),
                 modifier = Modifier
                     .padding(end = 2.dp)
-                    .clickable(onClick = binder.player::shuffleQueue)
+                    .clickable {
+                        reorderingState.coroutineScope.launch {
+                            reorderingState.lazyListState.animateScrollToItem(0)
+                        }.invokeOnCompletion {
+                            binder.player.shuffleQueue()
+                        }
+                    }
                     .align(Alignment.CenterEnd)
                     .padding(all = 8.dp)
                     .size(20.dp)

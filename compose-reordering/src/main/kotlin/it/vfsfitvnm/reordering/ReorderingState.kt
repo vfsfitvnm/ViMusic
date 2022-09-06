@@ -28,7 +28,7 @@ import kotlinx.coroutines.withContext
 @Stable
 class ReorderingState(
     val lazyListState: LazyListState,
-    internal val coroutineScope: CoroutineScope,
+    val coroutineScope: CoroutineScope,
     private val lastIndex: Int,
     internal val onDragStart: () -> Unit,
     internal val onDragEnd: (Int, Int) -> Unit,
