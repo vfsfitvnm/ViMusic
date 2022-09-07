@@ -13,12 +13,14 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.media.MediaDescription
 import android.media.MediaMetadata
 import android.media.audiofx.AudioEffect
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.text.format.DateUtils
 import androidx.compose.runtime.getValue
@@ -70,6 +72,7 @@ import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.utils.InvincibleService
+import it.vfsfitvnm.vimusic.utils.MediaIDHelper
 import it.vfsfitvnm.vimusic.utils.RingBuffer
 import it.vfsfitvnm.vimusic.utils.TimerJob
 import it.vfsfitvnm.vimusic.utils.YouTubeRadio
@@ -322,6 +325,20 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         } else if (mediaItem.mediaMetadata.artworkUri == bitmapProvider.lastUri) {
             bitmapProvider.listener?.invoke(bitmapProvider.lastBitmap)
         }
+
+        // On playlist changed, we refresh the mediaSession queue
+        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+            mediaSession.setQueue(player.currentTimeline.mediaItems.mapIndexed { index, it ->
+                MediaSession.QueueItem(
+                    MediaDescription.Builder()
+                        .setMediaId(it.mediaId)
+                        .setTitle(it.mediaMetadata.title)
+                        .setSubtitle(it.mediaMetadata.artist)
+                        .setIconUri(it.mediaMetadata.artworkUri)
+                        .build(), index.toLong()
+                )
+            })
+        }
     }
 
     private fun maybeRecoverPlaybackError() {
@@ -469,6 +486,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     MediaMetadata.METADATA_KEY_ALBUM,
                     player.currentMediaItem?.mediaMetadata?.albumTitle
                 )
+                .putBitmap(
+                    MediaMetadata.METADATA_KEY_ALBUM_ART,
+                    if (isShowingThumbnailInLockscreen) bitmapProvider.bitmap else null
+                )
                 .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
                 .build().let(mediaSession::setMetadata)
         }
@@ -533,6 +554,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             }
         }
     }
+
 
     override fun notification(): Notification? {
         if (player.currentMediaItem == null) return null
@@ -758,6 +780,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         val cache: Cache
             get() = this@PlayerService.cache
 
+        val mediaSession: MediaSession
+            get() = this@PlayerService.mediaSession
+
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
 
@@ -837,6 +862,11 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         override fun onSkipToPrevious() = player.forceSeekToPrevious()
         override fun onSkipToNext() = player.forceSeekToNext()
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
+        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+            player.forcePlayFromBeginning(MediaIDHelper.extractMusicQueueFromMediaId(mediaId))
+        }
+
+        override fun onSkipToQueueItem(id: Long) = player.seekToDefaultPosition(id.toInt())
     }
 
     private class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
