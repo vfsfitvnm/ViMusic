@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "it.vfsfitvnm.vimusic"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 32
         versionCode = 15
         versionName = "0.4.3"

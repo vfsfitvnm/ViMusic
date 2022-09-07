@@ -123,6 +123,10 @@ interface Database {
     @Query("SELECT * FROM Song WHERE id = :id")
     fun song(id: String): Flow<Song?>
 
+    @Transaction
+    @Query("SELECT * FROM Song WHERE id = :id")
+    fun songById(id: String): Flow<DetailedSong?>
+
     @Query("SELECT likedAt FROM Song WHERE id = :songId")
     fun likedAt(songId: String): Flow<Long?>
 
