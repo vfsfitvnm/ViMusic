@@ -22,12 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -50,10 +48,7 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     SongItem(
-        thumbnailModel = ImageRequest.Builder(LocalContext.current)
-            .diskCacheKey(mediaItem.mediaId)
-            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSize))
-            .build(),
+        thumbnailModel = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSize),
         title = mediaItem.mediaMetadata.title!!.toString(),
         authors = mediaItem.mediaMetadata.artist.toString(),
         durationText = mediaItem.mediaMetadata.extras?.getString("durationText") ?: "?",

@@ -20,7 +20,7 @@ class MainApplication : Application(), ImageLoaderFactory {
             .crossfade(true)
             .diskCache(
                 DiskCache.Builder()
-                    .directory(filesDir.resolve("coil"))
+                    .directory(cacheDir.resolve("coil"))
                     .maxSizeBytes(
                         preferences.getEnum(
                             coilDiskCacheMaxSizeKey,

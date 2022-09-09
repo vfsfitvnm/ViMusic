@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat.startForegroundService
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.core.text.isDigitsOnly
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -181,7 +182,23 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             else -> LeastRecentlyUsedCacheEvictor(size.bytes)
         }
 
-        cache = SimpleCache(cacheDir, cacheEvictor, StandaloneDatabaseProvider(this))
+        // TODO: Remove in a future release
+        val directory = cacheDir.resolve("exoplayer").also { directory ->
+            if (directory.exists()) return@also
+
+            directory.mkdir()
+
+            cacheDir.listFiles()?.forEach { file ->
+                if (file.isDirectory && file.name.length == 1 && file.name.isDigitsOnly() || file.extension == "uid") {
+                    if (!file.renameTo(directory.resolve(file.name))) {
+                        file.deleteRecursively()
+                    }
+                }
+            }
+
+            filesDir.resolve("coil").deleteRecursively()
+        }
+        cache = SimpleCache(directory, cacheEvictor, StandaloneDatabaseProvider(this))
 
         player = ExoPlayer.Builder(this, createRendersFactory(), createMediaSourceFactory())
             .setHandleAudioBecomingNoisy(true)
