@@ -284,6 +284,7 @@ fun Lyrics(
                                     .nestedScroll(remember { nestedScrollConnectionProvider() })
                                     .verticalFadingEdge()
                                     .verticalScroll(rememberScrollState())
+                                    .fillMaxWidth()
                                     .padding(vertical = size / 4, horizontal = 32.dp)
                             )
                         }
