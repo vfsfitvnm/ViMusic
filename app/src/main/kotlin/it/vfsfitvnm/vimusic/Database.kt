@@ -206,6 +206,9 @@ interface Database {
     @Query("UPDATE SongPlaylistMap SET position = position + 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
     fun incrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
 
+    @Query("DELETE FROM SongPlaylistMap WHERE playlistId = :id")
+    fun clearPlaylist(id: Long)
+
     @Query("SELECT loudnessDb FROM Format WHERE songId = :songId")
     fun loudnessDb(songId: String): Flow<Float?>
 
@@ -349,7 +352,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 16,
+    version = 17,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -364,6 +367,7 @@ interface Database {
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
         AutoMigration(from = 15, to = 16),
+        AutoMigration(from = 16, to = 17),
     ],
 )
 @TypeConverters(Converters::class)

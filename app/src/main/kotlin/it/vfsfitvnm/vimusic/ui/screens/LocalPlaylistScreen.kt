@@ -61,8 +61,12 @@ import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.toMediaItem
+import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -244,6 +248,43 @@ fun LocalPlaylistScreen(playlistId: Long) {
                                                         isRenaming = true
                                                     }
                                                 )
+
+                                                playlistWithSongs.playlist.browseId?.let { browseId ->
+                                                    MenuEntry(
+                                                        icon = R.drawable.sync,
+                                                        text = "Sync",
+                                                        onClick = {
+                                                            menuState.hide()
+                                                            transaction {
+                                                                runBlocking(Dispatchers.IO) {
+                                                                    withContext(Dispatchers.IO) {
+                                                                        YouTube.playlist(browseId)?.map {
+                                                                            it.next()
+                                                                        }?.map { playlist ->
+                                                                            playlist.copy(items = playlist.items?.filter { it.info.endpoint != null })
+                                                                        }
+                                                                    }
+                                                                }?.getOrNull()?.let { remotePlaylist ->
+                                                                    Database.clearPlaylist(playlistWithSongs.playlist.id)
+
+                                                                    remotePlaylist.items?.forEachIndexed { index, song ->
+                                                                        song.toMediaItem(browseId, remotePlaylist)?.let { mediaItem ->
+                                                                            Database.insert(mediaItem)
+
+                                                                            Database.insert(
+                                                                                SongPlaylistMap(
+                                                                                    songId = mediaItem.mediaId,
+                                                                                    playlistId = playlistId,
+                                                                                    position = index
+                                                                                )
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    )
+                                                }
 
                                                 MenuEntry(
                                                     icon = R.drawable.trash,

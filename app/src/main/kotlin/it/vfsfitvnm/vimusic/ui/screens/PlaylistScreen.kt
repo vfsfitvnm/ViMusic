@@ -252,7 +252,8 @@ fun PlaylistScreen(browseId: String) {
                                                                     Database.insert(
                                                                         Playlist(
                                                                             name = playlist.title
-                                                                                ?: "Unknown"
+                                                                                ?: "Unknown",
+                                                                            browseId = browseId
                                                                         )
                                                                     )
 

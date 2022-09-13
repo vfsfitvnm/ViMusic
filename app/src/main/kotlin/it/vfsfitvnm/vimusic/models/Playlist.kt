@@ -9,11 +9,5 @@ import androidx.room.PrimaryKey
 data class Playlist(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-) {
-    companion object {
-        val Empty = Playlist(
-            id = 0,
-            name = ""
-        )
-    }
-}
+    val browseId: String? = null
+)
