@@ -561,7 +561,7 @@ fun MediaItemMenu(
                     if (onAddToPlaylist != null) {
                         MenuEntry(
                             icon = R.drawable.playlist,
-                            text = "Add to playlist",
+                            text = "Add to playlist or favorites",
                             onClick = {
                                 viewPlaylistsRoute()
                             }
