@@ -92,28 +92,8 @@ fun LocalPlaylistScreen(playlistId: Long) {
                 lazyListState = lazyListState,
                 key = playlistWithSongs.songs,
                 onDragEnd = { fromIndex, toIndex ->
-                    transaction {
-                        if (fromIndex > toIndex) {
-                            Database.incrementSongPositions(
-                                playlistId = playlistWithSongs.playlist.id,
-                                fromPosition = toIndex,
-                                toPosition = fromIndex - 1
-                            )
-                        } else if (fromIndex < toIndex) {
-                            Database.decrementSongPositions(
-                                playlistId = playlistWithSongs.playlist.id,
-                                fromPosition = fromIndex + 1,
-                                toPosition = toIndex
-                            )
-                        }
-
-                        Database.update(
-                            SongPlaylistMap(
-                                songId = playlistWithSongs.songs[fromIndex].id,
-                                playlistId = playlistWithSongs.playlist.id,
-                                position = toIndex
-                            )
-                        )
+                    query {
+                        Database.move(playlistWithSongs.playlist.id, fromIndex, toIndex)
                     }
                 },
                 extraItemCount = 1

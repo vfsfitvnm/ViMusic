@@ -197,14 +197,16 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun songsWithContentLength(): Flow<List<DetailedSongWithContentLength>>
 
-    @Query("UPDATE SongPlaylistMap SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition")
-    fun decrementSongPositions(playlistId: Long, fromPosition: Int)
-
-    @Query("UPDATE SongPlaylistMap SET position = position - 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
-    fun decrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
-
-    @Query("UPDATE SongPlaylistMap SET position = position + 1 WHERE playlistId = :playlistId AND position >= :fromPosition AND position <= :toPosition")
-    fun incrementSongPositions(playlistId: Long, fromPosition: Int, toPosition: Int)
+    @Query("""
+        UPDATE SongPlaylistMap SET position = 
+          CASE 
+            WHEN position < :fromPosition THEN position + 1
+            WHEN position > :fromPosition THEN position - 1
+            ELSE :toPosition
+          END 
+        WHERE playlistId = :playlistId AND position BETWEEN MIN(:fromPosition,:toPosition) and MAX(:fromPosition,:toPosition)
+    """)
+    fun move(playlistId: Long, fromPosition: Int, toPosition: Int)
 
     @Query("DELETE FROM SongPlaylistMap WHERE playlistId = :id")
     fun clearPlaylist(id: Long)

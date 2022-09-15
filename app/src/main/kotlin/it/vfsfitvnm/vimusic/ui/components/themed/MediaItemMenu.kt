@@ -132,17 +132,8 @@ fun InPlaylistMediaItemMenu(
         onDismiss = onDismiss,
         onRemoveFromPlaylist = {
             transaction {
-                Database.delete(
-                    SongPlaylistMap(
-                        songId = song.id,
-                        playlistId = playlistId,
-                        position = positionInPlaylist
-                    )
-                )
-                Database.decrementSongPositions(
-                    playlistId = playlistId,
-                    fromPosition = positionInPlaylist + 1
-                )
+                Database.move(playlistId, positionInPlaylist, Int.MAX_VALUE)
+                Database.delete(SongPlaylistMap(song.id, playlistId, Int.MAX_VALUE))
             }
         },
         modifier = modifier
