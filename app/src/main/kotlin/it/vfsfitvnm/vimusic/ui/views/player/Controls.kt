@@ -182,10 +182,11 @@ fun Controls(
                 colorFilter = ColorFilter.tint(colorPalette.favoritesIcon),
                 modifier = Modifier
                     .clickable {
+                        val currentMediaItem = binder.player.currentMediaItem
                         query {
                             if (Database.like(mediaId, if (likedAt == null) System.currentTimeMillis() else null) == 0) {
-                                binder.player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
-                                    Database.insert(mediaItem, Song::toggleLike)
+                                currentMediaItem?.takeIf { it.mediaId == mediaId }?.let {
+                                    Database.insert(currentMediaItem, Song::toggleLike)
                                 }
                             }
                         }
