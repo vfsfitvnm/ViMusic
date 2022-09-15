@@ -299,6 +299,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         if (mediaItem == null) {
             bitmapProvider.listener?.invoke(null)
+        } else if (mediaItem.mediaMetadata.artworkUri == bitmapProvider.lastUri) {
+            bitmapProvider.listener?.invoke(bitmapProvider.lastBitmap)
         }
     }
 

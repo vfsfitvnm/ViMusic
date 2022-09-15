@@ -16,7 +16,9 @@ class BitmapProvider(
     private val bitmapSize: Int,
     private val colorProvider: (isSystemInDarkMode: Boolean) -> Int
 ) {
-    private var lastUri: Uri? = null
+    var lastUri: Uri? = null
+        private set
+
     var lastBitmap: Bitmap? = null
     private var lastIsSystemInDarkMode = false
 
