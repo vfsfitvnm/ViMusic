@@ -82,6 +82,7 @@ import it.vfsfitvnm.vimusic.utils.playlistGridExpandedKey
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
 import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
+import it.vfsfitvnm.vimusic.utils.searchHistoryEnabledKey
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.songSortByKey
 import it.vfsfitvnm.vimusic.utils.songSortOrderKey
@@ -95,6 +96,8 @@ fun HomeScreen() {
 
     val lazyListState = rememberLazyListState()
     val lazyHorizontalGridState = rememberLazyGridState()
+
+    var searchHistoryEnabled by rememberPreference(searchHistoryEnabledKey, true)
 
     var playlistSortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
     var playlistSortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
@@ -144,7 +147,7 @@ fun HomeScreen() {
                     searchResultRoute(query)
 
                     query {
-                        Database.insert(SearchQuery(query = query))
+                        if (searchHistoryEnabled) Database.insert(SearchQuery(query = query))
                     }
                 },
                 onUri = { uri ->

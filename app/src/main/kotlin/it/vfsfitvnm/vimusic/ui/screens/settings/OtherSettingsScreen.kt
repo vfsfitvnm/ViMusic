@@ -31,8 +31,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
@@ -44,12 +46,12 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
+import it.vfsfitvnm.vimusic.utils.searchHistoryEnabledKey
 import it.vfsfitvnm.vimusic.utils.semiBold
 
 @ExperimentalAnimationApi
 @Composable
 fun OtherSettingsScreen() {
-
     val scrollState = rememberScrollState()
 
     RouteHandler(listenToGlobalEmitter = true) {
@@ -64,6 +66,8 @@ fun OtherSettingsScreen() {
             var isIgnoringBatteryOptimizations by remember {
                 mutableStateOf(context.isIgnoringBatteryOptimizations)
             }
+
+            var searchHistoryEnabled by rememberPreference(searchHistoryEnabledKey, true)
 
             val activityResultLauncher =
                 rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -150,6 +154,18 @@ fun OtherSettingsScreen() {
                     isChecked = isInvincibilityEnabled,
                     onCheckedChange = {
                         isInvincibilityEnabled = it
+                    }
+                )
+
+                SwitchSettingEntry(
+                    title = "Search history",
+                    text = "Store the latest search queries",
+                    isChecked = searchHistoryEnabled,
+                    onCheckedChange = {
+                        query {
+                            if (!it) Database.clearSearchQueries()
+                        }
+                        searchHistoryEnabled = it
                     }
                 )
             }

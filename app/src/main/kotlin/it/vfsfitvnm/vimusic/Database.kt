@@ -214,6 +214,9 @@ interface Database {
     @Query("SELECT loudnessDb FROM Format WHERE songId = :songId")
     fun loudnessDb(songId: String): Flow<Float?>
 
+    @Query("DELETE FROM SearchQuery")
+    fun clearSearchQueries()
+    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(format: Format)
 
