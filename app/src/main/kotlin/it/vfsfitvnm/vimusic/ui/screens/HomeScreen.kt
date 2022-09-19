@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -81,6 +82,7 @@ import it.vfsfitvnm.vimusic.utils.isFirstLaunchKey
 import it.vfsfitvnm.vimusic.utils.playlistGridExpandedKey
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
 import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
+import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.searchHistoryEnabledKey
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -92,12 +94,12 @@ import kotlinx.coroutines.Dispatchers
 @ExperimentalAnimationApi
 @Composable
 fun HomeScreen() {
+    val context = LocalContext.current
+
     val (colorPalette, typography) = LocalAppearance.current
 
     val lazyListState = rememberLazyListState()
     val lazyHorizontalGridState = rememberLazyGridState()
-
-    var searchHistoryEnabled by rememberPreference(searchHistoryEnabledKey, true)
 
     var playlistSortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
     var playlistSortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
@@ -147,7 +149,11 @@ fun HomeScreen() {
                     searchResultRoute(query)
 
                     query {
-                        if (searchHistoryEnabled) Database.insert(SearchQuery(query = query))
+                        if (context.preferences.getBoolean(
+                                searchHistoryEnabledKey,
+                                true
+                            )
+                        ) Database.insert(SearchQuery(query = query))
                     }
                 },
                 onUri = { uri ->
