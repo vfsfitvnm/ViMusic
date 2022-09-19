@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -63,12 +64,15 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
+import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
+import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -272,6 +276,8 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                 }
 
                 LazyColumn(
+                    modifier = Modifier
+                        .weight(1.0f),
                     contentPadding = PaddingValues(
                         bottom = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding()
                     )
@@ -394,6 +400,22 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                         }
                     }
                 }
+
+                if (history.isNotEmpty()) ChunkyButton(
+                    modifier = Modifier.align(
+                        alignment = Alignment.End
+                    )
+                        .padding(10.dp),
+                    backgroundColor = colorPalette.accent,
+                    text = "Clear history",
+                    textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
+                    shape = RoundedCornerShape(36.dp),
+                    onClick = {
+                        query {
+                            Database.clearSearchQueries()
+                        }
+                    }
+                )
             }
         }
     }

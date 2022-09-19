@@ -162,9 +162,6 @@ fun OtherSettingsScreen() {
                     text = "Store the latest search queries",
                     isChecked = searchHistoryEnabled,
                     onCheckedChange = {
-                        query {
-                            if (!it) Database.clearSearchQueries()
-                        }
                         searchHistoryEnabled = it
                     }
                 )
