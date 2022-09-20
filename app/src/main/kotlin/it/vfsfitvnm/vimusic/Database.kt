@@ -114,6 +114,12 @@ interface Database {
     @Query("SELECT * FROM SearchQuery WHERE query LIKE :query ORDER BY id DESC")
     fun queries(query: String): Flow<List<SearchQuery>>
 
+    @Query("SELECT COUNT (*) FROM SearchQuery")
+    fun queriesCount(): Flow<Int>
+
+    @Query("DELETE FROM SearchQuery")
+    fun clearQueries()
+
     @Query("SELECT * FROM Song WHERE id = :id")
     fun song(id: String): Flow<Song?>
 

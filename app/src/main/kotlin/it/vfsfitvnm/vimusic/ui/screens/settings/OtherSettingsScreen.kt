@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,8 +32,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
 import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
@@ -45,6 +48,7 @@ import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
+import kotlinx.coroutines.Dispatchers
 
 @ExperimentalAnimationApi
 @Composable
@@ -58,6 +62,10 @@ fun OtherSettingsScreen() {
         host {
             val context = LocalContext.current
             val (colorPalette, typography) = LocalAppearance.current
+
+            val queriesCount by remember {
+                Database.queriesCount()
+            }.collectAsState(initial = 0, context = Dispatchers.IO)
 
             var isInvincibilityEnabled by rememberPreference(isInvincibilityEnabledKey, false)
 
@@ -98,6 +106,23 @@ fun OtherSettingsScreen() {
                     modifier = Modifier
                         .padding(start = 40.dp)
                         .padding(all = 16.dp)
+                )
+
+                SettingsEntryGroupText(title = "SEARCH HISTORY")
+
+                SettingsEntry(
+                    title = "Clear search history",
+                    text = if (queriesCount > 0) {
+                        "Delete $queriesCount search queries"
+                    } else {
+                        "History is empty"
+                    },
+                    isEnabled = queriesCount > 0,
+                    onClick = {
+                        query {
+                            Database.clearQueries()
+                        }
+                    }
                 )
 
                 SettingsEntryGroupText(title = "SERVICE LIFETIME")
