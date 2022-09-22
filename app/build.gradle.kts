@@ -97,4 +97,6 @@ dependencies {
     implementation(projects.kugou)
 
     coreLibraryDesugaring(libs.desugaring)
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
 }
