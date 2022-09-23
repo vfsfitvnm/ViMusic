@@ -55,7 +55,10 @@ import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.FavoritePlaylistItem
+import it.vfsfitvnm.vimusic.models.OfflinePlaylistItem
 import it.vfsfitvnm.vimusic.models.Playlist
+import it.vfsfitvnm.vimusic.models.RealPlaylistItem
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
@@ -86,6 +89,9 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.songSortByKey
 import it.vfsfitvnm.vimusic.utils.songSortOrderKey
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -97,12 +103,24 @@ fun HomeScreen() {
     val lazyHorizontalGridState = rememberLazyGridState()
 
     var playlistSortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
-    var playlistSortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+    var playlistSortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Ascending)
     var playlistGridExpanded by rememberPreference(playlistGridExpandedKey, false)
 
-    val playlistPreviews by remember(playlistSortBy, playlistSortOrder) {
-        Database.playlistPreviews(playlistSortBy, playlistSortOrder)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+    val playlistItems by remember(playlistSortBy, playlistSortOrder) {
+        combine(
+            Database.playlistPreviews(playlistSortBy, playlistSortOrder)
+                .map {
+                    it.map { RealPlaylistItem(it) }
+                },
+            flowOf(
+                listOf(
+                    FavoritePlaylistItem, OfflinePlaylistItem
+                )
+            )
+        ) { realItems, artificialItems ->
+            realItems + artificialItems
+        }
+    }.collectAsState(initial = emptyList(), context = Dispatchers.Main)
 
     var songSortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
     var songSortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
@@ -171,7 +189,7 @@ fun HomeScreen() {
 
         host {
             // This somehow prevents items to not be displayed sometimes...
-            @Suppress("UNUSED_EXPRESSION") playlistPreviews
+            @Suppress("UNUSED_EXPRESSION") playlistItems
             @Suppress("UNUSED_EXPRESSION") songCollection
 
             val binder = LocalPlayerServiceBinder.current
@@ -350,54 +368,51 @@ fun HomeScreen() {
                             .fillMaxWidth()
                             .height(124.dp * (if (playlistGridExpanded) 3 else 1))
                     ) {
-                        item(key = "favorites") {
-                            BuiltInPlaylistItem(
-                                icon = R.drawable.heart,
-                                colorTint = colorPalette.red,
-                                name = "Favorites",
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(all = 8.dp)
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = { builtInPlaylistRoute(BuiltInPlaylist.Favorites) }
-                                    )
-                            )
-                        }
-
-                        item(key = "offline") {
-                            BuiltInPlaylistItem(
-                                icon = R.drawable.airplane,
-                                colorTint = colorPalette.blue,
-                                name = "Offline",
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(all = 8.dp)
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = { builtInPlaylistRoute(BuiltInPlaylist.Offline) }
-                                    )
-                            )
-                        }
-
                         items(
-                            items = playlistPreviews,
-                            key = { it.playlist.id },
+                            items = playlistItems,
+                            key = { it.contentId },
                             contentType = { it }
-                        ) { playlistPreview ->
-                            PlaylistPreviewItem(
-                                playlistPreview = playlistPreview,
-                                modifier = Modifier
-                                    .animateItemPlacement()
-                                    .padding(all = 8.dp)
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = { localPlaylistRoute(playlistPreview.playlist.id) }
-                                    )
-                            )
+                        ) { item ->
+                            when (item) {
+                                is RealPlaylistItem -> PlaylistPreviewItem(
+                                    playlistPreview = item.playlistPreview,
+                                    modifier = Modifier
+                                        .animateItemPlacement()
+                                        .padding(all = 8.dp)
+                                        .clickable(
+                                            indication = rememberRipple(bounded = true),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = { localPlaylistRoute(item.playlistPreview.playlist.id) }
+                                        )
+                                )
+                                FavoritePlaylistItem -> BuiltInPlaylistItem(
+                                    icon = R.drawable.heart,
+                                    colorTint = colorPalette.red,
+                                    name = item.title,
+                                    modifier = Modifier
+                                        .animateItemPlacement()
+                                        .padding(all = 8.dp)
+                                        .clickable(
+                                            indication = rememberRipple(bounded = true),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = { builtInPlaylistRoute(BuiltInPlaylist.Favorites) }
+                                        )
+                                )
+                                OfflinePlaylistItem -> BuiltInPlaylistItem(
+                                    icon = R.drawable.airplane,
+                                    colorTint = colorPalette.blue,
+                                    name = item.title,
+                                    modifier = Modifier
+                                        .animateItemPlacement()
+                                        .padding(all = 8.dp)
+                                        .clickable(
+                                            indication = rememberRipple(bounded = true),
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = { builtInPlaylistRoute(BuiltInPlaylist.Offline) }
+                                        )
+                                )
+
+                            }
                         }
                     }
                 }
