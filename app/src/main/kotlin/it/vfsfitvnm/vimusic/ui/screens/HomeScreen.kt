@@ -1,11 +1,8 @@
 package it.vfsfitvnm.vimusic.ui.screens
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,7 +21,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
@@ -37,11 +33,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import it.vfsfitvnm.route.RouteHandler
@@ -53,8 +46,6 @@ import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.FavoritePlaylistItem
 import it.vfsfitvnm.vimusic.models.OfflinePlaylistItem
 import it.vfsfitvnm.vimusic.models.Playlist
@@ -67,19 +58,12 @@ import it.vfsfitvnm.vimusic.ui.components.themed.DropDownSection
 import it.vfsfitvnm.vimusic.ui.components.themed.DropDownSectionSpacer
 import it.vfsfitvnm.vimusic.ui.components.themed.DropDownTextItem
 import it.vfsfitvnm.vimusic.ui.components.themed.DropdownMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.BuiltInPlaylistItem
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
-import it.vfsfitvnm.vimusic.ui.views.SongItem
-import it.vfsfitvnm.vimusic.utils.asMediaItem
-import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.color
-import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
-import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.isFirstLaunchKey
 import it.vfsfitvnm.vimusic.utils.playlistGridExpandedKey
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
@@ -411,166 +395,9 @@ fun HomeScreen() {
                                             onClick = { builtInPlaylistRoute(BuiltInPlaylist.Offline) }
                                         )
                                 )
-
                             }
                         }
                     }
-                }
-
-                item("songs") {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .background(colorPalette.background0)
-                            .zIndex(1f)
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 32.dp)
-                    ) {
-                        BasicText(
-                            text = "Songs",
-                            style = typography.m.semiBold,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 8.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(R.drawable.shuffle),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable(enabled = songCollection.isNotEmpty()) {
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(
-                                        songCollection
-                                            .shuffled()
-                                            .map(DetailedSong::asMediaItem)
-                                    )
-                                }
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
-                                .size(20.dp)
-                        )
-
-                        Box {
-                            var isSortMenuDisplayed by remember {
-                                mutableStateOf(false)
-                            }
-
-                            Image(
-                                painter = painterResource(R.drawable.sort),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.text),
-                                modifier = Modifier
-                                    .clickable {
-                                        isSortMenuDisplayed = true
-                                    }
-                                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                                    .size(20.dp)
-                            )
-
-                            DropdownMenu(
-                                isDisplayed = isSortMenuDisplayed,
-                                onDismissRequest = {
-                                    isSortMenuDisplayed = false
-                                }
-                            ) {
-                                DropDownSection {
-                                    DropDownTextItem(
-                                        text = "PLAY TIME",
-                                        isSelected = songSortBy == SongSortBy.PlayTime,
-                                        onClick = {
-                                            isSortMenuDisplayed = false
-                                            songSortBy = SongSortBy.PlayTime
-                                        }
-                                    )
-
-                                    DropDownTextItem(
-                                        text = "TITLE",
-                                        isSelected = songSortBy == SongSortBy.Title,
-                                        onClick = {
-                                            isSortMenuDisplayed = false
-                                            songSortBy = SongSortBy.Title
-                                        }
-                                    )
-
-                                    DropDownTextItem(
-                                        text = "DATE ADDED",
-                                        isSelected = songSortBy == SongSortBy.DateAdded,
-                                        onClick = {
-                                            isSortMenuDisplayed = false
-                                            songSortBy = SongSortBy.DateAdded
-                                        }
-                                    )
-                                }
-
-                                DropDownSectionSpacer()
-
-                                DropDownSection {
-                                    DropDownTextItem(
-                                        text = when (songSortOrder) {
-                                            SortOrder.Ascending -> "ASCENDING"
-                                            SortOrder.Descending -> "DESCENDING"
-                                        },
-                                        onClick = {
-                                            isSortMenuDisplayed = false
-                                            songSortOrder = !songSortOrder
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                itemsIndexed(
-                    items = songCollection,
-                    key = { _, song -> song.id },
-                    contentType = { _, song -> song }
-                ) { index, song ->
-                    SongItem(
-                        song = song,
-                        thumbnailSize = thumbnailSize,
-                        onClick = {
-                            binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(
-                                songCollection.map(DetailedSong::asMediaItem),
-                                index
-                            )
-                        },
-                        menuContent = {
-                            InHistoryMediaItemMenu(song = song)
-                        },
-                        onThumbnailContent = {
-                            AnimatedVisibility(
-                                visible = songSortBy == SongSortBy.PlayTime,
-                                enter = fadeIn(),
-                                exit = fadeOut(),
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                            ) {
-                                BasicText(
-                                    text = song.formattedTotalPlayTime,
-                                    style = typography.xxs.semiBold.center.color(Color.White),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            brush = Brush.verticalGradient(
-                                                colors = listOf(
-                                                    Color.Transparent,
-                                                    Color.Black.copy(alpha = 0.75f)
-                                                )
-                                            ),
-                                            shape = ThumbnailRoundness.shape
-                                        )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .animateItemPlacement()
-                    )
                 }
             }
         }
