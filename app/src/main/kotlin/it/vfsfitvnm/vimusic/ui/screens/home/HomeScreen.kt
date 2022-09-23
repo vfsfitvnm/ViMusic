@@ -14,7 +14,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.screens.LocalPlaylistScreen
-import it.vfsfitvnm.vimusic.ui.screens.SearchResultScreen
+import it.vfsfitvnm.vimusic.ui.screens.searchresult.SearchResultScreen
 import it.vfsfitvnm.vimusic.ui.screens.builtInPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.intentUriRoute

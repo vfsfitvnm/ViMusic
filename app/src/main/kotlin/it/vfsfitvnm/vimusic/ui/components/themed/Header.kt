@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.medium
@@ -30,7 +31,9 @@ fun Header(
         titleContent = {
             BasicText(
                 text = title,
-                style = typography.xxl.medium
+                style = typography.xxl.medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         },
         actionsContent = actionsContent

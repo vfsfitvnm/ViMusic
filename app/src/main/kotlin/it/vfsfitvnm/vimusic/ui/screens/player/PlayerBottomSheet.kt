@@ -40,7 +40,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.MusicBars
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.screens.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
