@@ -260,7 +260,7 @@ fun HomeScreen() {
                             .padding(top = 16.dp)
                     ) {
                         BasicText(
-                            text = "Your playlists",
+                            text = "Playlists",
                             style = typography.m.semiBold,
                             modifier = Modifier
                                 .weight(1f)
