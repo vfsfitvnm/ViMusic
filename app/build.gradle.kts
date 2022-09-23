@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.compose.ripple)
     implementation(libs.compose.shimmer)
     implementation(libs.compose.coil)
+    implementation(libs.compose.viewmodel)
 
     implementation(libs.palette)
 
@@ -97,6 +98,4 @@ dependencies {
     implementation(projects.kugou)
 
     coreLibraryDesugaring(libs.desugaring)
-
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
 }

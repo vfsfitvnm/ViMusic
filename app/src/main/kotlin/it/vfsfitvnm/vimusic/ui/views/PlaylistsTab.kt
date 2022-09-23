@@ -12,12 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -54,6 +50,7 @@ import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.query
+import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -164,88 +161,69 @@ fun PlaylistsTab(
             contentType = 0,
             span = { GridItemSpan(maxLineSpan) }
         ) {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .height(128.dp)
-                    .fillMaxWidth()
-            ) {
-                BasicText(
-                    text = "Playlists",
-                    style = typography.xxl.medium
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
+            Header(title = "Playlists") {
+                @Composable
+                fun Item(
+                    @DrawableRes iconId: Int,
+                    sortBy: PlaylistSortBy
                 ) {
-                    @Composable
-                    fun Item(
-                        @DrawableRes iconId: Int,
-                        sortBy: PlaylistSortBy
-                    ) {
-                        Image(
-                            painter = painterResource(iconId),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
-                            modifier = Modifier
-                                .clickable { viewModel.sortBy = sortBy }
-                                .padding(all = 4.dp)
-                                .size(18.dp)
-                        )
-                    }
-
-                    BasicText(
-                        text = "New playlist",
-                        style = typography.xxs.medium,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable { isCreatingANewPlaylist = true }
-                            .background(colorPalette.background2)
-                            .padding(all = 8.dp)
-                            .padding(horizontal = 8.dp)
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    Item(
-                        iconId = R.drawable.medical,
-                        sortBy = PlaylistSortBy.SongCount
-                    )
-
-                    Item(
-                        iconId = R.drawable.text,
-                        sortBy = PlaylistSortBy.Name
-                    )
-
-                    Item(
-                        iconId = R.drawable.calendar,
-                        sortBy = PlaylistSortBy.DateAdded
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .width(2.dp)
-                    )
-
                     Image(
-                        painter = painterResource(R.drawable.arrow_up),
+                        painter = painterResource(iconId),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
-                            .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                            .clickable { viewModel.sortBy = sortBy }
                             .padding(all = 4.dp)
                             .size(18.dp)
-                            .graphicsLayer { rotationZ = sortOrderIconRotation }
                     )
                 }
+
+                BasicText(
+                    text = "New playlist",
+                    style = typography.xxs.medium,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { isCreatingANewPlaylist = true }
+                        .background(colorPalette.background2)
+                        .padding(all = 8.dp)
+                        .padding(horizontal = 8.dp)
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                Item(
+                    iconId = R.drawable.medical,
+                    sortBy = PlaylistSortBy.SongCount
+                )
+
+                Item(
+                    iconId = R.drawable.text,
+                    sortBy = PlaylistSortBy.Name
+                )
+
+                Item(
+                    iconId = R.drawable.calendar,
+                    sortBy = PlaylistSortBy.DateAdded
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
+
+                Image(
+                    painter = painterResource(R.drawable.arrow_up),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette.text),
+                    modifier = Modifier
+                        .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                        .padding(all = 4.dp)
+                        .size(18.dp)
+                        .graphicsLayer { rotationZ = sortOrderIconRotation }
+                )
             }
         }
 

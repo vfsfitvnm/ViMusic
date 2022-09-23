@@ -14,19 +14,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,7 +29,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -54,6 +48,7 @@ import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -63,7 +58,6 @@ import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.getEnum
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.mutableStatePreferenceOf
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.putEnum
@@ -134,72 +128,53 @@ fun SongsTab(
             key = "header",
             contentType = 0
         ) {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .height(128.dp)
-                    .fillMaxWidth()
-            ) {
-                BasicText(
-                    text = "Songs",
-                    style = typography.xxl.medium
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
+            Header(title = "Songs") {
+                @Composable
+                fun Item(
+                    @DrawableRes iconId: Int,
+                    sortBy: SongSortBy
                 ) {
-                    @Composable
-                    fun Item(
-                        @DrawableRes iconId: Int,
-                        sortBy: SongSortBy
-                    ) {
-                        Image(
-                            painter = painterResource(iconId),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
-                            modifier = Modifier
-                                .clickable { viewModel.sortBy = sortBy }
-                                .padding(all = 4.dp)
-                                .size(18.dp)
-                        )
-                    }
-
-                    Item(
-                        iconId = R.drawable.trending,
-                        sortBy = SongSortBy.PlayTime
-                    )
-
-                    Item(
-                        iconId = R.drawable.text,
-                        sortBy = SongSortBy.Title
-                    )
-
-                    Item(
-                        iconId = R.drawable.calendar,
-                        sortBy = SongSortBy.DateAdded
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .width(2.dp)
-                    )
-
                     Image(
-                        painter = painterResource(R.drawable.arrow_up),
+                        painter = painterResource(iconId),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
-                            .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                            .clickable { viewModel.sortBy = sortBy }
                             .padding(all = 4.dp)
                             .size(18.dp)
-                            .graphicsLayer { rotationZ = sortOrderIconRotation }
                     )
                 }
+
+                Item(
+                    iconId = R.drawable.trending,
+                    sortBy = SongSortBy.PlayTime
+                )
+
+                Item(
+                    iconId = R.drawable.text,
+                    sortBy = SongSortBy.Title
+                )
+
+                Item(
+                    iconId = R.drawable.calendar,
+                    sortBy = SongSortBy.DateAdded
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
+
+                Image(
+                    painter = painterResource(R.drawable.arrow_up),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette.text),
+                    modifier = Modifier
+                        .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                        .padding(all = 4.dp)
+                        .size(18.dp)
+                        .graphicsLayer { rotationZ = sortOrderIconRotation }
+                )
             }
         }
 
