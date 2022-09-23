@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.screens
+package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
@@ -19,6 +19,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*

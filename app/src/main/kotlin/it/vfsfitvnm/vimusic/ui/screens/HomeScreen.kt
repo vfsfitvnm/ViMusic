@@ -11,6 +11,8 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.screens.search.SearchScreen
+import it.vfsfitvnm.vimusic.ui.screens.settings.SettingsScreen
 import it.vfsfitvnm.vimusic.ui.views.PlaylistsTab
 import it.vfsfitvnm.vimusic.ui.views.SongsTab
 import it.vfsfitvnm.vimusic.utils.homeScreenTabIndexKey

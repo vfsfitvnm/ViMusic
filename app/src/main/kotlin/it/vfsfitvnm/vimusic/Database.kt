@@ -220,6 +220,9 @@ interface Database {
     @Query("SELECT loudnessDb FROM Format WHERE songId = :songId")
     fun loudnessDb(songId: String): Flow<Float?>
 
+    @Query("SELECT * FROM Song WHERE title LIKE :query OR artistsText LIKE :query")
+    fun search(query: String): Flow<List<DetailedSong>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(format: Format)
 

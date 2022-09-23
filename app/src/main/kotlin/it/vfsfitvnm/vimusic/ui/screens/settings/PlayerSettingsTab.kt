@@ -20,10 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
-import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
-import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupSpacer
-import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference

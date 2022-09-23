@@ -16,10 +16,6 @@ import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.screens.EnumValueSelectorSettingsEntry
-import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
-import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupSpacer
-import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey

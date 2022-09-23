@@ -33,11 +33,6 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.screens.SettingsDescription
-import it.vfsfitvnm.vimusic.ui.screens.SettingsEntry
-import it.vfsfitvnm.vimusic.ui.screens.SettingsEntryGroupText
-import it.vfsfitvnm.vimusic.ui.screens.SettingsGroupSpacer
-import it.vfsfitvnm.vimusic.ui.screens.SwitchSettingEntry
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
