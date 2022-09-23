@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.screens
+package it.vfsfitvnm.vimusic.ui.screens.home
 
 import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -11,10 +11,19 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.screens.BuiltInPlaylistScreen
+import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
+import it.vfsfitvnm.vimusic.ui.screens.LocalPlaylistScreen
+import it.vfsfitvnm.vimusic.ui.screens.SearchResultScreen
+import it.vfsfitvnm.vimusic.ui.screens.builtInPlaylistRoute
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
+import it.vfsfitvnm.vimusic.ui.screens.intentUriRoute
+import it.vfsfitvnm.vimusic.ui.screens.localPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.search.SearchScreen
+import it.vfsfitvnm.vimusic.ui.screens.searchResultRoute
+import it.vfsfitvnm.vimusic.ui.screens.searchRoute
 import it.vfsfitvnm.vimusic.ui.screens.settings.SettingsScreen
-import it.vfsfitvnm.vimusic.ui.views.PlaylistsTab
-import it.vfsfitvnm.vimusic.ui.views.SongsTab
+import it.vfsfitvnm.vimusic.ui.screens.settingsRoute
 import it.vfsfitvnm.vimusic.utils.homeScreenTabIndexKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 

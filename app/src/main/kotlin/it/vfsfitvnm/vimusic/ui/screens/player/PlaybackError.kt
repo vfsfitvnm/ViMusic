@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.views.player
+package it.vfsfitvnm.vimusic.ui.screens.player
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

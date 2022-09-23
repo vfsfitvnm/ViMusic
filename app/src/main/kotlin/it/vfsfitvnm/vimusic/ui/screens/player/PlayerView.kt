@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.views
+package it.vfsfitvnm.vimusic.ui.screens.player
 
 import android.content.Intent
 import android.content.res.Configuration
@@ -61,8 +61,6 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.collapsedPlayerProgressBar
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.player.Controls
-import it.vfsfitvnm.vimusic.ui.views.player.Thumbnail
 import it.vfsfitvnm.vimusic.utils.rememberMediaItem
 import it.vfsfitvnm.vimusic.utils.rememberPositionAndDuration
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying

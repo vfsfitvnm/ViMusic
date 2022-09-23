@@ -9,17 +9,11 @@ import it.vfsfitvnm.route.Route1
 import it.vfsfitvnm.route.RouteHandlerScope
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 
-val aboutRoute = Route0("aboutRoute")
 val albumRoute = Route1<String?>("albumRoute")
-val appearanceSettingsRoute = Route0("appearanceSettingsRoute")
 val artistRoute = Route1<String?>("artistRoute")
-val backupAndRestoreRoute = Route0("backupAndRestoreRoute")
 val builtInPlaylistRoute = Route1<BuiltInPlaylist>("builtInPlaylistRoute")
-val cacheSettingsRoute = Route0("cacheSettingsRoute")
 val intentUriRoute = Route1<Uri?>("intentUriRoute")
 val localPlaylistRoute = Route1<Long?>("localPlaylistRoute")
-val otherSettingsRoute = Route0("otherSettingsRoute")
-val playerSettingsRoute = Route0("playerSettingsRoute")
 val playlistRoute = Route1<String?>("playlistRoute")
 val searchResultRoute = Route1<String>("searchResultRoute")
 val searchRoute = Route1<String>("searchRoute")

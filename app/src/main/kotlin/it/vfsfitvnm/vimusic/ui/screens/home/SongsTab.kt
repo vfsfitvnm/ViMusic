@@ -1,7 +1,5 @@
-package it.vfsfitvnm.vimusic.ui.views
+package it.vfsfitvnm.vimusic.ui.screens.home
 
-import android.app.Application
-import android.content.SharedPreferences
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -25,8 +23,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -36,11 +32,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -53,54 +45,12 @@ import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
-import it.vfsfitvnm.vimusic.utils.getEnum
-import it.vfsfitvnm.vimusic.utils.mutableStatePreferenceOf
-import it.vfsfitvnm.vimusic.utils.preferences
-import it.vfsfitvnm.vimusic.utils.putEnum
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.songSortByKey
-import it.vfsfitvnm.vimusic.utils.songSortOrderKey
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
-
-class SongsTabViewModel(application: Application) : AndroidViewModel(application) {
-    var items by mutableStateOf(emptyList<DetailedSong>())
-        private set
-
-    var sortBy by mutableStatePreferenceOf(preferences.getEnum(songSortByKey, SongSortBy.DateAdded)) {
-        preferences.edit { putEnum(songSortByKey, it) }
-        collectItems(sortBy = it)
-    }
-
-    var sortOrder by mutableStatePreferenceOf(preferences.getEnum(songSortOrderKey, SortOrder.Ascending)) {
-        preferences.edit { putEnum(songSortOrderKey, it) }
-        collectItems(sortOrder = it)
-    }
-
-    private var job: Job? = null
-
-    private val preferences: SharedPreferences
-        get() = getApplication<Application>().preferences
-
-    init {
-        collectItems()
-    }
-
-    private fun collectItems(sortBy: SongSortBy = this.sortBy, sortOrder: SortOrder = this.sortOrder) {
-        job?.cancel()
-        job = viewModelScope.launch {
-            Database.songs(sortBy, sortOrder).flowOn(Dispatchers.IO).collect {
-                items = it
-            }
-        }
-    }
-}
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

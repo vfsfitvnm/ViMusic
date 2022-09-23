@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.views.player
+package it.vfsfitvnm.vimusic.ui.screens.player
 
 import android.app.SearchManager
 import android.content.Intent

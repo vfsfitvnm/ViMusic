@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.views.player
+package it.vfsfitvnm.vimusic.ui.screens.player
 
 import android.text.format.DateUtils
 import androidx.compose.animation.core.LinearEasing
