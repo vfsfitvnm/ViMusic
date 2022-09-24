@@ -164,12 +164,16 @@ fun VideoItem(
                 overflow = TextOverflow.Ellipsis,
             )
 
-            BasicText(
-                text = video.views.firstOrNull()?.name ?: "",
-                style = typography.xxs.medium.secondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            video.views.firstOrNull()?.name?.let { viewsText ->
+                BasicText(
+                    text = viewsText,
+                    style = typography.xxs.medium.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                )
+            }
         }
     }
 }
@@ -200,7 +204,10 @@ fun VideoItemShimmer(
         Column {
             TextPlaceholder()
             TextPlaceholder()
-            TextPlaceholder()
+            TextPlaceholder(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+            )
         }
     }
 }
@@ -287,7 +294,6 @@ fun PlaylistItemShimmer(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             TextPlaceholder()
             TextPlaceholder()
-            TextPlaceholder()
         }
     }
 }
@@ -369,7 +375,10 @@ fun AlbumItemShimmer(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             TextPlaceholder()
             TextPlaceholder()
-            TextPlaceholder()
+            TextPlaceholder(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+            )
         }
     }
 }
@@ -405,6 +414,17 @@ fun ArtistItem(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
+
+            artist.subscribersCountText?.let { subscribersCountText ->
+                BasicText(
+                    text = subscribersCountText,
+                    style = typography.xxs.semiBold.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                )
+            }
         }
     }
 }
@@ -430,7 +450,11 @@ fun ArtistItemShimmer(
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-           TextPlaceholder()
+            TextPlaceholder()
+            TextPlaceholder(
+                modifier = Modifier
+                    .padding(top = 4.dp)
+            )
         }
     }
 }

@@ -320,6 +320,7 @@ object YouTube {
 
         data class Artist(
             val info: Info<NavigationEndpoint.Endpoint.Browse>,
+            val subscribersCountText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
             override val key: String?
@@ -329,7 +330,7 @@ object YouTube {
                 val Filter = Filter("EgWKAQIgAWoKEAkQChAFEAMQBA%3D%3D")
 
                 override fun from(content: MusicShelfRenderer.Content): Artist {
-                    val (mainRuns) = content.runs
+                    val (mainRuns, otherRuns) = content.runs
 
                     return Artist(
                         info = Info(
@@ -341,6 +342,10 @@ object YouTube {
                                 .navigationEndpoint
                                 ?.browseEndpoint
                         ),
+                        subscribersCountText = otherRuns
+                            .lastOrNull()
+                            ?.last()
+                            ?.text,
                         thumbnail = content
                             .thumbnail
                     )
