@@ -32,6 +32,7 @@ import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Album
+import it.vfsfitvnm.vimusic.models.AlbumWithSongs
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
@@ -45,6 +46,7 @@ import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.models.SongArtistMap
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
+import it.vfsfitvnm.vimusic.models.SortedSongAlbumMap
 import it.vfsfitvnm.vimusic.models.SortedSongPlaylistMap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -144,8 +146,9 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
+    @Transaction
     @Query("SELECT * FROM Album WHERE id = :id")
-    fun album(id: String): Flow<Album?>
+    fun albumWithSongs(id: String): Flow<AlbumWithSongs?>
 
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
@@ -189,11 +192,6 @@ interface Database {
     @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
     @RewriteQueriesToDropUnusedColumns
     fun artistSongs(artistId: String): Flow<List<DetailedSong>>
-
-    @Transaction
-    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
-    @RewriteQueriesToDropUnusedColumns
-    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
 
     @Query("SELECT * FROM Format WHERE songId = :songId")
     fun format(songId: String): Flow<Format>
@@ -361,9 +359,10 @@ interface Database {
         Format::class,
     ],
     views = [
-        SortedSongPlaylistMap::class
+        SortedSongPlaylistMap::class,
+        SortedSongAlbumMap::class
     ],
-    version = 17,
+    version = 18,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -379,6 +378,7 @@ interface Database {
         AutoMigration(from = 13, to = 14),
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
+        AutoMigration(from = 17, to = 18),
     ],
 )
 @TypeConverters(Converters::class)

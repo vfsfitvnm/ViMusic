@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 object Dimensions {
     val itemsVerticalPadding = 8.dp
 
+    val verticalBarWidth = 64.dp
+
     object thumbnails {
         val album = 128.dp
         val artist = 192.dp

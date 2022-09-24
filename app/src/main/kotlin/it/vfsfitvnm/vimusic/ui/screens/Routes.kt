@@ -8,6 +8,7 @@ import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.Route1
 import it.vfsfitvnm.route.RouteHandlerScope
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
+import it.vfsfitvnm.vimusic.ui.screens.album.AlbumScreen
 
 val albumRoute = Route1<String?>("albumRoute")
 val artistRoute = Route1<String?>("artistRoute")

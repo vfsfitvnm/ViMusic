@@ -112,16 +112,11 @@ fun Scaffold(
     }
 }
 
-@SuppressLint("ModifierParameter")
 @ExperimentalAnimationApi
 @Composable
 fun SimpleScaffold(
     topIconButtonId: Int,
     onTopIconButtonClick: () -> Unit,
-    title: String = "",
-    primaryIconButtonId: Int? = null,
-    primaryIconButtonEnabled: Boolean = true,
-    onPrimaryIconButtonClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -132,13 +127,9 @@ fun SimpleScaffold(
             .background(colorPalette.background0)
             .fillMaxSize()
     ) {
-        VerticalTitleBar(
+        VerticalBar(
             topIconButtonId = topIconButtonId,
             onTopIconButtonClick = onTopIconButtonClick,
-            title = title,
-            primaryIconButtonId = primaryIconButtonId,
-            primaryIconButtonEnabled = primaryIconButtonEnabled,
-            onPrimaryIconButtonClick = onPrimaryIconButtonClick,
             modifier = Modifier
                 .padding(LocalPlayerAwarePaddingValues.current)
         )
