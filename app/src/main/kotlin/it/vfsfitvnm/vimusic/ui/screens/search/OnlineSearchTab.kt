@@ -138,18 +138,18 @@ fun OnlineSearchTab(
                     )
                 },
                 actionsContent = {
-                    BasicText(
-                        text = if (isOpenableUrl) "Open url" else "Search",
-                        style = typography.xxs.medium,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(enabled = textFieldValue.text.isNotEmpty()) {
-                                if (isOpenableUrl) onUri() else onSearch(textFieldValue.text)
-                            }
-                            .background(colorPalette.background2)
-                            .padding(all = 8.dp)
-                            .padding(horizontal = 8.dp)
-                    )
+                    if (isOpenableUrl) {
+                        BasicText(
+                            text = "Open url",
+                            style = typography.xxs.medium,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable(onClick = onUri)
+                                .background(colorPalette.background2)
+                                .padding(all = 8.dp)
+                                .padding(horizontal = 8.dp)
+                        )
+                    }
 
                     Spacer(
                         modifier = Modifier
