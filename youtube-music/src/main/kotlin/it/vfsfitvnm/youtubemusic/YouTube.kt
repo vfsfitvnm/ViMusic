@@ -177,6 +177,7 @@ object YouTube {
 
     sealed class Item {
         abstract val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
+        abstract val key: String?
 
         data class Song(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
@@ -185,6 +186,9 @@ object YouTube {
             val durationText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
+            override val key: String?
+                get() = info.endpoint?.videoId
+
             companion object : FromMusicShelfRendererContent<Song> {
                 val Filter = Filter("EgWKAQIIAWoKEAkQBRAKEAMQBA%3D%3D")
 
@@ -232,6 +236,9 @@ object YouTube {
             val durationText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
+            override val key: String?
+                get() = info.endpoint?.videoId
+
             val isOfficialMusicVideo: Boolean
                 get() = info
                     .endpoint
@@ -278,6 +285,9 @@ object YouTube {
             val year: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
+            override val key: String?
+                get() = info.endpoint?.browseId
+
             companion object : FromMusicShelfRendererContent<Album> {
                 val Filter = Filter("EgWKAQIYAWoKEAkQChAFEAMQBA%3D%3D")
 
@@ -312,6 +322,9 @@ object YouTube {
             val info: Info<NavigationEndpoint.Endpoint.Browse>,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
+            override val key: String?
+                get() = info.endpoint?.browseId
+
             companion object : FromMusicShelfRendererContent<Artist> {
                 val Filter = Filter("EgWKAQIgAWoKEAkQChAFEAMQBA%3D%3D")
 
@@ -341,6 +354,9 @@ object YouTube {
             val songCount: Int?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
+            override val key: String?
+                get() = info.endpoint?.browseId
+
             companion object : FromMusicShelfRendererContent<Playlist> {
                 override fun from(content: MusicShelfRenderer.Content): Playlist {
                     val (mainRuns, otherRuns) = content.runs

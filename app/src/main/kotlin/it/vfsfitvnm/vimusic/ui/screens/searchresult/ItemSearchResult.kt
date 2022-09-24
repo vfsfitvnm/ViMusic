@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.ui.screens.searchresult
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -22,11 +23,10 @@ import it.vfsfitvnm.youtubemusic.YouTube
 
 @ExperimentalAnimationApi
 @Composable
-inline fun <I : YouTube.Item> ItemSearchResultTab(
+inline fun <I : YouTube.Item> ItemSearchResult(
     query: String,
     filter: String,
     crossinline onSearchAgain: () -> Unit,
-    isArtists: Boolean = false,
     viewModel: ItemSearchResultViewModel<I> = viewModel(
         key = query + filter,
         factory = object : ViewModelProvider.Factory {
@@ -36,7 +36,8 @@ inline fun <I : YouTube.Item> ItemSearchResultTab(
             }
         }
     ),
-    crossinline itemContent: @Composable (LazyItemScope.(I) -> Unit)
+    crossinline itemContent: @Composable LazyItemScope.(I) -> Unit,
+    noinline itemShimmer: @Composable BoxScope.() -> Unit,
 ) {
     LazyColumn(
         contentPadding = LocalPlayerAwarePaddingValues.current,
@@ -45,7 +46,7 @@ inline fun <I : YouTube.Item> ItemSearchResultTab(
     ) {
         item(
             key = "header",
-            contentType = 0
+            contentType = 0,
         ) {
             Header(
                 title = query,
@@ -60,6 +61,7 @@ inline fun <I : YouTube.Item> ItemSearchResultTab(
 
         items(
             items = viewModel.items,
+            key = { it.key!! },
             itemContent = itemContent
         )
 
@@ -73,7 +75,8 @@ inline fun <I : YouTube.Item> ItemSearchResultTab(
             item {
                 SearchResultLoadingOrError(
                     errorMessage = throwable.javaClass.canonicalName,
-                    onRetry = viewModel::fetch
+                    onRetry = viewModel::fetch,
+                    shimmerContent = {}
                 )
             }
         } ?: viewModel.continuationResult?.let {
@@ -88,7 +91,7 @@ inline fun <I : YouTube.Item> ItemSearchResultTab(
         } ?: item(key = "loading") {
             SearchResultLoadingOrError(
                 itemCount = if (viewModel.items.isEmpty()) 8 else 3,
-                isLoadingArtists = isArtists
+                shimmerContent = itemShimmer
             )
         }
     }

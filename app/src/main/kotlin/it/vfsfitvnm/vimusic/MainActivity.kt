@@ -63,15 +63,15 @@ import it.vfsfitvnm.vimusic.ui.components.collapsedAnchor
 import it.vfsfitvnm.vimusic.ui.components.dismissedAnchor
 import it.vfsfitvnm.vimusic.ui.components.expandedAnchor
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
-import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
+import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
+import it.vfsfitvnm.vimusic.ui.screens.player.PlayerView
 import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.colorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.dynamicColorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.typographyOf
-import it.vfsfitvnm.vimusic.ui.screens.player.PlayerView
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.getEnum

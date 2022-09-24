@@ -1,9 +1,9 @@
 package it.vfsfitvnm.vimusic.ui.screens.searchresult
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,17 +21,23 @@ import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SmallAlbumItem
-import it.vfsfitvnm.vimusic.ui.views.SmallArtistItem
-import it.vfsfitvnm.vimusic.ui.views.SmallPlaylistItem
+import it.vfsfitvnm.vimusic.ui.views.AlbumItem
+import it.vfsfitvnm.vimusic.ui.views.AlbumItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.ArtistItem
+import it.vfsfitvnm.vimusic.ui.views.ArtistItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.PlaylistItem
+import it.vfsfitvnm.vimusic.ui.views.PlaylistItemShimmer
 import it.vfsfitvnm.vimusic.ui.views.SmallSongItem
-import it.vfsfitvnm.vimusic.ui.views.SmallVideoItem
+import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.VideoItem
+import it.vfsfitvnm.vimusic.ui.views.VideoItemShimmer
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.searchResultScreenTabIndexKey
 import it.vfsfitvnm.youtubemusic.YouTube
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
@@ -76,125 +82,139 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                     when (tabIndex) {
                         0 -> {
                             val binder = LocalPlayerServiceBinder.current
-                            val thumbnailSizePx = Dimensions.thumbnails.song.px
-
-                            ItemSearchResultTab<YouTube.Item.Song>(
-                                query = query,
-                                filter = searchFilter,
-                                onSearchAgain = onSearchAgain
-                            ) { song ->
-                                SmallSongItem(
-                                    song = song,
-                                    thumbnailSizePx = thumbnailSizePx,
-                                    onClick = {
-                                        binder?.stopRadio()
-                                        binder?.player?.forcePlay(song.asMediaItem)
-                                        binder?.setupRadio(song.info.endpoint)
-                                    }
-                                )
-                            }
-                        }
-
-                        1 -> {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ItemSearchResultTab<YouTube.Item.Album>(
-                                query = query,
-                                filter = searchFilter,
-                                onSearchAgain = onSearchAgain
-                            ) { album ->
-                                SmallAlbumItem(
-                                    album = album,
-                                    thumbnailSizePx = thumbnailSizePx,
-                                    thumbnailSizeDp = thumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            onClick = { albumRoute(album.info.endpoint?.browseId) }
-                                        )
-                                        .padding(
-                                            vertical = Dimensions.itemsVerticalPadding,
-                                            horizontal = 16.dp
-                                        )
-                                )
-                            }
-                        }
-
-                        2 -> {
-                            val thumbnailSizeDp = Dimensions.thumbnails.song
-                            val thumbnailSizePx = thumbnailSizeDp.px
-
-                            ItemSearchResultTab<YouTube.Item.Artist>(
+                            ItemSearchResult<YouTube.Item.Song>(
                                 query = query,
                                 filter = searchFilter,
                                 onSearchAgain = onSearchAgain,
-                                isArtists = true
-                            ) { artist ->
-                                SmallArtistItem(
-                                    artist = artist,
-                                    thumbnailSizePx = thumbnailSizePx,
-                                    thumbnailSizeDp = thumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            onClick = { artistRoute(artist.info.endpoint?.browseId) }
-                                        )
-                                        .padding(
-                                            vertical = Dimensions.itemsVerticalPadding,
-                                            horizontal = 16.dp
-                                        )
-                                )
-                            }
+                                itemContent = { song ->
+                                    SmallSongItem(
+                                        song = song,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        onClick = {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlay(song.asMediaItem)
+                                            binder?.setupRadio(song.info.endpoint)
+                                        }
+                                    )
+                                },
+                                itemShimmer = {
+                                    SmallSongItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                }
+                            )
+                        }
+
+                        1 -> {
+                            val thumbnailSizeDp = 108.dp
+                            val thumbnailSizePx = thumbnailSizeDp.px
+
+                            ItemSearchResult<YouTube.Item.Album>(
+                                query = query,
+                                filter = searchFilter,
+                                onSearchAgain = onSearchAgain,
+                                itemContent = { album ->
+                                    AlbumItem(
+                                        album = album,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        thumbnailSizeDp = thumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = { albumRoute(album.info.endpoint?.browseId) }
+                                            )
+                                    )
+
+                                },
+                                itemShimmer = {
+                                    AlbumItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                }
+                            )
+                        }
+
+                        2 -> {
+                            val thumbnailSizeDp = 64.dp
+                            val thumbnailSizePx = thumbnailSizeDp.px
+
+                            ItemSearchResult<YouTube.Item.Artist>(
+                                query = query,
+                                filter = searchFilter,
+                                onSearchAgain = onSearchAgain,
+                                itemContent = { artist ->
+                                    ArtistItem(
+                                        artist = artist,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        thumbnailSizeDp = thumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = { artistRoute(artist.info.endpoint?.browseId) }
+                                            )
+                                    )
+                                },
+                                itemShimmer = {
+                                    ArtistItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                }
+                            )
                         }
                         3 -> {
                             val binder = LocalPlayerServiceBinder.current
-                            val thumbnailSizePx = Dimensions.thumbnails.song.px
+                            val thumbnailHeightDp = 72.dp
+                            val thumbnailWidthDp = 128.dp
 
-                            ItemSearchResultTab<YouTube.Item.Video>(
+                            ItemSearchResult<YouTube.Item.Video>(
                                 query = query,
                                 filter = searchFilter,
-                                onSearchAgain = onSearchAgain
-                            ) { video ->
-                                SmallVideoItem(
-                                    video = video,
-                                    thumbnailSizePx = thumbnailSizePx,
-                                    onClick = {
-                                        binder?.stopRadio()
-                                        binder?.player?.forcePlay(video.asMediaItem)
-                                        binder?.setupRadio(video.info.endpoint)
-                                    }
-                                )
-                            }
+                                onSearchAgain = onSearchAgain,
+                                itemContent = { video ->
+                                    VideoItem(
+                                        video = video,
+                                        thumbnailWidthDp = thumbnailWidthDp,
+                                        thumbnailHeightDp = thumbnailHeightDp,
+                                        onClick = {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlay(video.asMediaItem)
+                                            binder?.setupRadio(video.info.endpoint)
+                                        }
+                                    )
+                                },
+                                itemShimmer = {
+                                    VideoItemShimmer(
+                                        thumbnailHeightDp = thumbnailHeightDp,
+                                        thumbnailWidthDp = thumbnailWidthDp
+                                    )
+                                }
+                            )
                         }
 
                         4, 5 -> {
-                            val thumbnailSizeDp = Dimensions.thumbnails.song
+                            val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ItemSearchResultTab<YouTube.Item.Playlist>(
+                            ItemSearchResult<YouTube.Item.Playlist>(
                                 query = query,
                                 filter = searchFilter,
-                                onSearchAgain = onSearchAgain
-                            ) { playlist ->
-                                SmallPlaylistItem(
-                                    playlist = playlist,
-                                    thumbnailSizePx = thumbnailSizePx,
-                                    thumbnailSizeDp = thumbnailSizeDp,
-                                    modifier = Modifier
-                                        .clickable(
-                                            indication = rememberRipple(bounded = true),
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            onClick = { playlistRoute(playlist.info.endpoint?.browseId) }
-                                        )
-                                        .padding(
-                                            vertical = Dimensions.itemsVerticalPadding,
-                                            horizontal = 16.dp
-                                        )
-                                )
-                            }
+                                onSearchAgain = onSearchAgain,
+                                itemContent = { playlist ->
+                                    PlaylistItem(
+                                        playlist = playlist,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        thumbnailSizeDp = thumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = { playlistRoute(playlist.info.endpoint?.browseId) }
+                                            )
+                                    )
+                                },
+                                itemShimmer = {
+                                    PlaylistItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                }
+                            )
                         }
                     }
                 }
