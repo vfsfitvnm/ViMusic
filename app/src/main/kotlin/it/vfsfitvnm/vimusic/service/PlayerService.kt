@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.service
 
+import android.os.Binder as AndroidBinder
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -91,6 +92,8 @@ import it.vfsfitvnm.vimusic.utils.timer
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
 import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -101,9 +104,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
-import kotlin.system.exitProcess
-import android.os.Binder as AndroidBinder
 
 @Suppress("DEPRECATION")
 class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListener.Callback,
@@ -245,11 +245,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             broadCastPendingIntent<NotificationDismissReceiver>().send()
         }
         super.onTaskRemoved(rootIntent)
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        player.pause()
-        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
