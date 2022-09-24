@@ -105,18 +105,18 @@ fun LibrarySearchTab(
                     )
                 },
                 actionsContent = {
-                    BasicText(
-                        text = "Clear",
-                        style = typography.xxs.medium,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(enabled = textFieldValue.text.isNotEmpty()) {
-                                onTextFieldValueChanged(TextFieldValue())
-                            }
-                            .background(colorPalette.background2)
-                            .padding(all = 8.dp)
-                            .padding(horizontal = 8.dp)
-                    )
+                    if (textFieldValue.text.isNotEmpty()) {
+                        BasicText(
+                            text = "Clear",
+                            style = typography.xxs.medium,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable { onTextFieldValueChanged(TextFieldValue()) }
+                                .background(colorPalette.background2)
+                                .padding(all = 8.dp)
+                                .padding(horizontal = 8.dp)
+                        )
+                    }
                 }
             )
         }
