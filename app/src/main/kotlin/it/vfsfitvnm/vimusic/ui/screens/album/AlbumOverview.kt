@@ -39,10 +39,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
@@ -68,12 +70,12 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 @Composable
 fun AlbumSongList(
     browseId: String,
-    viewModel: AlbumSongListViewModel = viewModel(
+    viewModel: AlbumOverviewViewModel = viewModel(
         key = browseId,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return AlbumSongListViewModel(browseId) as T
+                return AlbumOverviewViewModel(browseId) as T
             }
         }
     )
@@ -119,6 +121,34 @@ fun AlbumSongList(
                             Spacer(
                                 modifier = Modifier
                                     .weight(1f)
+                            )
+
+                            Image(
+                                painter = painterResource(
+                                    if (albumWithSongs.album.bookmarkedAt == null) {
+                                        R.drawable.bookmark_outline
+                                    } else {
+                                        R.drawable.bookmark
+                                    }
+                                ),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette.accent),
+                                modifier = Modifier
+                                    .clickable {
+                                        query {
+                                            Database.update(
+                                                albumWithSongs.album.copy(
+                                                    bookmarkedAt = if (albumWithSongs.album.bookmarkedAt == null) {
+                                                        System.currentTimeMillis()
+                                                    } else {
+                                                        null
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    }
+                                    .padding(all = 4.dp)
+                                    .size(18.dp)
                             )
 
                             Image(

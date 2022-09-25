@@ -28,6 +28,7 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
+import it.vfsfitvnm.vimusic.enums.AlbumSortBy
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
@@ -149,6 +150,41 @@ interface Database {
     @Transaction
     @Query("SELECT * FROM Album WHERE id = :id")
     fun albumWithSongs(id: String): Flow<AlbumWithSongs?>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title ASC")
+    fun albumsByTitleAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY year ASC")
+    fun albumsByYearAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID ASC")
+    fun albumsByRowIdAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title DESC")
+    fun albumsByTitleDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY year DESC")
+    fun albumsByYearDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID DESC")
+    fun albumsByRowIdDesc(): Flow<List<Album>>
+
+    fun albums(sortBy: AlbumSortBy, sortOrder: SortOrder): Flow<List<Album>> {
+        return when (sortBy) {
+            AlbumSortBy.Title -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByTitleAsc()
+                SortOrder.Descending -> albumsByTitleDesc()
+            }
+            AlbumSortBy.Year -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByYearAsc()
+                SortOrder.Descending -> albumsByYearDesc()
+            }
+            AlbumSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByRowIdAsc()
+                SortOrder.Descending -> albumsByRowIdDesc()
+            }
+        }
+    }
 
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
@@ -362,7 +398,7 @@ interface Database {
         SortedSongPlaylistMap::class,
         SortedSongAlbumMap::class
     ],
-    version = 18,
+    version = 19,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -379,6 +415,7 @@ interface Database {
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
+        AutoMigration(from = 18, to = 19),
     ],
 )
 @TypeConverters(Converters::class)

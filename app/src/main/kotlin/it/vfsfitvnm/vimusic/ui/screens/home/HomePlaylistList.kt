@@ -145,7 +145,7 @@ fun HomePlaylistList(
                 )
 
                 Item(
-                    iconId = R.drawable.calendar,
+                    iconId = R.drawable.time,
                     sortBy = PlaylistSortBy.DateAdded
                 )
 

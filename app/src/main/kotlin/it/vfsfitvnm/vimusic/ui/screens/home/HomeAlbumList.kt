@@ -1,17 +1,18 @@
 package it.vfsfitvnm.vimusic.ui.screens.home
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,54 +20,54 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
-import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.enums.SongSortBy
+import it.vfsfitvnm.vimusic.enums.AlbumSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SongItem
-import it.vfsfitvnm.vimusic.utils.asMediaItem
-import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.color
-import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
+import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.thumbnail
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun HomeSongList(
-    viewModel: HomeSongListViewModel = viewModel()
+fun HomeAlbumList(
+    onAlbumClick: (Album) -> Unit,
+    viewModel: HomeAlbumListViewModel = viewModel()
 ) {
-    val (colorPalette, typography) = LocalAppearance.current
-    val binder = LocalPlayerServiceBinder.current
+    val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
 
-    val thumbnailSize = Dimensions.thumbnails.song.px
+    val thumbnailSizeDp = Dimensions.thumbnails.song * 2
+    val thumbnailSizePx = thumbnailSizeDp.px
 
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (viewModel.sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
+
+    val rippleIndication = rememberRipple(bounded = true)
 
     LazyColumn(
         contentPadding = LocalPlayerAwarePaddingValues.current,
@@ -78,11 +79,11 @@ fun HomeSongList(
             key = "header",
             contentType = 0
         ) {
-            Header(title = "Songs") {
+            Header(title = "Albums") {
                 @Composable
                 fun Item(
                     @DrawableRes iconId: Int,
-                    sortBy: SongSortBy
+                    sortBy: AlbumSortBy
                 ) {
                     Image(
                         painter = painterResource(iconId),
@@ -96,18 +97,18 @@ fun HomeSongList(
                 }
 
                 Item(
-                    iconId = R.drawable.trending,
-                    sortBy = SongSortBy.PlayTime
+                    iconId = R.drawable.calendar,
+                    sortBy = AlbumSortBy.Year
                 )
 
                 Item(
                     iconId = R.drawable.text,
-                    sortBy = SongSortBy.Title
+                    sortBy = AlbumSortBy.Title
                 )
 
                 Item(
                     iconId = R.drawable.time,
-                    sortBy = SongSortBy.DateAdded
+                    sortBy = AlbumSortBy.DateAdded
                 )
 
                 Spacer(
@@ -128,59 +129,59 @@ fun HomeSongList(
             }
         }
 
-        itemsIndexed(
+        items(
             items = viewModel.items,
-            key = { _, song -> song.id }
-        ) { index, song ->
-            SongItem(
-                song = song,
-                thumbnailSize = thumbnailSize,
-                onClick = {
-                    binder?.stopRadio()
-                    binder?.player?.forcePlayAtIndex(
-                        viewModel.items.map(DetailedSong::asMediaItem),
-                        index
+            key = Album::id
+        ) { album ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .clickable(
+                        indication = rippleIndication,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = { onAlbumClick(album) }
                     )
-                },
-                menuContent = {
-                    InHistoryMediaItemMenu(song = song)
-                },
-                onThumbnailContent = {
-                    AnimatedVisibility(
-                        visible = viewModel.sortBy == SongSortBy.PlayTime,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                    ) {
+                    .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .animateItemPlacement()
+            ) {
+                AsyncImage(
+                    model = album.thumbnailUrl?.thumbnail(thumbnailSizePx),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(thumbnailShape)
+                        .size(thumbnailSizeDp)
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    BasicText(
+                        text = album.title ?: "",
+                        style = typography.xs.semiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    BasicText(
+                        text = album.authorsText ?: "",
+                        style = typography.xs.semiBold.secondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    album.year?.let { year ->
                         BasicText(
-                            text = song.formattedTotalPlayTime,
-                            style = typography.xxs.semiBold.center.color(
-                                Color.White
-                            ),
-                            maxLines = 2,
+                            text = year,
+                            style = typography.xxs.semiBold.secondary,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.Black.copy(alpha = 0.75f)
-                                        )
-                                    ),
-                                    shape = ThumbnailRoundness.shape
-                                )
-                                .padding(
-                                    horizontal = 8.dp,
-                                    vertical = 4.dp
-                                )
+                                .padding(top = 8.dp)
                         )
                     }
-                },
-                modifier = Modifier
-                    .animateItemPlacement()
-            )
+                }
+            }
         }
     }
 }

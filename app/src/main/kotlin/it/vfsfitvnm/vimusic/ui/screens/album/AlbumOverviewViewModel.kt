@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class AlbumSongListViewModel(browseId: String) : ViewModel() {
+class AlbumOverviewViewModel(browseId: String) : ViewModel() {
     var result by mutableStateOf<Result<AlbumWithSongs?>?>(null)
         private set
 

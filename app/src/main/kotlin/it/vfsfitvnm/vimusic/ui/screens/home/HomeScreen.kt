@@ -14,7 +14,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.screens.LocalPlaylistScreen
-import it.vfsfitvnm.vimusic.ui.screens.searchresult.SearchResultScreen
+import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.builtInPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.intentUriRoute
@@ -22,6 +22,7 @@ import it.vfsfitvnm.vimusic.ui.screens.localPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.search.SearchScreen
 import it.vfsfitvnm.vimusic.ui.screens.searchResultRoute
 import it.vfsfitvnm.vimusic.ui.screens.searchRoute
+import it.vfsfitvnm.vimusic.ui.screens.searchresult.SearchResultScreen
 import it.vfsfitvnm.vimusic.ui.screens.settings.SettingsScreen
 import it.vfsfitvnm.vimusic.ui.screens.settingsRoute
 import it.vfsfitvnm.vimusic.utils.homeScreenTabIndexKey
@@ -84,7 +85,10 @@ fun HomeScreen() {
         }
 
         host {
-            val (tabIndex, onTabChanged) = rememberPreference(homeScreenTabIndexKey, defaultValue = 0)
+            val (tabIndex, onTabChanged) = rememberPreference(
+                homeScreenTabIndexKey,
+                defaultValue = 0
+            )
 
             Scaffold(
                 topIconButtonId = R.drawable.equalizer,
@@ -102,19 +106,17 @@ fun HomeScreen() {
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
-                        0 -> HomeSongList()
                         1 -> HomePlaylistList(
                             onBuiltInPlaylistClicked = { builtInPlaylistRoute(it) },
                             onPlaylistClicked = { localPlaylistRoute(it.id) }
                         )
-//                    2 -> ArtistsTab(
-//                        lazyListState = lazyListStates[currentTabIndex],
+//                    2 -> HomeArtistList(
 //                        onArtistClicked = { artistRoute(it.id) }
 //                    )
-//                    3 -> AlbumsTab(
-//                        lazyListState = lazyListStates[currentTabIndex],
-//                        onAlbumClicked = { albumRoute(it.id) }
-//                    )
+                        3 -> HomeAlbumList(
+                            onAlbumClick = { albumRoute(it.id) }
+                        )
+                        else -> HomeSongList()
                     }
                 }
             }
