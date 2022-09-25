@@ -11,7 +11,7 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-class OnlineSearchTabViewModel(text: String) : ViewModel() {
+class OnlineSearchViewModel(text: String) : ViewModel() {
     var history by mutableStateOf(emptyList<SearchQuery>())
         private set
 

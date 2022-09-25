@@ -9,7 +9,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import kotlinx.coroutines.launch
 
-class LibrarySearchTabViewModel(text: String) : ViewModel() {
+class LocalSongSearchViewModel(text: String) : ViewModel() {
     var items by mutableStateOf(emptyList<DetailedSong>())
         private set
 

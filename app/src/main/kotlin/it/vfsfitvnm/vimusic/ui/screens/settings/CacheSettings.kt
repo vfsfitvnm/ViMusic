@@ -30,7 +30,7 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 @OptIn(ExperimentalCoilApi::class)
 @ExperimentalAnimationApi
 @Composable
-fun CacheSettingsTab() {
+fun CacheSettings() {
     val context = LocalContext.current
     val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current

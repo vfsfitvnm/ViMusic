@@ -55,8 +55,8 @@ import it.vfsfitvnm.vimusic.utils.semiBold
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun SongsTab(
-    viewModel: SongsTabViewModel = viewModel()
+fun HomeSongList(
+    viewModel: HomeSongListViewModel = viewModel()
 ) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current

@@ -27,12 +27,12 @@ inline fun <I : YouTube.Item> ItemSearchResult(
     query: String,
     filter: String,
     crossinline onSearchAgain: () -> Unit,
-    viewModel: ItemSearchResultViewModel<I> = viewModel(
+    viewModel: SearchResultViewModel<I> = viewModel(
         key = query + filter,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return ItemSearchResultViewModel<I>(query, filter) as T
+                return SearchResultViewModel<I>(query, filter) as T
             }
         }
     ),

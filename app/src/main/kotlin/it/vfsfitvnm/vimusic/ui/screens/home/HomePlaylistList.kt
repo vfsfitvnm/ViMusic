@@ -54,8 +54,8 @@ import it.vfsfitvnm.vimusic.utils.medium
 
 @ExperimentalFoundationApi
 @Composable
-fun PlaylistsTab(
-    viewModel: PlaylistsTabViewModel = viewModel(),
+fun HomePlaylistList(
+    viewModel: HomePlaylistListViewModel = viewModel(),
     onBuiltInPlaylistClicked: (BuiltInPlaylist) -> Unit,
     onPlaylistClicked: (Playlist) -> Unit,
 ) {

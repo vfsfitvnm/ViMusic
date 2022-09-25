@@ -19,7 +19,7 @@ import it.vfsfitvnm.vimusic.utils.secondary
 
 @ExperimentalAnimationApi
 @Composable
-fun AboutTab() {
+fun About() {
     val (colorPalette, typography) = LocalAppearance.current
     val uriHandler = LocalUriHandler.current
 

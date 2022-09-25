@@ -66,7 +66,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(currentTabIndex) {
                     when (currentTabIndex) {
-                        0 -> OnlineSearchTab(
+                        0 -> OnlineSearch(
                             textFieldValue = textFieldValue,
                             onTextFieldValueChanged = onTextFieldValueChanged,
                             isOpenableUrl = isOpenableUrl,
@@ -77,7 +77,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                 }
                             }
                         )
-                        1 -> LibrarySearchTab(
+                        1 -> LocalSongSearch(
                             textFieldValue = textFieldValue,
                             onTextFieldValueChanged = onTextFieldValueChanged
                         )

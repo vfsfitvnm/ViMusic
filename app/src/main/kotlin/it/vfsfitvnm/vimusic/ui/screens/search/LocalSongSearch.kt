@@ -47,15 +47,15 @@ import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun LibrarySearchTab(
+fun LocalSongSearch(
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
-    viewModel: LibrarySearchTabViewModel = viewModel(
+    viewModel: LocalSongSearchViewModel = viewModel(
         key = textFieldValue.text,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return LibrarySearchTabViewModel(textFieldValue.text) as T
+                return LocalSongSearchViewModel(textFieldValue.text) as T
             }
         }
     )

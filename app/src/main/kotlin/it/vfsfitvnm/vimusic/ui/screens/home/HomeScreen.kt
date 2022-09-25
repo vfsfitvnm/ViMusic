@@ -102,8 +102,8 @@ fun HomeScreen() {
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
-                        0 -> SongsTab()
-                        1 -> PlaylistsTab(
+                        0 -> HomeSongList()
+                        1 -> HomePlaylistList(
                             onBuiltInPlaylistClicked = { builtInPlaylistRoute(it) },
                             onPlaylistClicked = { localPlaylistRoute(it.id) }
                         )

@@ -54,11 +54,13 @@ import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
+import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
 
 @ExperimentalAnimationApi
@@ -66,12 +68,12 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 @Composable
 fun AlbumSongList(
     browseId: String,
-    viewModel: AlbumViewModel = viewModel(
+    viewModel: AlbumSongListViewModel = viewModel(
         key = browseId,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return AlbumViewModel(browseId) as T
+                return AlbumSongListViewModel(browseId) as T
             }
         }
     )
@@ -175,7 +177,7 @@ fun AlbumSongList(
                         startContent = {
                             BasicText(
                                 text = "${index + 1}",
-                                style = typography.m.secondary.secondary.center,
+                                style = typography.s.semiBold.center.color(colorPalette.textDisabled),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
@@ -215,7 +217,7 @@ fun AlbumSongList(
                         .size(20.dp)
                 )
             }
-        } ?: viewModel.result?.exceptionOrNull()?.let { _ ->
+        } ?: viewModel.result?.exceptionOrNull()?.let {
             Box(
                 modifier = Modifier
                     .pointerInput(Unit) {

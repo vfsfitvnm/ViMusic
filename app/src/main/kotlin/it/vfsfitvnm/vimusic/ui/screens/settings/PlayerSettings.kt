@@ -28,7 +28,7 @@ import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
 
 @ExperimentalAnimationApi
 @Composable
-fun PlayerSettingsTab() {
+fun PlayerSettings() {
     val context = LocalContext.current
     val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current

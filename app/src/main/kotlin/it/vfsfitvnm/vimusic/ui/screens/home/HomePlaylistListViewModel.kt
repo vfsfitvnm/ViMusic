@@ -23,7 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
-class PlaylistsTabViewModel(application: Application) : AndroidViewModel(application) {
+class HomePlaylistListViewModel(application: Application) : AndroidViewModel(application) {
     var items by mutableStateOf(emptyList<PlaylistPreview>())
         private set
 

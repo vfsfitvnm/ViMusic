@@ -25,7 +25,7 @@ import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 
 @ExperimentalAnimationApi
 @Composable
-fun AppearanceSettingsTab() {
+fun AppearanceSettings() {
     val (colorPalette) = LocalAppearance.current
 
     var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)

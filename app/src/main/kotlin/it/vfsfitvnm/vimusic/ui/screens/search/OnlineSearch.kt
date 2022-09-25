@@ -56,18 +56,18 @@ import it.vfsfitvnm.vimusic.utils.secondary
 import kotlinx.coroutines.delay
 
 @Composable
-fun OnlineSearchTab(
+fun OnlineSearch(
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
     isOpenableUrl: Boolean,
     onSearch: (String) -> Unit,
     onUri: () -> Unit,
-    viewModel: OnlineSearchTabViewModel = viewModel(
+    viewModel: OnlineSearchViewModel = viewModel(
         key = textFieldValue.text,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return OnlineSearchTabViewModel(textFieldValue.text) as T
+                return OnlineSearchViewModel(textFieldValue.text) as T
             }
         }
     )

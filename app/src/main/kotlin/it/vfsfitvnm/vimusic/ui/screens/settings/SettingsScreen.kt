@@ -52,11 +52,11 @@ fun SettingsScreen() {
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(currentTabIndex) {
                     when (currentTabIndex) {
-                        0 -> AppearanceSettingsTab()
-                        1 -> PlayerSettingsTab()
-                        2 -> CacheSettingsTab()
-                        3 -> OtherSettingsTab()
-                        4 -> AboutTab()
+                        0 -> AppearanceSettings()
+                        1 -> PlayerSettings()
+                        2 -> CacheSettings()
+                        3 -> OtherSettings()
+                        4 -> About()
                     }
                 }
             }

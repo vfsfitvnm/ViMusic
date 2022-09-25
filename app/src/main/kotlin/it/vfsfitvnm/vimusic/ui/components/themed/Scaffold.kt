@@ -15,7 +15,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,8 +60,6 @@ fun Scaffold(
                 tabIndex = tabIndex,
                 onTabChanged = onTabChanged,
                 tabColumnContent = tabColumnContent,
-//                primaryIconButtonId = primaryIconButtonId,
-//                onPrimaryIconButtonClick = onPrimaryIconButtonClick,
                 modifier = Modifier
                     .padding(LocalPlayerAwarePaddingValues.current)
             )
@@ -109,31 +106,5 @@ fun Scaffold(
                 )
             }
         }
-    }
-}
-
-@ExperimentalAnimationApi
-@Composable
-fun SimpleScaffold(
-    topIconButtonId: Int,
-    onTopIconButtonClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val (colorPalette) = LocalAppearance.current
-
-    Row(
-        modifier = modifier
-            .background(colorPalette.background0)
-            .fillMaxSize()
-    ) {
-        VerticalBar(
-            topIconButtonId = topIconButtonId,
-            onTopIconButtonClick = onTopIconButtonClick,
-            modifier = Modifier
-                .padding(LocalPlayerAwarePaddingValues.current)
-        )
-
-        content()
     }
 }

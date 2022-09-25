@@ -11,7 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ItemSearchResultViewModel<T : YouTube.Item>(
+class SearchResultViewModel<T : YouTube.Item>(
     private val query: String,
     private val filter: String
 ) : ViewModel() {

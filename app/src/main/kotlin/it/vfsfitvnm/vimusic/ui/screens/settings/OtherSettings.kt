@@ -47,7 +47,7 @@ import kotlinx.coroutines.Dispatchers
 
 @ExperimentalAnimationApi
 @Composable
-fun OtherSettingsTab() {
+fun OtherSettings() {
     val context = LocalContext.current
     val (colorPalette) = LocalAppearance.current
 
