@@ -15,6 +15,7 @@ import it.vfsfitvnm.vimusic.ui.screens.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.screens.LocalPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
+import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.builtInPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.intentUriRoute
@@ -110,12 +111,15 @@ fun HomeScreen() {
                             onBuiltInPlaylistClicked = { builtInPlaylistRoute(it) },
                             onPlaylistClicked = { localPlaylistRoute(it.id) }
                         )
-//                    2 -> HomeArtistList(
-//                        onArtistClicked = { artistRoute(it.id) }
-//                    )
+
+                        2 -> HomeArtistList(
+                            onArtistClick = { artistRoute(it.id) }
+                        )
+
                         3 -> HomeAlbumList(
                             onAlbumClick = { albumRoute(it.id) }
                         )
+
                         else -> HomeSongList()
                     }
                 }

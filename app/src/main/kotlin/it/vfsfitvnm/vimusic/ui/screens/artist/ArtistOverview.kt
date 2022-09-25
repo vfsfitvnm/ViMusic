@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.screens.album
+package it.vfsfitvnm.vimusic.ui.screens.artist
 
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -68,14 +68,14 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun AlbumOverview(
+fun ArtistOverview(
     browseId: String,
-    viewModel: AlbumOverviewViewModel = viewModel(
+    viewModel: ArtistOverviewViewModel = viewModel(
         key = browseId,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return AlbumOverviewViewModel(browseId) as T
+                return ArtistOverviewViewModel(browseId) as T
             }
         }
     )

@@ -29,6 +29,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
 import it.vfsfitvnm.vimusic.enums.AlbumSortBy
+import it.vfsfitvnm.vimusic.enums.ArtistSortBy
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
@@ -146,6 +147,31 @@ interface Database {
 
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
+
+    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY name DESC")
+    fun artistsByNameDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY name ASC")
+    fun artistsByNameAsc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY ROWID DESC")
+    fun artistsByRowIdDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY ROWID ASC")
+    fun artistsByRowIdAsc(): Flow<List<Artist>>
+
+    fun artists(sortBy: ArtistSortBy, sortOrder: SortOrder): Flow<List<Artist>> {
+        return when (sortBy) {
+            ArtistSortBy.Name -> when (sortOrder) {
+                SortOrder.Ascending -> artistsByNameAsc()
+                SortOrder.Descending -> artistsByNameDesc()
+            }
+            ArtistSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> artistsByRowIdAsc()
+                SortOrder.Descending -> artistsByRowIdDesc()
+            }
+        }
+    }
 
     @Transaction
     @Query("SELECT * FROM Album WHERE id = :id")
@@ -398,7 +424,7 @@ interface Database {
         SortedSongPlaylistMap::class,
         SortedSongAlbumMap::class
     ],
-    version = 19,
+    version = 20,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -416,6 +442,7 @@ interface Database {
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
         AutoMigration(from = 18, to = 19),
+        AutoMigration(from = 19, to = 20),
     ],
 )
 @TypeConverters(Converters::class)

@@ -29,7 +29,7 @@ fun AlbumScreen(browseId: String) {
                 }
             ) {  currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    AlbumSongList(browseId = browseId)
+                    AlbumOverview(browseId = browseId)
                 }
             }
         }

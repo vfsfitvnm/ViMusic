@@ -1,7 +1,8 @@
-package it.vfsfitvnm.vimusic.ui.screens
+package it.vfsfitvnm.vimusic.ui.screens.artist
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +26,10 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -49,7 +53,10 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
+import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
+import it.vfsfitvnm.vimusic.ui.screens.album.AlbumOverview
+import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -70,9 +77,39 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
+@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalAnimationApi
 @Composable
-fun ArtistScreen(browseId: String) {
+fun AlbumScreen(browseId: String) {
+    val saveableStateHolder = rememberSaveableStateHolder()
+    val (tabIndex, onTabIndexChanged) = rememberSaveable {
+        mutableStateOf(0)
+    }
+
+    RouteHandler(listenToGlobalEmitter = true) {
+        globalRoutes()
+
+        host {
+            Scaffold(
+                topIconButtonId = R.drawable.chevron_back,
+                onTopIconButtonClick = pop,
+                tabIndex = tabIndex,
+                onTabChanged = onTabIndexChanged,
+                tabColumnContent = { Item ->
+                    Item(0, "Overview", R.drawable.sparkles)
+                }
+            ) {  currentTabIndex ->
+                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+                    ArtistOverview(browseId = browseId)
+                }
+            }
+        }
+    }
+}
+
+@ExperimentalAnimationApi
+@Composable
+fun ArtistScreen2(browseId: String) {
     val lazyListState = rememberLazyListState()
 
     RouteHandler(listenToGlobalEmitter = true) {
