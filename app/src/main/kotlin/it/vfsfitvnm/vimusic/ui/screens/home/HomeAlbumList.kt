@@ -26,6 +26,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,17 +36,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.AlbumSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Album
+import it.vfsfitvnm.vimusic.savers.AlbumListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.albumSortByKey
+import it.vfsfitvnm.vimusic.utils.albumSortOrderKey
+import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
@@ -54,16 +60,25 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 @ExperimentalAnimationApi
 @Composable
 fun HomeAlbumList(
-    onAlbumClick: (Album) -> Unit,
-    viewModel: HomeAlbumListViewModel = viewModel()
+    onAlbumClick: (Album) -> Unit
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
+
+    var sortBy by rememberPreference(albumSortByKey, AlbumSortBy.DateAdded)
+    var sortOrder by rememberPreference(albumSortOrderKey, SortOrder.Descending)
+
+    val items by produceSaveableListState(
+        flowProvider = { Database.albums(sortBy, sortOrder) },
+        stateSaver = AlbumListSaver,
+        key1 = sortBy,
+        key2 = sortOrder
+    )
 
     val thumbnailSizeDp = Dimensions.thumbnails.song * 2
     val thumbnailSizePx = thumbnailSizeDp.px
 
     val sortOrderIconRotation by animateFloatAsState(
-        targetValue = if (viewModel.sortOrder == SortOrder.Ascending) 0f else 180f,
+        targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
 
@@ -83,14 +98,14 @@ fun HomeAlbumList(
                 @Composable
                 fun Item(
                     @DrawableRes iconId: Int,
-                    sortBy: AlbumSortBy
+                    targetSortBy: AlbumSortBy
                 ) {
                     Image(
                         painter = painterResource(iconId),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
+                        colorFilter = ColorFilter.tint(if (sortBy == targetSortBy) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
-                            .clickable { viewModel.sortBy = sortBy }
+                            .clickable { sortBy = targetSortBy }
                             .padding(all = 4.dp)
                             .size(18.dp)
                     )
@@ -98,17 +113,17 @@ fun HomeAlbumList(
 
                 Item(
                     iconId = R.drawable.calendar,
-                    sortBy = AlbumSortBy.Year
+                    targetSortBy = AlbumSortBy.Year
                 )
 
                 Item(
                     iconId = R.drawable.text,
-                    sortBy = AlbumSortBy.Title
+                    targetSortBy = AlbumSortBy.Title
                 )
 
                 Item(
                     iconId = R.drawable.time,
-                    sortBy = AlbumSortBy.DateAdded
+                    targetSortBy = AlbumSortBy.DateAdded
                 )
 
                 Spacer(
@@ -121,7 +136,7 @@ fun HomeAlbumList(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
-                        .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                        .clickable { sortOrder = !sortOrder }
                         .padding(all = 4.dp)
                         .size(18.dp)
                         .graphicsLayer { rotationZ = sortOrderIconRotation }
@@ -130,7 +145,7 @@ fun HomeAlbumList(
         }
 
         items(
-            items = viewModel.items,
+            items = items,
             key = Album::id
         ) { album ->
             Row(

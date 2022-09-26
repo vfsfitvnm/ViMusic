@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 18,
-    "identityHash": "dec162db7ec49f4324481d54c49a793d",
+    "identityHash": "c8f776e899b181081f0230bffec99ac5",
     "entities": [
       {
         "tableName": "Song",
@@ -181,7 +181,7 @@
       },
       {
         "tableName": "Artist",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `thumbnailUrl` TEXT, `info` TEXT, `shuffleVideoId` TEXT, `shufflePlaylistId` TEXT, `radioVideoId` TEXT, `radioPlaylistId` TEXT, `timestamp` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `thumbnailUrl` TEXT, `info` TEXT, `shuffleVideoId` TEXT, `shufflePlaylistId` TEXT, `radioVideoId` TEXT, `radioPlaylistId` TEXT, `timestamp` INTEGER, `bookmarkedAt` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -234,6 +234,12 @@
           {
             "fieldPath": "timestamp",
             "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bookmarkedAt",
+            "columnName": "bookmarkedAt",
             "affinity": "INTEGER",
             "notNull": false
           }
@@ -318,7 +324,7 @@
       },
       {
         "tableName": "Album",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT, `thumbnailUrl` TEXT, `year` TEXT, `authorsText` TEXT, `shareUrl` TEXT, `timestamp` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT, `thumbnailUrl` TEXT, `year` TEXT, `authorsText` TEXT, `shareUrl` TEXT, `timestamp` INTEGER, `bookmarkedAt` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -359,6 +365,12 @@
           {
             "fieldPath": "timestamp",
             "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bookmarkedAt",
+            "columnName": "bookmarkedAt",
             "affinity": "INTEGER",
             "notNull": false
           }
@@ -588,15 +600,11 @@
       {
         "viewName": "SortedSongPlaylistMap",
         "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT * FROM SongPlaylistMap ORDER BY position"
-      },
-      {
-        "viewName": "SortedSongAlbumMap",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT * FROM SongAlbumMap ORDER BY position"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dec162db7ec49f4324481d54c49a793d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c8f776e899b181081f0230bffec99ac5')"
     ]
   }
 }

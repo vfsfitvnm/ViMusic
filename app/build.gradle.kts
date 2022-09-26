@@ -84,7 +84,6 @@ dependencies {
     implementation(libs.compose.ripple)
     implementation(libs.compose.shimmer)
     implementation(libs.compose.coil)
-    implementation(libs.compose.viewmodel)
 
     implementation(libs.palette)
 

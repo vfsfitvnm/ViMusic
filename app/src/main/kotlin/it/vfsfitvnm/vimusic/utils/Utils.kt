@@ -28,7 +28,7 @@ val YouTube.Item.Song.asMediaItem: MediaItem
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(info.name)
-                .setArtist(authors.joinToString("") { it.name })
+                .setArtist(authors?.joinToString("") { it.name })
                 .setAlbumTitle(album?.name)
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
@@ -36,8 +36,8 @@ val YouTube.Item.Song.asMediaItem: MediaItem
                         "videoId" to info.endpoint!!.videoId,
                         "albumId" to album?.endpoint?.browseId,
                         "durationText" to durationText,
-                        "artistNames" to authors.filter { it.endpoint != null }.map { it.name },
-                        "artistIds" to authors.mapNotNull { it.endpoint?.browseId },
+                        "artistNames" to authors?.filter { it.endpoint != null }?.map { it.name },
+                        "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                     )
                 )
                 .build()
@@ -52,14 +52,14 @@ val YouTube.Item.Video.asMediaItem: MediaItem
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(info.name)
-                .setArtist(authors.joinToString("") { it.name })
+                .setArtist(authors?.joinToString("") { it.name })
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         "videoId" to info.endpoint!!.videoId,
                         "durationText" to durationText,
-                        "artistNames" to if (isOfficialMusicVideo) authors.filter { it.endpoint != null }.map { it.name } else null,
-                        "artistIds" to if (isOfficialMusicVideo) authors.mapNotNull { it.endpoint?.browseId } else null,
+                        "artistNames" to if (isOfficialMusicVideo) authors?.filter { it.endpoint != null }?.map { it.name } else null,
+                        "artistIds" to if (isOfficialMusicVideo) authors?.mapNotNull { it.endpoint?.browseId } else null,
                     )
                 )
                 .build()

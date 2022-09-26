@@ -34,7 +34,6 @@ import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Album
-import it.vfsfitvnm.vimusic.models.AlbumWithSongs
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
@@ -48,7 +47,6 @@ import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.models.SongArtistMap
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
-import it.vfsfitvnm.vimusic.models.SortedSongAlbumMap
 import it.vfsfitvnm.vimusic.models.SortedSongPlaylistMap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -173,9 +171,13 @@ interface Database {
         }
     }
 
-    @Transaction
     @Query("SELECT * FROM Album WHERE id = :id")
-    fun albumWithSongs(id: String): Flow<AlbumWithSongs?>
+    fun album(id: String): Flow<Album?>
+
+    @Transaction
+    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
+    @RewriteQueriesToDropUnusedColumns
+    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
 
     @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title ASC")
     fun albumsByTitleAsc(): Flow<List<Album>>
@@ -421,10 +423,9 @@ interface Database {
         Format::class,
     ],
     views = [
-        SortedSongPlaylistMap::class,
-        SortedSongAlbumMap::class
+        SortedSongPlaylistMap::class
     ],
-    version = 20,
+    version = 18,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -441,8 +442,6 @@ interface Database {
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
-        AutoMigration(from = 18, to = 19),
-        AutoMigration(from = 19, to = 20),
     ],
 )
 @TypeConverters(Converters::class)

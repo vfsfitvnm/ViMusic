@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,17 +35,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
+import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
@@ -61,6 +61,7 @@ import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.produceSaveableListState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
@@ -69,26 +70,26 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 @ExperimentalFoundationApi
 @Composable
 fun AlbumOverview(
+    albumResult: Result<Album>?,
     browseId: String,
-    viewModel: AlbumOverviewViewModel = viewModel(
-        key = browseId,
-        factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return AlbumOverviewViewModel(browseId) as T
-            }
-        }
-    )
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
+    
+    val songs by produceSaveableListState(
+        flowProvider = {
+           Database.albumSongs(browseId)
+        }, 
+        stateSaver = DetailedSongListSaver
+    
+    )
 
     BoxWithConstraints {
         val thumbnailSizeDp = maxWidth - Dimensions.verticalBarWidth
         val thumbnailSizePx = (thumbnailSizeDp - 32.dp).px
 
-        viewModel.result?.getOrNull()?.let { albumWithSongs ->
+        albumResult?.getOrNull()?.let { album ->
             LazyColumn(
                 contentPadding = LocalPlayerAwarePaddingValues.current,
                 modifier = Modifier
@@ -100,8 +101,8 @@ fun AlbumOverview(
                     contentType = 0
                 ) {
                     Column {
-                        Header(title = albumWithSongs.album.title ?: "Unknown") {
-                            if (albumWithSongs.songs.isNotEmpty()) {
+                        Header(title = album.title ?: "Unknown") {
+                            if (songs.isNotEmpty()) {
                                 BasicText(
                                     text = "Enqueue",
                                     style = typography.xxs.medium,
@@ -109,7 +110,7 @@ fun AlbumOverview(
                                         .clip(RoundedCornerShape(16.dp))
                                         .clickable {
                                             binder?.player?.enqueue(
-                                                albumWithSongs.songs.map(DetailedSong::asMediaItem)
+                                                songs.map(DetailedSong::asMediaItem)
                                             )
                                         }
                                         .background(colorPalette.background2)
@@ -125,7 +126,7 @@ fun AlbumOverview(
 
                             Image(
                                 painter = painterResource(
-                                    if (albumWithSongs.album.bookmarkedAt == null) {
+                                    if (album.bookmarkedAt == null) {
                                         R.drawable.bookmark_outline
                                     } else {
                                         R.drawable.bookmark
@@ -137,8 +138,8 @@ fun AlbumOverview(
                                     .clickable {
                                         query {
                                             Database.update(
-                                                albumWithSongs.album.copy(
-                                                    bookmarkedAt = if (albumWithSongs.album.bookmarkedAt == null) {
+                                                album.copy(
+                                                    bookmarkedAt = if (album.bookmarkedAt == null) {
                                                         System.currentTimeMillis()
                                                     } else {
                                                         null
@@ -157,7 +158,7 @@ fun AlbumOverview(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        albumWithSongs.album.shareUrl?.let { url ->
+                                        album.shareUrl?.let { url ->
                                             val sendIntent = Intent().apply {
                                                 action = Intent.ACTION_SEND
                                                 type = "text/plain"
@@ -178,7 +179,7 @@ fun AlbumOverview(
                         }
 
                         AsyncImage(
-                            model = albumWithSongs.album.thumbnailUrl?.thumbnail(thumbnailSizePx),
+                            model = album.thumbnailUrl?.thumbnail(thumbnailSizePx),
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
@@ -190,17 +191,17 @@ fun AlbumOverview(
                 }
 
                 itemsIndexed(
-                    items = albumWithSongs.songs,
+                    items = songs,
                     key = { _, song -> song.id }
                 ) { index, song ->
                     SongItem(
                         title = song.title,
-                        authors = song.artistsText ?: albumWithSongs.album.authorsText,
+                        authors = song.artistsText ?: album.authorsText,
                         durationText = song.durationText,
                         onClick = {
                             binder?.stopRadio()
                             binder?.player?.forcePlayAtIndex(
-                                albumWithSongs.songs.map(DetailedSong::asMediaItem),
+                                songs.map(DetailedSong::asMediaItem),
                                 index
                             )
                         },
@@ -227,10 +228,10 @@ fun AlbumOverview(
                     .padding(all = 16.dp)
                     .padding(LocalPlayerAwarePaddingValues.current)
                     .clip(RoundedCornerShape(16.dp))
-                    .clickable(enabled = albumWithSongs.songs.isNotEmpty()) {
+                    .clickable(enabled = songs.isNotEmpty()) {
                         binder?.stopRadio()
                         binder?.player?.forcePlayFromBeginning(
-                            albumWithSongs.songs
+                            songs
                                 .shuffled()
                                 .map(DetailedSong::asMediaItem)
                         )
@@ -247,12 +248,12 @@ fun AlbumOverview(
                         .size(20.dp)
                 )
             }
-        } ?: viewModel.result?.exceptionOrNull()?.let {
+        } ?: albumResult?.exceptionOrNull()?.let {
             Box(
                 modifier = Modifier
                     .pointerInput(Unit) {
                         detectTapGestures {
-                            viewModel.fetch(browseId)
+//                            viewModel.fetch(browseId)
                         }
                     }
                     .align(Alignment.Center)

@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
@@ -44,6 +43,7 @@ import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.query
+import it.vfsfitvnm.vimusic.savers.PlaylistPreviewListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -51,11 +51,14 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.views.BuiltInPlaylistItem
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.playlistSortByKey
+import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
+import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 
 @ExperimentalFoundationApi
 @Composable
 fun HomePlaylistList(
-    viewModel: HomePlaylistListViewModel = viewModel(),
     onBuiltInPlaylistClicked: (BuiltInPlaylist) -> Unit,
     onPlaylistClicked: (Playlist) -> Unit,
 ) {
@@ -79,8 +82,18 @@ fun HomePlaylistList(
         )
     }
 
+    var sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
+    var sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+
+    val items by produceSaveableListState(
+        flowProvider = { Database.playlistPreviews(sortBy, sortOrder) },
+        stateSaver = PlaylistPreviewListSaver,
+        key1 = sortBy,
+        key2 = sortOrder
+    )
+
     val sortOrderIconRotation by animateFloatAsState(
-        targetValue = if (viewModel.sortOrder == SortOrder.Ascending) 0f else 180f,
+        targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
 
@@ -105,14 +118,14 @@ fun HomePlaylistList(
                 @Composable
                 fun Item(
                     @DrawableRes iconId: Int,
-                    sortBy: PlaylistSortBy
+                    targetSortBy: PlaylistSortBy
                 ) {
                     Image(
                         painter = painterResource(iconId),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
+                        colorFilter = ColorFilter.tint(if (sortBy == targetSortBy) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
-                            .clickable { viewModel.sortBy = sortBy }
+                            .clickable { sortBy = targetSortBy }
                             .padding(all = 4.dp)
                             .size(18.dp)
                     )
@@ -136,17 +149,17 @@ fun HomePlaylistList(
 
                 Item(
                     iconId = R.drawable.medical,
-                    sortBy = PlaylistSortBy.SongCount
+                    targetSortBy = PlaylistSortBy.SongCount
                 )
 
                 Item(
                     iconId = R.drawable.text,
-                    sortBy = PlaylistSortBy.Name
+                    targetSortBy = PlaylistSortBy.Name
                 )
 
                 Item(
                     iconId = R.drawable.time,
-                    sortBy = PlaylistSortBy.DateAdded
+                    targetSortBy = PlaylistSortBy.DateAdded
                 )
 
                 Spacer(
@@ -159,7 +172,7 @@ fun HomePlaylistList(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
-                        .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                        .clickable { sortOrder = !sortOrder }
                         .padding(all = 4.dp)
                         .size(18.dp)
                         .graphicsLayer { rotationZ = sortOrderIconRotation }
@@ -197,7 +210,7 @@ fun HomePlaylistList(
         }
 
         items(
-            items = viewModel.items,
+            items = items,
             key = { it.playlist.id }
         ) { playlistPreview ->
             PlaylistPreviewItem(

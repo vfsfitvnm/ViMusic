@@ -9,36 +9,59 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.savers.ListSaver
+import it.vfsfitvnm.vimusic.savers.StringResultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.views.SearchResultLoadingOrError
+import it.vfsfitvnm.vimusic.utils.produceSaveableRelaunchableState
 import it.vfsfitvnm.youtubemusic.YouTube
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-inline fun <I : YouTube.Item> ItemSearchResult(
+inline fun <T : YouTube.Item> SearchResult(
     query: String,
     filter: String,
+    stateSaver: ListSaver<T, List<Any?>>,
     crossinline onSearchAgain: () -> Unit,
-    viewModel: SearchResultViewModel<I> = viewModel(
-        key = query + filter,
-        factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return SearchResultViewModel<I>(query, filter) as T
-            }
-        }
-    ),
-    crossinline itemContent: @Composable LazyItemScope.(I) -> Unit,
+    crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
     noinline itemShimmer: @Composable BoxScope.() -> Unit,
 ) {
+    var items by rememberSaveable(query, filter, stateSaver = stateSaver) {
+        mutableStateOf(listOf())
+    }
+
+    val (continuationResultState, fetch) = produceSaveableRelaunchableState(
+        initialValue = null,
+        stateSaver = StringResultSaver,
+        key1 = query,
+        key2 = filter
+    ) {
+        val token = value?.getOrNull()
+
+        value = null
+
+        value = withContext(Dispatchers.IO) {
+            YouTube.search(query, filter, token)
+        }?.map { searchResult ->
+            @Suppress("UNCHECKED_CAST")
+            items = items.plus(searchResult.items as List<T>).distinctBy(YouTube.Item::key)
+            searchResult.continuation
+        }
+    }
+
+    val continuationResult by continuationResultState
+    
     LazyColumn(
         contentPadding = LocalPlayerAwarePaddingValues.current,
         modifier = Modifier
@@ -60,27 +83,27 @@ inline fun <I : YouTube.Item> ItemSearchResult(
         }
 
         items(
-            items = viewModel.items,
+            items = items,
             key = { it.key!! },
             itemContent = itemContent
         )
 
-        viewModel.continuationResult?.getOrNull()?.let {
-            if (viewModel.items.isNotEmpty()) {
+        continuationResult?.getOrNull()?.let {
+            if (items.isNotEmpty()) {
                 item {
-                    SideEffect(viewModel::fetch)
+                    SideEffect(fetch)
                 }
             }
-        } ?: viewModel.continuationResult?.exceptionOrNull()?.let { throwable ->
+        } ?: continuationResult?.exceptionOrNull()?.let { throwable ->
             item {
                 SearchResultLoadingOrError(
                     errorMessage = throwable.javaClass.canonicalName,
-                    onRetry = viewModel::fetch,
+                    onRetry = fetch,
                     shimmerContent = {}
                 )
             }
-        } ?: viewModel.continuationResult?.let {
-            if (viewModel.items.isEmpty()) {
+        } ?: continuationResult?.let {
+            if (items.isEmpty()) {
                 item {
                     TextCard(icon = R.drawable.sad) {
                         Title(text = "No results found")
@@ -90,7 +113,7 @@ inline fun <I : YouTube.Item> ItemSearchResult(
             }
         } ?: item(key = "loading") {
             SearchResultLoadingOrError(
-                itemCount = if (viewModel.items.isEmpty()) 8 else 3,
+                itemCount = if (items.isEmpty()) 8 else 3,
                 shimmerContent = itemShimmer
             )
         }

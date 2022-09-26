@@ -80,7 +80,7 @@ import kotlinx.coroutines.runBlocking
 @OptIn(ExperimentalFoundationApi::class)
 @ExperimentalAnimationApi
 @Composable
-fun AlbumScreen(browseId: String) {
+fun ArtistScreen(browseId: String) {
     val saveableStateHolder = rememberSaveableStateHolder()
     val (tabIndex, onTabIndexChanged) = rememberSaveable {
         mutableStateOf(0)

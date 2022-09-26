@@ -181,7 +181,7 @@ object YouTube {
 
         data class Song(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
-            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
+            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
             val album: Info<NavigationEndpoint.Endpoint.Browse>?,
             val durationText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
@@ -231,8 +231,8 @@ object YouTube {
 
         data class Video(
             val info: Info<NavigationEndpoint.Endpoint.Watch>,
-            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>,
-            val views: List<Info<NavigationEndpoint.Endpoint.Browse>>,
+            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
+            val viewsText: String?,
             val durationText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
@@ -263,14 +263,14 @@ object YouTube {
                         info = Info.from(mainRuns.first()),
                         authors = otherRuns
                             .getOrNull(otherRuns.lastIndex - 2)
-                            ?.map(Info.Companion::from)
-                            ?: emptyList(),
-                        views = otherRuns
+                            ?.map(Info.Companion::from),
+                        viewsText = otherRuns
                             .getOrNull(otherRuns.lastIndex - 1)
-                            ?.map(Info.Companion::from) ?: emptyList(),
+                            ?.firstOrNull()
+                            ?.text,
                         durationText = otherRuns
                             .getOrNull(otherRuns.lastIndex)
-                            ?.first()
+                            ?.firstOrNull()
                             ?.text,
                         thumbnail = content
                             .thumbnail

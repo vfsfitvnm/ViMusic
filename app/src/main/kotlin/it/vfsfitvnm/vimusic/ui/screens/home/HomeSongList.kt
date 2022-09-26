@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -32,7 +33,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -40,6 +41,7 @@ import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -50,21 +52,55 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
+import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.songSortByKey
+import it.vfsfitvnm.vimusic.utils.songSortOrderKey
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun HomeSongList(
-    viewModel: HomeSongListViewModel = viewModel()
-) {
+fun HomeSongList() {
+    println("[${System.currentTimeMillis()}] HomeSongList")
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
     val thumbnailSize = Dimensions.thumbnails.song.px
 
+    var sortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
+    var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
+
+    val items by produceSaveableListState(
+        flowProvider = { Database.songs(sortBy, sortOrder) },
+        stateSaver = DetailedSongListSaver,
+        key1 = sortBy,
+        key2 = sortOrder
+    )
+
+//    var items by rememberSaveable(stateSaver = DetailedSongListSaver) {
+//        mutableStateOf(emptyList())
+//    }
+//
+//    var hasToRecollect by rememberSaveable(sortBy, sortOrder) {
+//        println("hasToRecollect: $sortBy, $sortOrder")
+//        mutableStateOf(true)
+//    }
+//
+//    LaunchedEffect(sortBy, sortOrder) {
+//        println("[${System.currentTimeMillis()}] LaunchedEffect, $hasToRecollect, $sortBy, $sortOrder")
+//        Database.songs(sortBy, sortOrder)
+//            .flowOn(Dispatchers.IO)
+//            .drop(if (hasToRecollect) 0 else 1)
+//            .collect {
+//                hasToRecollect = false
+//                println("[${System.currentTimeMillis()}] collecting... ")
+//                items = it
+//            }
+//    }
+
     val sortOrderIconRotation by animateFloatAsState(
-        targetValue = if (viewModel.sortOrder == SortOrder.Ascending) 0f else 180f,
+        targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
 
@@ -74,6 +110,8 @@ fun HomeSongList(
             .background(colorPalette.background0)
             .fillMaxSize()
     ) {
+//        println("[${System.currentTimeMillis()}] LazyColumn")
+
         item(
             key = "header",
             contentType = 0
@@ -82,14 +120,14 @@ fun HomeSongList(
                 @Composable
                 fun Item(
                     @DrawableRes iconId: Int,
-                    sortBy: SongSortBy
+                    targetSortBy: SongSortBy
                 ) {
                     Image(
                         painter = painterResource(iconId),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (viewModel.sortBy == sortBy) colorPalette.text else colorPalette.textDisabled),
+                        colorFilter = ColorFilter.tint(if (sortBy == targetSortBy) colorPalette.text else colorPalette.textDisabled),
                         modifier = Modifier
-                            .clickable { viewModel.sortBy = sortBy }
+                            .clickable { sortBy = targetSortBy }
                             .padding(all = 4.dp)
                             .size(18.dp)
                     )
@@ -97,17 +135,17 @@ fun HomeSongList(
 
                 Item(
                     iconId = R.drawable.trending,
-                    sortBy = SongSortBy.PlayTime
+                    targetSortBy = SongSortBy.PlayTime
                 )
 
                 Item(
                     iconId = R.drawable.text,
-                    sortBy = SongSortBy.Title
+                    targetSortBy = SongSortBy.Title
                 )
 
                 Item(
                     iconId = R.drawable.time,
-                    sortBy = SongSortBy.DateAdded
+                    targetSortBy = SongSortBy.DateAdded
                 )
 
                 Spacer(
@@ -120,7 +158,7 @@ fun HomeSongList(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette.text),
                     modifier = Modifier
-                        .clickable { viewModel.sortOrder = !viewModel.sortOrder }
+                        .clickable { sortOrder = !sortOrder }
                         .padding(all = 4.dp)
                         .size(18.dp)
                         .graphicsLayer { rotationZ = sortOrderIconRotation }
@@ -129,25 +167,24 @@ fun HomeSongList(
         }
 
         itemsIndexed(
-            items = viewModel.items,
+            items = items,
             key = { _, song -> song.id }
         ) { index, song ->
             SongItem(
                 song = song,
                 thumbnailSize = thumbnailSize,
                 onClick = {
-                    binder?.stopRadio()
-                    binder?.player?.forcePlayAtIndex(
-                        viewModel.items.map(DetailedSong::asMediaItem),
-                        index
-                    )
+                    items.map(DetailedSong::asMediaItem)?.let { mediaItems ->
+                        binder?.stopRadio()
+                        binder?.player?.forcePlayAtIndex(mediaItems, index)
+                    }
                 },
                 menuContent = {
                     InHistoryMediaItemMenu(song = song)
                 },
                 onThumbnailContent = {
                     AnimatedVisibility(
-                        visible = viewModel.sortBy == SongSortBy.PlayTime,
+                        visible = sortBy == SongSortBy.PlayTime,
                         enter = fadeIn(),
                         exit = fadeOut(),
                         modifier = Modifier

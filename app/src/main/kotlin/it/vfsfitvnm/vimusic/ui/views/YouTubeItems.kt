@@ -83,7 +83,7 @@ fun SmallSongItem(
     SongItem(
         thumbnailModel = song.thumbnail?.size(thumbnailSizePx),
         title = song.info.name,
-        authors = song.authors.joinToString("") { it.name },
+        authors = song.authors?.joinToString("") { it.name } ?: "",
         durationText = song.durationText,
         onClick = onClick,
         menuContent = {
@@ -158,13 +158,13 @@ fun VideoItem(
             )
 
             BasicText(
-                text = video.authors.joinToString("") { it.name },
+                text = video.authors?.joinToString("") { it.name } ?: "",
                 style = typography.xs.semiBold.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
 
-            video.views.firstOrNull()?.name?.let { viewsText ->
+            video.viewsText?.let { viewsText ->
                 BasicText(
                     text = viewsText,
                     style = typography.xxs.medium.secondary,

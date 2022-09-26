@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,12 +26,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -41,6 +41,7 @@ import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.produceSaveableListState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 
@@ -49,19 +50,19 @@ import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 @Composable
 fun LocalSongSearch(
     textFieldValue: TextFieldValue,
-    onTextFieldValueChanged: (TextFieldValue) -> Unit,
-    viewModel: LocalSongSearchViewModel = viewModel(
-        key = textFieldValue.text,
-        factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return LocalSongSearchViewModel(textFieldValue.text) as T
-            }
-        }
-    )
+    onTextFieldValueChanged: (TextFieldValue) -> Unit
 ) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+
+    val items by produceSaveableListState(
+        flowProvider = {
+            Database.search("%${textFieldValue.text}%")
+        },
+        stateSaver = DetailedSongListSaver,
+        key1 = textFieldValue.text
+    )
+
     val thumbnailSize = Dimensions.thumbnails.song.px
 
     LazyColumn(
@@ -122,7 +123,7 @@ fun LocalSongSearch(
         }
 
         items(
-            items = viewModel.items,
+            items = items,
             key = DetailedSong::id,
         ) { song ->
             SongItem(

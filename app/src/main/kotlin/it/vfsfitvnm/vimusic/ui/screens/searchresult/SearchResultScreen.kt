@@ -13,6 +13,11 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.savers.YouTubeAlbumListSaver
+import it.vfsfitvnm.vimusic.savers.YouTubeArtistListSaver
+import it.vfsfitvnm.vimusic.savers.YouTubePlaylistListSaver
+import it.vfsfitvnm.vimusic.savers.YouTubeSongListSaver
+import it.vfsfitvnm.vimusic.savers.YouTubeVideoListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.PlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
@@ -85,10 +90,11 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ItemSearchResult<YouTube.Item.Song>(
+                            SearchResult<YouTube.Item.Song>(
                                 query = query,
                                 filter = searchFilter,
                                 onSearchAgain = onSearchAgain,
+                                stateSaver = YouTubeSongListSaver,
                                 itemContent = { song ->
                                     SmallSongItem(
                                         song = song,
@@ -110,9 +116,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ItemSearchResult<YouTube.Item.Album>(
+                            SearchResult(
                                 query = query,
                                 filter = searchFilter,
+                                stateSaver = YouTubeAlbumListSaver,
                                 onSearchAgain = onSearchAgain,
                                 itemContent = { album ->
                                     AlbumItem(
@@ -138,9 +145,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 64.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ItemSearchResult<YouTube.Item.Artist>(
+                            SearchResult(
                                 query = query,
                                 filter = searchFilter,
+                                stateSaver = YouTubeArtistListSaver,
                                 onSearchAgain = onSearchAgain,
                                 itemContent = { artist ->
                                     ArtistItem(
@@ -165,9 +173,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailHeightDp = 72.dp
                             val thumbnailWidthDp = 128.dp
 
-                            ItemSearchResult<YouTube.Item.Video>(
+                            SearchResult<YouTube.Item.Video>(
                                 query = query,
                                 filter = searchFilter,
+                                stateSaver = YouTubeVideoListSaver,
                                 onSearchAgain = onSearchAgain,
                                 itemContent = { video ->
                                     VideoItem(
@@ -194,9 +203,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ItemSearchResult<YouTube.Item.Playlist>(
+                            SearchResult<YouTube.Item.Playlist>(
                                 query = query,
                                 filter = searchFilter,
+                                stateSaver = YouTubePlaylistListSaver,
                                 onSearchAgain = onSearchAgain,
                                 itemContent = { playlist ->
                                     PlaylistItem(

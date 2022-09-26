@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,21 +40,24 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
+import it.vfsfitvnm.vimusic.savers.SearchQueryListSaver
+import it.vfsfitvnm.vimusic.savers.StringListResultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
+import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun OnlineSearch(
@@ -61,18 +65,29 @@ fun OnlineSearch(
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
     isOpenableUrl: Boolean,
     onSearch: (String) -> Unit,
-    onUri: () -> Unit,
-    viewModel: OnlineSearchViewModel = viewModel(
-        key = textFieldValue.text,
-        factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return OnlineSearchViewModel(textFieldValue.text) as T
-            }
-        }
-    )
+    onUri: () -> Unit
 ) {
     val (colorPalette, typography) = LocalAppearance.current
+
+    val history by produceSaveableListState(
+        flowProvider = {
+            Database.queries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
+                old.size == new.size
+            }
+        },
+        stateSaver = SearchQueryListSaver,
+        key1 = textFieldValue.text
+    )
+
+    val suggestionsResult by produceSaveableState(
+        initialValue = null,
+        stateSaver = StringListResultSaver,
+        key1 = textFieldValue.text
+    ) {
+        if (textFieldValue.text.isNotEmpty()) {
+            value = YouTube.getSearchSuggestions(textFieldValue.text)
+        }
+    }
 
     val timeIconPainter = painterResource(R.drawable.time)
     val closeIconPainter = painterResource(R.drawable.close)
@@ -173,7 +188,7 @@ fun OnlineSearch(
         }
 
         items(
-            items = viewModel.history,
+            items = history,
             key = SearchQuery::id
         ) { searchQuery ->
             Row(
@@ -241,7 +256,7 @@ fun OnlineSearch(
             }
         }
 
-        viewModel.suggestionsResult?.getOrNull()?.let { suggestions ->
+        suggestionsResult?.getOrNull()?.let { suggestions ->
             items(items = suggestions) { suggestion ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -288,7 +303,7 @@ fun OnlineSearch(
                     )
                 }
             }
-        } ?: viewModel.suggestionsResult?.exceptionOrNull()?.let { throwable ->
+        } ?: suggestionsResult?.exceptionOrNull()?.let { throwable ->
             item {
                 LoadingOrError(errorMessage = throwable.javaClass.canonicalName) {}
             }
