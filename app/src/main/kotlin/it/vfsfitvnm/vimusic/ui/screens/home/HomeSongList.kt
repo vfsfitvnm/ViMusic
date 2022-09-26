@@ -52,17 +52,18 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
-import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.songSortByKey
 import it.vfsfitvnm.vimusic.utils.songSortOrderKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun HomeSongList() {
-    println("[${System.currentTimeMillis()}] HomeSongList")
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
@@ -71,33 +72,16 @@ fun HomeSongList() {
     var sortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
     var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
 
-    val items by produceSaveableListState(
-        flowProvider = { Database.songs(sortBy, sortOrder) },
+    val items by produceSaveableState(
+        initialValue = emptyList(),
         stateSaver = DetailedSongListSaver,
-        key1 = sortBy,
-        key2 = sortOrder
-    )
-
-//    var items by rememberSaveable(stateSaver = DetailedSongListSaver) {
-//        mutableStateOf(emptyList())
-//    }
-//
-//    var hasToRecollect by rememberSaveable(sortBy, sortOrder) {
-//        println("hasToRecollect: $sortBy, $sortOrder")
-//        mutableStateOf(true)
-//    }
-//
-//    LaunchedEffect(sortBy, sortOrder) {
-//        println("[${System.currentTimeMillis()}] LaunchedEffect, $hasToRecollect, $sortBy, $sortOrder")
-//        Database.songs(sortBy, sortOrder)
-//            .flowOn(Dispatchers.IO)
-//            .drop(if (hasToRecollect) 0 else 1)
-//            .collect {
-//                hasToRecollect = false
-//                println("[${System.currentTimeMillis()}] collecting... ")
-//                items = it
-//            }
-//    }
+        sortBy, sortOrder,
+    ) {
+        Database
+            .songs(sortBy, sortOrder)
+            .flowOn(Dispatchers.IO)
+            .collect { value = it }
+    }
 
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
@@ -110,8 +94,6 @@ fun HomeSongList() {
             .background(colorPalette.background0)
             .fillMaxSize()
     ) {
-//        println("[${System.currentTimeMillis()}] LazyColumn")
-
         item(
             key = "header",
             contentType = 0
@@ -174,10 +156,8 @@ fun HomeSongList() {
                 song = song,
                 thumbnailSize = thumbnailSize,
                 onClick = {
-                    items.map(DetailedSong::asMediaItem)?.let { mediaItems ->
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayAtIndex(mediaItems, index)
-                    }
+                    binder?.stopRadio()
+                    binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)
                 },
                 menuContent = {
                     InHistoryMediaItemMenu(song = song)
@@ -192,9 +172,7 @@ fun HomeSongList() {
                     ) {
                         BasicText(
                             text = song.formattedTotalPlayTime,
-                            style = typography.xxs.semiBold.center.color(
-                                Color.White
-                            ),
+                            style = typography.xxs.semiBold.center.color(Color.White),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier

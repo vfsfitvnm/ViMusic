@@ -22,7 +22,7 @@ import it.vfsfitvnm.vimusic.savers.StringResultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
 import it.vfsfitvnm.vimusic.ui.views.SearchResultLoadingOrError
-import it.vfsfitvnm.vimusic.utils.produceSaveableRelaunchableState
+import it.vfsfitvnm.vimusic.utils.produceSaveableRelaunchableOneShotState
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -41,11 +41,10 @@ inline fun <T : YouTube.Item> SearchResult(
         mutableStateOf(listOf())
     }
 
-    val (continuationResultState, fetch) = produceSaveableRelaunchableState(
+    val (continuationResultState, fetch) = produceSaveableRelaunchableOneShotState(
         initialValue = null,
         stateSaver = StringResultSaver,
-        key1 = query,
-        key2 = filter
+        query, filter
     ) {
         val token = value?.getOrNull()
 

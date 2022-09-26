@@ -53,10 +53,12 @@ import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.artistSortByKey
 import it.vfsfitvnm.vimusic.utils.artistSortOrderKey
 import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -69,12 +71,16 @@ fun HomeArtistList(
     var sortBy by rememberPreference(artistSortByKey, ArtistSortBy.DateAdded)
     var sortOrder by rememberPreference(artistSortOrderKey, SortOrder.Descending)
 
-    val items by produceSaveableListState(
-        flowProvider = { Database.artists(sortBy, sortOrder) },
+    val items by produceSaveableState(
+        initialValue = emptyList(),
         stateSaver = ArtistListSaver,
-        key1 = sortBy,
-        key2 = sortOrder
-    )
+        sortBy, sortOrder,
+    ) {
+        Database
+            .artists(sortBy, sortOrder)
+            .flowOn(Dispatchers.IO)
+            .collect { value = it }
+    }
 
     val thumbnailSizeDp = Dimensions.thumbnails.song * 2
     val thumbnailSizePx = thumbnailSizeDp.px

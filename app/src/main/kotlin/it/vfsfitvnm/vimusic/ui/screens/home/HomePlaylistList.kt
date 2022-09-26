@@ -53,8 +53,10 @@ import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
 import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
-import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalFoundationApi
 @Composable
@@ -85,12 +87,16 @@ fun HomePlaylistList(
     var sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
     var sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
 
-    val items by produceSaveableListState(
-        flowProvider = { Database.playlistPreviews(sortBy, sortOrder) },
+    val items by produceSaveableState(
+        initialValue = emptyList(),
         stateSaver = PlaylistPreviewListSaver,
-        key1 = sortBy,
-        key2 = sortOrder
-    )
+        sortBy, sortOrder,
+    ) {
+        Database
+            .playlistPreviews(sortBy, sortOrder)
+            .flowOn(Dispatchers.IO)
+            .collect { value = it }
+    }
 
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,

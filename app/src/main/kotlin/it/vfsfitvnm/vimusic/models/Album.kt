@@ -8,11 +8,11 @@ import androidx.room.PrimaryKey
 @Entity
 data class Album(
     @PrimaryKey val id: String,
-    val title: String?,
+    val title: String? = null,
     val thumbnailUrl: String? = null,
     val year: String? = null,
     val authorsText: String? = null,
     val shareUrl: String? = null,
-    val timestamp: Long?,
+    val timestamp: Long? = null,
     val bookmarkedAt: Long? = null
 )

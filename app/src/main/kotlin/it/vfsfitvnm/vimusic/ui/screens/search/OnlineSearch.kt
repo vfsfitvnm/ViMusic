@@ -52,12 +52,14 @@ import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.YouTube
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 
 @Composable
 fun OnlineSearch(
@@ -69,17 +71,18 @@ fun OnlineSearch(
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
-    val history by produceSaveableListState(
-        flowProvider = {
-            Database.queries("%${textFieldValue.text}%").distinctUntilChanged { old, new ->
-                old.size == new.size
-            }
-        },
+    val history by produceSaveableState(
+        initialValue = emptyList(),
         stateSaver = SearchQueryListSaver,
         key1 = textFieldValue.text
-    )
+    ) {
+        Database.queries("%${textFieldValue.text}%")
+            .flowOn(Dispatchers.IO)
+            .distinctUntilChanged { old, new -> old.size == new.size }
+            .collect { value = it }
+    }
 
-    val suggestionsResult by produceSaveableState(
+    val suggestionsResult by produceSaveableOneShotState(
         initialValue = null,
         stateSaver = StringListResultSaver,
         key1 = textFieldValue.text

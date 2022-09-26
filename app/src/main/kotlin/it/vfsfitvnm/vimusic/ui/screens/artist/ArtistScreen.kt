@@ -97,6 +97,9 @@ fun ArtistScreen(browseId: String) {
                 onTabChanged = onTabIndexChanged,
                 tabColumnContent = { Item ->
                     Item(0, "Overview", R.drawable.sparkles)
+                    Item(1, "Songs", R.drawable.musical_notes)
+                    Item(2, "Albums", R.drawable.disc)
+                    Item(3, "Singles", R.drawable.disc)
                 }
             ) {  currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

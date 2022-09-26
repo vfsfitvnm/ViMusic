@@ -43,7 +43,9 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.query
+import it.vfsfitvnm.vimusic.savers.AlbumResultSaver
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
@@ -61,29 +63,74 @@ import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
+import it.vfsfitvnm.vimusic.utils.toMediaItem
+import it.vfsfitvnm.youtubemusic.YouTube
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
 fun AlbumOverview(
-    albumResult: Result<Album>?,
     browseId: String,
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
-    
-    val songs by produceSaveableListState(
-        flowProvider = {
-           Database.albumSongs(browseId)
-        }, 
+
+    val albumResult by produceSaveableState(
+        initialValue = null,
+        stateSaver = AlbumResultSaver,
+    ) {
+        withContext(Dispatchers.IO) {
+            Database.album(browseId).collect { album ->
+                if (album?.timestamp == null) {
+                    YouTube.album(browseId)?.map { youtubeAlbum ->
+                        Database.upsert(
+                            Album(
+                                id = browseId,
+                                title = youtubeAlbum.title,
+                                thumbnailUrl = youtubeAlbum.thumbnail?.url,
+                                year = youtubeAlbum.year,
+                                authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
+                                shareUrl = youtubeAlbum.url,
+                                timestamp = System.currentTimeMillis()
+                            ),
+                            youtubeAlbum.items?.mapIndexedNotNull { position, albumItem ->
+                                albumItem.toMediaItem(browseId, youtubeAlbum)?.let { mediaItem ->
+                                    Database.insert(mediaItem)
+                                    SongAlbumMap(
+                                        songId = mediaItem.mediaId,
+                                        albumId = browseId,
+                                        position = position
+                                    )
+                                }
+                            } ?: emptyList()
+                        )
+
+                        null
+                    }
+                } else {
+                    value = Result.success(album)
+                }
+            }
+        }
+    }
+
+    val songs by produceSaveableState(
+        initialValue = emptyList(),
         stateSaver = DetailedSongListSaver
-    
-    )
+    ) {
+        Database
+            .albumSongs(browseId)
+            .flowOn(Dispatchers.IO)
+            .collect { value = it }
+    }
 
     BoxWithConstraints {
         val thumbnailSizeDp = maxWidth - Dimensions.verticalBarWidth
@@ -270,6 +317,7 @@ fun AlbumOverview(
             modifier = Modifier
                 .padding(LocalPlayerAwarePaddingValues.current)
                 .shimmer()
+                .fillMaxSize()
         ) {
             HeaderPlaceholder()
 

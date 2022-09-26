@@ -90,7 +90,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            SearchResult<YouTube.Item.Song>(
+                            SearchResult(
                                 query = query,
                                 filter = searchFilter,
                                 onSearchAgain = onSearchAgain,

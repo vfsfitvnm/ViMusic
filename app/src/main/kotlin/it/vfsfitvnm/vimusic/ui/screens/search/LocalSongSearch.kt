@@ -41,9 +41,15 @@ import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.produceSaveableListState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+
+//context(ProduceStateScope<T>)
+//fun <T> Flow<T>.distinctUntilChangedWithProducedState() =
+//    distinctUntilChanged { old, new -> new != old && new != value }
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -55,13 +61,16 @@ fun LocalSongSearch(
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
-    val items by produceSaveableListState(
-        flowProvider = {
-            Database.search("%${textFieldValue.text}%")
-        },
+    val items by produceSaveableState(
+        initialValue = emptyList(),
         stateSaver = DetailedSongListSaver,
         key1 = textFieldValue.text
-    )
+    ) {
+        Database
+            .search("%${textFieldValue.text}%")
+            .flowOn(Dispatchers.IO)
+            .collect { value = it }
+    }
 
     val thumbnailSize = Dimensions.thumbnails.song.px
 

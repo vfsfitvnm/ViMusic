@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTypeInference::class)
+
 package it.vfsfitvnm.vimusic.utils
 
 import androidx.compose.runtime.Composable
@@ -14,27 +16,23 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalTypeInference
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-@OptIn(ExperimentalTypeInference::class)
 @Composable
 fun <T> produceSaveableState(
     initialValue: T,
     stateSaver: Saver<T, out Any>,
     @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
 ): State<T> {
-    val result = rememberSaveable(stateSaver = stateSaver) { mutableStateOf(initialValue) }
-
-    var hasToFetch by rememberSaveable { mutableStateOf(true) }
+    val result = rememberSaveable(stateSaver = stateSaver) {
+        mutableStateOf(initialValue)
+    }
 
     LaunchedEffect(Unit) {
-        if (hasToFetch) {
-            ProduceSaveableStateScope(result, coroutineContext).producer()
-            hasToFetch = false
-        }
+        ProduceSaveableStateScope(result, coroutineContext).producer()
     }
+
     return result
 }
 
-@OptIn(ExperimentalTypeInference::class)
 @Composable
 fun <T> produceSaveableState(
     initialValue: T,
@@ -42,20 +40,42 @@ fun <T> produceSaveableState(
     key1: Any?,
     @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
 ): State<T> {
-    val result = rememberSaveable(stateSaver = stateSaver) { mutableStateOf(initialValue) }
-
-    var hasToFetch by rememberSaveable(key1) { mutableStateOf(true) }
+    val state = rememberSaveable(stateSaver = stateSaver) {
+        mutableStateOf(initialValue)
+    }
 
     LaunchedEffect(key1) {
-        if (hasToFetch) {
-            ProduceSaveableStateScope(result, coroutineContext).producer()
-            hasToFetch = false
-        }
+        ProduceSaveableStateScope(state, coroutineContext).producer()
     }
-    return result
+
+    return state
 }
 
-@OptIn(ExperimentalTypeInference::class)
+@Composable
+fun <T> produceSaveableOneShotState(
+    initialValue: T,
+    stateSaver: Saver<T, out Any>,
+    key1: Any?,
+    @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
+): State<T> {
+    val state = rememberSaveable(stateSaver = stateSaver) {
+        mutableStateOf(initialValue)
+    }
+
+    var produced by rememberSaveable(key1) {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1) {
+        if (!produced) {
+            ProduceSaveableStateScope(state, coroutineContext).producer()
+            produced = true
+        }
+    }
+
+    return state
+}
+
 @Composable
 fun <T> produceSaveableState(
     initialValue: T,
@@ -64,42 +84,42 @@ fun <T> produceSaveableState(
     key2: Any?,
     @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
 ): State<T> {
-    val result = rememberSaveable(stateSaver = stateSaver) { mutableStateOf(initialValue) }
+    val result = rememberSaveable(stateSaver = stateSaver) {
+        mutableStateOf(initialValue)
+    }
 
-    var hasToFetch by rememberSaveable(key1, key2) { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        if (hasToFetch) {
-            ProduceSaveableStateScope(result, coroutineContext).producer()
-            hasToFetch = false
-        }
+    LaunchedEffect(key1, key2) {
+        ProduceSaveableStateScope(result, coroutineContext).producer()
     }
 
     return result
 }
 
-@OptIn(ExperimentalTypeInference::class)
 @Composable
-fun <T> produceSaveableRelaunchableState(
+fun <T> produceSaveableRelaunchableOneShotState(
     initialValue: T,
     stateSaver: Saver<T, out Any>,
     key1: Any?,
     key2: Any?,
     @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
 ): Pair<State<T>, () -> Unit> {
-    val result = rememberSaveable(stateSaver = stateSaver) { mutableStateOf(initialValue) }
+    val result = rememberSaveable(stateSaver = stateSaver) {
+        mutableStateOf(initialValue)
+    }
 
-    var hasToFetch by rememberSaveable(key1, key2) { mutableStateOf(true) }
+    var produced by rememberSaveable(key1, key2) {
+        mutableStateOf(false)
+    }
 
     val relaunchableEffect = relaunchableEffect(key1, key2) {
-        if (hasToFetch) {
+        if (!produced) {
             ProduceSaveableStateScope(result, coroutineContext).producer()
-            hasToFetch = false
+            produced = true
         }
     }
 
     return result to {
-        hasToFetch = true
+        produced = false
         relaunchableEffect()
     }
 }
