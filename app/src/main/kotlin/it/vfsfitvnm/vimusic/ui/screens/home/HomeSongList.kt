@@ -12,14 +12,17 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +47,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.ScrollToTop
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -88,114 +92,127 @@ fun HomeSongList() {
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
 
-    LazyColumn(
-        contentPadding = LocalPlayerAwarePaddingValues.current,
+    val lazyListState = rememberLazyListState()
+
+    Box(
         modifier = Modifier
             .background(colorPalette.background0)
             .fillMaxSize()
     ) {
-        item(
-            key = "header",
-            contentType = 0
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = LocalPlayerAwarePaddingValues.current,
         ) {
-            Header(title = "Songs") {
-                @Composable
-                fun Item(
-                    @DrawableRes iconId: Int,
-                    targetSortBy: SongSortBy
-                ) {
-                    Image(
-                        painter = painterResource(iconId),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (sortBy == targetSortBy) colorPalette.text else colorPalette.textDisabled),
+            item(
+                key = "header",
+                contentType = 0
+            ) {
+                Header(title = "Songs") {
+                    @Composable
+                    fun Item(
+                        @DrawableRes iconId: Int,
+                        targetSortBy: SongSortBy
+                    ) {
+                        Image(
+                            painter = painterResource(iconId),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(if (sortBy == targetSortBy) colorPalette.text else colorPalette.textDisabled),
+                            modifier = Modifier
+                                .clickable { sortBy = targetSortBy }
+                                .padding(all = 4.dp)
+                                .size(18.dp)
+                        )
+                    }
+
+                    Item(
+                        iconId = R.drawable.trending,
+                        targetSortBy = SongSortBy.PlayTime
+                    )
+
+                    Item(
+                        iconId = R.drawable.text,
+                        targetSortBy = SongSortBy.Title
+                    )
+
+                    Item(
+                        iconId = R.drawable.time,
+                        targetSortBy = SongSortBy.DateAdded
+                    )
+
+                    Spacer(
                         modifier = Modifier
-                            .clickable { sortBy = targetSortBy }
+                            .width(2.dp)
+                    )
+
+                    Image(
+                        painter = painterResource(R.drawable.arrow_up),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.text),
+                        modifier = Modifier
+                            .clickable { sortOrder = !sortOrder }
                             .padding(all = 4.dp)
                             .size(18.dp)
+                            .graphicsLayer { rotationZ = sortOrderIconRotation }
                     )
                 }
+            }
 
-                Item(
-                    iconId = R.drawable.trending,
-                    targetSortBy = SongSortBy.PlayTime
-                )
-
-                Item(
-                    iconId = R.drawable.text,
-                    targetSortBy = SongSortBy.Title
-                )
-
-                Item(
-                    iconId = R.drawable.time,
-                    targetSortBy = SongSortBy.DateAdded
-                )
-
-                Spacer(
+            itemsIndexed(
+                items = items,
+                key = { _, song -> song.id }
+            ) { index, song ->
+                SongItem(
+                    song = song,
+                    thumbnailSize = thumbnailSize,
+                    onClick = {
+                        binder?.stopRadio()
+                        binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)
+                    },
+                    menuContent = {
+                        InHistoryMediaItemMenu(song = song)
+                    },
+                    onThumbnailContent = {
+                        AnimatedVisibility(
+                            visible = sortBy == SongSortBy.PlayTime,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                        ) {
+                            BasicText(
+                                text = song.formattedTotalPlayTime,
+                                style = typography.xxs.semiBold.center.color(Color.White),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color.Black.copy(alpha = 0.75f)
+                                            )
+                                        ),
+                                        shape = ThumbnailRoundness.shape
+                                    )
+                                    .padding(
+                                        horizontal = 8.dp,
+                                        vertical = 4.dp
+                                    )
+                            )
+                        }
+                    },
                     modifier = Modifier
-                        .width(2.dp)
-                )
-
-                Image(
-                    painter = painterResource(R.drawable.arrow_up),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.text),
-                    modifier = Modifier
-                        .clickable { sortOrder = !sortOrder }
-                        .padding(all = 4.dp)
-                        .size(18.dp)
-                        .graphicsLayer { rotationZ = sortOrderIconRotation }
+                        .animateItemPlacement()
                 )
             }
         }
 
-        itemsIndexed(
-            items = items,
-            key = { _, song -> song.id }
-        ) { index, song ->
-            SongItem(
-                song = song,
-                thumbnailSize = thumbnailSize,
-                onClick = {
-                    binder?.stopRadio()
-                    binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)
-                },
-                menuContent = {
-                    InHistoryMediaItemMenu(song = song)
-                },
-                onThumbnailContent = {
-                    AnimatedVisibility(
-                        visible = sortBy == SongSortBy.PlayTime,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                    ) {
-                        BasicText(
-                            text = song.formattedTotalPlayTime,
-                            style = typography.xxs.semiBold.center.color(Color.White),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.Black.copy(alpha = 0.75f)
-                                        )
-                                    ),
-                                    shape = ThumbnailRoundness.shape
-                                )
-                                .padding(
-                                    horizontal = 8.dp,
-                                    vertical = 4.dp
-                                )
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .animateItemPlacement()
-            )
-        }
+        ScrollToTop(
+            lazyListState = lazyListState,
+            modifier = Modifier
+                .offset(x = -Dimensions.verticalBarWidth)
+                .align(Alignment.BottomStart)
+        )
     }
 }
