@@ -4,6 +4,9 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 
 interface ListSaver<Original, Saveable : Any> : Saver<List<Original>, List<Saveable>> {
+    override fun SaverScope.save(value: List<Original>): List<Saveable>
+    override fun restore(value: List<Saveable>): List<Original>
+
     companion object {
         fun <Original, Saveable : Any> of(saver: Saver<Original, Saveable>): ListSaver<Original, Saveable> {
             return object : ListSaver<Original, Saveable> {

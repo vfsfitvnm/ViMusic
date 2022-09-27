@@ -5,7 +5,7 @@ import androidx.compose.runtime.saveable.SaverScope
 import it.vfsfitvnm.vimusic.models.DetailedSong
 
 object DetailedSongSaver : Saver<DetailedSong, List<Any?>> {
-    override fun SaverScope.save(value: DetailedSong): List<Any?> =
+    override fun SaverScope.save(value: DetailedSong) =
         listOf(
             value.id,
             value.title,
@@ -18,16 +18,14 @@ object DetailedSongSaver : Saver<DetailedSong, List<Any?>> {
         )
 
     @Suppress("UNCHECKED_CAST")
-    override fun restore(value: List<Any?>): DetailedSong? {
-        return if (value.size == 8) DetailedSong(
-            id = value[0] as String,
-            title = value[1] as String,
-            artistsText = value[2] as String?,
-            durationText = value[3] as String,
-            thumbnailUrl = value[4] as String?,
-            totalPlayTimeMs = value[5] as Long,
-            albumId = value[6] as String?,
-            artists = InfoListSaver.restore(value[7] as List<List<String>>)
-        ) else null
-    }
+    override fun restore(value: List<Any?>) = DetailedSong(
+        id = value[0] as String,
+        title = value[1] as String,
+        artistsText = value[2] as String?,
+        durationText = value[3] as String,
+        thumbnailUrl = value[4] as String?,
+        totalPlayTimeMs = value[5] as Long,
+        albumId = value[6] as String?,
+        artists = InfoListSaver.restore(value[7] as List<List<String>>)
+    )
 }
