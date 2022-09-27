@@ -11,15 +11,15 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
-import it.vfsfitvnm.vimusic.ui.screens.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
-import it.vfsfitvnm.vimusic.ui.screens.localplaylist.LocalPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.builtInPlaylistRoute
+import it.vfsfitvnm.vimusic.ui.screens.builtinplaylist.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.intentUriRoute
 import it.vfsfitvnm.vimusic.ui.screens.localPlaylistRoute
+import it.vfsfitvnm.vimusic.ui.screens.localplaylist.LocalPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.search.SearchScreen
 import it.vfsfitvnm.vimusic.ui.screens.searchResultRoute
 import it.vfsfitvnm.vimusic.ui.screens.searchRoute
