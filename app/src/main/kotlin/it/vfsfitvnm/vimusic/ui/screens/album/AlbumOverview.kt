@@ -87,7 +87,7 @@ fun AlbumOverview(
         withContext(Dispatchers.IO) {
             Database.album(browseId).collect { album ->
                 if (album?.timestamp == null) {
-                    YouTube.album(browseId)?.map { youtubeAlbum ->
+                    YouTube.album(browseId)?.onSuccess { youtubeAlbum ->
                         Database.upsert(
                             Album(
                                 id = browseId,
@@ -109,8 +109,8 @@ fun AlbumOverview(
                                     )
                                 } ?: emptyList()
                         )
-
-                        null
+                    }?.onFailure { throwable ->
+                        value = Result.failure(throwable)
                     }
                 } else {
                     value = Result.success(album)

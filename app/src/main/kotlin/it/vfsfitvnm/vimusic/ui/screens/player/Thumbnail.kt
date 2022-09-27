@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.LoginRequiredException
 import it.vfsfitvnm.vimusic.service.PlayableFormatNotFoundException
 import it.vfsfitvnm.vimusic.service.UnplayableException
