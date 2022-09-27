@@ -89,37 +89,6 @@ val DetailedSong.asMediaItem: MediaItem
         .setCustomCacheKey(id)
         .build()
 
-fun YouTube.PlaylistOrAlbum.Item.toMediaItem(
-    albumId: String,
-    playlistOrAlbum: YouTube.PlaylistOrAlbum
-): MediaItem? {
-    val isFromAlbum = thumbnail == null
-
-    return MediaItem.Builder()
-        .setMediaMetadata(
-            MediaMetadata.Builder()
-                .setTitle(info.name)
-                .setArtist((authors ?: playlistOrAlbum.authors)?.joinToString("") { it.name })
-                .setAlbumTitle(if (isFromAlbum) playlistOrAlbum.title else album?.name)
-                .setArtworkUri(if (isFromAlbum) playlistOrAlbum.thumbnail?.url?.toUri() else thumbnail?.url?.toUri())
-                .setExtras(
-                    bundleOf(
-                        "videoId" to info.endpoint?.videoId,
-                        "playlistId" to info.endpoint?.playlistId,
-                        "albumId" to (if (isFromAlbum) albumId else album?.endpoint?.browseId),
-                        "durationText" to durationText,
-                        "artistNames" to (authors ?: playlistOrAlbum.authors)?.filter { it.endpoint != null }?.map { it.name },
-                        "artistIds" to (authors ?: playlistOrAlbum.authors)?.mapNotNull { it.endpoint?.browseId }
-                    )
-                )
-                .build()
-        )
-        .setMediaId(info.endpoint?.videoId ?: return null)
-        .setUri(info.endpoint?.videoId ?: return null)
-        .setCustomCacheKey(info.endpoint?.videoId ?: return null)
-        .build()
-}
-
 fun String?.thumbnail(size: Int): String? {
     return when {
         this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"

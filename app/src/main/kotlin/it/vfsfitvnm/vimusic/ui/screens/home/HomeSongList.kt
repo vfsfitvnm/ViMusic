@@ -42,7 +42,6 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -68,7 +67,7 @@ import kotlinx.coroutines.flow.flowOn
 @ExperimentalAnimationApi
 @Composable
 fun HomeSongList() {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
     val thumbnailSize = Dimensions.thumbnails.song.px
@@ -193,7 +192,7 @@ fun HomeSongList() {
                                                 Color.Black.copy(alpha = 0.75f)
                                             )
                                         ),
-                                        shape = ThumbnailRoundness.shape
+                                        shape = thumbnailShape
                                     )
                                     .padding(
                                         horizontal = 8.dp,

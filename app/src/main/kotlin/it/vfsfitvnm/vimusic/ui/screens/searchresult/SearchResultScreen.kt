@@ -19,10 +19,10 @@ import it.vfsfitvnm.vimusic.savers.YouTubePlaylistListSaver
 import it.vfsfitvnm.vimusic.savers.YouTubeSongListSaver
 import it.vfsfitvnm.vimusic.savers.YouTubeVideoListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
-import it.vfsfitvnm.vimusic.ui.screens.PlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
+import it.vfsfitvnm.vimusic.ui.screens.playlist.PlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -173,7 +173,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailHeightDp = 72.dp
                             val thumbnailWidthDp = 128.dp
 
-                            SearchResult<YouTube.Item.Video>(
+                            SearchResult(
                                 query = query,
                                 filter = searchFilter,
                                 stateSaver = YouTubeVideoListSaver,
@@ -203,7 +203,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            SearchResult<YouTube.Item.Playlist>(
+                            SearchResult(
                                 query = query,
                                 filter = searchFilter,
                                 stateSaver = YouTubePlaylistListSaver,

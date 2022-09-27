@@ -1,3 +1,3 @@
 package it.vfsfitvnm.vimusic.savers
 
-val AlbumResultSaver = ResultSaver.of(AlbumSaver)
+val AlbumResultSaver = resultSaver(AlbumSaver)

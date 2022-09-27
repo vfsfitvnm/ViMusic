@@ -226,6 +226,49 @@ object YouTube {
                             .thumbnail
                     )
                 }
+
+                fun from(renderer: MusicResponsiveListItemRenderer): Song? {
+                    return Song(
+                        info = renderer
+                            .flexColumns
+                            .getOrNull(0)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.getOrNull(0)
+                            ?.let { Info.from(it) } ?: return null,
+                        authors = renderer
+                            .flexColumns
+                            .getOrNull(1)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
+                            ?.takeIf { it.isNotEmpty() },
+                        durationText = renderer
+                            .fixedColumns
+                            ?.getOrNull(0)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.getOrNull(0)
+                            ?.text,
+                        album = renderer
+                            .flexColumns
+                            .getOrNull(2)
+                            ?.musicResponsiveListItemFlexColumnRenderer
+                            ?.text
+                            ?.runs
+                            ?.firstOrNull()
+                            ?.let { Info.from(it) },
+                        thumbnail = renderer
+                            .thumbnail
+                            ?.musicThumbnailRenderer
+                            ?.thumbnail
+                            ?.thumbnails
+                            ?.firstOrNull()
+                    )
+                }
             }
         }
 
@@ -817,63 +860,10 @@ object YouTube {
         val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
         val year: String?,
         val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
-        val items: List<Item>?,
+        val songs: List<Item.Song>?,
         val url: String?,
         val continuation: String?,
     ) {
-        data class Item(
-            val info: Info<NavigationEndpoint.Endpoint.Watch>,
-            val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
-            val durationText: String?,
-            val album: Info<NavigationEndpoint.Endpoint.Browse>?,
-            val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
-        ) {
-            companion object {
-                fun from(renderer: MusicResponsiveListItemRenderer): Item? {
-                    return Item(
-                        info = renderer
-                            .flexColumns
-                            .getOrNull(0)
-                            ?.musicResponsiveListItemFlexColumnRenderer
-                            ?.text
-                            ?.runs
-                            ?.getOrNull(0)
-                            ?.let { Info.from(it) } ?: return null,
-                        authors = renderer
-                            .flexColumns
-                            .getOrNull(1)
-                            ?.musicResponsiveListItemFlexColumnRenderer
-                            ?.text
-                            ?.runs
-                            ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
-                            ?.takeIf { it.isNotEmpty() },
-                        durationText = renderer
-                            .fixedColumns
-                            ?.getOrNull(0)
-                            ?.musicResponsiveListItemFlexColumnRenderer
-                            ?.text
-                            ?.runs
-                            ?.getOrNull(0)
-                            ?.text,
-                        album = renderer
-                            .flexColumns
-                            .getOrNull(2)
-                            ?.musicResponsiveListItemFlexColumnRenderer
-                            ?.text
-                            ?.runs
-                            ?.firstOrNull()
-                            ?.let { Info.from(it) },
-                        thumbnail = renderer
-                            .thumbnail
-                            ?.musicThumbnailRenderer
-                            ?.thumbnail
-                            ?.thumbnails
-                            ?.firstOrNull()
-                    )
-                }
-            }
-        }
-
         suspend fun next(): PlaylistOrAlbum {
             return continuation?.let {
                 runCatching {
@@ -885,12 +875,12 @@ object YouTube {
                         parameter("continuation", continuation)
                     }.body<ContinuationResponse>().let { continuationResponse ->
                         copy(
-                            items = items?.plus(continuationResponse
+                            songs = songs?.plus(continuationResponse
                                 .continuationContents
                                 .musicShelfContinuation
                                 ?.contents
                                 ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                                ?.mapNotNull(Item.Companion::from) ?: emptyList()),
+                                ?.mapNotNull(Item.Song.Companion::from) ?: emptyList()),
                             continuation = continuationResponse
                                 .continuationContents
                                 .musicShelfContinuation
@@ -909,9 +899,28 @@ object YouTube {
         return playlistOrAlbum(browseId)?.map { album ->
            album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
                 playlistOrAlbum("VL$playlistId")?.getOrNull()?.let { playlist ->
-                    album.copy(items = playlist.items)
+                    album.copy(songs = playlist.songs)
                 }
             } ?: album
+        }?.map { album ->
+            val albumInfo = Info(
+                name = album.title ?: "",
+                endpoint = NavigationEndpoint.Endpoint.Browse(
+                    browseId = browseId,
+                    params = null,
+                    browseEndpointContextSupportedConfigs = null
+                )
+            )
+
+            album.copy(
+                songs = album.songs?.map { song ->
+                    song.copy(
+                        authors = song.authors ?: album.authors,
+                        album = albumInfo,
+                        thumbnail = album.thumbnail
+                    )
+                }
+            )
         }
     }
 
@@ -950,7 +959,7 @@ object YouTube {
                     ?.getOrNull(2)
                     ?.firstOrNull()
                     ?.text,
-                items = body
+                songs = body
                     .contents
                     .singleColumnBrowseResultsRenderer
                     ?.tabs
@@ -963,7 +972,7 @@ object YouTube {
                     ?.musicShelfRenderer
                     ?.contents
                     ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                    ?.mapNotNull(PlaylistOrAlbum.Item.Companion::from)
+                    ?.mapNotNull(Item.Song.Companion::from)
 //                    ?.filter { it.info.endpoint != null }
                 ,
                 url = body

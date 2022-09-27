@@ -1,4 +1,4 @@
-package it.vfsfitvnm.vimusic.ui.screens.album
+package it.vfsfitvnm.vimusic.ui.screens.playlist
 
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -17,21 +17,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
@@ -39,12 +39,11 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.Album
-import it.vfsfitvnm.vimusic.models.DetailedSong
-import it.vfsfitvnm.vimusic.models.SongAlbumMap
-import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.AlbumResultSaver
-import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
+import it.vfsfitvnm.vimusic.models.Playlist
+import it.vfsfitvnm.vimusic.models.SongPlaylistMap
+import it.vfsfitvnm.vimusic.savers.YouTubePlaylistOrAlbumSaver
+import it.vfsfitvnm.vimusic.savers.resultSaver
+import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
@@ -56,15 +55,13 @@ import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -73,58 +70,32 @@ import kotlinx.coroutines.withContext
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun AlbumOverview(
+fun PlaylistSongList(
     browseId: String,
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
 
-    val albumResult by produceSaveableState(
+    val playlistResult by produceSaveableOneShotState(
         initialValue = null,
-        stateSaver = AlbumResultSaver,
+        stateSaver = resultSaver(YouTubePlaylistOrAlbumSaver),
     ) {
-        withContext(Dispatchers.IO) {
-            Database.album(browseId).collect { album ->
-                if (album?.timestamp == null) {
-                    YouTube.album(browseId)?.map { youtubeAlbum ->
-                        Database.upsert(
-                            Album(
-                                id = browseId,
-                                title = youtubeAlbum.title,
-                                thumbnailUrl = youtubeAlbum.thumbnail?.url,
-                                year = youtubeAlbum.year,
-                                authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
-                                shareUrl = youtubeAlbum.url,
-                                timestamp = System.currentTimeMillis()
-                            ),
-                            youtubeAlbum.songs
-                                ?.map(YouTube.Item.Song::asMediaItem)
-                                ?.onEach(Database::insert)
-                                ?.mapIndexed { position, mediaItem ->
-                                    SongAlbumMap(
-                                        songId = mediaItem.mediaId,
-                                        albumId = browseId,
-                                        position = position
-                                    )
-                                } ?: emptyList()
-                        )
-
-                        null
-                    }
-                } else {
-                    value = Result.success(album)
-                }
+        value = withContext(Dispatchers.IO) {
+            YouTube.playlist(browseId)?.map {
+                it.next()
+            }?.map { playlist ->
+                playlist.copy(songs = playlist.songs?.filter { it.info.endpoint != null })
             }
         }
     }
 
-    val songs by produceSaveableState(
-        initialValue = emptyList(),
-        stateSaver = DetailedSongListSaver
+    val isImported by produceSaveableState(
+        initialValue = null,
+        stateSaver = autoSaver<Boolean?>(),
     ) {
         Database
-            .albumSongs(browseId)
+            .isImportedPlaylist(browseId)
             .flowOn(Dispatchers.IO)
             .collect { value = it }
     }
@@ -133,7 +104,10 @@ fun AlbumOverview(
         val thumbnailSizeDp = maxWidth - Dimensions.verticalBarWidth
         val thumbnailSizePx = (thumbnailSizeDp - 32.dp).px
 
-        albumResult?.getOrNull()?.let { album ->
+        val songThumbnailSizeDp = Dimensions.thumbnails.song
+        val songThumbnailSizePx = songThumbnailSizeDp.px
+
+        playlistResult?.getOrNull()?.let { playlist ->
             LazyColumn(
                 contentPadding = LocalPlayerAwarePaddingValues.current,
                 modifier = Modifier
@@ -145,17 +119,17 @@ fun AlbumOverview(
                     contentType = 0
                 ) {
                     Column {
-                        Header(title = album.title ?: "Unknown") {
-                            if (songs.isNotEmpty()) {
+                        Header(title = playlist.title ?: "Unknown") {
+                            if (playlist.songs?.isNotEmpty() == true) {
                                 BasicText(
                                     text = "Enqueue",
                                     style = typography.xxs.medium,
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(16.dp))
                                         .clickable {
-                                            binder?.player?.enqueue(
-                                                songs.map(DetailedSong::asMediaItem)
-                                            )
+                                            playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                                                binder?.player?.enqueue(mediaItems)
+                                            }
                                         }
                                         .background(colorPalette.background2)
                                         .padding(all = 8.dp)
@@ -170,26 +144,31 @@ fun AlbumOverview(
 
                             Image(
                                 painter = painterResource(
-                                    if (album.bookmarkedAt == null) {
-                                        R.drawable.bookmark_outline
-                                    } else {
-                                        R.drawable.bookmark
-                                    }
+                                    if (isImported == true) R.drawable.bookmark else R.drawable.bookmark_outline
                                 ),
                                 contentDescription = null,
                                 colorFilter = ColorFilter.tint(colorPalette.accent),
                                 modifier = Modifier
-                                    .clickable {
-                                        query {
-                                            Database.update(
-                                                album.copy(
-                                                    bookmarkedAt = if (album.bookmarkedAt == null) {
-                                                        System.currentTimeMillis()
-                                                    } else {
-                                                        null
-                                                    }
+                                    .clickable(enabled = isImported == false) {
+                                        transaction {
+                                            val playlistId =
+                                                Database.insert(
+                                                    Playlist(
+                                                        name = playlist.title ?: "Unknown",
+                                                        browseId = browseId
+                                                    )
                                                 )
-                                            )
+
+                                            playlist.songs
+                                                ?.map(YouTube.Item.Song::asMediaItem)
+                                                ?.onEach(Database::insert)
+                                                ?.mapIndexed { index, mediaItem ->
+                                                    SongPlaylistMap(
+                                                        songId = mediaItem.mediaId,
+                                                        playlistId = playlistId,
+                                                        position = index
+                                                    )
+                                                }?.let(Database::insertSongPlaylistMaps)
                                         }
                                     }
                                     .padding(all = 4.dp)
@@ -202,19 +181,14 @@ fun AlbumOverview(
                                 colorFilter = ColorFilter.tint(colorPalette.text),
                                 modifier = Modifier
                                     .clickable {
-                                        album.shareUrl?.let { url ->
+                                        (playlist.url ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}").let { url ->
                                             val sendIntent = Intent().apply {
                                                 action = Intent.ACTION_SEND
                                                 type = "text/plain"
                                                 putExtra(Intent.EXTRA_TEXT, url)
                                             }
 
-                                            context.startActivity(
-                                                Intent.createChooser(
-                                                    sendIntent,
-                                                    null
-                                                )
-                                            )
+                                            context.startActivity(Intent.createChooser(sendIntent, null))
                                         }
                                     }
                                     .padding(all = 4.dp)
@@ -223,7 +197,7 @@ fun AlbumOverview(
                         }
 
                         AsyncImage(
-                            model = album.thumbnailUrl?.thumbnail(thumbnailSizePx),
+                            model = playlist.thumbnail?.size(thumbnailSizePx),
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
@@ -234,29 +208,25 @@ fun AlbumOverview(
                     }
                 }
 
-                itemsIndexed(
-                    items = songs,
-                    key = { _, song -> song.id }
-                ) { index, song ->
+                itemsIndexed(items = playlist.songs ?: emptyList()) { index, song ->
                     SongItem(
-                        title = song.title,
-                        authors = song.artistsText ?: album.authorsText,
+                        title = song.info.name,
+                        authors = (song.authors ?: playlist.authors)?.joinToString("") { it.name },
                         durationText = song.durationText,
                         onClick = {
-                            binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(
-                                songs.map(DetailedSong::asMediaItem),
-                                index
-                            )
+                            playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                                binder?.stopRadio()
+                                binder?.player?.forcePlayAtIndex(mediaItems, index)
+                            }
                         },
                         startContent = {
-                            BasicText(
-                                text = "${index + 1}",
-                                style = typography.s.semiBold.center.color(colorPalette.textDisabled),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                            AsyncImage(
+                                model = song.thumbnail?.size(songThumbnailSizePx),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .width(Dimensions.thumbnails.song)
+                                    .clip(thumbnailShape)
+                                    .size(Dimensions.thumbnails.song)
                             )
                         },
                         menuContent = {
@@ -272,13 +242,11 @@ fun AlbumOverview(
                     .padding(all = 16.dp)
                     .padding(LocalPlayerAwarePaddingValues.current)
                     .clip(RoundedCornerShape(16.dp))
-                    .clickable(enabled = songs.isNotEmpty()) {
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayFromBeginning(
-                            songs
-                                .shuffled()
-                                .map(DetailedSong::asMediaItem)
-                        )
+                    .clickable(enabled = playlist.songs?.isNotEmpty() == true) {
+                        playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                            binder?.stopRadio()
+                            binder?.player?.forcePlayFromBeginning(mediaItems.shuffled())
+                        }
                     }
                     .background(colorPalette.background2)
                     .size(62.dp)
@@ -292,7 +260,7 @@ fun AlbumOverview(
                         .size(20.dp)
                 )
             }
-        } ?: albumResult?.exceptionOrNull()?.let {
+        } ?: playlistResult?.exceptionOrNull()?.let {
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)

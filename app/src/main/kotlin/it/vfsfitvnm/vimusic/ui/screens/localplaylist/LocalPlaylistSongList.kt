@@ -53,7 +53,6 @@ import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import it.vfsfitvnm.vimusic.utils.toMediaItem
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -177,25 +176,22 @@ fun LocalPlaylistSongList(
                                                 YouTube.playlist(browseId)?.map {
                                                     it.next()
                                                 }?.map { playlist ->
-                                                    playlist.copy(items = playlist.items?.filter { it.info.endpoint != null })
+                                                    playlist.copy(songs = playlist.songs?.filter { it.info.endpoint != null })
                                                 }
                                             }
                                         }?.getOrNull()?.let { remotePlaylist ->
                                             Database.clearPlaylist(playlistId)
 
-                                            remotePlaylist.items?.forEachIndexed { index, song ->
-                                                song.toMediaItem(browseId, remotePlaylist)?.let { mediaItem ->
-                                                    Database.insert(mediaItem)
-
-                                                    Database.insert(
-                                                        SongPlaylistMap(
-                                                            songId = mediaItem.mediaId,
-                                                            playlistId = playlistId,
-                                                            position = index
-                                                        )
+                                            remotePlaylist.songs
+                                                ?.map(YouTube.Item.Song::asMediaItem)
+                                                ?.onEach(Database::insert)
+                                                ?.mapIndexed { position, mediaItem ->
+                                                    SongPlaylistMap(
+                                                        songId = mediaItem.mediaId,
+                                                        playlistId = playlistId,
+                                                        position = position
                                                     )
-                                                }
-                                            }
+                                                }?.let(Database::insertSongPlaylistMaps)
                                         }
                                     }
                                 }

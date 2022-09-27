@@ -285,6 +285,9 @@ interface Database {
     @Query("SELECT * FROM Song WHERE title LIKE :query OR artistsText LIKE :query")
     fun search(query: String): Flow<List<DetailedSong>>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM Playlist WHERE browseId = :browseId)")
+    fun isImportedPlaylist(browseId: String): Flow<Boolean>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(format: Format)
 
@@ -314,6 +317,9 @@ interface Database {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(queuedMediaItems: List<QueuedMediaItem>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertSongPlaylistMaps(songPlaylistMaps: List<SongPlaylistMap>)
 
     @Transaction
     fun insert(mediaItem: MediaItem, block: (Song) -> Song = { it }) {

@@ -33,6 +33,7 @@ import it.vfsfitvnm.vimusic.service.LoginRequiredException
 import it.vfsfitvnm.vimusic.service.PlayableFormatNotFoundException
 import it.vfsfitvnm.vimusic.service.UnplayableException
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.rememberError
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
@@ -99,7 +100,7 @@ fun Thumbnail(
         Box(
             modifier = modifier
                 .aspectRatio(1f)
-                .clip(ThumbnailRoundness.shape)
+                .clip(LocalAppearance.current.thumbnailShape)
                 .size(thumbnailSizeDp)
         ) {
             AsyncImage(
