@@ -10,7 +10,9 @@ import androidx.compose.ui.unit.dp
 object Dimensions {
     val itemsVerticalPadding = 8.dp
 
-    val verticalBarWidth = 64.dp
+    val navigationRailWidth = 64.dp
+    val navigationRailIconOffset = 6.dp
+    val headerHeight = 128.dp
 
     object thumbnails {
         val album = 128.dp

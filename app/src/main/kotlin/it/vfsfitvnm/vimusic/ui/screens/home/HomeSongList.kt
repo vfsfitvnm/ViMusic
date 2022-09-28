@@ -210,7 +210,7 @@ fun HomeSongList() {
         ScrollToTop(
             lazyListState = lazyListState,
             modifier = Modifier
-                .offset(x = -Dimensions.verticalBarWidth)
+                .offset(x = Dimensions.navigationRailIconOffset - Dimensions.navigationRailWidth)
                 .align(Alignment.BottomStart)
         )
     }

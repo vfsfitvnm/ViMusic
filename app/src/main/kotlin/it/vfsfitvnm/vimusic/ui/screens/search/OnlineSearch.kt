@@ -49,9 +49,9 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.SearchQueryListSaver
 import it.vfsfitvnm.vimusic.savers.StringListResultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
+import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
@@ -320,7 +320,17 @@ fun OnlineSearch(
             }
         } ?: suggestionsResult?.exceptionOrNull()?.let { throwable ->
             item {
-                LoadingOrError(errorMessage = throwable.javaClass.canonicalName) {}
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    BasicText(
+                        text = "An error has occurred.",
+                        style = typography.s.medium.secondary.center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
+                }
             }
         }
     }

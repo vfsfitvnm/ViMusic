@@ -130,7 +130,7 @@ fun AlbumOverview(
     }
 
     BoxWithConstraints {
-        val thumbnailSizeDp = maxWidth - Dimensions.verticalBarWidth
+        val thumbnailSizeDp = maxWidth - Dimensions.navigationRailWidth
         val thumbnailSizePx = (thumbnailSizeDp - 32.dp).px
 
         albumResult?.getOrNull()?.let { album ->

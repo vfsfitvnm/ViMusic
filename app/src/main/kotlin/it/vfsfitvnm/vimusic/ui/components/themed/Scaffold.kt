@@ -13,6 +13,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -37,7 +38,7 @@ fun Scaffold(
     onTopIconButtonClick: () -> Unit,
     tabIndex: Int,
     onTabChanged: (Int) -> Unit,
-    tabColumnContent: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit,
+    tabColumnContent: @Composable ColumnScope.(@Composable (Int, String, Int) -> Unit) -> Unit,
     primaryIconButtonId: Int? = null,
     onPrimaryIconButtonClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -54,14 +55,14 @@ fun Scaffold(
             modifier = modifier
                 .fillMaxSize()
         ) {
-            VerticalBar(
+            NavigationRail(
                 topIconButtonId = topIconButtonId,
                 onTopIconButtonClick = onTopIconButtonClick,
                 tabIndex = tabIndex,
-                onTabChanged = onTabChanged,
-                tabColumnContent = tabColumnContent,
+                onTabIndexChanged = onTabChanged,
                 modifier = Modifier
-                    .padding(LocalPlayerAwarePaddingValues.current)
+                    .padding(LocalPlayerAwarePaddingValues.current),
+                content = tabColumnContent
             )
 
             AnimatedContent(

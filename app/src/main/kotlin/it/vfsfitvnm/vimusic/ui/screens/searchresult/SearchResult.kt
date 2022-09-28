@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
+import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.savers.ListSaver
 import it.vfsfitvnm.vimusic.savers.StringResultSaver
@@ -141,12 +143,17 @@ inline fun <T : YouTube.Item> SearchResult(
                 }
             }
         } ?: item(key = "loading") {
-            repeat(if (items.isEmpty()) 8 else 3) { index ->
-                Box(
-                    modifier = Modifier
-                        .alpha(1f - index * 0.125f),
-                    content = itemShimmer
-                )
+            Column(
+                modifier = Modifier
+                    .shimmer()
+            ) {
+                repeat(if (items.isEmpty()) 8 else 3) { index ->
+                    Box(
+                        modifier = Modifier
+                            .alpha(1f - index * 0.125f),
+                        content = itemShimmer
+                    )
+                }
             }
         }
     }
