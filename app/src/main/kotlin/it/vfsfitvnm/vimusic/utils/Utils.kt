@@ -22,6 +22,10 @@ fun Context.shareAsYouTubeSong(mediaItem: MediaItem) {
 
 val YouTube.Item.Song.asMediaItem: MediaItem
     get() = MediaItem.Builder()
+        .also {
+//            println("$this")
+//            println(info.endpoint?.videoId)
+        }
         .setMediaId(info.endpoint!!.videoId!!)
         .setUri(info.endpoint!!.videoId)
         .setCustomCacheKey(info.endpoint!!.videoId)

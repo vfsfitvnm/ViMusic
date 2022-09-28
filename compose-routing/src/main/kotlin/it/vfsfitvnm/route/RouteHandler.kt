@@ -8,8 +8,8 @@ import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -24,7 +24,9 @@ fun RouteHandler(
     transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = { fastFade },
     content: @Composable RouteHandlerScope.() -> Unit
 ) {
-    var route by rememberRoute()
+    var route by rememberSaveable(stateSaver = Route.Saver) {
+        mutableStateOf(null)
+    }
 
     RouteHandler(
         route = route,
@@ -63,12 +65,10 @@ fun RouteHandler(
         )
     }
 
-    if (listenToGlobalEmitter) {
-        LaunchedEffect(route) {
-            Route.GlobalEmitter.listener = if (route == null) ({ newRoute, newParameters ->
-                newParameters.forEachIndexed(parameters::set)
-                onRouteChanged(newRoute)
-            }) else null
+    if (listenToGlobalEmitter && route == null) {
+        OnGlobalRoute { (newRoute, newParameters) ->
+            newParameters.forEachIndexed(parameters::set)
+            onRouteChanged(newRoute)
         }
     }
 

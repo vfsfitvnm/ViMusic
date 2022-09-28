@@ -181,8 +181,7 @@ fun QueuedMediaItemMenu(
     mediaItem: MediaItem,
     indexInQueue: Int?,
     modifier: Modifier = Modifier,
-    onDismiss: (() -> Unit)? = null,
-    onGlobalRouteEmitted: (() -> Unit)? = null
+    onDismiss: (() -> Unit)? = null
 ) {
     val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
@@ -193,7 +192,6 @@ fun QueuedMediaItemMenu(
         onRemoveFromQueue = if (indexInQueue != null) ({
             binder?.player?.removeMediaItem(indexInQueue)
         }) else null,
-        onGlobalRouteEmitted = onGlobalRouteEmitted,
         modifier = modifier
     )
 }
@@ -212,8 +210,7 @@ fun BaseMediaItemMenu(
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
-    onRemoveFromFavorites: (() -> Unit)? = null,
-    onGlobalRouteEmitted: (() -> Unit)? = null,
+    onRemoveFromFavorites: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -246,7 +243,6 @@ fun BaseMediaItemMenu(
         onShare = {
             context.shareAsYouTubeSong(mediaItem)
         },
-        onGlobalRouteEmitted = onGlobalRouteEmitted,
         modifier = modifier
     )
 }
@@ -269,8 +265,7 @@ fun MediaItemMenu(
     onAddToPlaylist: ((Playlist, Int) -> Unit)? = null,
     onGoToAlbum: ((String) -> Unit)? = null,
     onGoToArtist: ((String) -> Unit)? = null,
-    onShare: (() -> Unit)? = null,
-    onGlobalRouteEmitted: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null
 ) {
     Menu(modifier = modifier) {
         RouteHandler(
@@ -566,7 +561,6 @@ fun MediaItemMenu(
                                 text = "Go to album",
                                 onClick = {
                                     onDismiss()
-                                    onGlobalRouteEmitted?.invoke()
                                     onGoToAlbum(albumId)
                                 }
                             )
@@ -586,7 +580,6 @@ fun MediaItemMenu(
                                                         text = "More of $authorName",
                                                         onClick = {
                                                             onDismiss()
-                                                            onGlobalRouteEmitted?.invoke()
                                                             onGoToArtist(authorId)
                                                         }
                                                     )

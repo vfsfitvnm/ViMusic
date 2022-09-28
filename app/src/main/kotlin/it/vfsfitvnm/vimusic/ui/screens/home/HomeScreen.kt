@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.screens.home
 
-import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
@@ -11,13 +10,11 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
-import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.builtInPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.builtinplaylist.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
-import it.vfsfitvnm.vimusic.ui.screens.intentUriRoute
 import it.vfsfitvnm.vimusic.ui.screens.localPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.localplaylist.LocalPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.search.SearchScreen
@@ -32,10 +29,12 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
     val saveableStateHolder = rememberSaveableStateHolder()
 
     RouteHandler(listenToGlobalEmitter = true) {
+        globalRoutes()
+
         settingsRoute {
             SettingsScreen()
         }
@@ -71,17 +70,7 @@ fun HomeScreen() {
                         Database.insert(SearchQuery(query = query))
                     }
                 },
-                onUri = { uri ->
-                    intentUriRoute(uri)
-                }
-            )
-        }
-
-        globalRoutes()
-
-        intentUriRoute { uri ->
-            IntentUriScreen(
-                uri = uri ?: Uri.EMPTY
+                onViewPlaylist = onPlaylistUrl
             )
         }
 

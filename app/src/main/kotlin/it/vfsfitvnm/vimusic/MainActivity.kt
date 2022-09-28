@@ -6,10 +6,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -37,7 +37,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -49,6 +48,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.valentinilk.shimmer.LocalShimmerTheme
@@ -63,22 +63,26 @@ import it.vfsfitvnm.vimusic.ui.components.collapsedAnchor
 import it.vfsfitvnm.vimusic.ui.components.dismissedAnchor
 import it.vfsfitvnm.vimusic.ui.components.expandedAnchor
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
-import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
+import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.player.PlayerView
+import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.colorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.dynamicColorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.typographyOf
+import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
+import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.listener
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
+import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -102,7 +106,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private var binder by mutableStateOf<PlayerService.Binder?>(null)
-    private var uri by mutableStateOf<Uri?>(null, neverEqualPolicy())
 
     override fun onStart() {
         super.onStart()
@@ -120,13 +123,12 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+
         val playerBottomSheetAnchor = when {
             intent?.extras?.getBoolean("expandPlayerBottomSheet") == true -> expandedAnchor
             alreadyRunning -> collapsedAnchor
             else -> dismissedAnchor.also { alreadyRunning = true }
         }
-
-        uri = intent?.data
 
         setContent {
             val coroutineScope = rememberCoroutineScope()
@@ -324,30 +326,29 @@ class MainActivity : ComponentActivity() {
                     LocalPlayerServiceBinder provides binder,
                     LocalPlayerAwarePaddingValues provides playerAwarePaddingValues
                 ) {
-                    when (val uri = uri) {
-                        null -> {
-                            HomeScreen()
-
-                            PlayerView(
-                                layoutState = playerBottomSheetState,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                            )
-
-                            DisposableEffect(binder?.player) {
-                                binder?.player?.listener(object : Player.Listener {
-                                    override fun onMediaItemTransition(
-                                        mediaItem: MediaItem?,
-                                        reason: Int
-                                    ) {
-                                        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                                            playerBottomSheetState.expand(tween(500))
-                                        }
-                                    }
-                                }) ?: onDispose { }
-                            }
+                    HomeScreen(
+                        onPlaylistUrl = { url ->
+                            onNewIntent(Intent.parseUri(url, 0))
                         }
-                        else -> IntentUriScreen(uri = uri)
+                    )
+
+                    PlayerView(
+                        layoutState = playerBottomSheetState,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                    )
+
+                    DisposableEffect(binder?.player) {
+                        binder?.player?.listener(object : Player.Listener {
+                            override fun onMediaItemTransition(
+                                mediaItem: MediaItem?,
+                                reason: Int
+                            ) {
+                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
+                                    playerBottomSheetState.expand(tween(500))
+                                }
+                            }
+                        }) ?: onDispose { }
                     }
 
                     BottomSheetMenu(
@@ -358,11 +359,41 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        onNewIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        uri = intent?.data
+
+        val uri = intent?.data ?: return
+
+        intent.data = null
+        this.intent = null
+
+        Toast.makeText(this, "Opening url...", Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            uri.getQueryParameter("list")?.let { playlistId ->
+                val browseId = "VL$playlistId"
+
+                if (playlistId.startsWith("OLAK5uy_")) {
+                    YouTube.playlist(browseId)?.getOrNull()?.let { playlist ->
+                        playlist.songs?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
+                            albumRoute.ensureGlobal(browseId)
+                        }
+                    }
+                } else {
+                    playlistRoute.ensureGlobal(browseId)
+                }
+            } ?: (uri.getQueryParameter("v") ?: uri.takeIf { uri.host == "youtu.be" }?.path?.drop(1))?.let { videoId ->
+                YouTube.song(videoId)?.getOrNull()?.let { song ->
+                    withContext(Dispatchers.Main) {
+                        binder?.player?.forcePlay(song.asMediaItem)
+                    }
+                }
+            }
+        }
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {

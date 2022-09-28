@@ -47,10 +47,6 @@ import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 
-//context(ProduceStateScope<T>)
-//fun <T> Flow<T>.distinctUntilChangedWithProducedState() =
-//    distinctUntilChanged { old, new -> new != old && new != value }
-
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable

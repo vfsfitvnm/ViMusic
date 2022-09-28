@@ -72,7 +72,6 @@ import kotlinx.coroutines.launch
 fun PlayerBottomSheet(
     backgroundColorProvider: () -> Color,
     layoutState: BottomSheetState,
-    onGlobalRouteEmitted: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -166,8 +165,7 @@ fun PlayerBottomSheet(
                         menuContent = {
                             QueuedMediaItemMenu(
                                 mediaItem = window.mediaItem,
-                                indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
-                                onGlobalRouteEmitted = onGlobalRouteEmitted
+                                indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex
                             )
                         },
                         onThumbnailContent = {

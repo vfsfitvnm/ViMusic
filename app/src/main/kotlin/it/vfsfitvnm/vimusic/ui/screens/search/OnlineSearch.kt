@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
@@ -65,9 +66,8 @@ import kotlinx.coroutines.flow.flowOn
 fun OnlineSearch(
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
-    isOpenableUrl: Boolean,
     onSearch: (String) -> Unit,
-    onUri: () -> Unit
+    onViewPlaylist: (String) -> Unit
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
@@ -90,6 +90,16 @@ fun OnlineSearch(
         if (textFieldValue.text.isNotEmpty()) {
             value = YouTube.getSearchSuggestions(textFieldValue.text)
         }
+    }
+
+    val playlistId = remember(textFieldValue.text) {
+        val isPlaylistUrl = listOf(
+            "https://www.youtube.com/playlist?",
+            "https://music.youtube.com/playlist?",
+            "https://m.youtube.com/playlist?",
+        ).any(textFieldValue.text::startsWith)
+
+        if (isPlaylistUrl) textFieldValue.text.toUri().getQueryParameter("list") else null
     }
 
     val timeIconPainter = painterResource(R.drawable.time)
@@ -156,13 +166,15 @@ fun OnlineSearch(
                     )
                 },
                 actionsContent = {
-                    if (isOpenableUrl) {
+                    if (playlistId != null) {
+                        val isAlbum = playlistId.startsWith("OLAK5uy_")
+
                         BasicText(
-                            text = "Open url",
+                            text = "View ${if (isAlbum) "album" else "playlist"}",
                             style = typography.xxs.medium,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
-                                .clickable(onClick = onUri)
+                                .clickable { onViewPlaylist(textFieldValue.text) }
                                 .background(colorPalette.background2)
                                 .padding(all = 8.dp)
                                 .padding(horizontal = 8.dp)

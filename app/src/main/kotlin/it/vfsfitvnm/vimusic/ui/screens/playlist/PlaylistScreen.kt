@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens.playlist
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import it.vfsfitvnm.route.RouteHandler
@@ -9,7 +8,6 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 
-@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun PlaylistScreen(browseId: String) {
@@ -29,9 +27,7 @@ fun PlaylistScreen(browseId: String) {
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    PlaylistSongList(
-                        browseId = browseId
-                    )
+                    PlaylistSongList(browseId = browseId)
                 }
             }
         }

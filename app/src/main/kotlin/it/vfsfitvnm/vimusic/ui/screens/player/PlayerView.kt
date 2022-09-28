@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
+import it.vfsfitvnm.route.OnGlobalRoute
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
@@ -94,6 +95,10 @@ fun PlayerView(
 
     val shouldBePlaying by rememberShouldBePlaying(binder.player)
     val positionAndDuration by rememberPositionAndDuration(binder.player)
+
+    OnGlobalRoute {
+        layoutState.collapseSoft()
+    }
 
     BottomSheet(
         state = layoutState,
@@ -321,7 +326,6 @@ fun PlayerView(
 
         PlayerBottomSheet(
             layoutState = playerBottomSheetState,
-            onGlobalRouteEmitted = layoutState::collapseSoft,
             content = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -385,8 +389,7 @@ fun PlayerView(
                                             }
                                         },
                                         onSetSleepTimer = {},
-                                        onDismiss = menuState::hide,
-                                        onGlobalRouteEmitted = layoutState::collapseSoft,
+                                        onDismiss = menuState::hide
                                     )
                                 }
                             }
