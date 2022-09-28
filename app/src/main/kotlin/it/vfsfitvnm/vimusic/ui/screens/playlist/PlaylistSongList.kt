@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,6 +46,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
+import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -119,22 +119,15 @@ fun PlaylistSongList(
                 ) {
                     Column {
                         Header(title = playlist.title ?: "Unknown") {
-                            if (playlist.songs?.isNotEmpty() == true) {
-                                BasicText(
-                                    text = "Enqueue",
-                                    style = typography.xxs.medium,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .clickable {
-                                            playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
-                                                binder?.player?.enqueue(mediaItems)
-                                            }
-                                        }
-                                        .background(colorPalette.background2)
-                                        .padding(all = 8.dp)
-                                        .padding(horizontal = 8.dp)
-                                )
-                            }
+                            SecondaryTextButton(
+                                text = "Enqueue",
+                                isEnabled = playlist.songs?.isNotEmpty() == true,
+                                onClick = {
+                                    playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                                        binder?.player?.enqueue(mediaItems)
+                                    }
+                                }
+                            )
 
                             Spacer(
                                 modifier = Modifier

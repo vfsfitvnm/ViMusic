@@ -2,20 +2,14 @@ package it.vfsfitvnm.vimusic.ui.screens.builtinplaylist
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -27,6 +21,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
+import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -35,7 +30,6 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -44,7 +38,7 @@ import kotlinx.coroutines.flow.map
 @ExperimentalAnimationApi
 @Composable
 fun BuiltInPlaylistSongList(builtInPlaylist: BuiltInPlaylist) {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
     val songs by produceSaveableState(
@@ -87,17 +81,12 @@ fun BuiltInPlaylistSongList(builtInPlaylist: BuiltInPlaylist) {
                         BuiltInPlaylist.Offline -> "Offline"
                     }
                 ) {
-                    BasicText(
+                    SecondaryTextButton(
                         text = "Enqueue",
-                        style = typography.xxs.medium,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(enabled = songs.isNotEmpty()) {
-                                binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
-                            }
-                            .background(colorPalette.background2)
-                            .padding(all = 8.dp)
-                            .padding(horizontal = 8.dp)
+                        isEnabled = songs.isNotEmpty(),
+                        onClick = {
+                            binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
+                        }
                     )
 
                     Spacer(

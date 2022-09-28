@@ -12,15 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -42,6 +39,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
+import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -51,7 +49,6 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
@@ -66,7 +63,7 @@ fun LocalPlaylistSongList(
     playlistId: Long,
     onDelete: () -> Unit,
 ) {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
     val playlistWithSongs by produceSaveableState(
@@ -141,21 +138,16 @@ fun LocalPlaylistSongList(
                 contentType = 0
             ) {
                 Header(title = playlistWithSongs?.playlist?.name ?: "Unknown") {
-                    BasicText(
+                    SecondaryTextButton(
                         text = "Enqueue",
-                        style = typography.xxs.medium,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(enabled = playlistWithSongs?.songs?.isNotEmpty() == true) {
-                                playlistWithSongs?.songs
-                                    ?.map(DetailedSong::asMediaItem)
-                                    ?.let { mediaItems ->
-                                        binder?.player?.enqueue(mediaItems)
-                                    }
-                            }
-                            .background(colorPalette.background2)
-                            .padding(all = 8.dp)
-                            .padding(horizontal = 8.dp)
+                        isEnabled = playlistWithSongs?.songs?.isNotEmpty() == true,
+                        onClick = {
+                            playlistWithSongs?.songs
+                                ?.map(DetailedSong::asMediaItem)
+                                ?.let { mediaItems ->
+                                    binder?.player?.enqueue(mediaItems)
+                                }
+                        }
                     )
 
                     Spacer(

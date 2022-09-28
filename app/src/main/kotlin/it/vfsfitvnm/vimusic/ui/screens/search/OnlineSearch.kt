@@ -3,7 +3,6 @@ package it.vfsfitvnm.vimusic.ui.screens.search
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
@@ -49,6 +46,7 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.SearchQueryListSaver
 import it.vfsfitvnm.vimusic.savers.StringListResultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.center
@@ -164,15 +162,9 @@ fun OnlineSearch(
                     if (playlistId != null) {
                         val isAlbum = playlistId.startsWith("OLAK5uy_")
 
-                        BasicText(
-                            text = "View ${if (isAlbum) "album" else "playlist"}",
-                            style = typography.xxs.medium,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable { onViewPlaylist(textFieldValue.text) }
-                                .background(colorPalette.background2)
-                                .padding(all = 8.dp)
-                                .padding(horizontal = 8.dp)
+                        SecondaryTextButton(
+                            text =  "View ${if (isAlbum) "album" else "playlist"}",
+                            onClick = { onViewPlaylist(textFieldValue.text) }
                         )
                     }
 
@@ -182,15 +174,9 @@ fun OnlineSearch(
                     )
 
                     if (textFieldValue.text.isNotEmpty()) {
-                        BasicText(
-                            text = "Clear",
-                            style = typography.xxs.medium,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable { onTextFieldValueChanged(TextFieldValue()) }
-                                .background(colorPalette.background2)
-                                .padding(all = 8.dp)
-                                .padding(horizontal = 8.dp)
+                        SecondaryTextButton(
+                            text =  "Clear",
+                            onClick = { onTextFieldValueChanged(TextFieldValue()) }
                         )
                     }
                 }

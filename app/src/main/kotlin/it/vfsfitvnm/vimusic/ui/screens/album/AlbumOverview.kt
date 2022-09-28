@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,6 +48,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
+import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -147,22 +147,13 @@ fun AlbumOverview(
                 ) {
                     Column {
                         Header(title = album.title ?: "Unknown") {
-                            if (songs.isNotEmpty()) {
-                                BasicText(
-                                    text = "Enqueue",
-                                    style = typography.xxs.medium,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .clickable {
-                                            binder?.player?.enqueue(
-                                                songs.map(DetailedSong::asMediaItem)
-                                            )
-                                        }
-                                        .background(colorPalette.background2)
-                                        .padding(all = 8.dp)
-                                        .padding(horizontal = 8.dp)
-                                )
-                            }
+                            SecondaryTextButton(
+                                text = "Enqueue",
+                                isEnabled = songs.isNotEmpty(),
+                                onClick = {
+                                    binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
+                                }
+                            )
 
                             Spacer(
                                 modifier = Modifier

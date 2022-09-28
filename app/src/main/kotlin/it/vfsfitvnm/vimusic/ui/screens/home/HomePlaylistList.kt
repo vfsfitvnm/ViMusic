@@ -19,8 +19,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,7 +28,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -45,12 +42,12 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.PlaylistPreviewListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.views.BuiltInPlaylistItem
 import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
 import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
@@ -64,7 +61,7 @@ fun HomePlaylistList(
     onBuiltInPlaylistClicked: (BuiltInPlaylist) -> Unit,
     onPlaylistClicked: (Playlist) -> Unit,
 ) {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette) = LocalAppearance.current
 
     var isCreatingANewPlaylist by rememberSaveable {
         mutableStateOf(false)
@@ -137,15 +134,9 @@ fun HomePlaylistList(
                     )
                 }
 
-                BasicText(
+                SecondaryTextButton(
                     text = "New playlist",
-                    style = typography.xxs.medium,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { isCreatingANewPlaylist = true }
-                        .background(colorPalette.background2)
-                        .padding(all = 8.dp)
-                        .padding(horizontal = 8.dp)
+                    onClick = { isCreatingANewPlaylist = true }
                 )
 
                 Spacer(
