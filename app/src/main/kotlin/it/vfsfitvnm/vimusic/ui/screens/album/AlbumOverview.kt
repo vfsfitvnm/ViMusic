@@ -299,7 +299,7 @@ fun AlbumOverview(
                     .fillMaxSize()
             ) {
                 BasicText(
-                    text = "An error has occurred.\nTap to retry",
+                    text = "An error has occurred.",
                     style = typography.s.medium.secondary.center,
                     modifier = Modifier
                         .align(Alignment.Center)

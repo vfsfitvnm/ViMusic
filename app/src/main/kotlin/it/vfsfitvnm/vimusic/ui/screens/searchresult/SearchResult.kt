@@ -2,27 +2,32 @@ package it.vfsfitvnm.vimusic.ui.screens.searchresult
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
-import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.savers.ListSaver
 import it.vfsfitvnm.vimusic.savers.StringResultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.components.themed.TextCard
-import it.vfsfitvnm.vimusic.ui.views.SearchResultLoadingOrError
+import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableRelaunchableOneShotState
+import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -37,6 +42,8 @@ inline fun <T : YouTube.Item> SearchResult(
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
     noinline itemShimmer: @Composable BoxScope.() -> Unit,
 ) {
+    val (_, typography) = LocalAppearance.current
+
     var items by rememberSaveable(query, filter, stateSaver = stateSaver) {
         mutableStateOf(listOf())
     }
@@ -93,28 +100,54 @@ inline fun <T : YouTube.Item> SearchResult(
                     SideEffect(fetch)
                 }
             }
-        } ?: continuationResult?.exceptionOrNull()?.let { throwable ->
+        } ?: continuationResult?.exceptionOrNull()?.let {
             item {
-                SearchResultLoadingOrError(
-                    errorMessage = throwable.javaClass.canonicalName,
-                    onRetry = fetch,
-                    shimmerContent = {}
-                )
+                Box(
+                    modifier = Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                fetch()
+                            }
+                        }
+                        .fillMaxSize()
+                ) {
+                    BasicText(
+                        text = "An error has occurred.\nTap to retry",
+                        style = typography.s.medium.secondary.center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                    )
+                }
             }
         } ?: continuationResult?.let {
             if (items.isEmpty()) {
                 item {
-                    TextCard(icon = R.drawable.sad) {
-                        Title(text = "No results found")
-                        Text(text = "Please try a different query or category.")
+                    Box(
+                        modifier = Modifier
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    fetch()
+                                }
+                            }
+                            .fillMaxSize()
+                    ) {
+                        BasicText(
+                            text = "No results found.\nPlease try a different query or category",
+                            style = typography.s.medium.secondary.center,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
                     }
                 }
             }
         } ?: item(key = "loading") {
-            SearchResultLoadingOrError(
-                itemCount = if (items.isEmpty()) 8 else 3,
-                shimmerContent = itemShimmer
-            )
+            repeat(if (items.isEmpty()) 8 else 3) { index ->
+                Box(
+                    modifier = Modifier
+                        .alpha(1f - index * 0.125f),
+                    content = itemShimmer
+                )
+            }
         }
     }
 }

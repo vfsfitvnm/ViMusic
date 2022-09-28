@@ -7,7 +7,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,7 +28,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -455,45 +452,6 @@ fun ArtistItemShimmer(
                 modifier = Modifier
                     .padding(top = 4.dp)
             )
-        }
-    }
-}
-
-@Composable
-fun SearchResultLoadingOrError(
-    itemCount: Int = 0,
-    errorMessage: String? = null,
-    onRetry: (() -> Unit)? = null,
-    shimmerContent: @Composable BoxScope.() -> Unit,
-) {
-    LoadingOrError(
-        errorMessage = errorMessage,
-        onRetry = onRetry,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        repeat(itemCount) { index ->
-            Box(
-                modifier = Modifier
-                    .alpha(1f - index * 0.125f),
-                content = shimmerContent
-            )
-//            if (isLoadingArtists) {
-//                SmallArtistItemShimmer(
-//                    thumbnailSizeDp = Dimensions.thumbnails.song,
-//                    modifier = Modifier
-//                        .alpha(1f - index * 0.125f)
-//                        .fillMaxWidth()
-//                        .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-//                )
-//            } else {
-//                SmallSongItemShimmer(
-//                    thumbnailSizeDp = Dimensions.thumbnails.song,
-//                    modifier = Modifier
-//                        .alpha(1f - index * 0.125f)
-//                        .fillMaxWidth()
-//                        .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-//                )
-//            }
         }
     }
 }

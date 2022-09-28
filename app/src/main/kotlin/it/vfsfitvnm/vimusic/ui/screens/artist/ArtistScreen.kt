@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.ColorFilter
@@ -50,17 +48,12 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.ui.components.TopAppBar
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.LoadingOrError
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
-import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
-import it.vfsfitvnm.vimusic.ui.screens.album.AlbumOverview
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
@@ -73,7 +66,6 @@ import it.vfsfitvnm.youtubemusic.YouTube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
@@ -147,21 +139,7 @@ fun ArtistScreen2(browseId: String) {
                     .fillMaxSize()
             ) {
                 item {
-                    TopAppBar(
-                        modifier = Modifier
-                            .height(52.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.chevron_back),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable(onClick = pop)
-                                .padding(vertical = 8.dp)
-                                .padding(horizontal = 16.dp)
-                                .size(24.dp)
-                        )
-                    }
+
                 }
 
                 item {
@@ -234,17 +212,17 @@ fun ArtistScreen2(browseId: String) {
                             )
                         }
                     } ?: artistResult?.exceptionOrNull()?.let { throwable ->
-                        LoadingOrError(
-                            errorMessage = throwable.javaClass.canonicalName,
-                            onRetry = {
-                                query {
-                                    runBlocking {
-                                        Database.artist(browseId).first()?.let(Database::update)
-                                    }
-                                }
-                            }
-                        )
-                    } ?: LoadingOrError()
+//                        LoadingOrError(
+//                            errorMessage = throwable.javaClass.canonicalName,
+//                            onRetry = {
+//                                query {
+//                                    runBlocking {
+//                                        Database.artist(browseId).first()?.let(Database::update)
+//                                    }
+//                                }
+//                            }
+//                        )
+                    }
                 }
 
                 item("songs") {
@@ -367,39 +345,6 @@ fun ArtistScreen2(browseId: String) {
     }
 }
 
-@Composable
-private fun LoadingOrError(
-    errorMessage: String? = null,
-    onRetry: (() -> Unit)? = null
-) {
-    val (colorPalette) = LocalAppearance.current
-
-    LoadingOrError(
-        errorMessage = errorMessage,
-        onRetry = onRetry,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(
-            modifier = Modifier
-                .background(color = colorPalette.shimmer, shape = CircleShape)
-                .size(Dimensions.thumbnails.artist)
-        )
-
-        TextPlaceholder(
-            modifier = Modifier
-                .alpha(0.9f)
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-        )
-
-        repeat(3) {
-            TextPlaceholder(
-                modifier = Modifier
-                    .alpha(0.8f)
-                    .padding(horizontal = 16.dp)
-            )
-        }
-    }
-}
 
 private suspend fun fetchArtist(browseId: String): Result<Artist>? {
     return YouTube.artist(browseId)
