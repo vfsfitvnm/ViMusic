@@ -19,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
@@ -42,6 +41,7 @@ import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -267,32 +267,18 @@ fun LocalPlaylistSongList(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(all = 16.dp)
-                .padding(LocalPlayerAwarePaddingValues.current)
-                .clip(RoundedCornerShape(16.dp))
-                .clickable(enabled = playlistWithSongs?.songs?.isNotEmpty() == true) {
-                    playlistWithSongs?.songs
-                        ?.shuffled()
-                        ?.map(DetailedSong::asMediaItem)
-                        ?.let { mediaItems ->
-                            binder?.stopRadio()
-                            binder?.player?.forcePlayFromBeginning(mediaItems)
-                        }
-                }
-                .background(colorPalette.background2)
-                .size(62.dp)
-        ) {
-            Image(
-                painter = painterResource(R.drawable.shuffle),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.text),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(20.dp)
-            )
-        }
+        PrimaryButton(
+            iconId = R.drawable.shuffle,
+            isEnabled = playlistWithSongs?.songs?.isNotEmpty() == true,
+            onClick = {
+                playlistWithSongs?.songs
+                    ?.shuffled()
+                    ?.map(DetailedSong::asMediaItem)
+                    ?.let { mediaItems ->
+                        binder?.stopRadio()
+                        binder?.player?.forcePlayFromBeginning(mediaItems)
+                    }
+            }
+        )
     }
 }

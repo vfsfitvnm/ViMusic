@@ -48,6 +48,7 @@ import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -266,32 +267,16 @@ fun AlbumOverview(
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(all = 16.dp)
-                    .padding(LocalPlayerAwarePaddingValues.current)
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(enabled = songs.isNotEmpty()) {
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayFromBeginning(
-                            songs
-                                .shuffled()
-                                .map(DetailedSong::asMediaItem)
-                        )
-                    }
-                    .background(colorPalette.background2)
-                    .size(62.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.shuffle),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.text),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(20.dp)
-                )
-            }
+            PrimaryButton(
+                iconId = R.drawable.shuffle,
+                isEnabled = songs.isNotEmpty(),
+                onClick = {
+                    binder?.stopRadio()
+                    binder?.player?.forcePlayFromBeginning(
+                        songs.shuffled().map(DetailedSong::asMediaItem)
+                    )
+                }
+            )
         } ?: albumResult?.exceptionOrNull()?.let {
             Box(
                 modifier = Modifier

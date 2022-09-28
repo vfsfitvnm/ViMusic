@@ -1,25 +1,20 @@
 package it.vfsfitvnm.vimusic.ui.screens.builtinplaylist
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
@@ -31,6 +26,7 @@ import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -136,27 +132,15 @@ fun BuiltInPlaylistSongList(builtInPlaylist: BuiltInPlaylist) {
             }
         }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(all = 16.dp)
-                .padding(LocalPlayerAwarePaddingValues.current)
-                .clip(RoundedCornerShape(16.dp))
-                .clickable(enabled = songs.isNotEmpty()) {
-                    binder?.stopRadio()
-                    binder?.player?.forcePlayFromBeginning(songs.shuffled().map(DetailedSong::asMediaItem))
-                }
-                .background(colorPalette.background2)
-                .size(62.dp)
-        ) {
-            Image(
-                painter = painterResource(R.drawable.shuffle),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.text),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(20.dp)
-            )
-        }
+        PrimaryButton(
+            iconId = R.drawable.shuffle,
+            isEnabled = songs.isNotEmpty(),
+            onClick = {
+                binder?.stopRadio()
+                binder?.player?.forcePlayFromBeginning(
+                    songs.shuffled().map(DetailedSong::asMediaItem)
+                )
+            }
+        )
     }
 }

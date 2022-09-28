@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
 import android.annotation.SuppressLint
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -13,6 +14,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -85,25 +87,10 @@ fun Scaffold(
         }
 
         primaryIconButtonId?.let {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(all = 16.dp)
-                    .padding(LocalPlayerAwarePaddingValues.current)
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(onClick = onPrimaryIconButtonClick)
-                    .background(colorPalette.background2)
-                    .size(62.dp)
-            ) {
-                Image(
-                    painter = painterResource(primaryIconButtonId),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.text),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(20.dp)
-                )
-            }
+            PrimaryButton(
+                iconId = primaryIconButtonId,
+                onClick = onPrimaryIconButtonClick
+            )
         }
     }
 }

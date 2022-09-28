@@ -46,6 +46,7 @@ import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -234,30 +235,16 @@ fun PlaylistSongList(
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(all = 16.dp)
-                    .padding(LocalPlayerAwarePaddingValues.current)
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(enabled = playlist.songs?.isNotEmpty() == true) {
-                        playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
-                            binder?.stopRadio()
-                            binder?.player?.forcePlayFromBeginning(mediaItems.shuffled())
-                        }
+            PrimaryButton(
+                iconId = R.drawable.shuffle,
+                isEnabled = playlist.songs?.isNotEmpty() == true,
+                onClick = {
+                    playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                        binder?.stopRadio()
+                        binder?.player?.forcePlayFromBeginning(mediaItems.shuffled())
                     }
-                    .background(colorPalette.background2)
-                    .size(62.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.shuffle),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.text),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(20.dp)
-                )
-            }
+                }
+            )
         } ?: playlistResult?.exceptionOrNull()?.let {
             Box(
                 modifier = Modifier
