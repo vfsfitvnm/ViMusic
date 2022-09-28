@@ -62,10 +62,12 @@ fun LocalSongSearch(
         stateSaver = DetailedSongListSaver,
         key1 = textFieldValue.text
     ) {
-        Database
-            .search("%${textFieldValue.text}%")
-            .flowOn(Dispatchers.IO)
-            .collect { value = it }
+        if (textFieldValue.text.length > 1) {
+            Database
+                .search("%${textFieldValue.text}%")
+                .flowOn(Dispatchers.IO)
+                .collect { value = it }
+        }
     }
 
     val thumbnailSize = Dimensions.thumbnails.song.px

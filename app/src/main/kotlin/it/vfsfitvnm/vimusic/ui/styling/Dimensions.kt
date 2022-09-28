@@ -11,6 +11,7 @@ object Dimensions {
     val itemsVerticalPadding = 8.dp
 
     val navigationRailWidth = 64.dp
+    val navigationRailWidthLandscape = 128.dp
     val navigationRailIconOffset = 6.dp
     val headerHeight = 128.dp
 

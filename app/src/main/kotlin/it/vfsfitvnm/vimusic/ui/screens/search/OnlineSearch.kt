@@ -111,11 +111,6 @@ fun OnlineSearch(
         FocusRequester()
     }
 
-    LaunchedEffect(Unit) {
-        delay(300)
-        focusRequester.requestFocus()
-    }
-
     LazyColumn(
         contentPadding = LocalPlayerAwarePaddingValues.current,
         modifier = Modifier
@@ -333,5 +328,10 @@ fun OnlineSearch(
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        delay(300)
+        focusRequester.requestFocus()
     }
 }

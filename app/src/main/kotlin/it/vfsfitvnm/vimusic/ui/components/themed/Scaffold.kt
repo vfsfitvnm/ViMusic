@@ -60,8 +60,6 @@ fun Scaffold(
                 onTopIconButtonClick = onTopIconButtonClick,
                 tabIndex = tabIndex,
                 onTabIndexChanged = onTabChanged,
-                modifier = Modifier
-                    .padding(LocalPlayerAwarePaddingValues.current),
                 content = tabColumnContent
             )
 
