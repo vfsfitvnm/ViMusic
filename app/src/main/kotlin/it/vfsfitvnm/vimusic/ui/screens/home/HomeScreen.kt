@@ -86,30 +86,27 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                 tabIndex = tabIndex,
                 onTabChanged = onTabChanged,
                 tabColumnContent = { Item ->
-                    Item(0, "Songs", R.drawable.musical_notes)
-                    Item(1, "Playlists", R.drawable.playlist)
-                    Item(2, "Artists", R.drawable.person)
-                    Item(3, "Albums", R.drawable.disc)
+                    Item(0, "Quick picks", R.drawable.sparkles)
+                    Item(1, "Songs", R.drawable.musical_notes)
+                    Item(2, "Playlists", R.drawable.playlist)
+                    Item(3, "Artists", R.drawable.person)
+                    Item(4, "Albums", R.drawable.disc)
                 },
                 primaryIconButtonId = R.drawable.search,
                 onPrimaryIconButtonClick = { searchRoute("") }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
-                        1 -> HomePlaylistList(
-                            onBuiltInPlaylistClicked = { builtInPlaylistRoute(it) },
-                            onPlaylistClicked = { localPlaylistRoute(it.id) }
+                        0 -> QuickPicks(
+                            onAlbumClick = { albumRoute(it) },
                         )
-
-                        2 -> HomeArtistList(
-                            onArtistClick = { artistRoute(it.id) }
+                        1 -> HomeSongList()
+                        2 -> HomePlaylistList(
+                            onBuiltInPlaylist = { builtInPlaylistRoute(it) },
+                            onPlaylistClick = { localPlaylistRoute(it.id) }
                         )
-
-                        3 -> HomeAlbumList(
-                            onAlbumClick = { albumRoute(it.id) }
-                        )
-
-                        else -> HomeSongList()
+                        3 -> HomeArtistList(onArtistClick = { artistRoute(it.id) })
+                        4 -> HomeAlbumList(onAlbumClick = { albumRoute(it.id) })
                     }
                 }
             }

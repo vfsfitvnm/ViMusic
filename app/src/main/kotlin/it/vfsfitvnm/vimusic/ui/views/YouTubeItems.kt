@@ -79,8 +79,8 @@ fun SmallSongItem(
 ) {
     SongItem(
         thumbnailModel = song.thumbnail?.size(thumbnailSizePx),
-        title = song.info.name,
-        authors = song.authors?.joinToString("") { it.name } ?: "",
+        title = song.info?.name,
+        authors = song.authors?.joinToString("") { it.name ?: "" },
         durationText = song.durationText,
         onClick = onClick,
         menuContent = {
@@ -148,14 +148,14 @@ fun VideoItem(
 
         Column {
             BasicText(
-                text = video.info.name,
+                text = video.info?.name ?: "",
                 style = typography.xs.semiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
 
             BasicText(
-                text = video.authors?.joinToString("") { it.name } ?: "",
+                text = video.authors?.joinToString("") { it.name ?: "" } ?: "",
                 style = typography.xs.semiBold.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -252,7 +252,7 @@ fun PlaylistItem(
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             BasicText(
-                text = playlist.info.name,
+                text = playlist.info?.name ?: "",
                 style = typography.xs.semiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -322,14 +322,14 @@ fun AlbumItem(
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             BasicText(
-                text = album.info.name,
+                text = album.info?.name ?: "",
                 style = typography.xs.semiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
 
             BasicText(
-                text = album.authors?.joinToString("") { it.name } ?: "",
+                text = album.authors?.joinToString("") { it.name ?: "" } ?: "",
                 style = typography.xs.semiBold.secondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -406,7 +406,7 @@ fun ArtistItem(
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             BasicText(
-                text = artist.info.name,
+                text = artist.info?.name ?: "",
                 style = typography.xs.semiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

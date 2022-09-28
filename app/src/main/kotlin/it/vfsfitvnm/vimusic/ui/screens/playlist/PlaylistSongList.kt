@@ -81,11 +81,7 @@ fun PlaylistSongList(
         stateSaver = resultSaver(YouTubePlaylistOrAlbumSaver),
     ) {
         value = withContext(Dispatchers.IO) {
-            YouTube.playlist(browseId)?.map {
-                it.next()
-            }?.map { playlist ->
-                playlist.copy(songs = playlist.songs?.filter { it.info.endpoint != null })
-            }
+            YouTube.playlist(browseId)?.map { it.next() }
         }
     }
 
@@ -202,8 +198,8 @@ fun PlaylistSongList(
 
                 itemsIndexed(items = playlist.songs ?: emptyList()) { index, song ->
                     SongItem(
-                        title = song.info.name,
-                        authors = (song.authors ?: playlist.authors)?.joinToString("") { it.name },
+                        title = song.info?.name,
+                        authors = (song.authors ?: playlist.authors)?.joinToString("") { it.name ?: "" },
                         durationText = song.durationText,
                         onClick = {
                             playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->

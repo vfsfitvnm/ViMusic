@@ -65,6 +65,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
+import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.utils.InvincibleService
@@ -285,9 +286,21 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         val totalPlayTimeMs = playbackStats.totalPlayTimeMs
 
-        if (totalPlayTimeMs > 2000) {
+        if (totalPlayTimeMs > 5000) {
             query {
                 Database.incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
+            }
+        }
+
+        if (totalPlayTimeMs > 30000) {
+            query {
+                Database.insert(
+                    Event(
+                        songId = mediaItem.mediaId,
+                        timestamp = System.currentTimeMillis(),
+                        playTime = totalPlayTimeMs
+                    )
+                )
             }
         }
     }

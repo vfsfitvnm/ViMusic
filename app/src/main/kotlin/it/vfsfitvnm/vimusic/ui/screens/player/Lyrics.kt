@@ -135,7 +135,7 @@ fun Lyrics(
                     )?.map { it?.value }
                 } else {
                     YouTube.next(mediaId, null)
-                        ?.map { nextResult -> nextResult.lyrics?.text()?.getOrNull() }
+                        ?.map { nextResult -> nextResult.lyrics()?.getOrNull() }
                 }?.map { newLyrics ->
                     onLyricsUpdate(isShowingSynchronizedLyrics, mediaId, newLyrics ?: "")
                     state = state.copy(isLoading = false)

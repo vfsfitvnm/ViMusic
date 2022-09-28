@@ -37,6 +37,7 @@ import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
+import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
@@ -288,6 +289,19 @@ interface Database {
     @Query("SELECT EXISTS(SELECT 1 FROM Playlist WHERE browseId = :browseId)")
     fun isImportedPlaylist(browseId: String): Flow<Boolean>
 
+    @Transaction
+    @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId GROUP BY songId ORDER BY SUM(playTime / ((:now - timestamp) / 86400000.0)) LIMIT 1")
+    @RewriteQueriesToDropUnusedColumns
+    fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
+
+//    @Transaction
+//    @Query("SELECT songId FROM Event GROUP BY songId ORDER BY SUM(playTime / ((:now - timestamp) / 86400000.0)) LIMIT 1")
+//    @RewriteQueriesToDropUnusedColumns
+//    fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insert(event: Event)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(format: Format)
 
@@ -427,11 +441,12 @@ interface Database {
         SearchQuery::class,
         QueuedMediaItem::class,
         Format::class,
+        Event::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 18,
+    version = 19,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -448,6 +463,7 @@ interface Database {
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
+        AutoMigration(from = 18, to = 19),
     ],
 )
 @TypeConverters(Converters::class)

@@ -1,7 +1,5 @@
 package it.vfsfitvnm.vimusic.utils
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -10,37 +8,23 @@ import androidx.media3.common.MediaMetadata
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.youtubemusic.YouTube
 
-fun Context.shareAsYouTubeSong(mediaItem: MediaItem) {
-    val sendIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${mediaItem.mediaId}")
-    }
-
-    startActivity(Intent.createChooser(sendIntent, null))
-}
-
 val YouTube.Item.Song.asMediaItem: MediaItem
     get() = MediaItem.Builder()
-        .also {
-//            println("$this")
-//            println(info.endpoint?.videoId)
-        }
-        .setMediaId(info.endpoint!!.videoId!!)
-        .setUri(info.endpoint!!.videoId)
-        .setCustomCacheKey(info.endpoint!!.videoId)
+        .setMediaId(key)
+        .setUri(key)
+        .setCustomCacheKey(key)
         .setMediaMetadata(
             MediaMetadata.Builder()
-                .setTitle(info.name)
-                .setArtist(authors?.joinToString("") { it.name })
+                .setTitle(info?.name)
+                .setArtist(authors?.joinToString("") { it.name ?: "" })
                 .setAlbumTitle(album?.name)
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
-                        "videoId" to info.endpoint!!.videoId,
+                        "videoId" to key,
                         "albumId" to album?.endpoint?.browseId,
                         "durationText" to durationText,
-                        "artistNames" to authors?.filter { it.endpoint != null }?.map { it.name },
+                        "artistNames" to authors?.filter { it.endpoint != null }?.mapNotNull { it.name },
                         "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                     )
                 )
@@ -50,19 +34,19 @@ val YouTube.Item.Song.asMediaItem: MediaItem
 
 val YouTube.Item.Video.asMediaItem: MediaItem
     get() = MediaItem.Builder()
-        .setMediaId(info.endpoint!!.videoId!!)
-        .setUri(info.endpoint!!.videoId)
-        .setCustomCacheKey(info.endpoint!!.videoId)
+        .setMediaId(key)
+        .setUri(key)
+        .setCustomCacheKey(key)
         .setMediaMetadata(
             MediaMetadata.Builder()
-                .setTitle(info.name)
-                .setArtist(authors?.joinToString("") { it.name })
+                .setTitle(info?.name)
+                .setArtist(authors?.joinToString("") { it.name ?: "" })
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
-                        "videoId" to info.endpoint!!.videoId,
+                        "videoId" to key,
                         "durationText" to durationText,
-                        "artistNames" to if (isOfficialMusicVideo) authors?.filter { it.endpoint != null }?.map { it.name } else null,
+                        "artistNames" to if (isOfficialMusicVideo) authors?.filter { it.endpoint != null }?.mapNotNull { it.name } else null,
                         "artistIds" to if (isOfficialMusicVideo) authors?.mapNotNull { it.endpoint?.browseId } else null,
                     )
                 )

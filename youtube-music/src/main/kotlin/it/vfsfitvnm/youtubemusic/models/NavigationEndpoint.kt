@@ -93,7 +93,7 @@ data class NavigationEndpoint(
         @Serializable
         data class Browse(
             val params: String?,
-            val browseId: String,
+            val browseId: String?,
             val browseEndpointContextSupportedConfigs: BrowseEndpointContextSupportedConfigs?,
         ) : Endpoint() {
             val type: String?

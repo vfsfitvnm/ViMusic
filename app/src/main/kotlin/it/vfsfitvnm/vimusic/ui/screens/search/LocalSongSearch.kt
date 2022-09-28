@@ -100,7 +100,7 @@ fun LocalSongSearch(
         ) { song ->
             SongItem(
                 song = song,
-                thumbnailSize = thumbnailSize,
+                thumbnailSizePx = thumbnailSize,
                 onClick = {
                     val mediaItem = song.asMediaItem
                     binder?.stopRadio()

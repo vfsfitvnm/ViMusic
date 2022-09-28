@@ -26,6 +26,6 @@ object DetailedSongSaver : Saver<DetailedSong, List<Any?>> {
         thumbnailUrl = value[4] as String?,
         totalPlayTimeMs = value[5] as Long,
         albumId = value[6] as String?,
-        artists = InfoListSaver.restore(value[7] as List<List<String>>)
+        artists = (value[7] as List<List<String>>?)?.let(InfoListSaver::restore)
     )
 }

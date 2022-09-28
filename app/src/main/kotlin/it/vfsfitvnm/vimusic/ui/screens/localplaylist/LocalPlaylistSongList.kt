@@ -165,11 +165,7 @@ fun LocalPlaylistSongList(
                                     transaction {
                                         runBlocking(Dispatchers.IO) {
                                             withContext(Dispatchers.IO) {
-                                                YouTube.playlist(browseId)?.map {
-                                                    it.next()
-                                                }?.map { playlist ->
-                                                    playlist.copy(songs = playlist.songs?.filter { it.info.endpoint != null })
-                                                }
+                                                YouTube.playlist(browseId)?.map { it.next() }
                                             }
                                         }?.getOrNull()?.let { remotePlaylist ->
                                             Database.clearPlaylist(playlistId)
@@ -222,7 +218,7 @@ fun LocalPlaylistSongList(
             ) { index, song ->
                 SongItem(
                     song = song,
-                    thumbnailSize = thumbnailSize,
+                    thumbnailSizePx = thumbnailSize,
                     onClick = {
                         playlistWithSongs?.songs?.map(DetailedSong::asMediaItem)
                             ?.let { mediaItems ->

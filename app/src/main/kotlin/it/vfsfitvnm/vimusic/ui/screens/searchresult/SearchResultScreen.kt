@@ -102,7 +102,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         onClick = {
                                             binder?.stopRadio()
                                             binder?.player?.forcePlay(song.asMediaItem)
-                                            binder?.setupRadio(song.info.endpoint)
+                                            binder?.setupRadio(song.info?.endpoint)
                                         }
                                     )
                                 },
@@ -130,7 +130,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             .clickable(
                                                 indication = rememberRipple(bounded = true),
                                                 interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { albumRoute(album.info.endpoint?.browseId) }
+                                                onClick = { albumRoute(album.info?.endpoint?.browseId) }
                                             )
                                     )
 
@@ -159,7 +159,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             .clickable(
                                                 indication = rememberRipple(bounded = true),
                                                 interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { artistRoute(artist.info.endpoint?.browseId) }
+                                                onClick = { artistRoute(artist.info?.endpoint?.browseId) }
                                             )
                                     )
                                 },
@@ -186,7 +186,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         onClick = {
                                             binder?.stopRadio()
                                             binder?.player?.forcePlay(video.asMediaItem)
-                                            binder?.setupRadio(video.info.endpoint)
+                                            binder?.setupRadio(video.info?.endpoint)
                                         }
                                     )
                                 },
@@ -217,7 +217,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             .clickable(
                                                 indication = rememberRipple(bounded = true),
                                                 interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { playlistRoute(playlist.info.endpoint?.browseId) }
+                                                onClick = { playlistRoute(playlist.info?.endpoint?.browseId) }
                                             )
                                     )
                                 },

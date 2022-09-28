@@ -58,8 +58,8 @@ import kotlinx.coroutines.flow.flowOn
 @ExperimentalFoundationApi
 @Composable
 fun HomePlaylistList(
-    onBuiltInPlaylistClicked: (BuiltInPlaylist) -> Unit,
-    onPlaylistClicked: (Playlist) -> Unit,
+    onBuiltInPlaylist: (BuiltInPlaylist) -> Unit,
+    onPlaylistClick: (Playlist) -> Unit,
 ) {
     val (colorPalette) = LocalAppearance.current
 
@@ -186,7 +186,7 @@ fun HomePlaylistList(
                     .clickable(
                         indication = rememberRipple(bounded = true),
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = { onBuiltInPlaylistClicked(BuiltInPlaylist.Favorites) }
+                        onClick = { onBuiltInPlaylist(BuiltInPlaylist.Favorites) }
                     )
             )
         }
@@ -200,7 +200,7 @@ fun HomePlaylistList(
                     .clickable(
                         indication = rememberRipple(bounded = true),
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = { onBuiltInPlaylistClicked(BuiltInPlaylist.Offline) }
+                        onClick = { onBuiltInPlaylist(BuiltInPlaylist.Offline) }
                     )
                     .animateItemPlacement()
             )
@@ -216,7 +216,7 @@ fun HomePlaylistList(
                     .clickable(
                         indication = rememberRipple(bounded = true),
                         interactionSource = remember { MutableInteractionSource() },
-                        onClick = { onPlaylistClicked(playlistPreview.playlist) }
+                        onClick = { onPlaylistClick(playlistPreview.playlist) }
                     )
                     .animateItemPlacement()
             )

@@ -3,8 +3,6 @@ package it.vfsfitvnm.vimusic.savers
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 
-interface ResultSaver<Original, Saveable> : Saver<Result<Original>?, Pair<Saveable?, Throwable?>>
-
 fun <Original, Saveable : Any> resultSaver(saver: Saver<Original, Saveable>) =
     object : Saver<Result<Original>?, Pair<Saveable?, Throwable?>> {
         override fun restore(value: Pair<Saveable?, Throwable?>) =

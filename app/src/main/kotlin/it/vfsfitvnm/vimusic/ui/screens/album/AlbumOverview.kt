@@ -95,7 +95,7 @@ fun AlbumOverview(
                                 title = youtubeAlbum.title,
                                 thumbnailUrl = youtubeAlbum.thumbnail?.url,
                                 year = youtubeAlbum.year,
-                                authorsText = youtubeAlbum.authors?.joinToString("") { it.name },
+                                authorsText = youtubeAlbum.authors?.joinToString("") { it.name ?: "" },
                                 shareUrl = youtubeAlbum.url,
                                 timestamp = System.currentTimeMillis()
                             ),

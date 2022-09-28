@@ -149,7 +149,7 @@ fun PlayerBottomSheet(
 
                     SongItem(
                         mediaItem = window.mediaItem,
-                        thumbnailSize = thumbnailSize,
+                        thumbnailSizePx = thumbnailSize,
                         onClick = {
                             if (isPlayingThisMediaItem) {
                                 if (shouldBePlaying) {

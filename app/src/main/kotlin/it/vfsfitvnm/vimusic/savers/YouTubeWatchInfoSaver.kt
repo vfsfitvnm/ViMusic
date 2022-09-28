@@ -8,11 +8,11 @@ import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 object YouTubeWatchInfoSaver : Saver<YouTube.Info<NavigationEndpoint.Endpoint.Watch>, List<Any?>> {
     override fun SaverScope.save(value: YouTube.Info<NavigationEndpoint.Endpoint.Watch>) = listOf(
         value.name,
-        with(YouTubeWatchEndpointSaver) { value.endpoint?.let { save(it) } }
+        value.endpoint?.let { with(YouTubeWatchEndpointSaver) { save(it) } },
     )
 
     override fun restore(value: List<Any?>) = YouTube.Info(
-        name = value[0] as String,
+        name = value[0] as String?,
         endpoint = (value[1] as List<Any?>?)?.let(YouTubeWatchEndpointSaver::restore)
     )
 }

@@ -162,7 +162,7 @@ fun HomeSongList() {
             ) { index, song ->
                 SongItem(
                     song = song,
-                    thumbnailSize = thumbnailSize,
+                    thumbnailSizePx = thumbnailSize,
                     onClick = {
                         binder?.stopRadio()
                         binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)

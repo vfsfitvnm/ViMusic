@@ -40,7 +40,7 @@ import it.vfsfitvnm.vimusic.utils.thumbnail
 @NonRestartableComposable
 fun SongItem(
     mediaItem: MediaItem,
-    thumbnailSize: Int,
+    thumbnailSizePx: Int,
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -48,7 +48,7 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     SongItem(
-        thumbnailModel = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSize),
+        thumbnailModel = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
         title = mediaItem.mediaMetadata.title!!.toString(),
         authors = mediaItem.mediaMetadata.artist.toString(),
         durationText = mediaItem.mediaMetadata.extras?.getString("durationText") ?: "?",
@@ -65,7 +65,7 @@ fun SongItem(
 @NonRestartableComposable
 fun SongItem(
     song: DetailedSong,
-    thumbnailSize: Int,
+    thumbnailSizePx: Int,
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -73,7 +73,7 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     SongItem(
-        thumbnailModel = song.thumbnailUrl?.thumbnail(thumbnailSize),
+        thumbnailModel = song.thumbnailUrl?.thumbnail(thumbnailSizePx),
         title = song.title,
         authors = song.artistsText ?: "",
         durationText = song.durationText,
@@ -90,8 +90,8 @@ fun SongItem(
 @NonRestartableComposable
 fun SongItem(
     thumbnailModel: Any?,
-    title: String,
-    authors: String,
+    title: String?,
+    authors: String?,
     durationText: String?,
     onClick: () -> Unit,
     menuContent: @Composable () -> Unit,
@@ -131,7 +131,7 @@ fun SongItem(
 @ExperimentalAnimationApi
 @Composable
 fun SongItem(
-    title: String,
+    title: String?,
     authors: String?,
     durationText: String?,
     onClick: () -> Unit,
@@ -167,7 +167,7 @@ fun SongItem(
                 .weight(1f)
         ) {
             BasicText(
-                text = title,
+                text = title ?: "",
                 style = typography.xs.semiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

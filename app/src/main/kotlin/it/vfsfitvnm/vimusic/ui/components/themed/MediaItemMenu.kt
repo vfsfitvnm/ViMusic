@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
+import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -57,7 +58,6 @@ import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.shareAsYouTubeSong
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
@@ -241,7 +241,13 @@ fun BaseMediaItemMenu(
         onGoToAlbum = albumRoute::global,
         onGoToArtist = artistRoute::global,
         onShare = {
-            context.shareAsYouTubeSong(mediaItem)
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${mediaItem.mediaId}")
+            }
+
+            context.startActivity(Intent.createChooser(sendIntent, null))
         },
         modifier = modifier
     )

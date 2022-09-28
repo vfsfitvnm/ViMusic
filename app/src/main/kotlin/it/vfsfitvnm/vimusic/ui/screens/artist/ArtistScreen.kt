@@ -271,7 +271,7 @@ fun ArtistScreen2(browseId: String) {
                 ) { index, song ->
                     SongItem(
                         song = song,
-                        thumbnailSize = songThumbnailSizePx,
+                        thumbnailSizePx = songThumbnailSizePx,
                         onClick = {
                             binder?.stopRadio()
                             binder?.player?.forcePlayAtIndex(
@@ -351,7 +351,7 @@ private suspend fun fetchArtist(browseId: String): Result<Artist>? {
         ?.map { youtubeArtist ->
             Artist(
                 id = browseId,
-                name = youtubeArtist.name,
+                name = youtubeArtist.name ?: "",
                 thumbnailUrl = youtubeArtist.thumbnail?.url,
                 info = youtubeArtist.description,
                 shuffleVideoId = youtubeArtist.shuffleEndpoint?.videoId,

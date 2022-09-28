@@ -103,7 +103,7 @@ fun BuiltInPlaylistSongList(builtInPlaylist: BuiltInPlaylist) {
             ) { index, song ->
                 SongItem(
                     song = song,
-                    thumbnailSize = thumbnailSize,
+                    thumbnailSizePx = thumbnailSize,
                     onClick = {
                         binder?.stopRadio()
                         binder?.player?.forcePlayAtIndex(

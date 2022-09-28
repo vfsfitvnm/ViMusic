@@ -92,7 +92,7 @@ inline fun <T : YouTube.Item> SearchResult(
 
         items(
             items = items,
-            key = { it.key!! },
+            key = YouTube.Item::key,
             itemContent = itemContent
         )
 

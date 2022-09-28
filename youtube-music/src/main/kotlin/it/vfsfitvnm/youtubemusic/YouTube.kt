@@ -20,13 +20,16 @@ import it.vfsfitvnm.youtubemusic.models.BrowseResponse
 import it.vfsfitvnm.youtubemusic.models.ContinuationResponse
 import it.vfsfitvnm.youtubemusic.models.GetQueueResponse
 import it.vfsfitvnm.youtubemusic.models.GetSearchSuggestionsResponse
+import it.vfsfitvnm.youtubemusic.models.MusicCarouselShelfRenderer
 import it.vfsfitvnm.youtubemusic.models.MusicResponsiveListItemRenderer
 import it.vfsfitvnm.youtubemusic.models.MusicShelfRenderer
+import it.vfsfitvnm.youtubemusic.models.MusicTwoRowItemRenderer
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import it.vfsfitvnm.youtubemusic.models.NextResponse
 import it.vfsfitvnm.youtubemusic.models.PlayerResponse
 import it.vfsfitvnm.youtubemusic.models.Runs
 import it.vfsfitvnm.youtubemusic.models.SearchResponse
+import it.vfsfitvnm.youtubemusic.models.SectionListRenderer
 import it.vfsfitvnm.youtubemusic.models.ThumbnailRenderer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -36,7 +39,7 @@ import kotlinx.serialization.json.Json
 object YouTube {
     private const val Key = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 
-    val client = HttpClient(OkHttp) {
+    private val client = HttpClient(OkHttp) {
         BrowserUserAgent()
 
         expectSuccess = true
@@ -162,37 +165,34 @@ object YouTube {
     }
 
     data class Info<T : NavigationEndpoint.Endpoint>(
-        val name: String,
+        val name: String?,
         val endpoint: T?
     ) {
-        companion object {
-            inline fun <reified T : NavigationEndpoint.Endpoint> from(run: Runs.Run): Info<T> {
-                return Info(
-                    name = run.text,
-                    endpoint = run.navigationEndpoint?.endpoint as T?
-                )
-            }
-        }
+        @Suppress("UNCHECKED_CAST")
+        constructor(run: Runs.Run) : this(
+            name = run.text,
+            endpoint = run.navigationEndpoint?.endpoint as T?
+        )
     }
 
     sealed class Item {
         abstract val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
-        abstract val key: String?
+        abstract val key: String
 
         data class Song(
-            val info: Info<NavigationEndpoint.Endpoint.Watch>,
+            val info: Info<NavigationEndpoint.Endpoint.Watch>?,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
             val album: Info<NavigationEndpoint.Endpoint.Browse>?,
             val durationText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
-            override val key: String?
-                get() = info.endpoint?.videoId
+            override val key: String
+                get() = info!!.endpoint!!.videoId!!
 
-            companion object : FromMusicShelfRendererContent<Song> {
+            companion object {
                 val Filter = Filter("EgWKAQIIAWoKEAkQBRAKEAMQBA%3D%3D")
 
-                override fun from(content: MusicShelfRenderer.Content): Song {
+                fun from(content: MusicShelfRenderer.Content): Song? {
                     val (mainRuns, otherRuns) = content.runs
 
                     // Possible configurations:
@@ -210,21 +210,22 @@ object YouTube {
                                 ?.browseEndpoint
                                 ?.type == "MUSIC_PAGE_TYPE_ALBUM"
                         }
-                        ?.let(Info.Companion::from)
+                        ?.let(::Info)
 
                     return Song(
-                        info = Info.from(mainRuns.first()),
+                        info = mainRuns
+                            .firstOrNull()
+                            ?.let(::Info),
                         authors = otherRuns
                             .getOrNull(otherRuns.lastIndex - if (album == null) 1 else 2)
-                            ?.map(Info.Companion::from)
-                            ?: emptyList(),
+                            ?.map(::Info),
                         album = album,
                         durationText = otherRuns
                             .lastOrNull()
                             ?.firstOrNull()?.text,
                         thumbnail = content
                             .thumbnail
-                    )
+                    ).takeIf { it.info?.endpoint?.videoId != null }
                 }
 
                 fun from(renderer: MusicResponsiveListItemRenderer): Song? {
@@ -236,15 +237,15 @@ object YouTube {
                             ?.text
                             ?.runs
                             ?.getOrNull(0)
-                            ?.let { Info.from(it) } ?: return null,
+                            ?.let(::Info),
                         authors = renderer
                             .flexColumns
                             .getOrNull(1)
                             ?.musicResponsiveListItemFlexColumnRenderer
                             ?.text
                             ?.runs
-                            ?.map { Info.from<NavigationEndpoint.Endpoint.Browse>(it) }
-                            ?.takeIf { it.isNotEmpty() },
+                            ?.map<Runs.Run, Info<NavigationEndpoint.Endpoint.Browse>>(::Info)
+                            ?.takeIf(List<Any>::isNotEmpty),
                         durationText = renderer
                             .fixedColumns
                             ?.getOrNull(0)
@@ -260,53 +261,55 @@ object YouTube {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.let { Info.from(it) },
+                            ?.let(::Info),
                         thumbnail = renderer
                             .thumbnail
                             ?.musicThumbnailRenderer
                             ?.thumbnail
                             ?.thumbnails
                             ?.firstOrNull()
-                    )
+                    ).takeIf { it.info?.endpoint?.videoId != null }
                 }
             }
         }
 
         data class Video(
-            val info: Info<NavigationEndpoint.Endpoint.Watch>,
+            val info: Info<NavigationEndpoint.Endpoint.Watch>?,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
             val viewsText: String?,
             val durationText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
-            override val key: String?
-                get() = info.endpoint?.videoId
+            override val key: String
+                get() = info!!.endpoint!!.videoId!!
 
             val isOfficialMusicVideo: Boolean
                 get() = info
-                    .endpoint
+                    ?.endpoint
                     ?.watchEndpointMusicSupportedConfigs
                     ?.watchEndpointMusicConfig
                     ?.musicVideoType == "MUSIC_VIDEO_TYPE_OMV"
 
             val isUserGeneratedContent: Boolean
                 get() = info
-                    .endpoint
+                    ?.endpoint
                     ?.watchEndpointMusicSupportedConfigs
                     ?.watchEndpointMusicConfig
                     ?.musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
 
-            companion object : FromMusicShelfRendererContent<Video> {
+            companion object {
                 val Filter = Filter("EgWKAQIQAWoKEAkQChAFEAMQBA%3D%3D")
 
-                override fun from(content: MusicShelfRenderer.Content): Video {
+                fun from(content: MusicShelfRenderer.Content): Video? {
                     val (mainRuns, otherRuns) = content.runs
 
                     return Video(
-                        info = Info.from(mainRuns.first()),
+                        info = mainRuns
+                            .firstOrNull()
+                            ?.let(::Info),
                         authors = otherRuns
                             .getOrNull(otherRuns.lastIndex - 2)
-                            ?.map(Info.Companion::from),
+                            ?.map(::Info),
                         viewsText = otherRuns
                             .getOrNull(otherRuns.lastIndex - 1)
                             ?.firstOrNull()
@@ -317,31 +320,31 @@ object YouTube {
                             ?.text,
                         thumbnail = content
                             .thumbnail
-                    )
+                    ).takeIf { it.info?.endpoint?.videoId != null }
                 }
             }
         }
 
         data class Album(
-            val info: Info<NavigationEndpoint.Endpoint.Browse>,
+            val info: Info<NavigationEndpoint.Endpoint.Browse>?,
             val authors: List<Info<NavigationEndpoint.Endpoint.Browse>>?,
             val year: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
-            override val key: String?
-                get() = info.endpoint?.browseId
+            override val key: String
+                get() = info!!.endpoint!!.browseId!!
 
-            companion object : FromMusicShelfRendererContent<Album> {
+            companion object {
                 val Filter = Filter("EgWKAQIYAWoKEAkQChAFEAMQBA%3D%3D")
 
-                override fun from(content: MusicShelfRenderer.Content): Album {
+                fun from(content: MusicShelfRenderer.Content): Album? {
                     val (mainRuns, otherRuns) = content.runs
 
                     return Album(
                         info = Info(
                             name = mainRuns
-                                .first()
-                                .text,
+                                .firstOrNull()
+                                ?.text,
                             endpoint = content
                                 .musicResponsiveListItemRenderer
                                 .navigationEndpoint
@@ -349,37 +352,59 @@ object YouTube {
                         ),
                         authors = otherRuns
                             .getOrNull(otherRuns.lastIndex - 1)
-                            ?.map(Info.Companion::from),
+                            ?.map(::Info),
                         year = otherRuns
                             .getOrNull(otherRuns.lastIndex)
                             ?.firstOrNull()
                             ?.text,
                         thumbnail = content
                             .thumbnail
-                    )
+                    ).takeIf { it.info?.endpoint?.browseId != null }
+                }
+
+                fun from(renderer: MusicTwoRowItemRenderer): Album? {
+                    return Album(
+                        info = renderer
+                            .title
+                            .runs
+                            .firstOrNull()
+                            ?.let(::Info),
+                        authors = null,
+                        year = renderer
+                            .subtitle
+                            .runs
+                            .lastOrNull()
+                            ?.text,
+                        thumbnail = renderer
+                            .thumbnailRenderer
+                            .musicThumbnailRenderer
+                            .thumbnail
+                            .thumbnails
+                            .firstOrNull()
+                    ).takeIf { it.info?.endpoint?.browseId != null }
                 }
             }
         }
 
         data class Artist(
-            val info: Info<NavigationEndpoint.Endpoint.Browse>,
+            val info: Info<NavigationEndpoint.Endpoint.Browse>?,
             val subscribersCountText: String?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
-            override val key: String?
-                get() = info.endpoint?.browseId
+            override val key: String
+                get() = info!!.endpoint!!.browseId!!
 
-            companion object : FromMusicShelfRendererContent<Artist> {
+            companion object {
                 val Filter = Filter("EgWKAQIgAWoKEAkQChAFEAMQBA%3D%3D")
 
-                override fun from(content: MusicShelfRenderer.Content): Artist {
+                fun from(content: MusicShelfRenderer.Content): Artist? {
                     val (mainRuns, otherRuns) = content.runs
 
                     return Artist(
                         info = Info(
                             name = mainRuns
-                                .first()
-                                .text,
+                                .firstOrNull()
+                                ?.text,
                             endpoint = content
                                 .musicResponsiveListItemRenderer
                                 .navigationEndpoint
@@ -391,22 +416,43 @@ object YouTube {
                             ?.text,
                         thumbnail = content
                             .thumbnail
-                    )
+                    ).takeIf { it.info?.endpoint?.browseId != null }
+                }
+
+                fun from(renderer: MusicTwoRowItemRenderer): Artist? {
+                    return Artist(
+                        info = renderer
+                            .title
+                            .runs
+                            .firstOrNull()
+                            ?.let(::Info),
+                        subscribersCountText = renderer
+                            .subtitle
+                            .runs
+                            .firstOrNull()
+                            ?.text,
+                        thumbnail = renderer
+                            .thumbnailRenderer
+                            .musicThumbnailRenderer
+                            .thumbnail
+                            .thumbnails
+                            .firstOrNull()
+                    ).takeIf { it.info?.endpoint?.browseId != null }
                 }
             }
         }
 
         data class Playlist(
-            val info: Info<NavigationEndpoint.Endpoint.Browse>,
+            val info: Info<NavigationEndpoint.Endpoint.Browse>?,
             val channel: Info<NavigationEndpoint.Endpoint.Browse>?,
             val songCount: Int?,
             override val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?
         ) : Item() {
-            override val key: String?
-                get() = info.endpoint?.browseId
+            override val key: String
+                get() = info!!.endpoint!!.browseId!!
 
-            companion object : FromMusicShelfRendererContent<Playlist> {
-                override fun from(content: MusicShelfRenderer.Content): Playlist {
+            companion object {
+                fun from(content: MusicShelfRenderer.Content): Playlist? {
                     val (mainRuns, otherRuns) = content.runs
 
                     return Playlist(
@@ -422,7 +468,7 @@ object YouTube {
                         channel = otherRuns
                             .firstOrNull()
                             ?.firstOrNull()
-                            ?.let { Info.from(it) },
+                            ?.let(::Info),
                         songCount = otherRuns
                             .lastOrNull()
                             ?.firstOrNull()
@@ -432,7 +478,36 @@ object YouTube {
                             ?.toIntOrNull(),
                         thumbnail = content
                             .thumbnail
-                    )
+                    ).takeIf { it.info?.endpoint?.browseId != null }
+                }
+
+                fun from(renderer: MusicTwoRowItemRenderer): Playlist? {
+                    return Playlist(
+                        info = renderer
+                            .title
+                            .runs
+                            .firstOrNull()
+                            ?.let(::Info),
+                        channel = renderer
+                            .subtitle
+                            .runs
+                            .getOrNull(2)
+                            ?.let(::Info),
+                        songCount = renderer
+                            .subtitle
+                            .runs
+                            .getOrNull(4)
+                            ?.text
+                            ?.split(' ')
+                            ?.firstOrNull()
+                            ?.toIntOrNull(),
+                        thumbnail = renderer
+                            .thumbnailRenderer
+                            .musicThumbnailRenderer
+                            .thumbnail
+                            .thumbnails
+                            .firstOrNull()
+                    ).takeIf { it.info?.endpoint?.browseId != null }
                 }
             }
         }
@@ -445,15 +520,11 @@ object YouTube {
             val Filter = Filter("EgeKAQQoADgBagwQDhAKEAMQBRAJEAQ%3D")
         }
 
-        interface FromMusicShelfRendererContent<out T : Item> {
-            fun from(content: MusicShelfRenderer.Content): T
-        }
-
         @JvmInline
         value class Filter(val value: String)
     }
 
-    class SearchResult(val items: List<Item>, val continuation: String?)
+    class SearchResult(val items: List<Item>?, val continuation: String?)
 
     suspend fun search(
         query: String,
@@ -495,7 +566,7 @@ object YouTube {
             SearchResult(
                 items = musicShelfRenderer
                     ?.contents
-                    ?.map(
+                    ?.mapNotNull(
                         when (filter) {
                             Item.Song.Filter.value -> Item.Song.Companion::from
                             Item.Album.Filter.value -> Item.Album.Companion::from
@@ -505,7 +576,7 @@ object YouTube {
                             Item.FeaturedPlaylist.Filter.value -> Item.Playlist.Companion::from
                             else -> error("Unknown filter: $filter")
                         }
-                    ) ?: emptyList(),
+                    ),
                 continuation = musicShelfRenderer
                     ?.continuations
                     ?.firstOrNull()
@@ -623,7 +694,7 @@ object YouTube {
                         info = Info(
                             name = renderer
                                 .title
-                                ?.text ?: return@let null,
+                                ?.text,
                             endpoint = renderer
                                 .navigationEndpoint
                                 .watchEndpoint
@@ -632,14 +703,13 @@ object YouTube {
                             .longBylineText
                             ?.splitBySeparator()
                             ?.getOrNull(0)
-                            ?.map { Info.from(it) }
-                            ?: emptyList(),
+                            ?.map(::Info),
                         album = renderer
                             .longBylineText
                             ?.splitBySeparator()
                             ?.getOrNull(1)
                             ?.getOrNull(0)
-                            ?.let { Info.from(it) },
+                            ?.let(::Info),
                         thumbnail = renderer
                             .thumbnail
                             .thumbnails
@@ -647,7 +717,7 @@ object YouTube {
                         durationText = renderer
                             .lengthText
                             ?.text
-                    )
+                    ).takeIf { it.info?.endpoint?.videoId != null }
                 }
             }
         }.recoverIfCancelled()
@@ -661,16 +731,6 @@ object YouTube {
                 playlistId = null
             )
         )?.map { it?.firstOrNull() }
-    }
-
-    suspend fun queue(playlistId: String): Result<List<Item.Song>?>? {
-        return getQueue(
-            GetQueueBody(
-                context = Context.DefaultWeb,
-                videoIds = null,
-                playlistId = playlistId
-            )
-        )
     }
 
     suspend fun next(
@@ -759,7 +819,7 @@ object YouTube {
                             info = Info(
                                 name = renderer
                                     .title
-                                    ?.text ?: return@mapNotNull null,
+                                    ?.text,
                                 endpoint = renderer
                                     .navigationEndpoint
                                     .watchEndpoint
@@ -768,14 +828,13 @@ object YouTube {
                                 .longBylineText
                                 ?.splitBySeparator()
                                 ?.getOrNull(0)
-                                ?.map { run -> Info.from(run) }
-                                ?: emptyList(),
+                                ?.map(::Info),
                             album = renderer
                                 .longBylineText
                                 ?.splitBySeparator()
                                 ?.getOrNull(1)
                                 ?.getOrNull(0)
-                                ?.let { run -> Info.from(run) },
+                                ?.let(::Info),
                             thumbnail = renderer
                                 .thumbnail
                                 .thumbnails
@@ -783,24 +842,14 @@ object YouTube {
                             durationText = renderer
                                 .lengthText
                                 ?.text
-                        )
+                        ).takeIf { it.info?.endpoint?.videoId != null }
                     },
-                lyrics = NextResult.Lyrics(
-                    browseId = tabs
-                        .getOrNull(1)
-                        ?.tabRenderer
-                        ?.endpoint
-                        ?.browseEndpoint
-                        ?.browseId
-                ),
-                related = NextResult.Related(
-                    browseId = tabs
-                        .getOrNull(2)
-                        ?.tabRenderer
-                        ?.endpoint
-                        ?.browseEndpoint
-                        ?.browseId
-                )
+                lyricsBrowseId = tabs
+                    .getOrNull(1)
+                    ?.tabRenderer
+                    ?.endpoint
+                    ?.browseEndpoint
+                    ?.browseId,
             )
         }.recoverIfCancelled()
     }
@@ -811,32 +860,23 @@ object YouTube {
         val params: String? = null,
         val playlistSetVideoId: String? = null,
         val items: List<Item.Song>?,
-        val lyrics: Lyrics?,
-        val related: Related?,
+        val lyricsBrowseId: String?
     ) {
-        class Lyrics(
-            val browseId: String?,
-        ) {
-            suspend fun text(): Result<String?>? {
-                return if (browseId == null) {
-                    Result.success(null)
-                } else {
-                    browse(browseId)?.map { body ->
-                        body.contents
-                            .sectionListRenderer
-                            ?.contents
-                            ?.first()
-                            ?.musicDescriptionShelfRenderer
-                            ?.description
-                            ?.text
-                    }
+        suspend fun lyrics(): Result<String?>? {
+            return if (lyricsBrowseId == null) {
+                Result.success(null)
+            } else {
+                browse(lyricsBrowseId)?.map { body ->
+                    body.contents
+                        .sectionListRenderer
+                        ?.contents
+                        ?.first()
+                        ?.musicDescriptionShelfRenderer
+                        ?.description
+                        ?.text
                 }
             }
         }
-
-        class Related(
-            val browseId: String?,
-        )
     }
 
     suspend fun browse(browseId: String): Result<BrowseResponse>? {
@@ -875,12 +915,14 @@ object YouTube {
                         parameter("continuation", continuation)
                     }.body<ContinuationResponse>().let { continuationResponse ->
                         copy(
-                            songs = songs?.plus(continuationResponse
-                                .continuationContents
-                                .musicShelfContinuation
-                                ?.contents
-                                ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                                ?.mapNotNull(Item.Song.Companion::from) ?: emptyList()),
+                            songs = songs?.plus(
+                                continuationResponse
+                                    .continuationContents
+                                    .musicShelfContinuation
+                                    ?.contents
+                                    ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
+                                    ?.mapNotNull(Item.Song.Companion::from) ?: emptyList()
+                            ),
                             continuation = continuationResponse
                                 .continuationContents
                                 .musicShelfContinuation
@@ -897,7 +939,7 @@ object YouTube {
 
     suspend fun album(browseId: String): Result<PlaylistOrAlbum>? {
         return playlistOrAlbum(browseId)?.map { album ->
-           album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
+            album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
                 playlistOrAlbum("VL$playlistId")?.getOrNull()?.let { playlist ->
                     album.copy(songs = playlist.songs)
                 }
@@ -950,7 +992,7 @@ object YouTube {
                     ?.subtitle
                     ?.splitBySeparator()
                     ?.getOrNull(1)
-                    ?.map { Info.from(it) },
+                    ?.map(::Info),
                 year = body
                     .header
                     ?.musicDetailHeaderRenderer
@@ -972,9 +1014,7 @@ object YouTube {
                     ?.musicShelfRenderer
                     ?.contents
                     ?.map(MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                    ?.mapNotNull(Item.Song.Companion::from)
-//                    ?.filter { it.info.endpoint != null }
-                ,
+                    ?.mapNotNull(Item.Song.Companion::from),
                 url = body
                     .microformat
                     ?.microformatDataRenderer
@@ -999,7 +1039,7 @@ object YouTube {
     }
 
     data class Artist(
-        val name: String,
+        val name: String?,
         val description: String?,
         val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail.Thumbnail?,
         val shuffleEndpoint: NavigationEndpoint.Endpoint.Watch?,
@@ -1013,7 +1053,7 @@ object YouTube {
                     .header
                     ?.musicImmersiveHeaderRenderer
                     ?.title
-                    ?.text ?: "Unknown",
+                    ?.text,
                 description = body
                     .header
                     ?.musicImmersiveHeaderRenderer
@@ -1044,5 +1084,101 @@ object YouTube {
                     ?.watchEndpoint
             )
         }
+    }
+
+    data class Related(
+        val songs: List<Item.Song>? = null,
+        val playlists: List<Item.Playlist>? = null,
+        val albums: List<Item.Album>? = null,
+        val artists: List<Item.Artist>? = null,
+    )
+
+    suspend fun related(videoId: String): Result<Related?>? {
+        return runCatching {
+            val body = client.post("/youtubei/v1/next") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    NextBody(
+                        context = Context.DefaultWeb,
+                        videoId = videoId,
+                        playlistId = null,
+                        isAudioOnly = true,
+                        tunerSettingValue = "AUTOMIX_SETTING_NORMAL",
+                        watchEndpointMusicSupportedConfigs = NextBody.WatchEndpointMusicSupportedConfigs(
+                            musicVideoType = "MUSIC_VIDEO_TYPE_ATV"
+                        ),
+                        index = 0,
+                        playlistSetVideoId = null,
+                        params = null,
+                        continuation = null
+                    )
+                )
+                parameter("key", Key)
+                parameter("prettyPrint", false)
+            }.body<NextResponse>()
+
+            body
+                .contents
+                .singleColumnMusicWatchNextResultsRenderer
+                .tabbedRenderer
+                .watchNextTabbedResultsRenderer
+                .tabs
+                .getOrNull(2)
+                ?.tabRenderer
+                ?.endpoint
+                ?.browseEndpoint
+                ?.browseId
+                ?.let { browseId ->
+                    browse(browseId)?.getOrThrow()?.let { browseResponse ->
+                        browseResponse
+                            .contents
+                            .sectionListRenderer
+                            ?.contents
+                            ?.mapNotNull(SectionListRenderer.Content::musicCarouselShelfRenderer)
+                            ?.map(MusicCarouselShelfRenderer::contents)
+                    }
+                }?.let { contents ->
+                    Related(
+                        songs = contents.find { items ->
+                            items.firstOrNull()?.musicResponsiveListItemRenderer != null
+                        }?.mapNotNull { content ->
+                            Item.Song.from(content.musicResponsiveListItemRenderer!!)
+                        },
+                        playlists = contents.find { items ->
+                            items.firstOrNull()
+                                ?.musicTwoRowItemRenderer
+                                ?.navigationEndpoint
+                                ?.browseEndpoint
+                                ?.browseEndpointContextSupportedConfigs
+                                ?.browseEndpointContextMusicConfig
+                                ?.pageType == "MUSIC_PAGE_TYPE_PLAYLIST"
+                        }
+                            ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+                            ?.mapNotNull(Item.Playlist.Companion::from),
+                        albums = contents.find { items ->
+                            items.firstOrNull()
+                                ?.musicTwoRowItemRenderer
+                                ?.navigationEndpoint
+                                ?.browseEndpoint
+                                ?.browseEndpointContextSupportedConfigs
+                                ?.browseEndpointContextMusicConfig
+                                ?.pageType == "MUSIC_PAGE_TYPE_ALBUM"
+                        }
+                            ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+                            ?.mapNotNull(Item.Album.Companion::from),
+                        artists = contents.find { items ->
+                            items.firstOrNull()
+                                ?.musicTwoRowItemRenderer
+                                ?.navigationEndpoint
+                                ?.browseEndpoint
+                                ?.browseEndpointContextSupportedConfigs
+                                ?.browseEndpointContextMusicConfig
+                                ?.pageType == "MUSIC_PAGE_TYPE_ARTIST"
+                        }
+                            ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+                            ?.mapNotNull(Item.Artist.Companion::from),
+                    )
+                }
+        }.recoverIfCancelled()
     }
 }
