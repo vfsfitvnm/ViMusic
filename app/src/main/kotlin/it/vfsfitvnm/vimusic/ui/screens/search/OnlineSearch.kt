@@ -1,8 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.screens.search
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -65,7 +62,8 @@ fun OnlineSearch(
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
     onSearch: (String) -> Unit,
-    onViewPlaylist: (String) -> Unit
+    onViewPlaylist: (String) -> Unit,
+    decorationBox: @Composable (@Composable () -> Unit) -> Unit
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
@@ -135,25 +133,7 @@ fun OnlineSearch(
                             }
                         ),
                         cursorBrush = SolidColor(colorPalette.text),
-                        decorationBox = { innerTextField ->
-                            Box {
-                                androidx.compose.animation.AnimatedVisibility(
-                                    visible = textFieldValue.text.isEmpty(),
-                                    enter = fadeIn(tween(200)),
-                                    exit = fadeOut(tween(200)),
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                ) {
-                                    BasicText(
-                                        text = "Enter a name",
-                                        maxLines = 1,
-                                        style = typography.xxl.secondary
-                                    )
-                                }
-
-                                innerTextField()
-                            }
-                        },
+                        decorationBox = decorationBox,
                         modifier = Modifier
                             .focusRequester(focusRequester)
                     )
@@ -299,7 +279,7 @@ fun OnlineSearch(
                     )
                 }
             }
-        } ?: suggestionsResult?.exceptionOrNull()?.let { throwable ->
+        } ?: suggestionsResult?.exceptionOrNull()?.let {
             item {
                 Box(
                     modifier = Modifier

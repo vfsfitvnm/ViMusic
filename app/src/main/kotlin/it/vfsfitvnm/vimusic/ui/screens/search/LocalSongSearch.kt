@@ -1,20 +1,14 @@
 package it.vfsfitvnm.vimusic.ui.screens.search
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
@@ -37,7 +31,6 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
@@ -47,7 +40,8 @@ import kotlinx.coroutines.flow.flowOn
 @Composable
 fun LocalSongSearch(
     textFieldValue: TextFieldValue,
-    onTextFieldValueChanged: (TextFieldValue) -> Unit
+    onTextFieldValueChanged: (TextFieldValue) -> Unit,
+    decorationBox: @Composable (@Composable () -> Unit) -> Unit
 ) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
@@ -86,25 +80,7 @@ fun LocalSongSearch(
                         maxLines = 1,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         cursorBrush = SolidColor(colorPalette.text),
-                        decorationBox = { innerTextField ->
-                            Box {
-                                androidx.compose.animation.AnimatedVisibility(
-                                    visible = textFieldValue.text.isEmpty(),
-                                    enter = fadeIn(tween(200)),
-                                    exit = fadeOut(tween(200)),
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                ) {
-                                    BasicText(
-                                        text = "Enter a name",
-                                        maxLines = 1,
-                                        style = typography.xxl.secondary
-                                    )
-                                }
-
-                                innerTextField()
-                            }
-                        }
+                        decorationBox = decorationBox
                     )
                 },
                 actionsContent = {
