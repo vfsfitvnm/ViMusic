@@ -3,6 +3,8 @@ package it.vfsfitvnm.vimusic.ui.components.themed
 import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.with
 import androidx.compose.foundation.background
@@ -35,7 +37,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import it.vfsfitvnm.route.RouteHandler
-import it.vfsfitvnm.route.empty
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -282,7 +283,7 @@ fun MediaItemMenu(
                     else -> when (initialState.route) {
                         viewPlaylistsRoute -> slideIntoContainer(AnimatedContentScope.SlideDirection.Right) with
                                 slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-                        else -> empty
+                        else -> EnterTransition.None with ExitTransition.None
                     }
                 }
             }

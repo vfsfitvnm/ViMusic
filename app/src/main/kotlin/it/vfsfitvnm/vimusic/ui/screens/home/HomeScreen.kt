@@ -5,6 +5,12 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.route.defaultStacking
+import it.vfsfitvnm.route.defaultStill
+import it.vfsfitvnm.route.defaultUnstacking
+import it.vfsfitvnm.route.isStacking
+import it.vfsfitvnm.route.isUnknown
+import it.vfsfitvnm.route.isUnstacking
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
@@ -33,7 +39,21 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    RouteHandler(listenToGlobalEmitter = true) {
+    RouteHandler(
+        listenToGlobalEmitter = true,
+        transitionSpec = {
+            when {
+                isStacking -> defaultStacking
+                isUnstacking -> defaultUnstacking
+                isUnknown -> when {
+                    initialState.route == searchRoute && targetState.route == searchResultRoute -> defaultStacking
+                    initialState.route == searchResultRoute && targetState.route == searchRoute -> defaultUnstacking
+                    else -> defaultStill
+                }
+                else -> defaultStill
+            }
+        }
+    ) {
         globalRoutes()
 
         settingsRoute {
@@ -65,6 +85,7 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
             SearchScreen(
                 initialTextInput = initialTextInput,
                 onSearch = { query ->
+                    pop()
                     searchResultRoute(query)
 
                     query {

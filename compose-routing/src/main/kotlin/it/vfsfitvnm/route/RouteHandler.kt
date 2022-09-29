@@ -21,7 +21,13 @@ fun RouteHandler(
     modifier: Modifier = Modifier,
     listenToGlobalEmitter: Boolean = false,
     handleBackPress: Boolean = true,
-    transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = { fastFade },
+    transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = {
+        when {
+            isStacking -> defaultStacking
+            isStill -> defaultStill
+            else -> defaultUnstacking
+        }
+    },
     content: @Composable RouteHandlerScope.() -> Unit
 ) {
     var route by rememberSaveable(stateSaver = Route.Saver) {
@@ -47,7 +53,13 @@ fun RouteHandler(
     modifier: Modifier = Modifier,
     listenToGlobalEmitter: Boolean = false,
     handleBackPress: Boolean = true,
-    transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = { fastFade },
+    transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = {
+        when {
+            isStacking -> defaultStacking
+            isStill -> defaultStill
+            else -> defaultUnstacking
+        }
+    },
     content: @Composable RouteHandlerScope.() -> Unit
 ) {
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
