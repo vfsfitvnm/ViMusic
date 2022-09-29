@@ -287,7 +287,7 @@ fun OnlineSearch(
                 ) {
                     BasicText(
                         text = "An error has occurred.",
-                        style = typography.s.medium.secondary.center,
+                        style = typography.s.secondary.center,
                         modifier = Modifier
                             .align(Alignment.Center)
                     )

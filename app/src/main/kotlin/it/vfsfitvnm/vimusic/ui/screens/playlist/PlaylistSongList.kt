@@ -242,7 +242,7 @@ fun PlaylistSongList(
             ) {
                 BasicText(
                     text = "An error has occurred.\nTap to retry",
-                    style = typography.s.medium.secondary.center,
+                    style = typography.s.secondary.center,
                     modifier = Modifier
                         .align(Alignment.Center)
                 )

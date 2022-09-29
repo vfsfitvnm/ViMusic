@@ -17,6 +17,7 @@ import it.vfsfitvnm.vimusic.ui.screens.builtinplaylist.BuiltInPlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.localPlaylistRoute
 import it.vfsfitvnm.vimusic.ui.screens.localplaylist.LocalPlaylistScreen
+import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.screens.search.SearchScreen
 import it.vfsfitvnm.vimusic.ui.screens.searchResultRoute
 import it.vfsfitvnm.vimusic.ui.screens.searchRoute
@@ -77,7 +78,7 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
         host {
             val (tabIndex, onTabChanged) = rememberPreference(
                 homeScreenTabIndexKey,
-                defaultValue = 0
+                defaultValue = 1
             )
 
             Scaffold(
@@ -99,6 +100,8 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                     when (currentTabIndex) {
                         0 -> QuickPicks(
                             onAlbumClick = { albumRoute(it) },
+                            onArtistClick = { artistRoute(it) },
+                            onPlaylistClick = { playlistRoute(it) },
                         )
                         1 -> HomeSongList()
                         2 -> HomePlaylistList(
