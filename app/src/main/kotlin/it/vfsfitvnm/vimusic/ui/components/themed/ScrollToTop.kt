@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -24,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,25 +39,7 @@ fun ScrollToTop(
 
     ScrollToTop(
         isVisible = showScrollTopButton,
-        onClick = { lazyListState.animateScrollToItem(0) },
-        modifier = modifier
-    )
-}
-
-@Composable
-fun ScrollToTop(
-    lazyGridState: LazyGridState,
-    modifier: Modifier = Modifier,
-) {
-    val showScrollTopButton by remember {
-        derivedStateOf {
-            lazyGridState.firstVisibleItemIndex > lazyGridState.layoutInfo.visibleItemsInfo.size
-        }
-    }
-
-    ScrollToTop(
-        isVisible = showScrollTopButton,
-        onClick = { lazyGridState.animateScrollToItem(0) },
+        onClick = lazyListState::smoothScrollToTop,
         modifier = modifier
     )
 }

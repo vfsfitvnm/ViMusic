@@ -64,6 +64,7 @@ import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
 import it.vfsfitvnm.vimusic.utils.rememberWindows
 import it.vfsfitvnm.vimusic.utils.shuffleQueue
+import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
@@ -285,7 +286,7 @@ fun PlayerBottomSheet(
                         .padding(end = 2.dp)
                         .clickable {
                             reorderingState.coroutineScope.launch {
-                                reorderingState.lazyListState.animateScrollToItem(0)
+                                reorderingState.lazyListState.smoothScrollToTop()
                             }.invokeOnCompletion {
                                 binder.player.shuffleQueue()
                             }
