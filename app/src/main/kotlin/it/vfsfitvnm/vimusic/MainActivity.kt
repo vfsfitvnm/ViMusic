@@ -19,7 +19,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -319,7 +318,6 @@ class MainActivity : ComponentActivity() {
 
                 CompositionLocalProvider(
                     LocalAppearance provides appearance,
-                    LocalOverscrollConfiguration provides null,
                     LocalIndication provides rememberRipple(bounded = false),
                     LocalRippleTheme provides rippleTheme,
                     LocalShimmerTheme provides shimmerTheme,
