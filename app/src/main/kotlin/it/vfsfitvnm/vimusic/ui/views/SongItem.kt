@@ -49,9 +49,9 @@ fun SongItem(
 ) {
     SongItem(
         thumbnailModel = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
-        title = mediaItem.mediaMetadata.title!!.toString(),
+        title = mediaItem.mediaMetadata.title.toString(),
         authors = mediaItem.mediaMetadata.artist.toString(),
-        durationText = mediaItem.mediaMetadata.extras?.getString("durationText") ?: "?",
+        durationText = mediaItem.mediaMetadata.extras?.getString("durationText"),
         menuContent = menuContent,
         onClick = onClick,
         onThumbnailContent = onThumbnailContent,
@@ -75,7 +75,7 @@ fun SongItem(
     SongItem(
         thumbnailModel = song.thumbnailUrl?.thumbnail(thumbnailSizePx),
         title = song.title,
-        authors = song.artistsText ?: "",
+        authors = song.artistsText,
         durationText = song.durationText,
         menuContent = menuContent,
         onClick = onClick,
@@ -150,9 +150,7 @@ fun SongItem(
             .combinedClickable(
                 indication = rememberRipple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
-                onLongClick = {
-                    menuState.display(menuContent)
-                },
+                onLongClick = { menuState.display(menuContent) },
                 onClick = onClick
             )
             .fillMaxWidth()

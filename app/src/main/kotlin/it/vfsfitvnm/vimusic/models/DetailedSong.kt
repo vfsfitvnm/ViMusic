@@ -9,7 +9,7 @@ open class DetailedSong(
     val id: String,
     val title: String,
     val artistsText: String? = null,
-    val durationText: String,
+    val durationText: String?,
     val thumbnailUrl: String?,
     val totalPlayTimeMs: Long = 0,
     @Relation(

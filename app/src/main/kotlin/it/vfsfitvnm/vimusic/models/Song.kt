@@ -10,7 +10,7 @@ data class Song(
     @PrimaryKey val id: String,
     val title: String,
     val artistsText: String? = null,
-    val durationText: String,
+    val durationText: String?,
     val thumbnailUrl: String?,
     val lyrics: String? = null,
     val synchronizedLyrics: String? = null,

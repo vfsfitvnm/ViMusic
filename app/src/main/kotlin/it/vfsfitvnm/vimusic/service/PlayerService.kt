@@ -20,6 +20,7 @@ import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.text.format.DateUtils
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -649,6 +650,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                 }?.let { format ->
                                     val mediaItem = runBlocking(Dispatchers.Main) {
                                         player.findNextMediaItemById(videoId)
+                                    }
+
+                                    if (mediaItem?.mediaMetadata?.extras?.getString("durationText") == null) {
+                                        format.approxDurationMs?.div(1000)?.let(DateUtils::formatElapsedTime)?.removePrefix("0")?.let { durationText ->
+                                            mediaItem?.mediaMetadata?.extras?.putString("durationText", durationText)
+                                            Database.updateDurationText(videoId, durationText)
+                                        }
                                     }
 
                                     query {

@@ -132,6 +132,9 @@ interface Database {
     @Query("UPDATE Song SET likedAt = :likedAt WHERE id = :songId")
     fun like(songId: String, likedAt: Long?): Int
 
+    @Query("UPDATE Song SET durationText = :durationText WHERE id = :songId")
+    fun updateDurationText(songId: String, durationText: String): Int
+
     @Query("SELECT lyrics FROM Song WHERE id = :songId")
     fun lyrics(songId: String): Flow<String?>
 
@@ -341,7 +344,7 @@ interface Database {
             id = mediaItem.mediaId,
             title = mediaItem.mediaMetadata.title!!.toString(),
             artistsText = mediaItem.mediaMetadata.artist?.toString(),
-            durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
+            durationText = mediaItem.mediaMetadata.extras?.getString("durationText"),
             thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString()
         ).let(block).also { song ->
             if (insert(song) == -1L) return
@@ -446,7 +449,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 19,
+    version = 20,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -464,6 +467,7 @@ interface Database {
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
         AutoMigration(from = 18, to = 19),
+        AutoMigration(from = 19, to = 20),
     ],
 )
 @TypeConverters(Converters::class)

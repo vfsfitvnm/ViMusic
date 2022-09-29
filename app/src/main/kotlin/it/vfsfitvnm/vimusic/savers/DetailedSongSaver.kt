@@ -22,7 +22,7 @@ object DetailedSongSaver : Saver<DetailedSong, List<Any?>> {
         id = value[0] as String,
         title = value[1] as String,
         artistsText = value[2] as String?,
-        durationText = value[3] as String,
+        durationText = value[3] as String?,
         thumbnailUrl = value[4] as String?,
         totalPlayTimeMs = value[5] as Long,
         albumId = value[6] as String?,

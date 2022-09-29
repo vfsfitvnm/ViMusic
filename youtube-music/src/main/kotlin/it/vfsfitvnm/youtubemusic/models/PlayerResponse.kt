@@ -1,15 +1,12 @@
 package it.vfsfitvnm.youtubemusic.models
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class PlayerResponse(
     val playabilityStatus: PlayabilityStatus,
     val playerConfig: PlayerConfig?,
     val streamingData: StreamingData?,
-    val videoDetails: VideoDetails?,
 ) {
     @Serializable
     data class PlayabilityStatus(
@@ -47,14 +44,4 @@ data class PlayerResponse(
             val url: String?,
         )
     }
-
-    @Serializable
-    data class VideoDetails(
-        val author: String,
-        val channelId: String,
-        val lengthSeconds: String,
-        val thumbnail: ThumbnailRenderer.MusicThumbnailRenderer.Thumbnail,
-        val title: String,
-        val videoId: String
-    )
 }
