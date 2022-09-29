@@ -63,7 +63,10 @@ inline fun <T : YouTube.Item> SearchResult(
             YouTube.search(query, filter, token)
         }?.map { searchResult ->
             @Suppress("UNCHECKED_CAST")
-            items = items.plus(searchResult.items as List<T>).distinctBy(YouTube.Item::key)
+            (searchResult.items as List<T>?)?.let {
+                items = items.plus(it).distinctBy(YouTube.Item::key)
+            }
+
             searchResult.continuation
         }
     }
@@ -126,11 +129,6 @@ inline fun <T : YouTube.Item> SearchResult(
                 item {
                     Box(
                         modifier = Modifier
-                            .pointerInput(Unit) {
-                                detectTapGestures {
-                                    fetch()
-                                }
-                            }
                             .fillMaxSize()
                     ) {
                         BasicText(
