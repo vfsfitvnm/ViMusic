@@ -148,7 +148,7 @@ fun QuickPicks(
                         .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
                 ) {
                     trending?.let { song ->
-                        item(key = song.id) {
+                        item {
                             SongItem(
                                 thumbnailModel = song.thumbnailUrl?.thumbnail(songThumbnailSizePx),
                                 title = song.title,
