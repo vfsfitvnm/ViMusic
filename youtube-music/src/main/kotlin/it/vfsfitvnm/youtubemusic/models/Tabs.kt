@@ -44,11 +44,12 @@ data class SectionListRenderer(
     ) {
         @Serializable
         data class GridRenderer(
-            val items: List<Item>,
+            val items: List<Item>?,
         ) {
             @Serializable
             data class Item(
-                val musicNavigationButtonRenderer: MusicNavigationButtonRenderer
+                val musicNavigationButtonRenderer: MusicNavigationButtonRenderer?,
+                val musicTwoRowItemRenderer: MusicTwoRowItemRenderer?
             )
         }
 

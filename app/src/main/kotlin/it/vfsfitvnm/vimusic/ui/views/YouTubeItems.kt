@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -376,6 +377,75 @@ fun AlbumItemShimmer(
                 modifier = Modifier
                     .padding(top = 8.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun AlternativeAlbumItem(
+    album: YouTube.Item.Album,
+    thumbnailSizePx: Int,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val (_, typography, thumbnailShape) = LocalAppearance.current
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier
+            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+            .width(thumbnailSizeDp)
+    ) {
+        AsyncImage(
+            model = album.thumbnail?.size(thumbnailSizePx),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .clip(thumbnailShape)
+                .size(thumbnailSizeDp)
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            BasicText(
+                text = album.info?.name ?: "",
+                style = typography.xs.semiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            BasicText(
+                text = album.year ?: "",
+                style = typography.xxs.semiBold.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+            )
+        }
+    }
+}
+
+@Composable
+fun AlternativeAlbumItemPlaceholder(
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val (colorPalette, _, thumbnailShape) = LocalAppearance.current
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier
+            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+            .width(thumbnailSizeDp)
+    ) {
+        Spacer(
+            modifier = Modifier
+                .background(color = colorPalette.shimmer, shape = thumbnailShape)
+                .size(thumbnailSizeDp)
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextPlaceholder()
+            TextPlaceholder()
         }
     }
 }

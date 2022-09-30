@@ -1,9 +1,7 @@
 package it.vfsfitvnm.youtubemusic.models
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class MusicShelfRenderer(
     val bottomEndpoint: NavigationEndpoint?,

@@ -1,87 +1,182 @@
 package it.vfsfitvnm.vimusic.ui.screens.artist
 
+import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.Artist
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.PartialArtist
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
+import it.vfsfitvnm.vimusic.savers.ArtistSaver
+import it.vfsfitvnm.vimusic.savers.YouTubeAlbumListSaver
+import it.vfsfitvnm.vimusic.savers.YouTubeArtistPageSaver
+import it.vfsfitvnm.vimusic.savers.YouTubeSongListSaver
+import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
+import it.vfsfitvnm.vimusic.ui.screens.searchresult.SearchResult
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.ui.views.AlbumItem
+import it.vfsfitvnm.vimusic.ui.views.AlbumItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.SmallSongItem
+import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.utils.artistScreenTabIndexKey
 import it.vfsfitvnm.vimusic.utils.asMediaItem
-import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
-import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.thumbnail
+import it.vfsfitvnm.vimusic.utils.forcePlay
+import it.vfsfitvnm.vimusic.utils.produceSaveableLazyOneShotState
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.youtubemusic.YouTube
-import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalAnimationApi
 @Composable
 fun ArtistScreen(browseId: String) {
     val saveableStateHolder = rememberSaveableStateHolder()
-    val (tabIndex, onTabIndexChanged) = rememberSaveable {
-        mutableStateOf(0)
+    val (tabIndex, onTabIndexChanged) = rememberPreference(
+        artistScreenTabIndexKey,
+        defaultValue = 0
+    )
+
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    var isError by remember {
+        mutableStateOf(false)
+    }
+
+    val youtubeArtist by produceSaveableLazyOneShotState(
+        initialValue = null,
+        stateSaver = nullableSaver(YouTubeArtistPageSaver)
+    ) {
+        println("${System.currentTimeMillis()}, computing lazyEffect (youtubeArtistResult = ${value?.name})!")
+
+        isLoading = true
+        withContext(Dispatchers.IO) {
+            YouTube.artist(browseId)?.onSuccess { youtubeArtist ->
+                value = youtubeArtist
+
+                query {
+                    Database.upsert(
+                        PartialArtist(
+                            id = browseId,
+                            name = youtubeArtist.name,
+                            thumbnailUrl = youtubeArtist.thumbnail?.url,
+                            info = youtubeArtist.description,
+                            timestamp = System.currentTimeMillis()
+                        )
+                    )
+                }
+                isError = false
+                isLoading = false
+            }?.onFailure {
+                println("error (1): $it")
+                isError = true
+                isLoading = false
+            }
+        }
+    }
+
+    val artist by produceSaveableState(
+        initialValue = null,
+        stateSaver = nullableSaver(ArtistSaver),
+    ) {
+        Database
+            .artist(browseId)
+            .flowOn(Dispatchers.IO)
+            .filter {
+                val hasToFetch = it?.timestamp == null
+                if (hasToFetch) {
+                    youtubeArtist?.name
+                }
+                !hasToFetch
+            }
+            .collect { value = it }
     }
 
     RouteHandler(listenToGlobalEmitter = true) {
         globalRoutes()
 
         host {
+            val bookmarkIconContent: @Composable () -> Unit = {
+                Image(
+                    painter = painterResource(
+                        if (artist?.bookmarkedAt == null) {
+                            R.drawable.bookmark_outline
+                        } else {
+                            R.drawable.bookmark
+                        }
+                    ),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(LocalAppearance.current.colorPalette.accent),
+                    modifier = Modifier
+                        .clickable {
+                            val bookmarkedAt = if (artist?.bookmarkedAt == null) System.currentTimeMillis() else null
+
+                            query {
+                                artist?.copy(bookmarkedAt = bookmarkedAt)?.let(Database::update)
+                            }
+                        }
+                        .padding(all = 4.dp)
+                        .size(18.dp)
+                )
+            }
+
+            val shareIconContent: @Composable () -> Unit = {
+                val context = LocalContext.current
+
+                Image(
+                    painter = painterResource(R.drawable.share_social),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(LocalAppearance.current.colorPalette.text),
+                    modifier = Modifier
+                        .clickable {
+                            val sendIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                type = "text/plain"
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "https://music.youtube.com/channel/$browseId"
+                                )
+                            }
+
+                            context.startActivity(
+                                Intent.createChooser(
+                                    sendIntent,
+                                    null
+                                )
+                            )
+                        }
+                        .padding(all = 4.dp)
+                        .size(18.dp)
+                )
+            }
+
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
                 onTopIconButtonClick = pop,
@@ -92,273 +187,151 @@ fun ArtistScreen(browseId: String) {
                     Item(1, "Songs", R.drawable.musical_notes)
                     Item(2, "Albums", R.drawable.disc)
                     Item(3, "Singles", R.drawable.disc)
+                    Item(4, "Library", R.drawable.library)
                 }
-            ) {  currentTabIndex ->
+            ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    ArtistOverview(browseId = browseId)
-                }
-            }
-        }
-    }
-}
-
-@ExperimentalAnimationApi
-@Composable
-fun ArtistScreen2(browseId: String) {
-    val lazyListState = rememberLazyListState()
-
-    RouteHandler(listenToGlobalEmitter = true) {
-        globalRoutes()
-
-        host {
-            val binder = LocalPlayerServiceBinder.current
-
-            val (colorPalette, typography) = LocalAppearance.current
-
-            val artistResult by remember(browseId) {
-                Database.artist(browseId).map { artist ->
-                    artist
-                        ?.takeIf { artist.timestamp != null }
-                        ?.let(Result.Companion::success)
-                        ?: fetchArtist(browseId)
-                }.distinctUntilChanged()
-            }.collectAsState(initial = null, context = Dispatchers.IO)
-
-            val songThumbnailSizePx = Dimensions.thumbnails.song.px
-
-            val songs by remember(browseId) {
-                Database.artistSongs(browseId)
-            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-
-            LazyColumn(
-                state = lazyListState,
-                contentPadding = LocalPlayerAwarePaddingValues.current,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .background(colorPalette.background0)
-                    .fillMaxSize()
-            ) {
-                item {
-
-                }
-
-                item {
-                    artistResult?.getOrNull()?.let { artist ->
-                        AsyncImage(
-                            model = artist.thumbnailUrl?.thumbnail(Dimensions.thumbnails.artist.px),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(Dimensions.thumbnails.artist)
+                    when (currentTabIndex) {
+                        0 -> ArtistOverview(
+                            artist = artist,
+                            youtubeArtist = youtubeArtist,
+                            isLoading = isLoading,
+                            isError = isError,
+                            bookmarkIconContent = bookmarkIconContent,
+                            shareIconContent = shareIconContent,
+                            onAlbumClick = { albumRoute(it) },
+                            onViewAllSongsClick = { onTabIndexChanged(1) },
+                            onViewAllAlbumsClick = { onTabIndexChanged(2) },
+                            onViewAllSinglesClick = { onTabIndexChanged(3) },
                         )
+                        1 -> {
+                            val binder = LocalPlayerServiceBinder.current
+                            val thumbnailSizeDp = Dimensions.thumbnails.song
+                            val thumbnailSizePx = thumbnailSizeDp.px
 
-                        BasicText(
-                            text = artist.name,
-                            style = typography.l.semiBold,
-                            modifier = Modifier
-                                .padding(vertical = 8.dp, horizontal = 16.dp)
-                        )
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(32.dp),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.shuffle),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.text),
-                                modifier = Modifier
-                                    .clickable {
-                                        binder?.playRadio(
-                                            NavigationEndpoint.Endpoint.Watch(
-                                                videoId = artist.shuffleVideoId,
-                                                playlistId = artist.shufflePlaylistId
-                                            )
-                                        )
-
-                                        query {
-                                            runBlocking {
-                                                fetchArtist(browseId)
+                            ArtistContent(
+                                artist = artist,
+                                youtubeArtist = youtubeArtist,
+                                isLoading = isLoading,
+                                isError = isError,
+                                stateSaver = YouTubeSongListSaver,
+                                bookmarkIconContent = bookmarkIconContent,
+                                shareIconContent = shareIconContent,
+                                itemsProvider = { continuation ->
+                                    youtubeArtist
+                                        ?.songsEndpoint
+                                        ?.browseId
+                                        ?.let { browseId ->
+                                            YouTube.items(browseId, continuation, YouTube.Item.Song::from)?.map { result ->
+                                                result?.continuation to result?.items
                                             }
                                         }
-                                    }
-                                    .padding(all = 8.dp)
-                                    .size(20.dp)
+                                },
+                                itemContent = { song ->
+                                    SmallSongItem(
+                                        song = song,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        onClick = {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlay(song.asMediaItem)
+                                            binder?.setupRadio(song.info?.endpoint)
+                                        }
+                                    )
+                                },
+                                itemShimmer = {
+                                    SmallSongItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                }
                             )
+                        }
+                        2 -> {
+                            val thumbnailSizeDp = 108.dp
+                            val thumbnailSizePx = thumbnailSizeDp.px
 
-                            Image(
-                                painter = painterResource(R.drawable.radio),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.text),
-                                modifier = Modifier
-                                    .clickable {
-                                        binder?.playRadio(
-                                            NavigationEndpoint.Endpoint.Watch(
-                                                videoId = artist.radioVideoId
-                                                    ?: artist.shuffleVideoId,
-                                                playlistId = artist.radioPlaylistId
-                                            )
-                                        )
-
-                                        query {
-                                            runBlocking {
-                                                fetchArtist(browseId)
+                            ArtistContent(
+                                artist = artist,
+                                youtubeArtist = youtubeArtist,
+                                isLoading = isLoading,
+                                isError = isError,
+                                stateSaver = YouTubeAlbumListSaver,
+                                bookmarkIconContent = bookmarkIconContent,
+                                shareIconContent = shareIconContent,
+                                itemsProvider = {
+                                    youtubeArtist
+                                        ?.albumsEndpoint
+                                        ?.let { endpoint ->
+                                            YouTube.items2(browseId, endpoint.params, YouTube.Item.Album::from)?.map { result ->
+                                                result?.continuation to result?.items
                                             }
                                         }
-                                    }
-                                    .padding(all = 8.dp)
-                                    .size(20.dp)
-                            )
-                        }
-                    } ?: artistResult?.exceptionOrNull()?.let { throwable ->
-//                        LoadingOrError(
-//                            errorMessage = throwable.javaClass.canonicalName,
-//                            onRetry = {
-//                                query {
-//                                    runBlocking {
-//                                        Database.artist(browseId).first()?.let(Database::update)
-//                                    }
-//                                }
-//                            }
-//                        )
-                    }
-                }
-
-                item("songs") {
-                    if (songs.isEmpty()) return@item
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .background(colorPalette.background0)
-                            .zIndex(1f)
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 32.dp)
-                    ) {
-                        BasicText(
-                            text = "Local tracks",
-                            style = typography.m.semiBold,
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                        )
-
-                        Image(
-                            painter = painterResource(R.drawable.shuffle),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable(enabled = songs.isNotEmpty()) {
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(
-                                        songs
-                                            .shuffled()
-                                            .map(DetailedSong::asMediaItem)
+                                },
+                                itemContent = { album ->
+                                    AlbumItem(
+                                        album = album,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        thumbnailSizeDp = thumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = { albumRoute(album.info?.endpoint?.browseId) }
+                                            )
                                     )
+                                },
+                                itemShimmer = {
+                                    AlbumItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
                                 }
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
-                                .size(20.dp)
-                        )
-                    }
-                }
-
-                itemsIndexed(
-                    items = songs,
-                    key = { _, song -> song.id },
-                    contentType = { _, song -> song },
-                ) { index, song ->
-                    SongItem(
-                        song = song,
-                        thumbnailSizePx = songThumbnailSizePx,
-                        onClick = {
-                            binder?.stopRadio()
-                            binder?.player?.forcePlayAtIndex(
-                                songs.map(DetailedSong::asMediaItem),
-                                index
                             )
-                        },
-                        menuContent = {
-                            InHistoryMediaItemMenu(song = song)
                         }
-                    )
-                }
+                        3 -> {
+                            val thumbnailSizeDp = 108.dp
+                            val thumbnailSizePx = thumbnailSizeDp.px
 
-                artistResult?.getOrNull()?.info?.let { description ->
-                    item {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .background(colorPalette.background0)
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp)
-                                .padding(top = 32.dp)
-                        ) {
-                            BasicText(
-                                text = "Information",
-                                style = typography.m.semiBold,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .height(IntrinsicSize.Max)
-                                    .padding(all = 8.dp)
-                                    .fillMaxWidth()
-                            ) {
-                                Canvas(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .width(48.dp)
-                                ) {
-                                    drawLine(
-                                        color = colorPalette.background2,
-                                        start = size.center.copy(y = 0f),
-                                        end = size.center.copy(y = size.height),
-                                        strokeWidth = 2.dp.toPx()
+                            ArtistContent(
+                                artist = artist,
+                                youtubeArtist = youtubeArtist,
+                                isLoading = isLoading,
+                                isError = isError,
+                                stateSaver = YouTubeAlbumListSaver,
+                                bookmarkIconContent = bookmarkIconContent,
+                                shareIconContent = shareIconContent,
+                                itemsProvider = {
+                                    youtubeArtist
+                                        ?.singlesEndpoint
+                                        ?.let { endpoint ->
+                                            YouTube.items2(browseId, endpoint.params, YouTube.Item.Album::from)?.map { result ->
+                                                result?.continuation to result?.items
+                                            }
+                                        }
+                                },
+                                itemContent = { album ->
+                                    AlbumItem(
+                                        album = album,
+                                        thumbnailSizePx = thumbnailSizePx,
+                                        thumbnailSizeDp = thumbnailSizeDp,
+                                        modifier = Modifier
+                                            .clickable(
+                                                indication = rememberRipple(bounded = true),
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onClick = { albumRoute(album.info?.endpoint?.browseId) }
+                                            )
                                     )
-
-                                    drawCircle(
-                                        color = colorPalette.background2,
-                                        center = size.center.copy(y = size.height),
-                                        radius = 4.dp.toPx()
-                                    )
+                                },
+                                itemShimmer = {
+                                    AlbumItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
                                 }
-
-                                BasicText(
-                                    text = description,
-                                    style = typography.xxs.secondary.medium.copy(
-                                        lineHeight = 24.sp,
-                                        textAlign = TextAlign.Justify
-                                    ),
-                                    modifier = Modifier
-                                        .padding(horizontal = 12.dp)
-                                )
-                            }
+                            )
                         }
+                        4 -> ArtistLocalSongsList(
+                            browseId = browseId,
+                            artist = artist,
+                            isLoading = isLoading,
+                            isError = isError,
+                            bookmarkIconContent = bookmarkIconContent,
+                            shareIconContent = shareIconContent
+                        )
                     }
                 }
             }
         }
     }
-}
-
-
-private suspend fun fetchArtist(browseId: String): Result<Artist>? {
-    return YouTube.artist(browseId)
-        ?.map { youtubeArtist ->
-            Artist(
-                id = browseId,
-                name = youtubeArtist.name ?: "",
-                thumbnailUrl = youtubeArtist.thumbnail?.url,
-                info = youtubeArtist.description,
-                shuffleVideoId = youtubeArtist.shuffleEndpoint?.videoId,
-                shufflePlaylistId = youtubeArtist.shuffleEndpoint?.playlistId,
-                radioVideoId = youtubeArtist.radioEndpoint?.videoId,
-                radioPlaylistId = youtubeArtist.radioEndpoint?.playlistId,
-                timestamp = System.currentTimeMillis()
-            ).also(Database::upsert)
-        }
 }

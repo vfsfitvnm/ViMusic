@@ -33,6 +33,7 @@ const val isShowingSynchronizedLyricsKey = "isShowingSynchronizedLyrics"
 const val isShowingThumbnailInLockscreenKey = "isShowingThumbnailInLockscreen"
 const val homeScreenTabIndexKey = "homeScreenTabIndex"
 const val searchResultScreenTabIndexKey = "searchResultScreenTabIndex"
+const val artistScreenTabIndexKey = "artistScreenTabIndex"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

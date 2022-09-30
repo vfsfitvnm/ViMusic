@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class BrowseResponse(
-    val contents: Contents,
+    val contents: Contents?,
     val header: Header?,
     val microformat: Microformat?
 ) {

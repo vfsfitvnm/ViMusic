@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -39,6 +40,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
 import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.Format
+import it.vfsfitvnm.vimusic.models.PartialArtist
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
@@ -150,16 +152,16 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
-    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY name DESC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name DESC")
     fun artistsByNameDesc(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY name ASC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name ASC")
     fun artistsByNameAsc(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY ROWID DESC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID DESC")
     fun artistsByRowIdDesc(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE timestamp IS NOT NULL ORDER BY ROWID ASC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID ASC")
     fun artistsByRowIdAsc(): Flow<List<Artist>>
 
     fun artists(sortBy: ArtistSortBy, sortOrder: SortOrder): Flow<List<Artist>> {
@@ -378,7 +380,7 @@ interface Database {
                         name = artistName,
                         thumbnailUrl = null,
                         info = null,
-                        timestamp = null,
+                        timestamp = null
                     ).also(::insert)
                 }
             }
@@ -419,6 +421,9 @@ interface Database {
     @Upsert
     fun upsert(artist: Artist)
 
+    @Upsert(Artist::class)
+    fun upsert(artist: PartialArtist)
+
     @Delete
     fun delete(searchQuery: SearchQuery)
 
@@ -449,7 +454,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -468,6 +473,7 @@ interface Database {
         AutoMigration(from = 17, to = 18),
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20),
+        AutoMigration(from = 20, to = 21, spec = DatabaseInitializer.From20To21Migration::class),
     ],
 )
 @TypeConverters(Converters::class)
@@ -601,6 +607,14 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             it.execSQL("ALTER TABLE Song_new RENAME TO Song;")
         }
     }
+
+    @DeleteColumn.Entries(
+        DeleteColumn("Artist", "shuffleVideoId"),
+        DeleteColumn("Artist", "shufflePlaylistId"),
+        DeleteColumn("Artist", "radioVideoId"),
+        DeleteColumn("Artist", "radioPlaylistId"),
+    )
+    class From20To21Migration : AutoMigrationSpec
 }
 
 @TypeConverters

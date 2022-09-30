@@ -46,14 +46,13 @@ inline fun <T : YouTube.Item> SearchResult(
 ) {
     val (_, typography) = LocalAppearance.current
 
-    var items by rememberSaveable(query, filter, stateSaver = stateSaver) {
+    var items by rememberSaveable(stateSaver = stateSaver) {
         mutableStateOf(listOf())
     }
 
     val (continuationResultState, fetch) = produceSaveableRelaunchableOneShotState(
         initialValue = null,
-        stateSaver = StringResultSaver,
-        query, filter
+        stateSaver = StringResultSaver
     ) {
         val token = value?.getOrNull()
 

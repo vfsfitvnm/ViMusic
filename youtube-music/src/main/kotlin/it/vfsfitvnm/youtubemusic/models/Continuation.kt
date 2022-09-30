@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonNames
 @Serializable
 data class Continuation(
     @JsonNames("nextContinuationData", "nextRadioContinuationData")
-    val nextRadioContinuationData: Data
+    val nextContinuationData: Data
 ) {
     @Serializable
     data class Data(

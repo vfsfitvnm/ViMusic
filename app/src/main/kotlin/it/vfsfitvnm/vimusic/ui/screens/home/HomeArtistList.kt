@@ -181,7 +181,7 @@ fun HomeArtistList(
                 )
 
                 BasicText(
-                    text = artist.name,
+                    text = artist.name ?: "",
                     style = typography.xxs.semiBold.center,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
