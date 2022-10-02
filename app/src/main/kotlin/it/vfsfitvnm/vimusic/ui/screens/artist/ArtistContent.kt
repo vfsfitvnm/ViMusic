@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,19 +25,19 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.produceSaveableRelaunchableOneShotState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-inline fun <T : YouTube.Item> ArtistContent(
+inline fun <T : Innertube.Item> ArtistContent(
     artist: Artist?,
-    youtubeArtist: YouTube.Artist?,
+    youtubeArtistPage: Innertube.ArtistPage?,
     isLoading: Boolean,
     isError: Boolean,
     stateSaver: ListSaver<T, List<Any?>>,
-    crossinline itemsProvider: suspend (String?) -> Result<Pair<String?, List<T>?>>?,
+    crossinline itemsPageProvider: suspend (String?) -> Result<Innertube.ItemsPage<T>?>?,
     crossinline bookmarkIconContent: @Composable () -> Unit,
     crossinline shareIconContent: @Composable () -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
@@ -61,18 +60,18 @@ inline fun <T : YouTube.Item> ArtistContent(
     val (continuationState, fetch) = produceSaveableRelaunchableOneShotState(
         initialValue = null,
         stateSaver = autoSaver<String?>(),
-        youtubeArtist
+        youtubeArtistPage
     ) {
-        if (youtubeArtist == null) return@produceSaveableRelaunchableOneShotState
+        if (youtubeArtistPage == null) return@produceSaveableRelaunchableOneShotState
 
         println("loading... $value")
 
         isLoadingItems = true
         withContext(Dispatchers.IO) {
-            itemsProvider(value)?.onSuccess { (continuation, newItems) ->
-                value = continuation
-                newItems?.let {
-                    items = items.plus(it).distinctBy(YouTube.Item::key)
+            itemsPageProvider(value)?.onSuccess { itemsPage ->
+                value = itemsPage?.continuation
+                itemsPage?.items?.let {
+                    items = items.plus(it).distinctBy(Innertube.Item::key)
                 }
                 isErrorItems = false
                 isLoadingItems = false
@@ -105,7 +104,7 @@ inline fun <T : YouTube.Item> ArtistContent(
 
                 items(
                     items = items,
-                    key = YouTube.Item::key,
+                    key = Innertube.Item::key,
                     itemContent = itemContent
                 )
 

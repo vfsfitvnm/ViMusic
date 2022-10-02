@@ -13,16 +13,15 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.savers.YouTubeAlbumListSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeArtistListSaver
-import it.vfsfitvnm.vimusic.savers.YouTubePlaylistListSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeSongListSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeVideoListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeAlbumItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeArtistItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubePlaylistItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeSongItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeVideoItemListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
-import it.vfsfitvnm.vimusic.ui.screens.playlist.PlaylistScreen
 import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -40,7 +39,8 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.searchResultScreenTabIndexKey
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.utils.from
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -51,12 +51,6 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
 
     RouteHandler(listenToGlobalEmitter = true) {
         globalRoutes()
-
-        playlistRoute { browseId ->
-            PlaylistScreen(
-                browseId = browseId ?: "browseId cannot be null"
-            )
-        }
 
         host {
             Scaffold(
@@ -74,12 +68,12 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                 }
             ) { tabIndex ->
                 val searchFilter = when (tabIndex) {
-                    0 -> YouTube.Item.Song.Filter
-                    1 -> YouTube.Item.Album.Filter
-                    2 -> YouTube.Item.Artist.Filter
-                    3 -> YouTube.Item.Video.Filter
-                    4 -> YouTube.Item.CommunityPlaylist.Filter
-                    5 -> YouTube.Item.FeaturedPlaylist.Filter
+                    0 -> Innertube.SearchFilter.Song
+                    1 -> Innertube.SearchFilter.Album
+                    2 -> Innertube.SearchFilter.Artist
+                    3 -> Innertube.SearchFilter.Video
+                    4 -> Innertube.SearchFilter.CommunityPlaylist
+                    5 -> Innertube.SearchFilter.FeaturedPlaylist
                     else -> error("unreachable")
                 }.value
 
@@ -94,7 +88,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 query = query,
                                 filter = searchFilter,
                                 onSearchAgain = onSearchAgain,
-                                stateSaver = YouTubeSongListSaver,
+                                stateSaver = InnertubeSongItemListSaver,
+                                fromMusicShelfRendererContent = Innertube.SongItem.Companion::from,
                                 itemContent = { song ->
                                     SmallSongItem(
                                         song = song,
@@ -119,8 +114,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             SearchResult(
                                 query = query,
                                 filter = searchFilter,
-                                stateSaver = YouTubeAlbumListSaver,
+                                stateSaver = InnertubeAlbumItemListSaver,
                                 onSearchAgain = onSearchAgain,
+                                fromMusicShelfRendererContent = Innertube.AlbumItem.Companion::from,
                                 itemContent = { album ->
                                     AlbumItem(
                                         album = album,
@@ -148,8 +144,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             SearchResult(
                                 query = query,
                                 filter = searchFilter,
-                                stateSaver = YouTubeArtistListSaver,
+                                stateSaver = InnertubeArtistItemListSaver,
                                 onSearchAgain = onSearchAgain,
+                                fromMusicShelfRendererContent = Innertube.ArtistItem.Companion::from,
                                 itemContent = { artist ->
                                     ArtistItem(
                                         artist = artist,
@@ -176,8 +173,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             SearchResult(
                                 query = query,
                                 filter = searchFilter,
-                                stateSaver = YouTubeVideoListSaver,
+                                stateSaver = InnertubeVideoItemListSaver,
                                 onSearchAgain = onSearchAgain,
+                                fromMusicShelfRendererContent = Innertube.VideoItem.Companion::from,
                                 itemContent = { video ->
                                     VideoItem(
                                         video = video,
@@ -206,8 +204,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             SearchResult(
                                 query = query,
                                 filter = searchFilter,
-                                stateSaver = YouTubePlaylistListSaver,
+                                stateSaver = InnertubePlaylistItemListSaver,
                                 onSearchAgain = onSearchAgain,
+                                fromMusicShelfRendererContent = Innertube.PlaylistItem.Companion::from,
                                 itemContent = { playlist ->
                                     PlaylistItem(
                                         playlist = playlist,

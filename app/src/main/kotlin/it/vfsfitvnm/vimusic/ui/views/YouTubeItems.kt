@@ -41,7 +41,7 @@ import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 
 @Composable
 fun SmallSongItemShimmer(
@@ -73,7 +73,7 @@ fun SmallSongItemShimmer(
 @ExperimentalAnimationApi
 @Composable
 fun SmallSongItem(
-    song: YouTube.Item.Song,
+    song: Innertube.SongItem,
     thumbnailSizePx: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -95,7 +95,7 @@ fun SmallSongItem(
 @ExperimentalAnimationApi
 @Composable
 fun VideoItem(
-    video: YouTube.Item.Video,
+    video: Innertube.VideoItem,
     thumbnailHeightDp: Dp,
     thumbnailWidthDp: Dp,
     onClick: () -> Unit,
@@ -212,7 +212,7 @@ fun VideoItemShimmer(
 
 @Composable
 fun PlaylistItem(
-    playlist: YouTube.Item.Playlist,
+    playlist: Innertube.PlaylistItem,
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
@@ -298,7 +298,7 @@ fun PlaylistItemShimmer(
 
 @Composable
 fun AlbumItem(
-    album: YouTube.Item.Album,
+    album: Innertube.AlbumItem,
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
@@ -383,7 +383,7 @@ fun AlbumItemShimmer(
 
 @Composable
 fun AlternativeAlbumItem(
-    album: YouTube.Item.Album,
+    album: Innertube.AlbumItem,
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
@@ -452,7 +452,7 @@ fun AlternativeAlbumItemPlaceholder(
 
 @Composable
 fun ArtistItem(
-    artist: YouTube.Item.Artist,
+    artist: Innertube.ArtistItem,
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,

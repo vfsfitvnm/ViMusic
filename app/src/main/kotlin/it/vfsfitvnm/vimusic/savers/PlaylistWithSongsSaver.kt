@@ -4,13 +4,11 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
 
-object PlaylistWithSongsSaver : Saver<PlaylistWithSongs?, List<Any>> {
-    override fun SaverScope.save(value: PlaylistWithSongs?) = value?.let {
-        listOf(
-            with(PlaylistSaver) { save(value.playlist) },
-            with(DetailedSongListSaver) { save(value.songs) },
-        )
-    }
+object PlaylistWithSongsSaver : Saver<PlaylistWithSongs, List<Any>> {
+    override fun SaverScope.save(value: PlaylistWithSongs) = listOf(
+        with(PlaylistSaver) { save(value.playlist) },
+        with(DetailedSongListSaver) { save(value.songs) },
+    )
 
     @Suppress("UNCHECKED_CAST")
     override fun restore(value: List<Any>): PlaylistWithSongs = PlaylistWithSongs(

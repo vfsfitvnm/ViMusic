@@ -57,14 +57,14 @@ import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 
 @ExperimentalAnimationApi
 @Composable
 fun ArtistOverview(
     artist: Artist?,
-    youtubeArtist: YouTube.Artist?,
+    youtubeArtistPage: Innertube.ArtistPage?,
     isLoading: Boolean,
     isError: Boolean,
     onViewAllSongsClick: () -> Unit,
@@ -100,7 +100,7 @@ fun ArtistOverview(
             when {
                 artist != null -> {
                     Header(title = artist.name ?: "Unknown") {
-                        youtubeArtist?.radioEndpoint?.let { radioEndpoint ->
+                        youtubeArtistPage?.radioEndpoint?.let { radioEndpoint ->
                             SecondaryTextButton(
                                 text = "Start radio",
                                 onClick = {
@@ -130,8 +130,8 @@ fun ArtistOverview(
                     )
 
                     when {
-                        youtubeArtist != null -> {
-                            youtubeArtist.songs?.let { songs ->
+                        youtubeArtistPage != null -> {
+                            youtubeArtistPage.songs?.let { songs ->
                                 Row(
                                     verticalAlignment = Alignment.Bottom,
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -144,7 +144,7 @@ fun ArtistOverview(
                                         modifier = sectionTextModifier
                                     )
 
-                                    youtubeArtist.songsEndpoint?.let {
+                                    youtubeArtistPage.songsEndpoint?.let {
                                         BasicText(
                                             text = "View all",
                                             style = typography.xs.secondary,
@@ -174,7 +174,7 @@ fun ArtistOverview(
                                 }
                             }
 
-                            youtubeArtist.albums?.let { albums ->
+                            youtubeArtistPage.albums?.let { albums ->
                                 Row(
                                     verticalAlignment = Alignment.Bottom,
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -187,7 +187,7 @@ fun ArtistOverview(
                                         modifier = sectionTextModifier
                                     )
 
-                                    youtubeArtist.albumsEndpoint?.let {
+                                    youtubeArtistPage.albumsEndpoint?.let {
                                         BasicText(
                                             text = "View all",
                                             style = typography.xs.secondary,
@@ -207,7 +207,7 @@ fun ArtistOverview(
                                 ) {
                                     items(
                                         items = albums,
-                                        key = YouTube.Item.Album::key
+                                        key = Innertube.AlbumItem::key
                                     ) { album ->
                                         AlternativeAlbumItem(
                                             album = album,
@@ -224,7 +224,7 @@ fun ArtistOverview(
                                 }
                             }
 
-                            youtubeArtist.singles?.let { singles ->
+                            youtubeArtistPage.singles?.let { singles ->
                                 Row(
                                     verticalAlignment = Alignment.Bottom,
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -237,7 +237,7 @@ fun ArtistOverview(
                                         modifier = sectionTextModifier
                                     )
 
-                                    youtubeArtist.singlesEndpoint?.let {
+                                    youtubeArtistPage.singlesEndpoint?.let {
                                         BasicText(
                                             text = "View all",
                                             style = typography.xs.secondary,
@@ -257,7 +257,7 @@ fun ArtistOverview(
                                 ) {
                                     items(
                                         items = singles,
-                                        key = YouTube.Item.Album::key
+                                        key = Innertube.AlbumItem::key
                                     ) { album ->
                                         AlternativeAlbumItem(
                                             album = album,
@@ -330,7 +330,7 @@ fun ArtistOverview(
             }
         }
 
-        youtubeArtist?.shuffleEndpoint?.let { shuffleEndpoint ->
+        youtubeArtistPage?.shuffleEndpoint?.let { shuffleEndpoint ->
             PrimaryButton(
                 iconId = R.drawable.shuffle,
                 onClick = {

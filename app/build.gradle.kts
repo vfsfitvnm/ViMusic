@@ -65,6 +65,10 @@ android {
         freeCompilerArgs += "-Xcontext-receivers"
         jvmTarget = "1.8"
     }
+
+    packagingOptions {
+        resources.excludes.add("META-INF/INDEX.LIST")
+    }
 }
 
 kapt {
@@ -93,7 +97,7 @@ dependencies {
     kapt(libs.room.compiler)
     annotationProcessor(libs.room.compiler)
 
-    implementation(projects.youtubeMusic)
+    implementation(projects.innertube)
     implementation(projects.kugou)
 
     coreLibraryDesugaring(libs.desugaring)

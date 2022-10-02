@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -41,7 +42,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.SearchQueryListSaver
-import it.vfsfitvnm.vimusic.savers.StringListResultSaver
+import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -51,7 +52,9 @@ import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.SearchSuggestionsBody
+import it.vfsfitvnm.youtubemusic.requests.searchSuggestions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -80,11 +83,11 @@ fun OnlineSearch(
 
     val suggestionsResult by produceSaveableOneShotState(
         initialValue = null,
-        stateSaver = StringListResultSaver,
+        stateSaver = resultSaver(autoSaver<List<String>?>()),
         key1 = textFieldValue.text
     ) {
         if (textFieldValue.text.isNotEmpty()) {
-            value = YouTube.getSearchSuggestions(textFieldValue.text)
+            value = Innertube.searchSuggestions(SearchSuggestionsBody(input = textFieldValue.text))
         }
     }
 

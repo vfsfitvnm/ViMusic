@@ -34,6 +34,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.PlaylistWithSongsSaver
+import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -50,7 +51,9 @@ import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
+import it.vfsfitvnm.youtubemusic.requests.playlistPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
@@ -68,7 +71,7 @@ fun LocalPlaylistSongList(
 
     val playlistWithSongs by produceSaveableState(
         initialValue = null,
-        stateSaver = PlaylistWithSongsSaver
+        stateSaver = nullableSaver(PlaylistWithSongsSaver)
     ) {
         Database
             .playlistWithSongs(playlistId)
@@ -165,13 +168,16 @@ fun LocalPlaylistSongList(
                                     transaction {
                                         runBlocking(Dispatchers.IO) {
                                             withContext(Dispatchers.IO) {
-                                                YouTube.playlist(browseId)?.map { it.next() }
+                                                // TODO: fetch all songs!
+                                                Innertube.playlistPage(BrowseBody(browseId = browseId))
                                             }
                                         }?.getOrNull()?.let { remotePlaylist ->
                                             Database.clearPlaylist(playlistId)
 
-                                            remotePlaylist.songs
-                                                ?.map(YouTube.Item.Song::asMediaItem)
+                                            remotePlaylist.
+                                                songsPage
+                                                ?.items
+                                                ?.map(Innertube.SongItem::asMediaItem)
                                                 ?.onEach(Database::insert)
                                                 ?.mapIndexed { position, mediaItem ->
                                                     SongPlaylistMap(

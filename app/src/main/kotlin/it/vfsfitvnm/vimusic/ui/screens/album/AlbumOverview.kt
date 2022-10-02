@@ -61,12 +61,13 @@ import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
+import it.vfsfitvnm.youtubemusic.requests.albumPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -88,19 +89,21 @@ fun AlbumOverview(
         withContext(Dispatchers.IO) {
             Database.album(browseId).collect { album ->
                 if (album?.timestamp == null) {
-                    YouTube.album(browseId)?.onSuccess { youtubeAlbum ->
+                    Innertube.albumPage(BrowseBody(browseId = browseId))?.onSuccess { albumPage ->
                         Database.upsert(
                             Album(
                                 id = browseId,
-                                title = youtubeAlbum.title,
-                                thumbnailUrl = youtubeAlbum.thumbnail?.url,
-                                year = youtubeAlbum.year,
-                                authorsText = youtubeAlbum.authors?.joinToString("") { it.name ?: "" },
-                                shareUrl = youtubeAlbum.url,
+                                title = albumPage.title,
+                                thumbnailUrl = albumPage.thumbnail?.url,
+                                year = albumPage.year,
+                                authorsText = albumPage.authors?.joinToString("") { it.name ?: "" },
+                                shareUrl = albumPage.url,
                                 timestamp = System.currentTimeMillis()
                             ),
-                            youtubeAlbum.songs
-                                ?.map(YouTube.Item.Song::asMediaItem)
+                            albumPage
+                                .songsPage
+                                ?.items
+                                ?.map(Innertube.SongItem::asMediaItem)
                                 ?.onEach(Database::insert)
                                 ?.mapIndexed { position, mediaItem ->
                                     SongAlbumMap(

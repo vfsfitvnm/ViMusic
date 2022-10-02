@@ -40,7 +40,9 @@ import it.vfsfitvnm.vimusic.ui.styling.overlay
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberVolume
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.PlayerBody
+import it.vfsfitvnm.youtubemusic.requests.player
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -195,7 +197,7 @@ fun StatsForNerds(
                             onClick = {
                                 query {
                                     runBlocking(Dispatchers.IO) {
-                                        YouTube.player(mediaId)
+                                        Innertube.player(PlayerBody(videoId = mediaId))
                                             ?.map { response ->
                                                 response.streamingData?.adaptiveFormats
                                                     ?.findLast { format ->

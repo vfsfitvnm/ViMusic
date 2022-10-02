@@ -27,7 +27,9 @@ fun PlaylistScreen(browseId: String) {
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    PlaylistSongList(browseId = browseId)
+                    when (currentTabIndex) {
+                        0 -> PlaylistSongList(browseId = browseId)
+                    }
                 }
             }
         }

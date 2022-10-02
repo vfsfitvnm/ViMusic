@@ -27,3 +27,7 @@ object AlbumSaver : Saver<Album, List<Any?>> {
         bookmarkedAt = value[7] as Long?,
     )
 }
+
+val AlbumResultSaver = resultSaver(AlbumSaver)
+
+val AlbumListSaver = listSaver(AlbumSaver)

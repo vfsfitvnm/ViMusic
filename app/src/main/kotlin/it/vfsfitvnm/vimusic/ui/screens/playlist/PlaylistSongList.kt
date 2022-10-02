@@ -39,7 +39,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
-import it.vfsfitvnm.vimusic.savers.YouTubePlaylistOrAlbumSaver
+import it.vfsfitvnm.vimusic.savers.InnertubePlaylistOrAlbumPageSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -58,11 +58,12 @@ import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
+import it.vfsfitvnm.youtubemusic.requests.playlistPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -76,12 +77,13 @@ fun PlaylistSongList(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
 
-    val playlistResult by produceSaveableOneShotState(
+    val playlistPageResult by produceSaveableOneShotState(
         initialValue = null,
-        stateSaver = resultSaver(YouTubePlaylistOrAlbumSaver),
+        stateSaver = resultSaver(InnertubePlaylistOrAlbumPageSaver),
     ) {
         value = withContext(Dispatchers.IO) {
-            YouTube.playlist(browseId)?.map { it.next() }
+            // TODO: fetch all songs!
+            Innertube.playlistPage(BrowseBody(browseId = browseId))
         }
     }
 
@@ -102,7 +104,7 @@ fun PlaylistSongList(
         val songThumbnailSizeDp = Dimensions.thumbnails.song
         val songThumbnailSizePx = songThumbnailSizeDp.px
 
-        playlistResult?.getOrNull()?.let { playlist ->
+        playlistPageResult?.getOrNull()?.let { playlist ->
             LazyColumn(
                 contentPadding = LocalPlayerAwarePaddingValues.current,
                 modifier = Modifier
@@ -117,9 +119,9 @@ fun PlaylistSongList(
                         Header(title = playlist.title ?: "Unknown") {
                             SecondaryTextButton(
                                 text = "Enqueue",
-                                isEnabled = playlist.songs?.isNotEmpty() == true,
+                                isEnabled = playlist.songsPage?.items?.isNotEmpty() == true,
                                 onClick = {
-                                    playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                                    playlist.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
                                         binder?.player?.enqueue(mediaItems)
                                     }
                                 }
@@ -147,8 +149,8 @@ fun PlaylistSongList(
                                                     )
                                                 )
 
-                                            playlist.songs
-                                                ?.map(YouTube.Item.Song::asMediaItem)
+                                            playlist.songsPage?.items
+                                                ?.map(Innertube.SongItem::asMediaItem)
                                                 ?.onEach(Database::insert)
                                                 ?.mapIndexed { index, mediaItem ->
                                                     SongPlaylistMap(
@@ -196,13 +198,13 @@ fun PlaylistSongList(
                     }
                 }
 
-                itemsIndexed(items = playlist.songs ?: emptyList()) { index, song ->
+                itemsIndexed(items = playlist.songsPage?.items ?: emptyList()) { index, song ->
                     SongItem(
                         title = song.info?.name,
                         authors = (song.authors ?: playlist.authors)?.joinToString("") { it.name ?: "" },
                         durationText = song.durationText,
                         onClick = {
-                            playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                            playlist.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
                                 binder?.stopRadio()
                                 binder?.player?.forcePlayAtIndex(mediaItems, index)
                             }
@@ -226,15 +228,15 @@ fun PlaylistSongList(
 
             PrimaryButton(
                 iconId = R.drawable.shuffle,
-                isEnabled = playlist.songs?.isNotEmpty() == true,
+                isEnabled = playlist.songsPage?.items?.isNotEmpty() == true,
                 onClick = {
-                    playlist.songs?.map(YouTube.Item.Song::asMediaItem)?.let { mediaItems ->
+                    playlist.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
                         binder?.stopRadio()
                         binder?.player?.forcePlayFromBeginning(mediaItems.shuffled())
                     }
                 }
             )
-        } ?: playlistResult?.exceptionOrNull()?.let {
+        } ?: playlistPageResult?.exceptionOrNull()?.let {
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)

@@ -92,8 +92,10 @@ import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.timer
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.youtubemusic.models.bodies.PlayerBody
+import it.vfsfitvnm.youtubemusic.requests.player
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
@@ -642,9 +644,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     ringBuffer.getOrNull(1)?.first -> dataSpec.withUri(ringBuffer.getOrNull(1)!!.second)
                     else -> {
                         val urlResult = runBlocking(Dispatchers.IO) {
-                            YouTube.player(videoId)
+                            Innertube.player(PlayerBody(videoId = videoId))
                         }?.mapCatching { body ->
-                            when (val status = body.playabilityStatus.status) {
+                            when (val status = body.playabilityStatus?.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
                                     format.itag == 251 || format.itag == 140
                                 }?.let { format ->

@@ -23,3 +23,5 @@ object ArtistSaver : Saver<Artist, List<Any?>> {
         bookmarkedAt = value[5] as Long?,
     )
 }
+
+val ArtistListSaver = listSaver(ArtistSaver)

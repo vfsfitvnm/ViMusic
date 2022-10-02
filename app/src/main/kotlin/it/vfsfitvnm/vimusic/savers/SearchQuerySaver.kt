@@ -15,3 +15,5 @@ object SearchQuerySaver : Saver<SearchQuery, List<Any?>> {
         query = value[1] as String
     )
 }
+
+val SearchQueryListSaver = listSaver(SearchQuerySaver)

@@ -81,7 +81,10 @@ import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.listener
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
+import it.vfsfitvnm.youtubemusic.requests.playlistPage
+import it.vfsfitvnm.youtubemusic.requests.song
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -376,8 +379,8 @@ class MainActivity : ComponentActivity() {
                 val browseId = "VL$playlistId"
 
                 if (playlistId.startsWith("OLAK5uy_")) {
-                    YouTube.playlist(browseId)?.getOrNull()?.let { playlist ->
-                        playlist.songs?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
+                    Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let { playlist ->
+                        playlist.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
                             albumRoute.ensureGlobal(browseId)
                         }
                     }
@@ -385,7 +388,7 @@ class MainActivity : ComponentActivity() {
                     playlistRoute.ensureGlobal(browseId)
                 }
             } ?: (uri.getQueryParameter("v") ?: uri.takeIf { uri.host == "youtu.be" }?.path?.drop(1))?.let { videoId ->
-                YouTube.song(videoId)?.getOrNull()?.let { song ->
+                Innertube.song(videoId)?.getOrNull()?.let { song ->
                     withContext(Dispatchers.Main) {
                         binder?.player?.forcePlay(song.asMediaItem)
                     }

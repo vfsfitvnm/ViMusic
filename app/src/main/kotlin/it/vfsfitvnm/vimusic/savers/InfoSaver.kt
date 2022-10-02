@@ -11,3 +11,5 @@ object InfoSaver : Saver<Info, List<String>> {
         return if (value.size == 2) Info(id = value[0], name = value[1]) else null
     }
 }
+
+val InfoListSaver = listSaver(InfoSaver)

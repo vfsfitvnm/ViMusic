@@ -69,7 +69,9 @@ import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.relaunchableEffect
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.verticalFadingEdge
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
+import it.vfsfitvnm.youtubemusic.requests.lyrics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -134,8 +136,7 @@ fun Lyrics(
                         duration = duration / 1000
                     )?.map { it?.value }
                 } else {
-                    YouTube.next(mediaId, null)
-                        ?.map { nextResult -> nextResult.lyrics()?.getOrNull() }
+                    Innertube.lyrics(NextBody(videoId = mediaId))
                 }?.map { newLyrics ->
                     onLyricsUpdate(isShowingSynchronizedLyrics, mediaId, newLyrics ?: "")
                     state = state.copy(isLoading = false)

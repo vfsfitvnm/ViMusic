@@ -62,6 +62,6 @@ rootProject.name = "ViMusic"
 include(":app")
 include(":compose-routing")
 include(":compose-reordering")
-include(":youtube-music")
+include(":innertube")
 include(":ktor-client-brotli")
 include(":kugou")

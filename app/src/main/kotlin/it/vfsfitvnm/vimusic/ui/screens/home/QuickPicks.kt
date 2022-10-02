@@ -34,7 +34,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.savers.DetailedSongSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeRelatedSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeRelatedPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -60,8 +60,10 @@ import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
+import it.vfsfitvnm.youtubemusic.requests.relatedPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -88,30 +90,13 @@ fun QuickPicks(
             .collect { value = it }
     }
 
-    val relatedResult by produceSaveableOneShotState(
+    val relatedPageResult by produceSaveableOneShotState(
         initialValue = null,
-        stateSaver = resultSaver(nullableSaver(YouTubeRelatedSaver)),
+        stateSaver = resultSaver(nullableSaver(InnertubeRelatedPageSaver)),
         trending?.id
     ) {
         trending?.id?.let { trendingVideoId ->
-            value = YouTube.related(trendingVideoId)?.map { related ->
-                related?.copy(
-                    albums = related.albums?.map { album ->
-                        album.copy(
-                            authors = trending?.artists?.map { info ->
-                                YouTube.Info(
-                                    name = info.name,
-                                    endpoint = NavigationEndpoint.Endpoint.Browse(
-                                        browseId = info.id,
-                                        params = null,
-                                        browseEndpointContextSupportedConfigs = null
-                                    )
-                                )
-                            }
-                        )
-                    }
-                )
-            }
+            value = Innertube.relatedPage(NextBody(videoId = trendingVideoId))
         }
     }
 
@@ -140,7 +125,7 @@ fun QuickPicks(
         ) {
             Header(title = "Quick picks")
 
-            relatedResult?.getOrNull()?.let { related ->
+            relatedPageResult?.getOrNull()?.let { related ->
                 LazyHorizontalGrid(
                     rows = GridCells.Fixed(4),
                     modifier = Modifier
@@ -171,7 +156,7 @@ fun QuickPicks(
 
                     items(
                         items = related.songs ?: emptyList(),
-                        key = YouTube.Item.Song::key
+                        key = Innertube.SongItem::key
                     ) { song ->
                         SmallSongItem(
                             song = song,
@@ -204,7 +189,7 @@ fun QuickPicks(
                 ) {
                     items(
                         items = related.albums ?: emptyList(),
-                        key = YouTube.Item.Album::key
+                        key = Innertube.AlbumItem::key
                     ) { album ->
                         AlbumItem(
                             album = album,
@@ -235,7 +220,7 @@ fun QuickPicks(
                 ) {
                     items(
                         items = related.artists ?: emptyList(),
-                        key = YouTube.Item.Artist::key,
+                        key = Innertube.ArtistItem::key,
                     ) { artist ->
                         ArtistItem(
                             artist = artist,
@@ -268,7 +253,7 @@ fun QuickPicks(
                 ) {
                     items(
                         items = related.playlists ?: emptyList(),
-                        key = YouTube.Item.Playlist::key,
+                        key = Innertube.PlaylistItem::key,
                     ) { playlist ->
                         PlaylistItem(
                             playlist = playlist,
@@ -284,7 +269,7 @@ fun QuickPicks(
                         )
                     }
                 }
-            } ?: relatedResult?.exceptionOrNull()?.let {
+            } ?: relatedPageResult?.exceptionOrNull()?.let {
                 BasicText(
                     text = "An error has occurred",
                     style = typography.s.secondary.center,

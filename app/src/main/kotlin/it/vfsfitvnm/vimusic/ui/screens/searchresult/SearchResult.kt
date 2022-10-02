@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -23,23 +24,28 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.savers.ListSaver
-import it.vfsfitvnm.vimusic.savers.StringResultSaver
+import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableRelaunchableOneShotState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.MusicShelfRenderer
+import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
+import it.vfsfitvnm.youtubemusic.models.bodies.SearchBody
+import it.vfsfitvnm.youtubemusic.requests.searchPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-inline fun <T : YouTube.Item> SearchResult(
+inline fun <T : Innertube.Item> SearchResult(
     query: String,
     filter: String,
     stateSaver: ListSaver<T, List<Any?>>,
+    noinline fromMusicShelfRendererContent: (MusicShelfRenderer.Content) -> T?,
     crossinline onSearchAgain: () -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
     noinline itemShimmer: @Composable BoxScope.() -> Unit,
@@ -52,21 +58,30 @@ inline fun <T : YouTube.Item> SearchResult(
 
     val (continuationResultState, fetch) = produceSaveableRelaunchableOneShotState(
         initialValue = null,
-        stateSaver = StringResultSaver
+        stateSaver = resultSaver(autoSaver<String?>())
     ) {
         val token = value?.getOrNull()
 
         value = null
 
         value = withContext(Dispatchers.IO) {
-            YouTube.search(query, filter, token)
-        }?.map { searchResult ->
-            @Suppress("UNCHECKED_CAST")
-            (searchResult.items as List<T>?)?.let {
-                items = items.plus(it).distinctBy(YouTube.Item::key)
+            if (token == null) {
+                Innertube.searchPage(
+                    body = SearchBody(query = query, params = filter),
+                    fromMusicShelfRendererContent = fromMusicShelfRendererContent
+                )
+            } else {
+                Innertube.searchPage(
+                    body = ContinuationBody(continuation = token),
+                    fromMusicShelfRendererContent = fromMusicShelfRendererContent
+                )
+            }
+        }?.map { itemsPage ->
+            itemsPage?.items?.let {
+                items = items.plus(it).distinctBy(Innertube.Item::key)
             }
 
-            searchResult.continuation
+            itemsPage?.continuation
         }
     }
 
@@ -94,7 +109,7 @@ inline fun <T : YouTube.Item> SearchResult(
 
         items(
             items = items,
-            key = YouTube.Item::key,
+            key = Innertube.Item::key,
             itemContent = itemContent
         )
 

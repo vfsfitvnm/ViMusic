@@ -29,3 +29,5 @@ object DetailedSongSaver : Saver<DetailedSong, List<Any?>> {
         artists = (value[7] as List<List<String>>?)?.let(InfoListSaver::restore)
     )
 }
+
+val DetailedSongListSaver = listSaver(DetailedSongSaver)

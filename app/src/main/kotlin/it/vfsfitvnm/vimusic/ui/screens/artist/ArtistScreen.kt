@@ -26,14 +26,13 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.PartialArtist
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.ArtistSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeAlbumListSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeArtistPageSaver
-import it.vfsfitvnm.vimusic.savers.YouTubeSongListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeAlbumItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeArtistPageSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeSongItemListSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
-import it.vfsfitvnm.vimusic.ui.screens.searchresult.SearchResult
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -47,7 +46,12 @@ import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.produceSaveableLazyOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
+import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
+import it.vfsfitvnm.youtubemusic.requests.artistPage
+import it.vfsfitvnm.youtubemusic.requests.itemsPage
+import it.vfsfitvnm.youtubemusic.utils.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
@@ -72,22 +76,22 @@ fun ArtistScreen(browseId: String) {
 
     val youtubeArtist by produceSaveableLazyOneShotState(
         initialValue = null,
-        stateSaver = nullableSaver(YouTubeArtistPageSaver)
+        stateSaver = nullableSaver(InnertubeArtistPageSaver)
     ) {
         println("${System.currentTimeMillis()}, computing lazyEffect (youtubeArtistResult = ${value?.name})!")
 
         isLoading = true
         withContext(Dispatchers.IO) {
-            YouTube.artist(browseId)?.onSuccess { youtubeArtist ->
-                value = youtubeArtist
+            Innertube.artistPage(browseId)?.onSuccess { artistPage ->
+                value = artistPage
 
                 query {
                     Database.upsert(
                         PartialArtist(
                             id = browseId,
-                            name = youtubeArtist.name,
-                            thumbnailUrl = youtubeArtist.thumbnail?.url,
-                            info = youtubeArtist.description,
+                            name = artistPage.name,
+                            thumbnailUrl = artistPage.thumbnail?.url,
+                            info = artistPage.description,
                             timestamp = System.currentTimeMillis()
                         )
                     )
@@ -136,10 +140,13 @@ fun ArtistScreen(browseId: String) {
                     colorFilter = ColorFilter.tint(LocalAppearance.current.colorPalette.accent),
                     modifier = Modifier
                         .clickable {
-                            val bookmarkedAt = if (artist?.bookmarkedAt == null) System.currentTimeMillis() else null
+                            val bookmarkedAt =
+                                if (artist?.bookmarkedAt == null) System.currentTimeMillis() else null
 
                             query {
-                                artist?.copy(bookmarkedAt = bookmarkedAt)?.let(Database::update)
+                                artist
+                                    ?.copy(bookmarkedAt = bookmarkedAt)
+                                    ?.let(Database::update)
                             }
                         }
                         .padding(all = 4.dp)
@@ -194,7 +201,7 @@ fun ArtistScreen(browseId: String) {
                     when (currentTabIndex) {
                         0 -> ArtistOverview(
                             artist = artist,
-                            youtubeArtist = youtubeArtist,
+                            youtubeArtistPage = youtubeArtist,
                             isLoading = isLoading,
                             isError = isError,
                             bookmarkIconContent = bookmarkIconContent,
@@ -204,6 +211,7 @@ fun ArtistScreen(browseId: String) {
                             onViewAllAlbumsClick = { onTabIndexChanged(2) },
                             onViewAllSinglesClick = { onTabIndexChanged(3) },
                         )
+
                         1 -> {
                             val binder = LocalPlayerServiceBinder.current
                             val thumbnailSizeDp = Dimensions.thumbnails.song
@@ -211,20 +219,26 @@ fun ArtistScreen(browseId: String) {
 
                             ArtistContent(
                                 artist = artist,
-                                youtubeArtist = youtubeArtist,
+                                youtubeArtistPage = youtubeArtist,
                                 isLoading = isLoading,
                                 isError = isError,
-                                stateSaver = YouTubeSongListSaver,
+                                stateSaver = InnertubeSongItemListSaver,
                                 bookmarkIconContent = bookmarkIconContent,
                                 shareIconContent = shareIconContent,
-                                itemsProvider = { continuation ->
-                                    youtubeArtist
+                                itemsPageProvider = { continuation ->
+                                    continuation?.let {
+                                        Innertube.itemsPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicResponsiveListItemRenderer = Innertube.SongItem::from,
+                                        )
+                                    } ?: youtubeArtist
                                         ?.songsEndpoint
                                         ?.browseId
                                         ?.let { browseId ->
-                                            YouTube.items(browseId, continuation, YouTube.Item.Song::from)?.map { result ->
-                                                result?.continuation to result?.items
-                                            }
+                                            Innertube.itemsPage(
+                                                body = BrowseBody(browseId = browseId),
+                                                fromMusicResponsiveListItemRenderer = Innertube.SongItem::from,
+                                            )
                                         }
                                 },
                                 itemContent = { song ->
@@ -243,25 +257,33 @@ fun ArtistScreen(browseId: String) {
                                 }
                             )
                         }
+
                         2 -> {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ArtistContent(
                                 artist = artist,
-                                youtubeArtist = youtubeArtist,
+                                youtubeArtistPage = youtubeArtist,
                                 isLoading = isLoading,
                                 isError = isError,
-                                stateSaver = YouTubeAlbumListSaver,
+                                stateSaver = InnertubeAlbumItemListSaver,
                                 bookmarkIconContent = bookmarkIconContent,
                                 shareIconContent = shareIconContent,
-                                itemsProvider = {
-                                    youtubeArtist
-                                        ?.albumsEndpoint
-                                        ?.let { endpoint ->
-                                            YouTube.items2(browseId, endpoint.params, YouTube.Item.Album::from)?.map { result ->
-                                                result?.continuation to result?.items
-                                            }
+                                itemsPageProvider = { continuation ->
+                                    continuation?.let {
+                                        Innertube.itemsPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicTwoRowItemRenderer = Innertube.AlbumItem::from,
+                                        )
+                                    } ?: youtubeArtist
+                                        ?.songsEndpoint
+                                        ?.browseId
+                                        ?.let { browseId ->
+                                            Innertube.itemsPage(
+                                                body = BrowseBody(browseId = browseId),
+                                                fromMusicTwoRowItemRenderer = Innertube.AlbumItem::from,
+                                            )
                                         }
                                 },
                                 itemContent = { album ->
@@ -282,25 +304,33 @@ fun ArtistScreen(browseId: String) {
                                 }
                             )
                         }
+
                         3 -> {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ArtistContent(
                                 artist = artist,
-                                youtubeArtist = youtubeArtist,
+                                youtubeArtistPage = youtubeArtist,
                                 isLoading = isLoading,
                                 isError = isError,
-                                stateSaver = YouTubeAlbumListSaver,
+                                stateSaver = InnertubeAlbumItemListSaver,
                                 bookmarkIconContent = bookmarkIconContent,
                                 shareIconContent = shareIconContent,
-                                itemsProvider = {
-                                    youtubeArtist
-                                        ?.singlesEndpoint
-                                        ?.let { endpoint ->
-                                            YouTube.items2(browseId, endpoint.params, YouTube.Item.Album::from)?.map { result ->
-                                                result?.continuation to result?.items
-                                            }
+                                itemsPageProvider = { continuation ->
+                                    continuation?.let {
+                                        Innertube.itemsPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicTwoRowItemRenderer = Innertube.AlbumItem::from,
+                                        )
+                                    } ?: youtubeArtist
+                                        ?.songsEndpoint
+                                        ?.browseId
+                                        ?.let { browseId ->
+                                            Innertube.itemsPage(
+                                                body = BrowseBody(browseId = browseId),
+                                                fromMusicTwoRowItemRenderer = Innertube.AlbumItem::from,
+                                            )
                                         }
                                 },
                                 itemContent = { album ->
@@ -321,6 +351,7 @@ fun ArtistScreen(browseId: String) {
                                 }
                             )
                         }
+
                         4 -> ArtistLocalSongsList(
                             browseId = browseId,
                             artist = artist,

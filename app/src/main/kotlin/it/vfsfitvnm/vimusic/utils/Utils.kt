@@ -6,9 +6,9 @@ import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import it.vfsfitvnm.vimusic.models.DetailedSong
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 
-val YouTube.Item.Song.asMediaItem: MediaItem
+val Innertube.SongItem.asMediaItem: MediaItem
     get() = MediaItem.Builder()
         .setMediaId(key)
         .setUri(key)
@@ -32,7 +32,7 @@ val YouTube.Item.Song.asMediaItem: MediaItem
         )
         .build()
 
-val YouTube.Item.Video.asMediaItem: MediaItem
+val Innertube.VideoItem.asMediaItem: MediaItem
     get() = MediaItem.Builder()
         .setMediaId(key)
         .setUri(key)
