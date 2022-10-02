@@ -5,10 +5,6 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        create("release") {
-        }
-    }
     compileSdk = 33
 
     defaultConfig {
@@ -64,10 +60,6 @@ android {
     kotlinOptions {
         freeCompilerArgs += "-Xcontext-receivers"
         jvmTarget = "1.8"
-    }
-
-    packagingOptions {
-        resources.excludes.add("META-INF/INDEX.LIST")
     }
 }
 

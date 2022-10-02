@@ -6,14 +6,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
@@ -44,14 +47,13 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.AlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlbumItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.ArtistItem
-import it.vfsfitvnm.vimusic.ui.views.ArtistItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.ArtistItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.PlaylistItem
-import it.vfsfitvnm.vimusic.ui.views.PlaylistItemShimmer
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItem
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.PlaylistItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
@@ -104,7 +106,7 @@ fun QuickPicks(
     val songThumbnailSizePx = songThumbnailSizeDp.px
     val albumThumbnailSizeDp = 108.dp
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
-    val artistThumbnailSizeDp = 64.dp
+    val artistThumbnailSizeDp = 92.dp
     val artistThumbnailSizePx = artistThumbnailSizeDp.px
     val playlistThumbnailSizeDp = 108.dp
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
@@ -158,7 +160,7 @@ fun QuickPicks(
                         items = related.songs ?: emptyList(),
                         key = Innertube.SongItem::key
                     ) { song ->
-                        SmallSongItem(
+                        SongItem(
                             song = song,
                             thumbnailSizePx = songThumbnailSizePx,
                             onClick = {
@@ -181,12 +183,7 @@ fun QuickPicks(
                     modifier = sectionTextModifier
                 )
 
-                LazyHorizontalGrid(
-                    rows = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height((albumThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 2)
-                ) {
+                LazyRow {
                     items(
                         items = related.albums ?: emptyList(),
                         key = Innertube.AlbumItem::key
@@ -195,13 +192,13 @@ fun QuickPicks(
                             album = album,
                             thumbnailSizePx = albumThumbnailSizePx,
                             thumbnailSizeDp = albumThumbnailSizeDp,
+                            alternative = true,
                             modifier = Modifier
                                 .clickable(
                                     indication = rememberRipple(bounded = true),
                                     interactionSource = remember { MutableInteractionSource() },
                                     onClick = { onAlbumClick(album.key) }
                                 )
-                                .width(itemInHorizontalGridWidth)
                         )
                     }
                 }
@@ -212,12 +209,7 @@ fun QuickPicks(
                     modifier = sectionTextModifier
                 )
 
-                LazyHorizontalGrid(
-                    rows = GridCells.Fixed(1),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height((artistThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2))
-                ) {
+                LazyRow {
                     items(
                         items = related.artists ?: emptyList(),
                         key = Innertube.ArtistItem::key,
@@ -226,13 +218,13 @@ fun QuickPicks(
                             artist = artist,
                             thumbnailSizePx = artistThumbnailSizePx,
                             thumbnailSizeDp = artistThumbnailSizeDp,
+                            alternative = true,
                             modifier = Modifier
                                 .clickable(
                                     indication = rememberRipple(bounded = true),
                                     interactionSource = remember { MutableInteractionSource() },
                                     onClick = { onArtistClick(artist.key) }
                                 )
-                                .width(itemInHorizontalGridWidth)
                         )
                     }
                 }
@@ -245,12 +237,7 @@ fun QuickPicks(
                         .padding(top = 24.dp, bottom = 8.dp)
                 )
 
-                LazyHorizontalGrid(
-                    rows = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height((playlistThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 2)
-                ) {
+                LazyRow {
                     items(
                         items = related.playlists ?: emptyList(),
                         key = Innertube.PlaylistItem::key,
@@ -259,13 +246,13 @@ fun QuickPicks(
                             playlist = playlist,
                             thumbnailSizePx = playlistThumbnailSizePx,
                             thumbnailSizeDp = playlistThumbnailSizeDp,
+                            alternative = true,
                             modifier = Modifier
                                 .clickable(
                                     indication = rememberRipple(bounded = true),
                                     interactionSource = remember { MutableInteractionSource() },
                                     onClick = { onPlaylistClick(playlist.key) }
                                 )
-                                .width(itemInHorizontalGridWidth)
                         )
                     }
                 }
@@ -292,25 +279,42 @@ fun QuickPicks(
                     }
             ) {
                 repeat(4) {
-                    SmallSongItemShimmer(
+                    SongItemPlaceholder(
                         thumbnailSizeDp = songThumbnailSizeDp,
                     )
                 }
 
                 TextPlaceholder(modifier = sectionTextModifier)
 
-                repeat(2) {
-                    AlbumItemShimmer(thumbnailSizeDp = albumThumbnailSizeDp)
+                Row {
+                    repeat(2) {
+                        AlbumItemPlaceholder(
+                            thumbnailSizeDp = albumThumbnailSizeDp,
+                            alternative = true
+                        )
+                    }
                 }
 
                 TextPlaceholder(modifier = sectionTextModifier)
 
-                ArtistItemShimmer(thumbnailSizeDp = artistThumbnailSizeDp)
+                Row {
+                    repeat(2) {
+                        ArtistItemPlaceholder(
+                            thumbnailSizeDp = albumThumbnailSizeDp,
+                            alternative = true
+                        )
+                    }
+                }
 
                 TextPlaceholder(modifier = sectionTextModifier)
 
-                repeat(2) {
-                    PlaylistItemShimmer(thumbnailSizeDp = playlistThumbnailSizeDp)
+                Row {
+                    repeat(2) {
+                        PlaylistItemPlaceholder(
+                            thumbnailSizeDp = albumThumbnailSizeDp,
+                            alternative = true
+                        )
+                    }
                 }
             }
         }

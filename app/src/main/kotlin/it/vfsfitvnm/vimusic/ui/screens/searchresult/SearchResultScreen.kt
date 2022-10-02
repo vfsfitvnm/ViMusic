@@ -26,15 +26,15 @@ import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.AlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlbumItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.ArtistItem
-import it.vfsfitvnm.vimusic.ui.views.ArtistItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.ArtistItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.PlaylistItem
-import it.vfsfitvnm.vimusic.ui.views.PlaylistItemShimmer
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItem
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.PlaylistItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.VideoItem
-import it.vfsfitvnm.vimusic.ui.views.VideoItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.VideoItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
@@ -91,7 +91,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 stateSaver = InnertubeSongItemListSaver,
                                 fromMusicShelfRendererContent = Innertube.SongItem.Companion::from,
                                 itemContent = { song ->
-                                    SmallSongItem(
+                                    SongItem(
                                         song = song,
                                         thumbnailSizePx = thumbnailSizePx,
                                         onClick = {
@@ -101,8 +101,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         }
                                     )
                                 },
-                                itemShimmer = {
-                                    SmallSongItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }
@@ -131,8 +131,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                     )
 
                                 },
-                                itemShimmer = {
-                                    AlbumItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }
@@ -160,8 +160,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             )
                                     )
                                 },
-                                itemShimmer = {
-                                    ArtistItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    ArtistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }
@@ -188,8 +188,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         }
                                     )
                                 },
-                                itemShimmer = {
-                                    VideoItemShimmer(
+                                itemPlaceholderContent = {
+                                    VideoItemPlaceholder(
                                         thumbnailHeightDp = thumbnailHeightDp,
                                         thumbnailWidthDp = thumbnailWidthDp
                                     )
@@ -220,8 +220,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             )
                                     )
                                 },
-                                itemShimmer = {
-                                    PlaylistItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    PlaylistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }

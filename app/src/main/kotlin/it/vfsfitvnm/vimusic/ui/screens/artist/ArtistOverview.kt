@@ -47,10 +47,10 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.styling.shimmer
-import it.vfsfitvnm.vimusic.ui.views.AlternativeAlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlternativeAlbumItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItem
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.AlbumItem
+import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
@@ -159,7 +159,7 @@ fun ArtistOverview(
                                 }
 
                                 songs.forEach { song ->
-                                    SmallSongItem(
+                                    SongItem(
                                         song = song,
                                         thumbnailSizePx = songThumbnailSizePx,
                                         onClick = {
@@ -209,10 +209,11 @@ fun ArtistOverview(
                                         items = albums,
                                         key = Innertube.AlbumItem::key
                                     ) { album ->
-                                        AlternativeAlbumItem(
+                                        AlbumItem(
                                             album = album,
                                             thumbnailSizePx = albumThumbnailSizePx,
                                             thumbnailSizeDp = albumThumbnailSizeDp,
+                                            alternative = true,
                                             modifier = Modifier
                                                 .clickable(
                                                     indication = rememberRipple(bounded = true),
@@ -259,10 +260,11 @@ fun ArtistOverview(
                                         items = singles,
                                         key = Innertube.AlbumItem::key
                                     ) { album ->
-                                        AlternativeAlbumItem(
+                                        AlbumItem(
                                             album = album,
                                             thumbnailSizePx = albumThumbnailSizePx,
                                             thumbnailSizeDp = albumThumbnailSizeDp,
+                                            alternative = true,
                                             modifier = Modifier
                                                 .clickable(
                                                     indication = rememberRipple(bounded = true),
@@ -279,7 +281,7 @@ fun ArtistOverview(
                             TextPlaceholder(modifier = sectionTextModifier)
 
                             repeat(5) {
-                                SmallSongItemShimmer(
+                                SongItemPlaceholder(
                                     thumbnailSizeDp = songThumbnailSizeDp,
                                 )
                             }
@@ -289,7 +291,10 @@ fun ArtistOverview(
 
                                 Row {
                                     repeat(2) {
-                                        AlternativeAlbumItemPlaceholder(thumbnailSizeDp = albumThumbnailSizeDp)
+                                        AlbumItemPlaceholder(
+                                            thumbnailSizeDp = albumThumbnailSizeDp,
+                                            alternative = true
+                                        )
                                     }
                                 }
                             }
@@ -312,7 +317,7 @@ fun ArtistOverview(
                     TextPlaceholder(modifier = sectionTextModifier)
 
                     repeat(5) {
-                        SmallSongItemShimmer(
+                        SongItemPlaceholder(
                             thumbnailSizeDp = songThumbnailSizeDp,
                         )
                     }
@@ -322,7 +327,10 @@ fun ArtistOverview(
 
                         Row {
                             repeat(2) {
-                                AlternativeAlbumItemPlaceholder(thumbnailSizeDp = albumThumbnailSizeDp)
+                                AlbumItemPlaceholder(
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    alternative = true
+                                )
                             }
                         }
                     }

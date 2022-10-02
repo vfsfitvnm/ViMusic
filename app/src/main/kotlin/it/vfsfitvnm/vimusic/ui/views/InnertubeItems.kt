@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,8 +44,29 @@ import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.youtubemusic.Innertube
 
+@ExperimentalAnimationApi
 @Composable
-fun SmallSongItemShimmer(
+fun SongItem(
+    song: Innertube.SongItem,
+    thumbnailSizePx: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SongItem(
+        thumbnailModel = song.thumbnail?.size(thumbnailSizePx),
+        title = song.info?.name,
+        authors = song.authors?.joinToString("") { it.name ?: "" },
+        durationText = song.durationText,
+        onClick = onClick,
+        menuContent = {
+            NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+        },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun SongItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier
 ) {
@@ -70,27 +92,6 @@ fun SmallSongItemShimmer(
     }
 }
 
-@ExperimentalAnimationApi
-@Composable
-fun SmallSongItem(
-    song: Innertube.SongItem,
-    thumbnailSizePx: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    SongItem(
-        thumbnailModel = song.thumbnail?.size(thumbnailSizePx),
-        title = song.info?.name,
-        authors = song.authors?.joinToString("") { it.name ?: "" },
-        durationText = song.durationText,
-        onClick = onClick,
-        menuContent = {
-            NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
-        },
-        modifier = modifier
-    )
-}
-
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
@@ -104,9 +105,9 @@ fun VideoItem(
     val menuState = LocalMenuState.current
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = false,
+        thumbnailSizeDp = 0.dp,
         modifier = modifier
             .combinedClickable(
                 indication = rememberRipple(bounded = true),
@@ -118,9 +119,6 @@ fun VideoItem(
                 },
                 onClick = onClick
             )
-            .fillMaxWidth()
-            .padding(vertical = Dimensions.itemsVerticalPadding)
-            .padding(horizontal = 16.dp)
     ) {
         Box {
             AsyncImage(
@@ -147,7 +145,7 @@ fun VideoItem(
             }
         }
 
-        Column {
+        ItemInfoContainer {
             BasicText(
                 text = video.info?.name ?: "",
                 style = typography.xs.semiBold,
@@ -169,7 +167,7 @@ fun VideoItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .padding(top = 8.dp)
+                        .padding(top = 4.dp)
                 )
             }
         }
@@ -179,19 +177,17 @@ fun VideoItem(
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun VideoItemShimmer(
+fun VideoItemPlaceholder(
     thumbnailHeightDp: Dp,
     thumbnailWidthDp: Dp,
     modifier: Modifier = Modifier
 ) {
     val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = false,
+        thumbnailSizeDp = 0.dp,
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = Dimensions.itemsVerticalPadding)
     ) {
         Spacer(
             modifier = Modifier
@@ -199,7 +195,7 @@ fun VideoItemShimmer(
                 .size(width = thumbnailWidthDp, height = thumbnailHeightDp)
         )
 
-        Column {
+        ItemInfoContainer {
             TextPlaceholder()
             TextPlaceholder()
             TextPlaceholder(
@@ -216,15 +212,14 @@ fun PlaylistItem(
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
+    alternative: Boolean = false,
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .fillMaxWidth()
     ) {
         Box {
             AsyncImage(
@@ -251,7 +246,7 @@ fun PlaylistItem(
             }
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ItemInfoContainer {
             BasicText(
                 text = playlist.info?.name ?: "",
                 style = typography.xs.semiBold,
@@ -270,18 +265,17 @@ fun PlaylistItem(
 }
 
 @Composable
-fun PlaylistItemShimmer(
+fun PlaylistItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
+    alternative: Boolean = false,
 ) {
     val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .fillMaxWidth()
     ) {
         Spacer(
             modifier = Modifier
@@ -289,7 +283,7 @@ fun PlaylistItemShimmer(
                 .size(thumbnailSizeDp)
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ItemInfoContainer {
             TextPlaceholder()
             TextPlaceholder()
         }
@@ -302,15 +296,14 @@ fun AlbumItem(
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
+    alternative: Boolean = false
 ) {
     val (_, typography, thumbnailShape) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .fillMaxWidth()
     ) {
         AsyncImage(
             model = album.thumbnail?.size(thumbnailSizePx),
@@ -321,97 +314,22 @@ fun AlbumItem(
                 .size(thumbnailSizeDp)
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ItemInfoContainer {
             BasicText(
                 text = album.info?.name ?: "",
                 style = typography.xs.semiBold,
-                maxLines = 2,
+                maxLines = if (alternative) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
 
-            BasicText(
-                text = album.authors?.joinToString("") { it.name ?: "" } ?: "",
-                style = typography.xs.semiBold.secondary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            album.year?.let { year ->
+            if (!alternative) {
                 BasicText(
-                    text = year,
-                    style = typography.xxs.semiBold.secondary,
-                    maxLines = 1,
+                    text = album.authors?.joinToString("") { it.name ?: "" } ?: "",
+                    style = typography.xs.semiBold.secondary,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun AlbumItemShimmer(
-    thumbnailSizeDp: Dp,
-    modifier: Modifier = Modifier,
-) {
-    val (colorPalette, _, thumbnailShape) = LocalAppearance.current
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .fillMaxWidth()
-    ) {
-        Spacer(
-            modifier = Modifier
-                .background(color = colorPalette.shimmer, shape = thumbnailShape)
-                .size(thumbnailSizeDp)
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextPlaceholder()
-            TextPlaceholder()
-            TextPlaceholder(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun AlternativeAlbumItem(
-    album: Innertube.AlbumItem,
-    thumbnailSizePx: Int,
-    thumbnailSizeDp: Dp,
-    modifier: Modifier = Modifier,
-) {
-    val (_, typography, thumbnailShape) = LocalAppearance.current
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .width(thumbnailSizeDp)
-    ) {
-        AsyncImage(
-            model = album.thumbnail?.size(thumbnailSizePx),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .clip(thumbnailShape)
-                .size(thumbnailSizeDp)
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            BasicText(
-                text = album.info?.name ?: "",
-                style = typography.xs.semiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
 
             BasicText(
                 text = album.year ?: "",
@@ -419,23 +337,24 @@ fun AlternativeAlbumItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
+                    .padding(top = 4.dp)
             )
         }
     }
 }
 
 @Composable
-fun AlternativeAlbumItemPlaceholder(
+fun AlbumItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
+    alternative: Boolean = false
 ) {
     val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .width(thumbnailSizeDp)
     ) {
         Spacer(
             modifier = Modifier
@@ -443,9 +362,17 @@ fun AlternativeAlbumItemPlaceholder(
                 .size(thumbnailSizeDp)
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ItemInfoContainer {
             TextPlaceholder()
-            TextPlaceholder()
+
+            if (!alternative) {
+                TextPlaceholder()
+            }
+
+            TextPlaceholder(
+                modifier = Modifier
+                    .padding(top = 4.dp)
+            )
         }
     }
 }
@@ -456,15 +383,15 @@ fun ArtistItem(
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
+    alternative: Boolean = false,
 ) {
     val (_, typography) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .fillMaxWidth()
     ) {
         AsyncImage(
             model = artist.thumbnail?.size(thumbnailSizePx),
@@ -474,11 +401,13 @@ fun ArtistItem(
                 .size(thumbnailSizeDp)
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ItemInfoContainer(
+            horizontalAlignment = if (alternative) Alignment.CenterHorizontally else Alignment.Start,
+        ) {
             BasicText(
                 text = artist.info?.name ?: "",
                 style = typography.xs.semiBold,
-                maxLines = 2,
+                maxLines = if (alternative) 1 else 2,
                 overflow = TextOverflow.Ellipsis
             )
 
@@ -497,18 +426,18 @@ fun ArtistItem(
 }
 
 @Composable
-fun ArtistItemShimmer(
+fun ArtistItemPlaceholder(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
+    alternative: Boolean = false,
 ) {
     val (colorPalette) = LocalAppearance.current
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-            .fillMaxWidth()
     ) {
         Spacer(
             modifier = Modifier
@@ -516,7 +445,9 @@ fun ArtistItemShimmer(
                 .size(thumbnailSizeDp)
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ItemInfoContainer(
+            horizontalAlignment = if (alternative) Alignment.CenterHorizontally else Alignment.Start,
+        ) {
             TextPlaceholder()
             TextPlaceholder(
                 modifier = Modifier
@@ -524,4 +455,50 @@ fun ArtistItemShimmer(
             )
         }
     }
+}
+
+@Composable
+private inline fun ItemContainer(
+    alternative: Boolean,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
+    content: @Composable () -> Unit
+) {
+    if (alternative) {
+        Column(
+            horizontalAlignment = horizontalAlignment,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = modifier
+                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+                .width(thumbnailSizeDp)
+        ) {
+            content()
+        }
+    } else {
+        Row(
+            verticalAlignment = verticalAlignment,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = modifier
+                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+                .fillMaxWidth()
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+private inline fun ItemInfoContainer(
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        horizontalAlignment = horizontalAlignment,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier,
+        content = content
+    )
 }

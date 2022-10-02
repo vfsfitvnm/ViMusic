@@ -54,7 +54,8 @@ suspend fun Innertube.relatedPage(body: NextBody) = runCatchingNonCancellable {
             ?.musicCarouselShelfRenderer
             ?.contents
             ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
-            ?.mapNotNull(Innertube.PlaylistItem::from),
+            ?.mapNotNull(Innertube.PlaylistItem::from)
+            ?.sortedByDescending { it.channel?.name == "YouTube Music" },
         albums = sectionListRenderer
             ?.findSectionByStrapline("MORE FROM")
             ?.musicCarouselShelfRenderer

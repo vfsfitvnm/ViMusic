@@ -48,7 +48,7 @@ inline fun <T : Innertube.Item> SearchResult(
     noinline fromMusicShelfRendererContent: (MusicShelfRenderer.Content) -> T?,
     crossinline onSearchAgain: () -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
-    noinline itemShimmer: @Composable BoxScope.() -> Unit,
+    noinline itemPlaceholderContent: @Composable BoxScope.() -> Unit,
 ) {
     val (_, typography) = LocalAppearance.current
 
@@ -163,7 +163,7 @@ inline fun <T : Innertube.Item> SearchResult(
                     Box(
                         modifier = Modifier
                             .alpha(1f - index * 0.125f),
-                        content = itemShimmer
+                        content = itemPlaceholderContent
                     )
                 }
             }

@@ -41,10 +41,8 @@ inline fun <T : Innertube.Item> ArtistContent(
     crossinline bookmarkIconContent: @Composable () -> Unit,
     crossinline shareIconContent: @Composable () -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
-    noinline itemShimmer: @Composable () -> Unit,
+    noinline itemPlaceholderContent: @Composable () -> Unit,
 ) {
-    val (_, typography) = LocalAppearance.current
-
     var items by rememberSaveable(stateSaver = stateSaver) {
         mutableStateOf(listOf())
     }
@@ -124,7 +122,7 @@ inline fun <T : Innertube.Item> ArtistContent(
                         if (hasMore || items.isEmpty()) {
                             ShimmerHost {
                                 repeat(if (hasMore) 3 else 8) {
-                                    itemShimmer()
+                                    itemPlaceholderContent()
                                 }
                             }
 
@@ -147,7 +145,7 @@ inline fun <T : Innertube.Item> ArtistContent(
             HeaderPlaceholder()
 
             repeat(5) {
-                itemShimmer()
+                itemPlaceholderContent()
             }
         }
     }

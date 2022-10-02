@@ -37,9 +37,9 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.AlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlbumItemShimmer
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItem
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.views.SongItem
+import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.artistScreenTabIndexKey
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
@@ -242,7 +242,7 @@ fun ArtistScreen(browseId: String) {
                                         }
                                 },
                                 itemContent = { song ->
-                                    SmallSongItem(
+                                    SongItem(
                                         song = song,
                                         thumbnailSizePx = thumbnailSizePx,
                                         onClick = {
@@ -252,8 +252,8 @@ fun ArtistScreen(browseId: String) {
                                         }
                                     )
                                 },
-                                itemShimmer = {
-                                    SmallSongItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }
@@ -299,8 +299,8 @@ fun ArtistScreen(browseId: String) {
                                             )
                                     )
                                 },
-                                itemShimmer = {
-                                    AlbumItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }
@@ -346,8 +346,8 @@ fun ArtistScreen(browseId: String) {
                                             )
                                     )
                                 },
-                                itemShimmer = {
-                                    AlbumItemShimmer(thumbnailSizeDp = thumbnailSizeDp)
+                                itemPlaceholderContent = {
+                                    AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 }
                             )
                         }

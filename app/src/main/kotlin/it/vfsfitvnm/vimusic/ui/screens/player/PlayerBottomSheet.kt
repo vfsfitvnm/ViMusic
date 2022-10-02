@@ -57,7 +57,7 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SmallSongItemShimmer
+import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
@@ -233,7 +233,7 @@ fun PlayerBottomSheet(
                                 .shimmer()
                         ) {
                             repeat(3) { index ->
-                                SmallSongItemShimmer(
+                                SongItemPlaceholder(
                                     thumbnailSizeDp = Dimensions.thumbnails.song,
                                     modifier = Modifier
                                         .alpha(1f - index * 0.125f)
