@@ -22,7 +22,6 @@ object Dimensions {
         val playlist = album
 
         object player {
-            val songPreview = collapsedPlayer
             val song: Dp
                 @Composable
                 get() = with(LocalConfiguration.current) {

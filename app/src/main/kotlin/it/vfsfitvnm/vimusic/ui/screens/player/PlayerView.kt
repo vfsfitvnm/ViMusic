@@ -138,7 +138,7 @@ fun PlayerView(
                         .height(Dimensions.collapsedPlayer)
                 ) {
                     AsyncImage(
-                        model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.player.songPreview.px),
+                        model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.song.px),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
