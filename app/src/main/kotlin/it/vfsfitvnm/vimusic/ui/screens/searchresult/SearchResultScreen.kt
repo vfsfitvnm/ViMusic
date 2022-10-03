@@ -3,21 +3,25 @@ package it.vfsfitvnm.vimusic.ui.screens.searchresult
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.savers.InnertubeAlbumItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeAlbumsPageSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeArtistItemListSaver
 import it.vfsfitvnm.vimusic.savers.InnertubePlaylistItemListSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeSongItemListSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeSongsPageSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeVideoItemListSaver
+import it.vfsfitvnm.vimusic.savers.innertubeItemsPageSaver
+import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
@@ -40,6 +44,9 @@ import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.searchResultScreenTabIndexKey
 import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
+import it.vfsfitvnm.youtubemusic.models.bodies.SearchBody
+import it.vfsfitvnm.youtubemusic.requests.searchPage
 import it.vfsfitvnm.youtubemusic.utils.from
 
 @ExperimentalFoundationApi
@@ -53,6 +60,18 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
         globalRoutes()
 
         host {
+            val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
+                Header(
+                    title = query,
+                    modifier = Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                onSearchAgain()
+                            }
+                        }
+                )
+            }
+
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
                 onTopIconButtonClick = pop,
@@ -67,16 +86,6 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                     Item(5, "Featured", R.drawable.playlist)
                 }
             ) { tabIndex ->
-                val searchFilter = when (tabIndex) {
-                    0 -> Innertube.SearchFilter.Song
-                    1 -> Innertube.SearchFilter.Album
-                    2 -> Innertube.SearchFilter.Artist
-                    3 -> Innertube.SearchFilter.Video
-                    4 -> Innertube.SearchFilter.CommunityPlaylist
-                    5 -> Innertube.SearchFilter.FeaturedPlaylist
-                    else -> error("unreachable")
-                }.value
-
                 saveableStateHolder.SaveableStateProvider(tabIndex) {
                     when (tabIndex) {
                         0 -> {
@@ -84,12 +93,22 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            SearchResult(
-                                query = query,
-                                filter = searchFilter,
-                                onSearchAgain = onSearchAgain,
-                                stateSaver = InnertubeSongItemListSaver,
-                                fromMusicShelfRendererContent = Innertube.SongItem.Companion::from,
+                            ArtistContent(
+                                stateSaver = InnertubeSongsPageSaver,
+                                itemsPageProvider = { continuation ->
+                                    if (continuation == null) {
+                                        Innertube.searchPage(
+                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Song.value),
+                                            fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
+                                        )
+                                    } else {
+                                        Innertube.searchPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
+                                        )
+                                    }
+                                },
+                                headerContent = headerContent,
                                 itemContent = { song ->
                                     SongItem(
                                         song = song,
@@ -111,12 +130,22 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            SearchResult(
-                                query = query,
-                                filter = searchFilter,
-                                stateSaver = InnertubeAlbumItemListSaver,
-                                onSearchAgain = onSearchAgain,
-                                fromMusicShelfRendererContent = Innertube.AlbumItem.Companion::from,
+                            ArtistContent(
+                                stateSaver = InnertubeAlbumsPageSaver,
+                                itemsPageProvider = { continuation ->
+                                    if (continuation == null) {
+                                        Innertube.searchPage(
+                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Album.value),
+                                            fromMusicShelfRendererContent = Innertube.AlbumItem::from
+                                        )
+                                    } else {
+                                        Innertube.searchPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicShelfRendererContent = Innertube.AlbumItem::from
+                                        )
+                                    }
+                                },
+                                headerContent = headerContent,
                                 itemContent = { album ->
                                     AlbumItem(
                                         album = album,
@@ -141,12 +170,22 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 64.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            SearchResult(
-                                query = query,
-                                filter = searchFilter,
-                                stateSaver = InnertubeArtistItemListSaver,
-                                onSearchAgain = onSearchAgain,
-                                fromMusicShelfRendererContent = Innertube.ArtistItem.Companion::from,
+                            ArtistContent(
+                                stateSaver = innertubeItemsPageSaver(InnertubeArtistItemListSaver),
+                                itemsPageProvider = { continuation ->
+                                    if (continuation == null) {
+                                        Innertube.searchPage(
+                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Artist.value),
+                                            fromMusicShelfRendererContent = Innertube.ArtistItem::from
+                                        )
+                                    } else {
+                                        Innertube.searchPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicShelfRendererContent = Innertube.ArtistItem::from
+                                        )
+                                    }
+                                },
+                                headerContent = headerContent,
                                 itemContent = { artist ->
                                     ArtistItem(
                                         artist = artist,
@@ -170,12 +209,22 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailHeightDp = 72.dp
                             val thumbnailWidthDp = 128.dp
 
-                            SearchResult(
-                                query = query,
-                                filter = searchFilter,
-                                stateSaver = InnertubeVideoItemListSaver,
-                                onSearchAgain = onSearchAgain,
-                                fromMusicShelfRendererContent = Innertube.VideoItem.Companion::from,
+                            ArtistContent(
+                                stateSaver = innertubeItemsPageSaver(InnertubeVideoItemListSaver),
+                                itemsPageProvider = { continuation ->
+                                    if (continuation == null) {
+                                        Innertube.searchPage(
+                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Video.value),
+                                            fromMusicShelfRendererContent = Innertube.VideoItem::from
+                                        )
+                                    } else {
+                                        Innertube.searchPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicShelfRendererContent = Innertube.VideoItem::from
+                                        )
+                                    }
+                                },
+                                headerContent = headerContent,
                                 itemContent = { video ->
                                     VideoItem(
                                         video = video,
@@ -201,12 +250,28 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            SearchResult(
-                                query = query,
-                                filter = searchFilter,
-                                stateSaver = InnertubePlaylistItemListSaver,
-                                onSearchAgain = onSearchAgain,
-                                fromMusicShelfRendererContent = Innertube.PlaylistItem.Companion::from,
+                            ArtistContent(
+                                stateSaver = innertubeItemsPageSaver(InnertubePlaylistItemListSaver),
+                                itemsPageProvider = { continuation ->
+                                    if (continuation == null) {
+                                        val filter = if (tabIndex == 4) {
+                                            Innertube.SearchFilter.CommunityPlaylist
+                                        } else {
+                                            Innertube.SearchFilter.FeaturedPlaylist
+                                        }
+
+                                        Innertube.searchPage(
+                                            body = SearchBody(query = query, params = filter.value),
+                                            fromMusicShelfRendererContent = Innertube.PlaylistItem::from
+                                        )
+                                    } else {
+                                        Innertube.searchPage(
+                                            body = ContinuationBody(continuation = continuation),
+                                            fromMusicShelfRendererContent = Innertube.PlaylistItem::from
+                                        )
+                                    }
+                                },
+                                headerContent = headerContent,
                                 itemContent = { playlist ->
                                     PlaylistItem(
                                         playlist = playlist,

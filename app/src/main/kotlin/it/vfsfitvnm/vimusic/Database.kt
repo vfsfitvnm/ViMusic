@@ -152,6 +152,9 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
+    @Query("SELECT timestamp FROM Artist WHERE id = :id")
+    fun artistTimestamp(id: String): Long?
+
     @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name DESC")
     fun artistsByNameDesc(): Flow<List<Artist>>
 

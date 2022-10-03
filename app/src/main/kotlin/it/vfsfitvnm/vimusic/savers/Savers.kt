@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.savers
 
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
+import it.vfsfitvnm.youtubemusic.Innertube
 
 interface ListSaver<Original, Saveable : Any> : Saver<List<Original>, List<Saveable>> {
     override fun SaverScope.save(value: List<Original>): List<Saveable>
@@ -34,4 +35,18 @@ fun <Original, Saveable : Any> nullableSaver(saver: Saver<Original, Saveable>) =
 
         override fun restore(value: Saveable): Original? =
             saver.restore(value)
+    }
+
+fun <Original : Innertube.Item> innertubeItemsPageSaver(saver: ListSaver<Original, List<Any?>>) =
+    object : Saver<Innertube.ItemsPage<Original>, List<Any?>> {
+        override fun SaverScope.save(value: Innertube.ItemsPage<Original>) = listOf(
+            value.items?.let { with(saver) { save(it) } },
+            value.continuation
+        )
+
+        @Suppress("UNCHECKED_CAST")
+        override fun restore(value: List<Any?>) = Innertube.ItemsPage(
+            items = (value[0] as List<List<Any?>>?)?.let(saver::restore),
+            continuation = value[1] as String?
+        )
     }

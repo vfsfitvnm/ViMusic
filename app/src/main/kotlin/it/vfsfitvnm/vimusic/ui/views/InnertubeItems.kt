@@ -323,12 +323,14 @@ fun AlbumItem(
             )
 
             if (!alternative) {
-                BasicText(
-                    text = album.authors?.joinToString("") { it.name ?: "" } ?: "",
-                    style = typography.xs.semiBold.secondary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                album.authors?.joinToString("") { it.name ?: "" }?.let { authorsText ->
+                    BasicText(
+                        text = authorsText,
+                        style = typography.xs.semiBold.secondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
 
             BasicText(

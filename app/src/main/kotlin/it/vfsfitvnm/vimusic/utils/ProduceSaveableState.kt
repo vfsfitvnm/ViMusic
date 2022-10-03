@@ -6,17 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.ProduceStateScope
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalTypeInference
-import kotlin.reflect.KProperty
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
@@ -120,97 +117,6 @@ fun <T> produceSaveableState(
     }
 
     return result
-}
-
-@Composable
-fun <T> produceSaveableRelaunchableOneShotState(
-    initialValue: T,
-    stateSaver: Saver<T, out Any>,
-    @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
-): Pair<State<T>, () -> Unit> {
-    val result = rememberSaveable(stateSaver = stateSaver) {
-        mutableStateOf(initialValue)
-    }
-
-    var produced by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    val relaunchableEffect = relaunchableEffect(Unit) {
-        if (!produced) {
-            ProduceSaveableStateScope(result, coroutineContext).producer()
-            produced = true
-        }
-    }
-
-    return result to {
-        produced = false
-        relaunchableEffect()
-    }
-}
-
-@Composable
-fun <T> produceSaveableRelaunchableOneShotState(
-    initialValue: T,
-    stateSaver: Saver<T, out Any>,
-    key1: Any?,
-    @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
-): Pair<State<T>, () -> Unit> {
-    val result = rememberSaveable(stateSaver = stateSaver) {
-        mutableStateOf(initialValue)
-    }
-
-    var produced by rememberSaveable(key1) {
-        mutableStateOf(false)
-    }
-
-    val relaunchableEffect = relaunchableEffect(key1) {
-        if (!produced) {
-            ProduceSaveableStateScope(result, coroutineContext).producer()
-            produced = true
-        }
-    }
-
-    return result to {
-        produced = false
-        relaunchableEffect()
-    }
-}
-
-@Composable
-fun <T> produceSaveableLazyOneShotState(
-    initialValue: T,
-    stateSaver: Saver<T, out Any>,
-    @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
-): State<T> {
-    val state = rememberSaveable(stateSaver = stateSaver) {
-        mutableStateOf(initialValue)
-    }
-
-    var produced by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    val lazyEffect = lazyEffect(Unit) {
-        if (!produced) {
-            ProduceSaveableStateScope(state, coroutineContext).producer()
-            produced = true
-        }
-    }
-
-    val delegate = remember {
-        object : State<T> {
-            override val value: T
-                get() {
-                    if (!produced) {
-                        lazyEffect()
-                    }
-                    return state.value
-                }
-        }
-     }
-
-    return delegate
 }
 
 private class ProduceSaveableStateScope<T>(
