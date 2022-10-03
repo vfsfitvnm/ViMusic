@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,6 +88,8 @@ import it.vfsfitvnm.youtubemusic.requests.playlistPage
 import it.vfsfitvnm.youtubemusic.requests.song
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -124,7 +127,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
 
         val playerBottomSheetAnchor = when {
             intent?.extras?.getBoolean("expandPlayerBottomSheet") == true -> expandedAnchor
@@ -389,8 +391,9 @@ class MainActivity : ComponentActivity() {
                 }
             } ?: (uri.getQueryParameter("v") ?: uri.takeIf { uri.host == "youtu.be" }?.path?.drop(1))?.let { videoId ->
                 Innertube.song(videoId)?.getOrNull()?.let { song ->
+                    val binder = snapshotFlow { binder }.filterNotNull().first()
                     withContext(Dispatchers.Main) {
-                        binder?.player?.forcePlay(song.asMediaItem)
+                        binder.player.forcePlay(song.asMediaItem)
                     }
                 }
             }
