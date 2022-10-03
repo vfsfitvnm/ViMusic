@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.LoginRequiredException
 import it.vfsfitvnm.vimusic.service.PlayableFormatNotFoundException
 import it.vfsfitvnm.vimusic.service.UnplayableException
@@ -121,19 +122,21 @@ fun Thumbnail(
                 isDisplayed = isShowingLyrics && error == null,
                 onDismiss = { onShowLyrics(false) },
                 onLyricsUpdate = { areSynchronized, mediaId, lyrics ->
-                    if (areSynchronized) {
-                        if (Database.updateSynchronizedLyrics(mediaId, lyrics) == 0) {
-                            if (mediaId == mediaItem.mediaId) {
-                                Database.insert(mediaItem) { song ->
-                                    song.copy(synchronizedLyrics = lyrics)
+                    query {
+                        if (areSynchronized) {
+                            if (Database.updateSynchronizedLyrics(mediaId, lyrics) == 0) {
+                                if (mediaId == mediaItem.mediaId) {
+                                    Database.insert(mediaItem) { song ->
+                                        song.copy(synchronizedLyrics = lyrics)
+                                    }
                                 }
                             }
-                        }
-                    } else {
-                        if (Database.updateLyrics(mediaId, lyrics) == 0) {
-                            if (mediaId == mediaItem.mediaId) {
-                                Database.insert(mediaItem) { song ->
-                                    song.copy(lyrics = lyrics)
+                        } else {
+                            if (Database.updateLyrics(mediaId, lyrics) == 0) {
+                                if (mediaId == mediaItem.mediaId) {
+                                    Database.insert(mediaItem) { song ->
+                                        song.copy(lyrics = lyrics)
+                                    }
                                 }
                             }
                         }
