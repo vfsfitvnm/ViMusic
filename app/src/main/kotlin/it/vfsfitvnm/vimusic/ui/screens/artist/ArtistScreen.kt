@@ -399,7 +399,7 @@ fun ArtistScreen(browseId: String) {
                             )
                         }
 
-                        4 -> ArtistLocalSongsList(
+                        4 -> ArtistLocalSongs(
                             browseId = browseId,
                             headerContent = headerContent,
                             thumbnailContent = thumbnailContent,

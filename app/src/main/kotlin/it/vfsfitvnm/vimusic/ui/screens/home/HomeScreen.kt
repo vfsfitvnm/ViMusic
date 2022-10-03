@@ -99,7 +99,7 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
         host {
             val (tabIndex, onTabChanged) = rememberPreference(
                 homeScreenTabIndexKey,
-                defaultValue = 1
+                defaultValue = 0
             )
 
             Scaffold(
@@ -124,13 +124,13 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                             onArtistClick = { artistRoute(it) },
                             onPlaylistClick = { playlistRoute(it) },
                         )
-                        1 -> HomeSongList()
-                        2 -> HomePlaylistList(
+                        1 -> HomeSongs()
+                        2 -> HomePlaylists(
                             onBuiltInPlaylist = { builtInPlaylistRoute(it) },
                             onPlaylistClick = { localPlaylistRoute(it.id) }
                         )
                         3 -> HomeArtistList(onArtistClick = { artistRoute(it.id) })
-                        4 -> HomeAlbumList(onAlbumClick = { albumRoute(it.id) })
+                        4 -> HomeAlbums(onAlbumClick = { albumRoute(it.id) })
                     }
                 }
             }

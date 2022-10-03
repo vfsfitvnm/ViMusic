@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalAnimationApi
 @Composable
-fun ArtistLocalSongsList(
+fun ArtistLocalSongs(
     browseId: String,
     headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
     thumbnailContent: @Composable ColumnScope.() -> Unit,

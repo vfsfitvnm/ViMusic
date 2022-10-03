@@ -97,9 +97,7 @@ fun QuickPicks(
         stateSaver = resultSaver(nullableSaver(InnertubeRelatedPageSaver)),
         trending?.id
     ) {
-        trending?.id?.let { trendingVideoId ->
-            value = Innertube.relatedPage(NextBody(videoId = trendingVideoId))
-        }
+        value = Innertube.relatedPage(NextBody(videoId = (trending?.id ?: "J7p4bzqLvCw")))
     }
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song

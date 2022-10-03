@@ -41,7 +41,8 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.SearchQueryListSaver
+import it.vfsfitvnm.vimusic.savers.SearchQuerySaver
+import it.vfsfitvnm.vimusic.savers.listSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
@@ -72,7 +73,7 @@ fun OnlineSearch(
 
     val history by produceSaveableState(
         initialValue = emptyList(),
-        stateSaver = SearchQueryListSaver,
+        stateSaver = listSaver(SearchQuerySaver),
         key1 = textFieldValue.text
     ) {
         Database.queries("%${textFieldValue.text}%")
@@ -84,7 +85,7 @@ fun OnlineSearch(
     val suggestionsResult by produceSaveableOneShotState(
         initialValue = null,
         stateSaver = resultSaver(autoSaver<List<String>?>()),
-        key1 = textFieldValue.text
+        textFieldValue.text
     ) {
         if (textFieldValue.text.isNotEmpty()) {
             value = Innertube.searchSuggestions(SearchSuggestionsBody(input = textFieldValue.text))

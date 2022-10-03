@@ -63,7 +63,7 @@ import kotlinx.coroutines.withContext
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun LocalPlaylistSongList(
+fun LocalPlaylistSongs(
     playlistId: Long,
     onDelete: () -> Unit,
 ) {

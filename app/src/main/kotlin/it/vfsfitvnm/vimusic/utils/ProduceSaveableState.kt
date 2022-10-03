@@ -55,30 +55,6 @@ fun <T> produceSaveableState(
 fun <T> produceSaveableOneShotState(
     initialValue: T,
     stateSaver: Saver<T, out Any>,
-    @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
-): State<T> {
-    val state = rememberSaveable(stateSaver = stateSaver) {
-        mutableStateOf(initialValue)
-    }
-
-    var produced by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    LaunchedEffect(Unit) {
-        if (!produced) {
-            ProduceSaveableStateScope(state, coroutineContext).producer()
-            produced = true
-        }
-    }
-
-    return state
-}
-
-@Composable
-fun <T> produceSaveableOneShotState(
-    initialValue: T,
-    stateSaver: Saver<T, out Any>,
     key1: Any?,
     @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
 ): State<T> {

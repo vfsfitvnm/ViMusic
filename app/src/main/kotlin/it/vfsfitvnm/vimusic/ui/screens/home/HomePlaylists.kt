@@ -57,7 +57,7 @@ import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalFoundationApi
 @Composable
-fun HomePlaylistList(
+fun HomePlaylists(
     onBuiltInPlaylist: (BuiltInPlaylist) -> Unit,
     onPlaylistClick: (Playlist) -> Unit,
 ) {

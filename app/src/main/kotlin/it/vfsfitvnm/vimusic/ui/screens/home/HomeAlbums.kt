@@ -61,7 +61,7 @@ import kotlinx.coroutines.flow.flowOn
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun HomeAlbumList(
+fun HomeAlbums(
     onAlbumClick: (Album) -> Unit
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current

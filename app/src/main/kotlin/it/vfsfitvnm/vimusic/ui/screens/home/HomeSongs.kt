@@ -66,7 +66,7 @@ import kotlinx.coroutines.flow.flowOn
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun HomeSongList() {
+fun HomeSongs() {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 

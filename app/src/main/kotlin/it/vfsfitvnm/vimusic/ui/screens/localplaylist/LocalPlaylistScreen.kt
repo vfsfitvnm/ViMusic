@@ -29,7 +29,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    LocalPlaylistSongList(
+                    LocalPlaylistSongs(
                         playlistId = playlistId,
                         onDelete = pop
                     )

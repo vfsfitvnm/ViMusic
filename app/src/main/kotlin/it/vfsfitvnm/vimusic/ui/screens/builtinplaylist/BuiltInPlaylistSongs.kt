@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens.builtinplaylist
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import it.vfsfitvnm.reordering.animateItemPlacement
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -35,9 +37,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun BuiltInPlaylistSongList(builtInPlaylist: BuiltInPlaylist) {
+fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
     val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
 
@@ -116,7 +119,9 @@ fun BuiltInPlaylistSongList(builtInPlaylist: BuiltInPlaylist) {
                             BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(song = song)
                             BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(song = song)
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .animateItemPlacement()
                 )
             }
         }
