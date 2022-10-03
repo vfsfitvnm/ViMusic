@@ -93,7 +93,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = InnertubeSongsPageSaver,
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
@@ -130,7 +130,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
@@ -170,7 +170,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 64.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = innertubeItemsPageSaver(InnertubeArtistItemListSaver),
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
@@ -209,7 +209,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailHeightDp = 72.dp
                             val thumbnailWidthDp = 128.dp
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = innertubeItemsPageSaver(InnertubeVideoItemListSaver),
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
@@ -250,7 +250,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = innertubeItemsPageSaver(InnertubePlaylistItemListSaver),
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {

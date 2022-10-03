@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
-inline fun <T : Innertube.Item> ArtistContent(
+inline fun <T : Innertube.Item> ItemsPage(
     stateSaver: Saver<Innertube.ItemsPage<T>, List<Any?>>,
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
     crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,

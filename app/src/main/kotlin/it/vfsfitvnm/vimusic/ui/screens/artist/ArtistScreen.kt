@@ -44,7 +44,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
-import it.vfsfitvnm.vimusic.ui.screens.searchresult.ArtistContent
+import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
@@ -97,7 +97,7 @@ fun ArtistScreen(browseId: String) {
         if (value != null || (tabIndex == 4 && withContext(Dispatchers.IO) { Database.artistTimestamp(browseId) } != null)) return@produceSaveableState
 
         withContext(Dispatchers.IO) {
-            Innertube.artistPage(browseId)
+            Innertube.artistPage(BrowseBody(browseId = browseId))
         }?.onSuccess { artistPage ->
             value = artistPage
 
@@ -252,7 +252,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = InnertubeSongsPageSaver,
                                 headerContent = headerContent,
                                 itemsPageProvider = youtubeArtist?.let {({ continuation ->
@@ -301,7 +301,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 headerContent = headerContent,
                                 itemsPageProvider = youtubeArtist?.let {({ continuation ->
@@ -352,7 +352,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            ArtistContent(
+                            ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 headerContent = headerContent,
                                 itemsPageProvider = youtubeArtist?.let {({ continuation ->

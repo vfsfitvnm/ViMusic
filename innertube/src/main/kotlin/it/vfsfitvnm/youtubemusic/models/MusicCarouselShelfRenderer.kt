@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MusicCarouselShelfRenderer(
     val header: Header?,
-    val contents: List<Content>,
+    val contents: List<Content>?,
 ) {
     @Serializable
     data class Content(

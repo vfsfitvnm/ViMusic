@@ -13,9 +13,9 @@ import it.vfsfitvnm.youtubemusic.utils.findSectionByTitle
 import it.vfsfitvnm.youtubemusic.utils.from
 import it.vfsfitvnm.youtubemusic.utils.runCatchingNonCancellable
 
-suspend fun Innertube.artistPage(browseId: String): Result<Innertube.ArtistPage>? = runCatchingNonCancellable {
+suspend fun Innertube.artistPage(body: BrowseBody): Result<Innertube.ArtistPage>? = runCatchingNonCancellable {
     val response = client.post(browse) {
-        setBody(BrowseBody(browseId = browseId))
+        setBody(body)
         mask("contents,header")
     }.body<BrowseResponse>()
 

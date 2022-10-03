@@ -28,6 +28,4 @@ object AlbumSaver : Saver<Album, List<Any?>> {
     )
 }
 
-val AlbumResultSaver = resultSaver(AlbumSaver)
-
 val AlbumListSaver = listSaver(AlbumSaver)

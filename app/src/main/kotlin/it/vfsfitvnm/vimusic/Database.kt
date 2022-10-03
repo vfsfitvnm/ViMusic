@@ -183,6 +183,9 @@ interface Database {
     @Query("SELECT * FROM Album WHERE id = :id")
     fun album(id: String): Flow<Album?>
 
+    @Query("SELECT timestamp FROM Album WHERE id = :id")
+    fun albumTimestamp(id: String): Long?
+
     @Transaction
     @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
     @RewriteQueriesToDropUnusedColumns

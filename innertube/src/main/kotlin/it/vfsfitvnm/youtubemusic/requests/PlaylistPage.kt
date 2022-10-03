@@ -6,6 +6,7 @@ import io.ktor.client.request.setBody
 import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.BrowseResponse
 import it.vfsfitvnm.youtubemusic.models.ContinuationResponse
+import it.vfsfitvnm.youtubemusic.models.MusicCarouselShelfRenderer
 import it.vfsfitvnm.youtubemusic.models.MusicShelfRenderer
 import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
 import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
@@ -15,14 +16,14 @@ import it.vfsfitvnm.youtubemusic.utils.runCatchingNonCancellable
 suspend fun Innertube.playlistPage(body: BrowseBody) = runCatchingNonCancellable {
     val response = client.post(browse) {
         setBody(body)
-        mask("contents.singleColumnBrowseResultsRenderer.tabs.tabRenderer.content.sectionListRenderer.contents.musicPlaylistShelfRenderer(continuations,contents.$musicResponsiveListItemRendererMask),header.musicDetailHeaderRenderer(title,subtitle,thumbnail),microformat")
+        mask("contents.singleColumnBrowseResultsRenderer.tabs.tabRenderer.content.sectionListRenderer.contents(musicPlaylistShelfRenderer(continuations,contents.$musicResponsiveListItemRendererMask),musicCarouselShelfRenderer.contents.$musicTwoRowItemRendererMask),header.musicDetailHeaderRenderer(title,subtitle,thumbnail),microformat")
     }.body<BrowseResponse>()
 
     val musicDetailHeaderRenderer = response
         .header
         ?.musicDetailHeaderRenderer
 
-    val musicShelfRenderer = response
+    val sectionListRendererContents = response
         .contents
         ?.singleColumnBrowseResultsRenderer
         ?.tabs
@@ -31,8 +32,14 @@ suspend fun Innertube.playlistPage(body: BrowseBody) = runCatchingNonCancellable
         ?.content
         ?.sectionListRenderer
         ?.contents
+
+    val musicShelfRenderer = sectionListRendererContents
         ?.firstOrNull()
         ?.musicShelfRenderer
+
+    val musicCarouselShelfRenderer = sectionListRendererContents
+        ?.getOrNull(1)
+        ?.musicCarouselShelfRenderer
 
     Innertube.PlaylistOrAlbumPage(
         title = musicDetailHeaderRenderer
@@ -60,7 +67,11 @@ suspend fun Innertube.playlistPage(body: BrowseBody) = runCatchingNonCancellable
             ?.microformatDataRenderer
             ?.urlCanonical,
         songsPage = musicShelfRenderer
-            ?.toSongsPage()
+            ?.toSongsPage(),
+        otherVersions = musicCarouselShelfRenderer
+            ?.contents
+            ?.mapNotNull(MusicCarouselShelfRenderer.Content::musicTwoRowItemRenderer)
+            ?.mapNotNull(Innertube.AlbumItem::from)
     )
 }
 
