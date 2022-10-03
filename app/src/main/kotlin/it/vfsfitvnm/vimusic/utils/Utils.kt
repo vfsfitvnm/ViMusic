@@ -7,6 +7,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
+import it.vfsfitvnm.youtubemusic.requests.playlistPage
+import it.vfsfitvnm.youtubemusic.utils.plus
 
 val Innertube.SongItem.asMediaItem: MediaItem
     get() = MediaItem.Builder()
@@ -87,4 +90,21 @@ fun String?.thumbnail(size: Int): String? {
 
 fun Uri?.thumbnail(size: Int): Uri? {
     return toString().thumbnail(size)?.toUri()
+}
+
+suspend fun Result<Innertube.PlaylistOrAlbumPage>.completed(): Result<Innertube.PlaylistOrAlbumPage>? {
+    var playlistPage = getOrNull() ?: return null
+
+    while (playlistPage.songsPage?.continuation != null) {
+        val continuation = playlistPage.songsPage?.continuation!!
+        val otherPlaylistPageResult = Innertube.playlistPage(ContinuationBody(continuation = continuation)) ?: break
+
+        if (otherPlaylistPageResult.isFailure) break
+
+        otherPlaylistPageResult.getOrNull()?.let { otherSongsPage ->
+            playlistPage = playlistPage.copy(songsPage = playlistPage.songsPage + otherSongsPage)
+        }
+    }
+
+    return Result.success(playlistPage)
 }

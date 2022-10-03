@@ -47,6 +47,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
+import it.vfsfitvnm.vimusic.utils.completed
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
@@ -168,8 +169,7 @@ fun LocalPlaylistSongList(
                                     transaction {
                                         runBlocking(Dispatchers.IO) {
                                             withContext(Dispatchers.IO) {
-                                                // TODO: fetch all songs!
-                                                Innertube.playlistPage(BrowseBody(browseId = browseId))
+                                                Innertube.playlistPage(BrowseBody(browseId = browseId))?.completed()
                                             }
                                         }?.getOrNull()?.let { remotePlaylist ->
                                             Database.clearPlaylist(playlistId)

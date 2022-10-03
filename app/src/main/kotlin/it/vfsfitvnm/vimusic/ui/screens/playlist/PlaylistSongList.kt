@@ -55,10 +55,10 @@ import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.completed
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
-import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.Innertube
@@ -77,13 +77,14 @@ fun PlaylistSongList(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
 
-    val playlistPageResult by produceSaveableOneShotState(
+    val playlistPageResult by produceSaveableState(
         initialValue = null,
         stateSaver = resultSaver(InnertubePlaylistOrAlbumPageSaver),
     ) {
+        if (value != null && value?.getOrNull()?.songsPage?.continuation == null) return@produceSaveableState
+
         value = withContext(Dispatchers.IO) {
-            // TODO: fetch all songs!
-            Innertube.playlistPage(BrowseBody(browseId = browseId))
+            Innertube.playlistPage(BrowseBody(browseId = browseId))?.completed()
         }
     }
 
@@ -201,7 +202,7 @@ fun PlaylistSongList(
                 itemsIndexed(items = playlist.songsPage?.items ?: emptyList()) { index, song ->
                     SongItem(
                         title = song.info?.name,
-                        authors = (song.authors ?: playlist.authors)?.joinToString("") { it.name ?: "" },
+                        authors = song.authors?.joinToString("") { it.name ?: "" },
                         durationText = song.durationText,
                         onClick = {
                             playlist.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
