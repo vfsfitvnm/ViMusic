@@ -104,6 +104,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
@@ -297,13 +298,16 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         if (totalPlayTimeMs > 30000) {
             query {
-                Database.insert(
-                    Event(
-                        songId = mediaItem.mediaId,
-                        timestamp = System.currentTimeMillis(),
-                        playTime = totalPlayTimeMs
+                // THANKS, EXOPLAYER
+                if (runBlocking { Database.song(mediaItem.mediaId).first() } != null) {
+                    Database.insert(
+                        Event(
+                            songId = mediaItem.mediaId,
+                            timestamp = System.currentTimeMillis(),
+                            playTime = totalPlayTimeMs
+                        )
                     )
-                )
+                }
             }
         }
     }
