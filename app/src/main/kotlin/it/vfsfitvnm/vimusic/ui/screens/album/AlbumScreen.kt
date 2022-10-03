@@ -202,7 +202,7 @@ fun AlbumScreen(browseId: String) {
                             .shimmer()
                             .align(Alignment.CenterHorizontally)
                             .padding(all = 16.dp)
-                            .clip(CircleShape)
+                            .clip(thumbnailShape)
                             .fillMaxWidth()
                             .aspectRatio(1f)
                             .background(colorPalette.shimmer)
