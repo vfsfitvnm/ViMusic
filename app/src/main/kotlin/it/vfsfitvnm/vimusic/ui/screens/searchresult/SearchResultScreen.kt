@@ -72,6 +72,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                 )
             }
 
+            val emptyItemsText = "No results found. Please try a different query or category"
+
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
                 onTopIconButtonClick = pop,
@@ -108,6 +110,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         )
                                     }
                                 },
+                                emptyItemsText = emptyItemsText,
                                 headerContent = headerContent,
                                 itemContent = { song ->
                                     SongItem(
@@ -145,6 +148,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         )
                                     }
                                 },
+                                emptyItemsText = emptyItemsText,
                                 headerContent = headerContent,
                                 itemContent = { album ->
                                     AlbumItem(
@@ -185,6 +189,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         )
                                     }
                                 },
+                                emptyItemsText = emptyItemsText,
                                 headerContent = headerContent,
                                 itemContent = { artist ->
                                     ArtistItem(
@@ -224,6 +229,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         )
                                     }
                                 },
+                                emptyItemsText = emptyItemsText,
                                 headerContent = headerContent,
                                 itemContent = { video ->
                                     VideoItem(
@@ -271,6 +277,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         )
                                     }
                                 },
+                                emptyItemsText = emptyItemsText,
                                 headerContent = headerContent,
                                 itemContent = { playlist ->
                                     PlaylistItem(

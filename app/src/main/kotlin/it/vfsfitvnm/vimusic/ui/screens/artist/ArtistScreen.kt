@@ -304,6 +304,7 @@ fun ArtistScreen(browseId: String) {
                             ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 headerContent = headerContent,
+                                emptyItemsText = "This artist didn't release any album",
                                 itemsPageProvider = youtubeArtist?.let {({ continuation ->
                                     continuation?.let {
                                         Innertube.itemsPage(
@@ -355,6 +356,7 @@ fun ArtistScreen(browseId: String) {
                             ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 headerContent = headerContent,
+                                emptyItemsText = "This artist didn't release any single",
                                 itemsPageProvider = youtubeArtist?.let {({ continuation ->
                                     continuation?.let {
                                         Innertube.itemsPage(

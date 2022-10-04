@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,8 +37,9 @@ import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.AlbumSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeAlbumsPageSaver
+import it.vfsfitvnm.vimusic.savers.InnertubeAlbumItemListSaver
 import it.vfsfitvnm.vimusic.savers.InnertubePlaylistOrAlbumPageSaver
+import it.vfsfitvnm.vimusic.savers.innertubeItemsPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
@@ -249,8 +249,11 @@ fun AlbumScreen(browseId: String) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = InnertubeAlbumsPageSaver,
+                                stateSaver = innertubeItemsPageSaver(InnertubeAlbumItemListSaver),
                                 headerContent = headerContent,
+                                initialPlaceholderCount = 1,
+                                continuationPlaceholderCount = 1,
+                                emptyItemsText = "This album doesn't have any alternative version",
                                 itemsPageProvider = innertubeAlbum?.let {
                                     ({
                                         Result.success(
