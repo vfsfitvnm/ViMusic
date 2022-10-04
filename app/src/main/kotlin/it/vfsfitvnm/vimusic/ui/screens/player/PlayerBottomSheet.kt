@@ -210,7 +210,8 @@ fun PlayerBottomSheet(
                                     menuState.display {
                                         QueuedMediaItemMenu(
                                             mediaItem = window.mediaItem,
-                                            indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex
+                                            indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
+                                            onDismiss = menuState::hide
                                         )
                                     }
                                 },
@@ -268,7 +269,10 @@ fun PlayerBottomSheet(
                     text = "${windows.size} songs",
                     style = typography.xxs.medium,
                     modifier = Modifier
-                        .background(color = colorPalette.background1, shape = RoundedCornerShape(16.dp))
+                        .background(
+                            color = colorPalette.background1,
+                            shape = RoundedCornerShape(16.dp)
+                        )
                         .align(Alignment.CenterStart)
                         .padding(all = 8.dp)
                 )

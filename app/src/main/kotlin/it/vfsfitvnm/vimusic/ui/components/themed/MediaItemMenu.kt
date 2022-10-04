@@ -45,7 +45,6 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.transaction
-import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.viewPlaylistsRoute
@@ -62,9 +61,9 @@ import kotlinx.coroutines.flow.flowOf
 @ExperimentalAnimationApi
 @Composable
 fun InFavoritesMediaItemMenu(
+    onDismiss: () -> Unit,
     song: DetailedSong,
     modifier: Modifier = Modifier,
-    onDismiss: (() -> Unit)? = null
 ) {
     NonQueuedMediaItemMenu(
         mediaItem = song.asMediaItem,
@@ -81,11 +80,10 @@ fun InFavoritesMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun InHistoryMediaItemMenu(
+    onDismiss: () -> Unit,
     song: DetailedSong,
-    modifier: Modifier = Modifier,
-    onDismiss: (() -> Unit)? = null
+    modifier: Modifier = Modifier
 ) {
-    val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
     var isHiding by remember {
@@ -97,7 +95,7 @@ fun InHistoryMediaItemMenu(
             text = "Do you really hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.",
             onDismiss = { isHiding = false },
             onConfirm = {
-                (onDismiss ?: menuState::hide).invoke()
+                onDismiss()
                 query {
                     // Not sure we can to this here
                     binder?.cache?.removeResource(song.id)
@@ -118,11 +116,11 @@ fun InHistoryMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun InPlaylistMediaItemMenu(
+    onDismiss: () -> Unit,
     playlistId: Long,
     positionInPlaylist: Int,
     song: DetailedSong,
-    modifier: Modifier = Modifier,
-    onDismiss: (() -> Unit)? = null
+    modifier: Modifier = Modifier
 ) {
     NonQueuedMediaItemMenu(
         mediaItem = song.asMediaItem,
@@ -140,19 +138,18 @@ fun InPlaylistMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun NonQueuedMediaItemMenu(
+    onDismiss: () -> Unit,
     mediaItem: MediaItem,
     modifier: Modifier = Modifier,
-    onDismiss: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromFavorites: (() -> Unit)? = null,
 ) {
-    val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
-        onDismiss = onDismiss ?: menuState::hide,
+        onDismiss = onDismiss,
         onStartRadio = {
             binder?.stopRadio()
             binder?.player?.forcePlay(mediaItem)
@@ -175,17 +172,16 @@ fun NonQueuedMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun QueuedMediaItemMenu(
+    onDismiss: () -> Unit,
     mediaItem: MediaItem,
     indexInQueue: Int?,
-    modifier: Modifier = Modifier,
-    onDismiss: (() -> Unit)? = null
+    modifier: Modifier = Modifier
 ) {
-    val menuState = LocalMenuState.current
     val binder = LocalPlayerServiceBinder.current
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
-        onDismiss = onDismiss ?: menuState::hide,
+        onDismiss = onDismiss,
         onRemoveFromQueue = if (indexInQueue != null) ({
             binder?.player?.removeMediaItem(indexInQueue)
         }) else null,
@@ -196,11 +192,11 @@ fun QueuedMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun BaseMediaItemMenu(
-    mediaItem: MediaItem,
     onDismiss: () -> Unit,
+    mediaItem: MediaItem,
     modifier: Modifier = Modifier,
     onGoToEqualizer: (() -> Unit)? = null,
-    onSetSleepTimer: (() -> Unit)? = null,
+    onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
@@ -215,7 +211,7 @@ fun BaseMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
         onGoToEqualizer = onGoToEqualizer,
-        onSetSleepTimer = onSetSleepTimer,
+        onShowSleepTimer = onShowSleepTimer,
         onStartRadio = onStartRadio,
         onPlayNext = onPlayNext,
         onEnqueue = onEnqueue,
@@ -256,11 +252,11 @@ fun BaseMediaItemMenu(
 @ExperimentalAnimationApi
 @Composable
 fun MediaItemMenu(
-    mediaItem: MediaItem,
     onDismiss: () -> Unit,
+    mediaItem: MediaItem,
     modifier: Modifier = Modifier,
     onGoToEqualizer: (() -> Unit)? = null,
-    onSetSleepTimer: (() -> Unit)? = null,
+    onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
@@ -413,7 +409,8 @@ fun MediaItemMenu(
                         )
                     }
 
-                    onSetSleepTimer?.let {
+                    // TODO: find solution to this shit
+                    onShowSleepTimer?.let {
                         val binder = LocalPlayerServiceBinder.current
                         val (colorPalette, typography) = LocalAppearance.current
 
@@ -432,17 +429,15 @@ fun MediaItemMenu(
                                     confirmText = "Stop",
                                     onDismiss = {
                                         isShowingSleepTimerDialog = false
+                                        onDismiss()
                                     },
                                     onConfirm = {
                                         binder?.cancelSleepTimer()
+                                        onDismiss()
                                     }
                                 )
                             } else {
-                                DefaultDialog(
-                                    onDismiss = {
-                                        isShowingSleepTimerDialog = false
-                                    }
-                                ) {
+                                DefaultDialog(onDismiss = { isShowingSleepTimerDialog = false }) {
                                     var amount by remember {
                                         mutableStateOf(1)
                                     }
@@ -514,7 +509,10 @@ fun MediaItemMenu(
                                     ) {
                                         DialogTextButton(
                                             text = "Cancel",
-                                            onClick = { isShowingSleepTimerDialog = false }
+                                            onClick = {
+                                                isShowingSleepTimerDialog = false
+                                                onDismiss()
+                                            }
                                         )
 
                                         DialogTextButton(
@@ -523,6 +521,7 @@ fun MediaItemMenu(
                                             onClick = {
                                                 binder?.startSleepTimer(amount * 10 * 60 * 1000L)
                                                 isShowingSleepTimerDialog = false
+                                                onDismiss()
                                             }
                                         )
                                     }

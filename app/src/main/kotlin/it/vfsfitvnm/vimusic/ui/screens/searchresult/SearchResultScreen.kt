@@ -124,7 +124,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             .combinedClickable(
                                                 onLongClick = {
                                                     menuState.display {
-                                                        NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                                        NonQueuedMediaItemMenu(
+                                        onDismiss = menuState::hide,
+                                        mediaItem = song.asMediaItem,
+                                    )
                                                     }
                                                 },
                                                 onClick = {
@@ -246,7 +249,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                             .combinedClickable(
                                                 onLongClick = {
                                                     menuState.display {
-                                                        NonQueuedMediaItemMenu(mediaItem = video.asMediaItem)
+                                                        NonQueuedMediaItemMenu(
+                                                            mediaItem = video.asMediaItem,
+                                                            onDismiss = menuState::hide
+                                                        )
                                                     }
                                                 },
                                                 onClick = {

@@ -44,11 +44,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import it.vfsfitvnm.route.OnGlobalRoute
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -219,7 +221,10 @@ fun PlayerView(
         }
 
         val paddingValues = WindowInsets.navigationBars.asPaddingValues()
-        val playerBottomSheetState = rememberBottomSheetState(64.dp + paddingValues.calculateBottomPadding(), layoutState.expandedBound)
+        val playerBottomSheetState = rememberBottomSheetState(
+            64.dp + paddingValues.calculateBottomPadding(),
+            layoutState.expandedBound
+        )
 
         when (configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> {
@@ -265,6 +270,7 @@ fun PlayerView(
                     )
                 }
             }
+
             else -> {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -325,50 +331,10 @@ fun PlayerView(
                         color = colorPalette.text,
                         onClick = {
                             menuState.display {
-                                val resultRegistryOwner =
-                                    LocalActivityResultRegistryOwner.current
-
-                                BaseMediaItemMenu(
+                                PlayerMenu(
+                                    onDismiss = menuState::hide,
                                     mediaItem = mediaItem,
-                                    onStartRadio = {
-                                        binder.stopRadio()
-                                        binder.player.seamlessPlay(mediaItem)
-                                        binder.setupRadio(
-                                            NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                        )
-                                    },
-                                    onGoToEqualizer = {
-                                        val intent =
-                                            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                                                putExtra(
-                                                    AudioEffect.EXTRA_AUDIO_SESSION,
-                                                    binder.player.audioSessionId
-                                                )
-                                                putExtra(
-                                                    AudioEffect.EXTRA_PACKAGE_NAME,
-                                                    context.packageName
-                                                )
-                                                putExtra(
-                                                    AudioEffect.EXTRA_CONTENT_TYPE,
-                                                    AudioEffect.CONTENT_TYPE_MUSIC
-                                                )
-                                            }
-
-                                        if (intent.resolveActivity(context.packageManager) != null) {
-                                            val contract =
-                                                ActivityResultContracts.StartActivityForResult()
-
-                                            resultRegistryOwner?.activityResultRegistry
-                                                ?.register("", contract) {}
-                                                ?.launch(intent)
-                                        } else {
-                                            Toast
-                                                .makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT)
-                                                .show()
-                                        }
-                                    },
-                                    onSetSleepTimer = {},
-                                    onDismiss = menuState::hide
+                                    binder = binder
                                 )
                             }
                         },
@@ -388,4 +354,42 @@ fun PlayerView(
                 .align(Alignment.BottomCenter)
         )
     }
+}
+
+@ExperimentalAnimationApi
+@Composable
+private fun PlayerMenu(
+    binder: PlayerService.Binder,
+    mediaItem: MediaItem,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+
+    BaseMediaItemMenu(
+        mediaItem = mediaItem,
+        onStartRadio = {
+            binder.stopRadio()
+            binder.player.seamlessPlay(mediaItem)
+            binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
+        },
+        onGoToEqualizer = {
+            val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder.player.audioSessionId)
+                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+            }
+
+            if (intent.resolveActivity(context.packageManager) != null) {
+                val contract = ActivityResultContracts.StartActivityForResult()
+
+                resultRegistryOwner?.activityResultRegistry
+                    ?.register("", contract) {}?.launch(intent)
+            } else {
+                Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT).show()
+            }
+        },
+        onShowSleepTimer = {},
+        onDismiss = onDismiss
+    )
 }

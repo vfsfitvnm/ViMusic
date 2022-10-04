@@ -125,7 +125,10 @@ fun ArtistOverview(
                                 .combinedClickable(
                                     onLongClick = {
                                         menuState.display {
-                                            NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                            NonQueuedMediaItemMenu(
+                                                onDismiss = menuState::hide,
+                                                mediaItem = song.asMediaItem,
+                                            )
                                         }
                                     },
                                     onClick = {

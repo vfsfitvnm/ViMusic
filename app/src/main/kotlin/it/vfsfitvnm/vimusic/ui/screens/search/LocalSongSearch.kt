@@ -90,7 +90,7 @@ fun LocalSongSearch(
                 actionsContent = {
                     if (textFieldValue.text.isNotEmpty()) {
                         SecondaryTextButton(
-                            text =  "Clear",
+                            text = "Clear",
                             onClick = { onTextFieldValueChanged(TextFieldValue()) }
                         )
                     }
@@ -110,7 +110,10 @@ fun LocalSongSearch(
                     .combinedClickable(
                         onLongClick = {
                             menuState.display {
-                                InHistoryMediaItemMenu(song = song)
+                                InHistoryMediaItemMenu(
+                                    song = song,
+                                    onDismiss = menuState::hide
+                                )
                             }
                         },
                         onClick = {

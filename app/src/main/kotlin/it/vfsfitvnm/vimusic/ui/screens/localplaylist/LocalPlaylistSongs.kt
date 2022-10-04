@@ -172,13 +172,13 @@ fun LocalPlaylistSongs(
                                 transaction {
                                     runBlocking(Dispatchers.IO) {
                                         withContext(Dispatchers.IO) {
-                                            Innertube.playlistPage(BrowseBody(browseId = browseId))?.completed()
+                                            Innertube.playlistPage(BrowseBody(browseId = browseId))
+                                                ?.completed()
                                         }
                                     }?.getOrNull()?.let { remotePlaylist ->
                                         Database.clearPlaylist(playlistId)
 
-                                        remotePlaylist.
-                                        songsPage
+                                        remotePlaylist.songsPage
                                             ?.items
                                             ?.map(Innertube.SongItem::asMediaItem)
                                             ?.onEach(Database::insert)
@@ -240,12 +240,14 @@ fun LocalPlaylistSongs(
                                     InPlaylistMediaItemMenu(
                                         playlistId = playlistId,
                                         positionInPlaylist = index,
-                                        song = song
+                                        song = song,
+                                        onDismiss = menuState::hide
                                     )
                                 }
                             },
                             onClick = {
-                                playlistWithSongs?.songs?.map(DetailedSong::asMediaItem)
+                                playlistWithSongs?.songs
+                                    ?.map(DetailedSong::asMediaItem)
                                     ?.let { mediaItems ->
                                         binder?.stopRadio()
                                         binder?.player?.forcePlayAtIndex(mediaItems, index)

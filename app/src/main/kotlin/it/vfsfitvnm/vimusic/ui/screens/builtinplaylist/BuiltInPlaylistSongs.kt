@@ -116,8 +116,14 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                             onLongClick = {
                                 menuState.display {
                                     when (builtInPlaylist) {
-                                        BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(song = song)
-                                        BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(song = song)
+                                        BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(
+                                            song = song,
+                                            onDismiss = menuState::hide
+                                        )
+                                        BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(
+                                            song = song,
+                                            onDismiss = menuState::hide
+                                        )
                                     }
                                 }
                             },

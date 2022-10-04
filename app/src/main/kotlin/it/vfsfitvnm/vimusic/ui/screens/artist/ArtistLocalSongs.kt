@@ -102,12 +102,18 @@ fun ArtistLocalSongs(
                             .combinedClickable(
                                 onLongClick = {
                                     menuState.display {
-                                        NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                        NonQueuedMediaItemMenu(
+                                            onDismiss = menuState::hide,
+                                            mediaItem = song.asMediaItem,
+                                        )
                                     }
                                 },
                                 onClick = {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayAtIndex(songs.map(DetailedSong::asMediaItem), index)
+                                    binder?.player?.forcePlayAtIndex(
+                                        songs.map(DetailedSong::asMediaItem),
+                                        index
+                                    )
                                 }
                             )
                     )

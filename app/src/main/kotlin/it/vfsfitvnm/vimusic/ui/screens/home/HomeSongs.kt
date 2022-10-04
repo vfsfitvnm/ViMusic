@@ -168,12 +168,18 @@ fun HomeSongs() {
                         .combinedClickable(
                             onLongClick = {
                                 menuState.display {
-                                    InHistoryMediaItemMenu(song = song)
+                                    InHistoryMediaItemMenu(
+                                        song = song,
+                                        onDismiss = menuState::hide
+                                    )
                                 }
                             },
                             onClick = {
                                 binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)
+                                binder?.player?.forcePlayAtIndex(
+                                    items.map(DetailedSong::asMediaItem),
+                                    index
+                                )
                             }
                         )
                         .animateItemPlacement()
