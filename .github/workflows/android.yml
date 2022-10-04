@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["master", "redesign", "androidauto"]
   pull_request:
     branches: ["master"]
 
