@@ -34,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -49,10 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.drawCircle
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -93,9 +90,7 @@ fun TextFieldDialog(
     ) {
         BasicTextField(
             value = textFieldValue,
-            onValueChange = {
-                textFieldValue = it
-            },
+            onValueChange = { textFieldValue = it },
             textStyle = typography.xs.semiBold.center,
             singleLine = singleLine,
             maxLines = maxLines,
@@ -142,19 +137,14 @@ fun TextFieldDialog(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            ChunkyButton(
-                backgroundColor = Color.Transparent,
+            DialogTextButton(
                 text = cancelText,
-                textStyle = typography.xs.semiBold,
-                shape = RoundedCornerShape(36.dp),
                 onClick = onCancel
             )
 
-            ChunkyButton(
-                backgroundColor = colorPalette.accent,
+            DialogTextButton(
+                primary = true,
                 text = doneText,
-                textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
-                shape = RoundedCornerShape(36.dp),
                 onClick = {
                     if (isTextInputValid(textFieldValue.text)) {
                         onDismiss()
@@ -181,7 +171,7 @@ fun ConfirmationDialog(
     confirmText: String = "Confirm",
     onCancel: () -> Unit = onDismiss
 ) {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (_, typography) = LocalAppearance.current
 
     DefaultDialog(
         onDismiss = onDismiss,
@@ -189,7 +179,7 @@ fun ConfirmationDialog(
     ) {
         BasicText(
             text = text,
-            style = typography.xs.semiBold.center,
+            style = typography.s.medium.center,
             modifier = Modifier
                 .padding(all = 16.dp)
         )
@@ -199,19 +189,14 @@ fun ConfirmationDialog(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            ChunkyButton(
-                backgroundColor = Color.Transparent,
+            DialogTextButton(
                 text = cancelText,
-                textStyle = typography.xs.semiBold,
-                shape = RoundedCornerShape(36.dp),
                 onClick = onCancel
             )
 
-            ChunkyButton(
-                backgroundColor = colorPalette.accent,
+            DialogTextButton(
                 text = confirmText,
-                textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
-                shape = RoundedCornerShape(36.dp),
+                primary = true,
                 onClick = {
                     onConfirm()
                     onDismiss()
@@ -265,10 +250,7 @@ inline fun <T> ValueSelectorDialog(
         Column(
             modifier = modifier
                 .padding(all = 48.dp)
-                .background(
-                    color = colorPalette.background1,
-                    shape = RoundedCornerShape(8.dp)
-                )
+                .background(color = colorPalette.background1, shape = RoundedCornerShape(8.dp))
                 .padding(vertical = 16.dp),
         ) {
             BasicText(
@@ -336,16 +318,17 @@ inline fun <T> ValueSelectorDialog(
                 }
             }
 
-            BasicText(
-                text = "Cancel",
-                style = typography.xs.semiBold,
+            Box(
                 modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .clip(RoundedCornerShape(36.dp))
-                    .clickable(onClick = onDismiss)
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
                     .align(Alignment.End)
-            )
+                    .padding(end = 24.dp)
+            ) {
+                DialogTextButton(
+                    text = "Cancel",
+                    onClick = onDismiss,
+                    modifier = Modifier
+                )
+            }
         }
     }
 }

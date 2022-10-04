@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -47,7 +45,6 @@ import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.transaction
-import it.vfsfitvnm.vimusic.ui.components.ChunkyButton
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
@@ -55,7 +52,6 @@ import it.vfsfitvnm.vimusic.ui.screens.viewPlaylistsRoute
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.addNext
 import it.vfsfitvnm.vimusic.utils.asMediaItem
-import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -245,7 +241,10 @@ fun BaseMediaItemMenu(
             val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND
                 type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${mediaItem.mediaId}")
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+                )
             }
 
             context.startActivity(Intent.createChooser(sendIntent, null))
@@ -280,9 +279,11 @@ fun MediaItemMenu(
                 when (targetState.route) {
                     viewPlaylistsRoute -> slideIntoContainer(AnimatedContentScope.SlideDirection.Left) with
                             slideOutOfContainer(AnimatedContentScope.SlideDirection.Left)
+
                     else -> when (initialState.route) {
                         viewPlaylistsRoute -> slideIntoContainer(AnimatedContentScope.SlideDirection.Right) with
                                 slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+
                         else -> EnterTransition.None with ExitTransition.None
                     }
                 }
@@ -511,20 +512,14 @@ fun MediaItemMenu(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                     ) {
-                                        ChunkyButton(
-                                            backgroundColor = Color.Transparent,
+                                        DialogTextButton(
                                             text = "Cancel",
-                                            textStyle = typography.xs.semiBold,
-                                            shape = RoundedCornerShape(36.dp),
                                             onClick = { isShowingSleepTimerDialog = false }
                                         )
 
-                                        ChunkyButton(
-                                            backgroundColor = colorPalette.accent,
+                                        DialogTextButton(
                                             text = "Set",
-                                            textStyle = typography.xs.semiBold.color(colorPalette.onAccent),
-                                            shape = RoundedCornerShape(36.dp),
-                                            isEnabled = amount > 0,
+                                            enabled = amount > 0,
                                             onClick = {
                                                 binder?.startSleepTimer(amount * 10 * 60 * 1000L)
                                                 isShowingSleepTimerDialog = false
