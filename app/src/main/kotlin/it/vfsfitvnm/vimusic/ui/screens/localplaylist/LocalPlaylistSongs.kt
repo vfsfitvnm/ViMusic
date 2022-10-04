@@ -5,6 +5,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,9 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,16 +40,17 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.PlaylistWithSongsSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.transaction
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
+import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.completed
 import it.vfsfitvnm.vimusic.utils.enqueue
@@ -69,6 +74,9 @@ fun LocalPlaylistSongs(
 ) {
     val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+    val menuState = LocalMenuState.current
+
+    val rippleIndication = rememberRipple(bounded = true)
 
     val playlistWithSongs by produceSaveableState(
         initialValue = null,
@@ -127,7 +135,8 @@ fun LocalPlaylistSongs(
         )
     }
 
-    val thumbnailSize = Dimensions.thumbnails.song.px
+    val thumbnailSizeDp = Dimensions.thumbnails.song
+    val thumbnailSizePx = thumbnailSizeDp.px
 
     Box {
         ReorderingLazyColumn(
@@ -224,21 +233,8 @@ fun LocalPlaylistSongs(
             ) { index, song ->
                 SongItem(
                     song = song,
-                    thumbnailSizePx = thumbnailSize,
-                    onClick = {
-                        playlistWithSongs?.songs?.map(DetailedSong::asMediaItem)
-                            ?.let { mediaItems ->
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(mediaItems, index)
-                            }
-                    },
-                    menuContent = {
-                        InPlaylistMediaItemMenu(
-                            playlistId = playlistId,
-                            positionInPlaylist = index,
-                            song = song
-                        )
-                    },
+                    thumbnailSizePx = thumbnailSizePx,
+                    thumbnailSizeDp = thumbnailSizeDp,
                     trailingContent = {
                         Image(
                             painter = painterResource(R.drawable.reorder),
@@ -255,6 +251,26 @@ fun LocalPlaylistSongs(
                         )
                     },
                     modifier = Modifier
+                        .combinedClickable(
+                            indication = rippleIndication,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onLongClick = {
+                                menuState.display {
+                                    InPlaylistMediaItemMenu(
+                                        playlistId = playlistId,
+                                        positionInPlaylist = index,
+                                        song = song
+                                    )
+                                }
+                            },
+                            onClick = {
+                                playlistWithSongs?.songs?.map(DetailedSong::asMediaItem)
+                                    ?.let { mediaItems ->
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayAtIndex(mediaItems, index)
+                                    }
+                            }
+                        )
                         .animateItemPlacement(reorderingState = reorderingState)
                         .draggedItem(reorderingState = reorderingState, index = index)
                 )

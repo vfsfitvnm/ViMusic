@@ -1,8 +1,10 @@
 package it.vfsfitvnm.vimusic.ui.screens.home
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -40,20 +42,21 @@ import it.vfsfitvnm.vimusic.savers.DetailedSongSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeRelatedPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.AlbumItem
+import it.vfsfitvnm.vimusic.ui.items.AlbumItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.ArtistItem
+import it.vfsfitvnm.vimusic.ui.items.ArtistItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.PlaylistItem
+import it.vfsfitvnm.vimusic.ui.items.PlaylistItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.SongItem
+import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.AlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.ArtistItem
-import it.vfsfitvnm.vimusic.ui.views.ArtistItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.PlaylistItem
-import it.vfsfitvnm.vimusic.ui.views.PlaylistItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.SongItem
-import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
@@ -61,7 +64,6 @@ import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
@@ -71,6 +73,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun QuickPicks(
@@ -80,6 +83,9 @@ fun QuickPicks(
 ) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+    val menuState = LocalMenuState.current
+
+    val rippleIndication = rememberRipple(bounded = true)
 
     val trending by produceSaveableState(
         initialValue = null,
@@ -135,20 +141,28 @@ fun QuickPicks(
                     trending?.let { song ->
                         item {
                             SongItem(
-                                thumbnailModel = song.thumbnailUrl?.thumbnail(songThumbnailSizePx),
-                                title = song.title,
-                                authors = song.artistsText,
-                                durationText = null,
-                                menuContent = { NonQueuedMediaItemMenu(mediaItem = song.asMediaItem) },
-                                onClick = {
-                                    val mediaItem = song.asMediaItem
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlay(mediaItem)
-                                    binder?.setupRadio(
-                                        NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                    )
-                                },
+                                song = song,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
                                 modifier = Modifier
+                                    .combinedClickable(
+                                        indication = rippleIndication,
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                            }
+                                        },
+                                        onClick = {
+                                            val mediaItem = song.asMediaItem
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlay(mediaItem)
+                                            binder?.setupRadio(
+                                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                            )
+                                        }
+                                    )
+                                    .animateItemPlacement()
                                     .width(itemInHorizontalGridWidth)
                             )
                         }
@@ -161,15 +175,26 @@ fun QuickPicks(
                         SongItem(
                             song = song,
                             thumbnailSizePx = songThumbnailSizePx,
-                            onClick = {
-                                val mediaItem = song.asMediaItem
-                                binder?.stopRadio()
-                                binder?.player?.forcePlay(mediaItem)
-                                binder?.setupRadio(
-                                    NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                )
-                            },
+                            thumbnailSizeDp = songThumbnailSizeDp,
                             modifier = Modifier
+                                .combinedClickable(
+                                    indication = rippleIndication,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onLongClick = {
+                                        menuState.display {
+                                            NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                        }
+                                    },
+                                    onClick = {
+                                        val mediaItem = song.asMediaItem
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlay(mediaItem)
+                                        binder?.setupRadio(
+                                            NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                        )
+                                    }
+                                )
+                                .animateItemPlacement()
                                 .width(itemInHorizontalGridWidth)
                         )
                     }

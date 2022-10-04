@@ -44,10 +44,10 @@ import it.vfsfitvnm.vimusic.savers.PlaylistPreviewListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
+import it.vfsfitvnm.vimusic.ui.items.PlaylistItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.ui.views.BuiltInPlaylistItem
-import it.vfsfitvnm.vimusic.ui.views.PlaylistPreviewItem
+import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
 import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
@@ -100,6 +100,9 @@ fun HomePlaylists(
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
 
+    val thumbnailSizeDp = 108.dp
+    val thumbnailSizePx = thumbnailSizeDp.px
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(Dimensions.thumbnails.song * 2 + Dimensions.itemsVerticalPadding * 2),
         contentPadding = LocalPlayerAwarePaddingValues.current,
@@ -112,11 +115,7 @@ fun HomePlaylists(
             .fillMaxSize()
             .background(colorPalette.background0)
     ) {
-        item(
-            key = "header",
-            contentType = 0,
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
+        item(key = "header", contentType = 0, span = { GridItemSpan(maxLineSpan) }) {
             Header(title = "Playlists") {
                 @Composable
                 fun Item(
@@ -178,24 +177,31 @@ fun HomePlaylists(
         }
 
         item(key = "favorites") {
-            BuiltInPlaylistItem(
+            PlaylistItem(
                 icon = R.drawable.heart,
                 colorTint = colorPalette.red,
                 name = "Favorites",
+                songCount = null,
+                thumbnailSizeDp = thumbnailSizeDp,
+                alternative = true,
                 modifier = Modifier
                     .clickable(
                         indication = rememberRipple(bounded = true),
                         interactionSource = remember { MutableInteractionSource() },
                         onClick = { onBuiltInPlaylist(BuiltInPlaylist.Favorites) }
                     )
+                    .animateItemPlacement()
             )
         }
 
         item(key = "offline") {
-            BuiltInPlaylistItem(
+            PlaylistItem(
                 icon = R.drawable.airplane,
                 colorTint = colorPalette.blue,
                 name = "Offline",
+                songCount = null,
+                thumbnailSizeDp = thumbnailSizeDp,
+                alternative = true,
                 modifier = Modifier
                     .clickable(
                         indication = rememberRipple(bounded = true),
@@ -206,12 +212,12 @@ fun HomePlaylists(
             )
         }
 
-        items(
-            items = items,
-            key = { it.playlist.id }
-        ) { playlistPreview ->
-            PlaylistPreviewItem(
-                playlistPreview = playlistPreview,
+        items(items = items, key = { it.playlist.id }) { playlistPreview ->
+            PlaylistItem(
+                playlist = playlistPreview,
+                thumbnailSizeDp = thumbnailSizeDp,
+                thumbnailSizePx = thumbnailSizePx,
+                alternative = true,
                 modifier = Modifier
                     .clickable(
                         indication = rememberRipple(bounded = true),

@@ -11,20 +11,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,13 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
@@ -47,16 +39,14 @@ import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.savers.ArtistListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.items.ArtistItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.artistSortByKey
 import it.vfsfitvnm.vimusic.utils.artistSortOrderKey
-import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.vimusic.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 
@@ -66,7 +56,7 @@ import kotlinx.coroutines.flow.flowOn
 fun HomeArtistList(
     onArtistClick: (Artist) -> Unit
 ) {
-    val (colorPalette, typography) = LocalAppearance.current
+    val (colorPalette) = LocalAppearance.current
 
     var sortBy by rememberPreference(artistSortByKey, ArtistSortBy.DateAdded)
     var sortOrder by rememberPreference(artistSortOrderKey, SortOrder.Descending)
@@ -154,39 +144,21 @@ fun HomeArtistList(
             }
         }
 
-        items(
-            items = items,
-            key = Artist::id
-        ) { artist ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+        items(items = items, key = Artist::id) { artist ->
+            ArtistItem(
+                artist = artist,
+                thumbnailSizePx = thumbnailSizePx,
+                thumbnailSizeDp = thumbnailSizeDp,
+                alternative = true,
                 modifier = Modifier
-                    .requiredWidth(thumbnailSizeDp)
+                    .clickable(
+                        indication = rippleIndication,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = { onArtistClick(artist) }
+                    )
+//                    .requiredWidth(thumbnailSizeDp)
                     .animateItemPlacement()
-            ) {
-                AsyncImage(
-                    model = artist.thumbnailUrl?.thumbnail(thumbnailSizePx),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable(
-                            indication = rippleIndication,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = { onArtistClick(artist) }
-                        )
-                        .background(colorPalette.background1)
-                        .align(Alignment.CenterHorizontally)
-                        .requiredSize(thumbnailSizeDp),
-                )
-
-                BasicText(
-                    text = artist.name ?: "",
-                    style = typography.xxs.semiBold.center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            )
         }
     }
 }

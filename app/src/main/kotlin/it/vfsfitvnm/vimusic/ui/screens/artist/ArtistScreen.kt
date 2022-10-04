@@ -2,9 +2,12 @@ package it.vfsfitvnm.vimusic.ui.screens.artist
 
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ColumnScope
@@ -39,9 +42,15 @@ import it.vfsfitvnm.vimusic.savers.InnertubeAlbumsPageSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeArtistPageSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeSongsPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
+import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.items.AlbumItem
+import it.vfsfitvnm.vimusic.ui.items.AlbumItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.SongItem
+import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
@@ -49,10 +58,6 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.styling.shimmer
-import it.vfsfitvnm.vimusic.ui.views.AlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.SongItem
-import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.artistScreenTabIndexKey
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
@@ -69,6 +74,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun ArtistScreen(browseId: String) {
@@ -250,8 +256,11 @@ fun ArtistScreen(browseId: String) {
 
                         1 -> {
                             val binder = LocalPlayerServiceBinder.current
+                            val menuState = LocalMenuState.current
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
+
+                            val rippleIndication = rememberRipple(bounded = true)
 
                             ItemsPage(
                                 stateSaver = InnertubeSongsPageSaver,
@@ -284,12 +293,23 @@ fun ArtistScreen(browseId: String) {
                                 itemContent = { song ->
                                     SongItem(
                                         song = song,
+                                        thumbnailSizeDp = thumbnailSizeDp,
                                         thumbnailSizePx = thumbnailSizePx,
-                                        onClick = {
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlay(song.asMediaItem)
-                                            binder?.setupRadio(song.info?.endpoint)
-                                        }
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                indication = rippleIndication,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                                    }
+                                                },
+                                                onClick = {
+                                                    binder?.stopRadio()
+                                                    binder?.player?.forcePlay(song.asMediaItem)
+                                                    binder?.setupRadio(song.info?.endpoint)
+                                                }
+                                            )
                                     )
                                 },
                                 itemPlaceholderContent = {

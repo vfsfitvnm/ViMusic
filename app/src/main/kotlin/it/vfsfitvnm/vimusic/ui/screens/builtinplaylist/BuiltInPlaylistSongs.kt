@@ -3,13 +3,17 @@ package it.vfsfitvnm.vimusic.ui.screens.builtinplaylist
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
@@ -18,15 +22,16 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
+import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
@@ -42,6 +47,9 @@ import kotlinx.coroutines.flow.map
 fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
     val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+    val menuState = LocalMenuState.current
+
+    val rippleIndication = rememberRipple(bounded = true)
 
     val songs by produceSaveableState(
         initialValue = emptyList(),
@@ -64,7 +72,8 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
         }.collect { value = it }
     }
 
-    val thumbnailSize = Dimensions.thumbnails.song.px
+    val thumbnailSizeDp = Dimensions.thumbnails.song
+    val thumbnailSize = thumbnailSizeDp.px
 
     Box {
         LazyColumn(
@@ -105,21 +114,25 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
             ) { index, song ->
                 SongItem(
                     song = song,
+                    thumbnailSizeDp = thumbnailSizeDp,
                     thumbnailSizePx = thumbnailSize,
-                    onClick = {
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayAtIndex(
-                            songs.map(DetailedSong::asMediaItem),
-                            index
-                        )
-                    },
-                    menuContent = {
-                        when (builtInPlaylist) {
-                            BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(song = song)
-                            BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(song = song)
-                        }
-                    },
                     modifier = Modifier
+                        .combinedClickable(
+                            indication = rippleIndication,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onLongClick = {
+                                menuState.display {
+                                    when (builtInPlaylist) {
+                                        BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(song = song)
+                                        BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(song = song)
+                                    }
+                                }
+                            },
+                            onClick = {
+                                binder?.stopRadio()
+                                binder?.player?.forcePlayAtIndex(songs.map(DetailedSong::asMediaItem), index)
+                            }
+                        )
                         .animateItemPlacement()
                 )
             }

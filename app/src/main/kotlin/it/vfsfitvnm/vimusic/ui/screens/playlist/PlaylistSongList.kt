@@ -2,9 +2,12 @@ package it.vfsfitvnm.vimusic.ui.screens.playlist
 
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,15 +22,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -42,17 +46,18 @@ import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.savers.InnertubePlaylistOrAlbumPageSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.transaction
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.styling.shimmer
-import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.completed
@@ -68,6 +73,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun PlaylistSongList(
@@ -76,6 +82,9 @@ fun PlaylistSongList(
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
+    val menuState = LocalMenuState.current
+
+    val rippleIndication = rememberRipple(bounded = true)
 
     val playlistPageResult by produceSaveableState(
         initialValue = null,
@@ -201,28 +210,25 @@ fun PlaylistSongList(
 
                 itemsIndexed(items = playlist.songsPage?.items ?: emptyList()) { index, song ->
                     SongItem(
-                        title = song.info?.name,
-                        authors = song.authors?.joinToString("") { it.name ?: "" },
-                        durationText = song.durationText,
-                        onClick = {
-                            playlist.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(mediaItems, index)
-                            }
-                        },
-                        startContent = {
-                            AsyncImage(
-                                model = song.thumbnail?.size(songThumbnailSizePx),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .clip(thumbnailShape)
-                                    .size(Dimensions.thumbnails.song)
+                        song = song,
+                        thumbnailSizePx = songThumbnailSizePx,
+                        thumbnailSizeDp = songThumbnailSizeDp,
+                        modifier = Modifier
+                            .combinedClickable(
+                                indication = rippleIndication,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onLongClick = {
+                                    menuState.display {
+                                        NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                    }
+                                },
+                                onClick = {
+                                    playlist.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayAtIndex(mediaItems, index)
+                                    }
+                                }
                             )
-                        },
-                        menuContent = {
-                            NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
-                        }
                     )
                 }
             }

@@ -3,6 +3,7 @@ package it.vfsfitvnm.vimusic.ui.screens.searchresult
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.ripple.rememberRipple
@@ -21,24 +22,26 @@ import it.vfsfitvnm.vimusic.savers.InnertubePlaylistItemListSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeSongsPageSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeVideoItemListSaver
 import it.vfsfitvnm.vimusic.savers.innertubeItemsPageSaver
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.items.AlbumItem
+import it.vfsfitvnm.vimusic.ui.items.AlbumItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.ArtistItem
+import it.vfsfitvnm.vimusic.ui.items.ArtistItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.PlaylistItem
+import it.vfsfitvnm.vimusic.ui.items.PlaylistItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.SongItem
+import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
+import it.vfsfitvnm.vimusic.ui.items.VideoItem
+import it.vfsfitvnm.vimusic.ui.items.VideoItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.AlbumItem
-import it.vfsfitvnm.vimusic.ui.views.AlbumItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.ArtistItem
-import it.vfsfitvnm.vimusic.ui.views.ArtistItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.PlaylistItem
-import it.vfsfitvnm.vimusic.ui.views.PlaylistItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.SongItem
-import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.VideoItem
-import it.vfsfitvnm.vimusic.ui.views.VideoItemPlaceholder
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
@@ -74,6 +77,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
 
             val emptyItemsText = "No results found. Please try a different query or category"
 
+            val rippleIndication = rememberRipple(bounded = true)
+
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
                 onTopIconButtonClick = pop,
@@ -92,6 +97,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                     when (tabIndex) {
                         0 -> {
                             val binder = LocalPlayerServiceBinder.current
+                            val menuState = LocalMenuState.current
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
@@ -116,11 +122,22 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                     SongItem(
                                         song = song,
                                         thumbnailSizePx = thumbnailSizePx,
-                                        onClick = {
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlay(song.asMediaItem)
-                                            binder?.setupRadio(song.info?.endpoint)
-                                        }
+                                        thumbnailSizeDp = thumbnailSizeDp,
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                indication = rippleIndication,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
+                                                    }
+                                                },
+                                                onClick = {
+                                                    binder?.stopRadio()
+                                                    binder?.player?.forcePlay(song.asMediaItem)
+                                                    binder?.setupRadio(song.info?.endpoint)
+                                                }
+                                            )
                                     )
                                 },
                                 itemPlaceholderContent = {
@@ -157,7 +174,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
                                             .clickable(
-                                                indication = rememberRipple(bounded = true),
+                                                indication = rippleIndication,
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 onClick = { albumRoute(album.info?.endpoint?.browseId) }
                                             )
@@ -198,7 +215,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
                                             .clickable(
-                                                indication = rememberRipple(bounded = true),
+                                                indication = rippleIndication,
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 onClick = { artistRoute(artist.info?.endpoint?.browseId) }
                                             )
@@ -209,8 +226,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 }
                             )
                         }
+
                         3 -> {
                             val binder = LocalPlayerServiceBinder.current
+                            val menuState = LocalMenuState.current
                             val thumbnailHeightDp = 72.dp
                             val thumbnailWidthDp = 128.dp
 
@@ -236,11 +255,21 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         video = video,
                                         thumbnailWidthDp = thumbnailWidthDp,
                                         thumbnailHeightDp = thumbnailHeightDp,
-                                        onClick = {
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlay(video.asMediaItem)
-                                            binder?.setupRadio(video.info?.endpoint)
-                                        }
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                indication = rippleIndication,
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        NonQueuedMediaItemMenu(mediaItem = video.asMediaItem)
+                                                    }
+                                                },
+                                                onClick = {
+                                                    binder?.stopRadio()
+                                                    binder?.player?.forcePlay(video.asMediaItem)
+                                                    binder?.setupRadio(video.info?.endpoint)
+                                                }
+                                            )
                                     )
                                 },
                                 itemPlaceholderContent = {
@@ -286,7 +315,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
                                             .clickable(
-                                                indication = rememberRipple(bounded = true),
+                                                indication = rippleIndication,
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 onClick = { playlistRoute(playlist.info?.endpoint?.browseId) }
                                             )

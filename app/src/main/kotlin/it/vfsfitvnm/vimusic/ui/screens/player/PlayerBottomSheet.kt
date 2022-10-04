@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -51,14 +52,15 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.MusicBars
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.items.SongItem
+import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SongItemPlaceholder
-import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
@@ -106,7 +108,12 @@ fun PlayerBottomSheet(
 
         binder?.player ?: return@BottomSheet
 
-        val thumbnailSize = Dimensions.thumbnails.song.px
+        val menuState = LocalMenuState.current
+
+        val rippleIndication = rememberRipple(bounded = true)
+
+        val thumbnailSizeDp = Dimensions.thumbnails.song
+        val thumbnailSizePx = thumbnailSizeDp.px
 
         val mediaItemIndex by rememberMediaItemIndex(binder.player)
         val windows by rememberWindows(binder.player)
@@ -149,26 +156,9 @@ fun PlayerBottomSheet(
                     val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
 
                     SongItem(
-                        mediaItem = window.mediaItem,
-                        thumbnailSizePx = thumbnailSize,
-                        onClick = {
-                            if (isPlayingThisMediaItem) {
-                                if (shouldBePlaying) {
-                                    binder.player.pause()
-                                } else {
-                                    binder.player.play()
-                                }
-                            } else {
-                                binder.player.playWhenReady = true
-                                binder.player.seekToDefaultPosition(window.firstPeriodIndex)
-                            }
-                        },
-                        menuContent = {
-                            QueuedMediaItemMenu(
-                                mediaItem = window.mediaItem,
-                                indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex
-                            )
-                        },
+                        song = window.mediaItem,
+                        thumbnailSizePx = thumbnailSizePx,
+                        thumbnailSizeDp = thumbnailSizeDp,
                         onThumbnailContent = {
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = isPlayingThisMediaItem,
@@ -218,11 +208,32 @@ fun PlayerBottomSheet(
                             )
                         },
                         modifier = Modifier
-                            .animateItemPlacement(reorderingState)
-                            .draggedItem(
-                                reorderingState = reorderingState,
-                                index = window.firstPeriodIndex
+                            .combinedClickable(
+                                indication = rippleIndication,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onLongClick = {
+                                    menuState.display {
+                                        QueuedMediaItemMenu(
+                                            mediaItem = window.mediaItem,
+                                            indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    if (isPlayingThisMediaItem) {
+                                        if (shouldBePlaying) {
+                                            binder.player.pause()
+                                        } else {
+                                            binder.player.play()
+                                        }
+                                    } else {
+                                        binder.player.playWhenReady = true
+                                        binder.player.seekToDefaultPosition(window.firstPeriodIndex)
+                                    }
+                                }
                             )
+                            .animateItemPlacement(reorderingState = reorderingState)
+                            .draggedItem(reorderingState = reorderingState, index = window.firstPeriodIndex)
                     )
                 }
 

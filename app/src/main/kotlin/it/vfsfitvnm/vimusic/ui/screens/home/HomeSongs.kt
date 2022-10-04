@@ -1,17 +1,16 @@
 package it.vfsfitvnm.vimusic.ui.screens.home
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,8 +23,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,13 +45,16 @@ import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
+import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.ScrollToTop
+import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.onOverlay
+import it.vfsfitvnm.vimusic.ui.styling.overlay
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.views.SongItem
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
@@ -69,8 +73,12 @@ import kotlinx.coroutines.flow.flowOn
 fun HomeSongs() {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+    val menuState = LocalMenuState.current
 
-    val thumbnailSize = Dimensions.thumbnails.song.px
+    val rippleIndication = rememberRipple(bounded = true)
+
+    val thumbnailSizeDp = Dimensions.thumbnails.song
+    val thumbnailSizePx = thumbnailSizeDp.px
 
     var sortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
     var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
@@ -162,46 +170,40 @@ fun HomeSongs() {
             ) { index, song ->
                 SongItem(
                     song = song,
-                    thumbnailSizePx = thumbnailSize,
-                    onClick = {
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)
-                    },
-                    menuContent = {
-                        InHistoryMediaItemMenu(song = song)
-                    },
-                    onThumbnailContent = {
-                        AnimatedVisibility(
-                            visible = sortBy == SongSortBy.PlayTime,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
+                    thumbnailSizePx = thumbnailSizePx,
+                    thumbnailSizeDp = thumbnailSizeDp,
+                    onThumbnailContent = if (sortBy == SongSortBy.PlayTime) ({
+                        BasicText(
+                            text = song.formattedTotalPlayTime,
+                            style = typography.xxs.semiBold.center.color(colorPalette.onOverlay),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, colorPalette.overlay)
+                                    ),
+                                    shape = thumbnailShape
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
                                 .align(Alignment.BottomCenter)
-                        ) {
-                            BasicText(
-                                text = song.formattedTotalPlayTime,
-                                style = typography.xxs.semiBold.center.color(Color.White),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        brush = Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Transparent,
-                                                Color.Black.copy(alpha = 0.75f)
-                                            )
-                                        ),
-                                        shape = thumbnailShape
-                                    )
-                                    .padding(
-                                        horizontal = 8.dp,
-                                        vertical = 4.dp
-                                    )
-                            )
-                        }
-                    },
+                        )
+                    }) else null,
                     modifier = Modifier
+                        .combinedClickable(
+                            indication = rippleIndication,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onLongClick = {
+                                menuState.display {
+                                    InHistoryMediaItemMenu(song = song)
+                                }
+                            },
+                            onClick = {
+                                binder?.stopRadio()
+                                binder?.player?.forcePlayAtIndex(items.map(DetailedSong::asMediaItem), index)
+                            }
+                        )
                         .animateItemPlacement()
                 )
             }
