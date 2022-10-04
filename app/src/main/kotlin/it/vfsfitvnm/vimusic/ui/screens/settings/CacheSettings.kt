@@ -69,9 +69,7 @@ fun CacheSettings() {
             EnumValueSelectorSettingsEntry(
                 title = "Max size",
                 selectedValue = coilDiskCacheMaxSize,
-                onValueSelected = {
-                    coilDiskCacheMaxSize = it
-                }
+                onValueSelected = { coilDiskCacheMaxSize = it }
             )
         }
 
@@ -100,9 +98,7 @@ fun CacheSettings() {
             EnumValueSelectorSettingsEntry(
                 title = "Max size",
                 selectedValue = exoPlayerDiskCacheMaxSize,
-                onValueSelected = {
-                    exoPlayerDiskCacheMaxSize = it
-                }
+                onValueSelected = { exoPlayerDiskCacheMaxSize = it }
             )
         }
     }

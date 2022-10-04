@@ -72,7 +72,8 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
-    crossinline valueText: (T) -> String = Enum<T>::name
+    crossinline valueText: (T) -> String = Enum<T>::name,
+    noinline trailingContent: (@Composable () -> Unit)? = null
 ) {
     ValueSelectorSettingsEntry(
         title = title,
@@ -81,7 +82,8 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         onValueSelected = onValueSelected,
         modifier = modifier,
         isEnabled = isEnabled,
-        valueText = valueText
+        valueText = valueText,
+        trailingContent = trailingContent,
     )
 }
 
@@ -93,7 +95,8 @@ inline fun <T> ValueSelectorSettingsEntry(
     crossinline onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
-    crossinline valueText: (T) -> String = { it.toString() }
+    crossinline valueText: (T) -> String = { it.toString() },
+    noinline trailingContent: (@Composable () -> Unit)? = null
 ) {
     var isShowingDialog by remember {
         mutableStateOf(false)
@@ -101,9 +104,7 @@ inline fun <T> ValueSelectorSettingsEntry(
 
     if (isShowingDialog) {
         ValueSelectorDialog(
-            onDismiss = {
-                isShowingDialog = false
-            },
+            onDismiss = { isShowingDialog = false },
             title = title,
             selectedValue = selectedValue,
             values = values,
@@ -117,9 +118,8 @@ inline fun <T> ValueSelectorSettingsEntry(
         text = valueText(selectedValue),
         modifier = modifier,
         isEnabled = isEnabled,
-        onClick = {
-            isShowingDialog = true
-        }
+        onClick = { isShowingDialog = true },
+        trailingContent = trailingContent
     )
 }
 
@@ -132,19 +132,37 @@ fun SwitchSettingEntry(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true
 ) {
+    SettingsEntry(
+        title = title,
+        text = text,
+        isEnabled = isEnabled,
+        onClick = { onCheckedChange(!isChecked) },
+        trailingContent = { Switch(isChecked = isChecked) },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun SettingsEntry(
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    isEnabled: Boolean = true,
+    trailingContent: (@Composable () -> Unit)? = null
+) {
     val (colorPalette, typography) = LocalAppearance.current
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .clickable(enabled = isEnabled) { onCheckedChange(!isChecked) }
+            .clickable(enabled = isEnabled, onClick = onClick)
             .alpha(if (isEnabled) 1f else 0.5f)
             .padding(start = 16.dp)
             .padding(all = 16.dp)
             .fillMaxWidth()
     ) {
-
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -160,37 +178,7 @@ fun SwitchSettingEntry(
             )
         }
 
-        Switch(isChecked = isChecked)
-    }
-}
-
-@Composable
-fun SettingsEntry(
-    title: String,
-    text: String,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    isEnabled: Boolean = true
-) {
-    val (colorPalette, typography) = LocalAppearance.current
-
-    Column(
-        modifier = modifier
-            .clickable(enabled = isEnabled, onClick = onClick)
-            .alpha(if (isEnabled) 1f else 0.5f)
-            .padding(start = 16.dp)
-            .padding(all = 16.dp)
-            .fillMaxWidth()
-    ) {
-        BasicText(
-            text = title,
-            style = typography.xs.semiBold.copy(color = colorPalette.text),
-        )
-
-        BasicText(
-            text = text,
-            style = typography.xs.semiBold.copy(color = colorPalette.textSecondary),
-        )
+        trailingContent?.invoke()
     }
 }
 

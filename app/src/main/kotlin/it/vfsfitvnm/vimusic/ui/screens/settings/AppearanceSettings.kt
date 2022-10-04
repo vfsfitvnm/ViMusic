@@ -2,15 +2,19 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
@@ -70,7 +74,15 @@ fun AppearanceSettings() {
         EnumValueSelectorSettingsEntry(
             title = "Thumbnail roundness",
             selectedValue = thumbnailRoundness,
-            onValueSelected = { thumbnailRoundness = it }
+            onValueSelected = { thumbnailRoundness = it },
+            trailingContent = {
+                Spacer(
+                    modifier = Modifier
+                        .border(width = 1.dp, color = colorPalette.accent,  shape = thumbnailRoundness.shape())
+                        .background(color = colorPalette.background1, shape = thumbnailRoundness.shape())
+                        .size(36.dp)
+                )
+            }
         )
 
         SettingsGroupSpacer()
