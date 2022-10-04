@@ -40,6 +40,7 @@ import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
@@ -164,59 +165,46 @@ fun LocalPlaylistSongs(
                     )
 
                     playlistWithSongs?.playlist?.browseId?.let { browseId ->
-                        Image(
-                            painter = painterResource(R.drawable.sync),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable {
-                                    transaction {
-                                        runBlocking(Dispatchers.IO) {
-                                            withContext(Dispatchers.IO) {
-                                                Innertube.playlistPage(BrowseBody(browseId = browseId))?.completed()
-                                            }
-                                        }?.getOrNull()?.let { remotePlaylist ->
-                                            Database.clearPlaylist(playlistId)
-
-                                            remotePlaylist.
-                                                songsPage
-                                                ?.items
-                                                ?.map(Innertube.SongItem::asMediaItem)
-                                                ?.onEach(Database::insert)
-                                                ?.mapIndexed { position, mediaItem ->
-                                                    SongPlaylistMap(
-                                                        songId = mediaItem.mediaId,
-                                                        playlistId = playlistId,
-                                                        position = position
-                                                    )
-                                                }?.let(Database::insertSongPlaylistMaps)
+                        HeaderIconButton(
+                            icon = R.drawable.sync,
+                            color = colorPalette.text,
+                            onClick = {
+                                transaction {
+                                    runBlocking(Dispatchers.IO) {
+                                        withContext(Dispatchers.IO) {
+                                            Innertube.playlistPage(BrowseBody(browseId = browseId))?.completed()
                                         }
+                                    }?.getOrNull()?.let { remotePlaylist ->
+                                        Database.clearPlaylist(playlistId)
+
+                                        remotePlaylist.
+                                        songsPage
+                                            ?.items
+                                            ?.map(Innertube.SongItem::asMediaItem)
+                                            ?.onEach(Database::insert)
+                                            ?.mapIndexed { position, mediaItem ->
+                                                SongPlaylistMap(
+                                                    songId = mediaItem.mediaId,
+                                                    playlistId = playlistId,
+                                                    position = position
+                                                )
+                                            }?.let(Database::insertSongPlaylistMaps)
                                     }
                                 }
-                                .padding(all = 4.dp)
-                                .size(18.dp)
+                            }
                         )
                     }
 
-                    Image(
-                        painter = painterResource(R.drawable.pencil),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .clickable { isRenaming = true }
-                            .padding(all = 4.dp)
-                            .size(18.dp)
+                    HeaderIconButton(
+                        icon = R.drawable.pencil,
+                        color = colorPalette.text,
+                        onClick = { isRenaming = true }
                     )
 
-
-                    Image(
-                        painter = painterResource(R.drawable.trash),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .clickable { isDeleting = true }
-                            .padding(all = 4.dp)
-                            .size(18.dp)
+                    HeaderIconButton(
+                        icon = R.drawable.trash,
+                        color = colorPalette.text,
+                        onClick = { isDeleting = true }
                     )
                 }
             }

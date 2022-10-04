@@ -52,6 +52,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.MusicBars
+import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
@@ -227,7 +228,10 @@ fun PlayerBottomSheet(
                                 }
                             )
                             .animateItemPlacement(reorderingState = reorderingState)
-                            .draggedItem(reorderingState = reorderingState, index = window.firstPeriodIndex)
+                            .draggedItem(
+                                reorderingState = reorderingState,
+                                index = window.firstPeriodIndex
+                            )
                     )
                 }
 
@@ -257,14 +261,13 @@ fun PlayerBottomSheet(
                     .height(64.dp + bottomPadding)
                     .background(colorPalette.background2)
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
+                    .padding(horizontal = 12.dp)
                     .padding(bottom = bottomPadding)
             ) {
                 BasicText(
                     text = "${windows.size} songs",
                     style = typography.xxs.medium,
                     modifier = Modifier
-                        .padding(start = 4.dp)
                         .background(color = colorPalette.background1, shape = RoundedCornerShape(16.dp))
                         .align(Alignment.CenterStart)
                         .padding(all = 8.dp)
@@ -279,22 +282,20 @@ fun PlayerBottomSheet(
                         .size(18.dp)
                 )
 
-                Image(
-                    painter = painterResource(R.drawable.shuffle),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.text),
-                    modifier = Modifier
-                        .padding(end = 2.dp)
-                        .clickable {
-                            reorderingState.coroutineScope.launch {
-                                reorderingState.lazyListState.smoothScrollToTop()
-                            }.invokeOnCompletion {
-                                binder.player.shuffleQueue()
-                            }
+                IconButton(
+                    icon = R.drawable.shuffle,
+                    color = colorPalette.text,
+                    onClick = {
+                        reorderingState.coroutineScope.launch {
+                            reorderingState.lazyListState.smoothScrollToTop()
+                        }.invokeOnCompletion {
+                            binder.player.shuffleQueue()
                         }
-                        .align(Alignment.CenterEnd)
-                        .padding(all = 8.dp)
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp, vertical = 8.dp)
                         .size(20.dp)
+                        .align(Alignment.CenterEnd)
                 )
             }
         }

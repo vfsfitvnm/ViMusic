@@ -3,7 +3,6 @@ package it.vfsfitvnm.vimusic.ui.screens.album
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,9 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
@@ -39,6 +36,7 @@ import it.vfsfitvnm.vimusic.savers.InnertubePlaylistOrAlbumPageSaver
 import it.vfsfitvnm.vimusic.savers.innertubeItemsPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.items.AlbumItem
@@ -143,49 +141,39 @@ fun AlbumScreen(browseId: String) {
                                 .weight(1f)
                         )
 
-                        Image(
-                            painter = painterResource(
-                                if (album?.bookmarkedAt == null) {
-                                    R.drawable.bookmark_outline
-                                } else {
-                                    R.drawable.bookmark
-                                }
-                            ),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.accent),
-                            modifier = Modifier
-                                .clickable {
-                                    val bookmarkedAt =
-                                        if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
+                        HeaderIconButton(
+                            icon = if (album?.bookmarkedAt == null) {
+                                R.drawable.bookmark_outline
+                            } else {
+                                R.drawable.bookmark
+                            },
+                            color = colorPalette.accent,
+                            onClick = {
+                                val bookmarkedAt =
+                                    if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
 
-                                    query {
-                                        album
-                                            ?.copy(bookmarkedAt = bookmarkedAt)
-                                            ?.let(Database::update)
-                                    }
+                                query {
+                                    album
+                                        ?.copy(bookmarkedAt = bookmarkedAt)
+                                        ?.let(Database::update)
                                 }
-                                .padding(all = 4.dp)
-                                .size(18.dp)
+                            }
                         )
 
-                        Image(
-                            painter = painterResource(R.drawable.share_social),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .clickable {
-                                    album?.shareUrl?.let { url ->
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            type = "text/plain"
-                                            putExtra(Intent.EXTRA_TEXT, url)
-                                        }
-
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
+                        HeaderIconButton(
+                            icon = R.drawable.share_social,
+                            color = colorPalette.text,
+                            onClick = {
+                                album?.shareUrl?.let { url ->
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, url)
                                     }
+
+                                    context.startActivity(Intent.createChooser(sendIntent, null))
                                 }
-                                .padding(all = 4.dp)
-                                .size(18.dp)
+                            }
                         )
                     }
                 }

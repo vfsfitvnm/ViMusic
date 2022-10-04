@@ -23,17 +23,12 @@ fun HeaderIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Image(
-        painter = painterResource(icon),
-        contentDescription = null,
-        colorFilter = ColorFilter.tint(color),
+    IconButton(
+        icon = icon,
+        color = color,
+        onClick = onClick,
+        enabled = enabled,
         modifier = modifier
-            .clickable(
-                indication = rememberRipple(bounded = false),
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = enabled,
-                onClick = onClick
-            )
             .padding(all = 4.dp)
             .size(18.dp)
     )
@@ -51,12 +46,13 @@ fun IconButton(
         painter = painterResource(icon),
         contentDescription = null,
         colorFilter = ColorFilter.tint(color),
-        modifier = modifier
+        modifier = Modifier
             .clickable(
                 indication = rememberRipple(bounded = false),
                 interactionSource = remember { MutableInteractionSource() },
                 enabled = enabled,
                 onClick = onClick
             )
+            .then(modifier)
     )
 }

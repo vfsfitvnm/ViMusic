@@ -3,9 +3,7 @@ package it.vfsfitvnm.vimusic.ui.screens.playlist
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,9 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
@@ -45,6 +41,7 @@ import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
@@ -137,57 +134,47 @@ fun PlaylistSongList(
                                     .weight(1f)
                             )
 
-                            Image(
-                                painter = painterResource(
-                                    if (isImported == true) R.drawable.bookmark else R.drawable.bookmark_outline
-                                ),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.accent),
-                                modifier = Modifier
-                                    .clickable(enabled = isImported == false) {
-                                        transaction {
-                                            val playlistId =
-                                                Database.insert(
-                                                    Playlist(
-                                                        name = playlist.title ?: "Unknown",
-                                                        browseId = browseId
-                                                    )
+                            HeaderIconButton(
+                                icon = if (isImported == true) R.drawable.bookmark else R.drawable.bookmark_outline,
+                                color = colorPalette.accent,
+                                onClick = {
+                                    transaction {
+                                        val playlistId =
+                                            Database.insert(
+                                                Playlist(
+                                                    name = playlist.title ?: "Unknown",
+                                                    browseId = browseId
                                                 )
+                                            )
 
-                                            playlist.songsPage?.items
-                                                ?.map(Innertube.SongItem::asMediaItem)
-                                                ?.onEach(Database::insert)
-                                                ?.mapIndexed { index, mediaItem ->
-                                                    SongPlaylistMap(
-                                                        songId = mediaItem.mediaId,
-                                                        playlistId = playlistId,
-                                                        position = index
-                                                    )
-                                                }?.let(Database::insertSongPlaylistMaps)
-                                        }
+                                        playlist.songsPage?.items
+                                            ?.map(Innertube.SongItem::asMediaItem)
+                                            ?.onEach(Database::insert)
+                                            ?.mapIndexed { index, mediaItem ->
+                                                SongPlaylistMap(
+                                                    songId = mediaItem.mediaId,
+                                                    playlistId = playlistId,
+                                                    position = index
+                                                )
+                                            }?.let(Database::insertSongPlaylistMaps)
                                     }
-                                    .padding(all = 4.dp)
-                                    .size(18.dp)
+                                }
                             )
 
-                            Image(
-                                painter = painterResource(R.drawable.share_social),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.text),
-                                modifier = Modifier
-                                    .clickable {
-                                        (playlist.url ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}").let { url ->
-                                            val sendIntent = Intent().apply {
-                                                action = Intent.ACTION_SEND
-                                                type = "text/plain"
-                                                putExtra(Intent.EXTRA_TEXT, url)
-                                            }
-
-                                            context.startActivity(Intent.createChooser(sendIntent, null))
+                            HeaderIconButton(
+                                icon = R.drawable.share_social,
+                                color = colorPalette.text,
+                                onClick = {
+                                    (playlist.url ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}").let { url ->
+                                        val sendIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_TEXT, url)
                                         }
+
+                                        context.startActivity(Intent.createChooser(sendIntent, null))
                                     }
-                                    .padding(all = 4.dp)
-                                    .size(18.dp)
+                                }
                             )
                         }
 

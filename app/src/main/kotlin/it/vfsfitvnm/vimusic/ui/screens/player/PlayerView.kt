@@ -8,9 +8,7 @@ import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,12 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
@@ -58,6 +54,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.themed.BaseMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.collapsedPlayerProgressBar
@@ -178,44 +175,32 @@ fun PlayerView(
                     modifier = Modifier
                         .height(Dimensions.collapsedPlayer)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clickable {
-                                if (shouldBePlaying) {
-                                    binder.player.pause()
-                                } else {
-                                    if (binder.player.playbackState == Player.STATE_IDLE) {
-                                        binder.player.prepare()
-                                    }
-                                    binder.player.play()
+                    IconButton(
+                        icon = if (shouldBePlaying) R.drawable.pause else R.drawable.play,
+                        color = colorPalette.text,
+                        onClick = {
+                            if (shouldBePlaying) {
+                                binder.player.pause()
+                            } else {
+                                if (binder.player.playbackState == Player.STATE_IDLE) {
+                                    binder.player.prepare()
                                 }
+                                binder.player.play()
                             }
-                            .padding(horizontal = 4.dp, vertical = 8.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(20.dp)
-                        )
-                    }
-
-                    Box(
+                        },
                         modifier = Modifier
-                            .clickable(onClick = binder.player::seekToNext)
                             .padding(horizontal = 4.dp, vertical = 8.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.play_skip_forward),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.text),
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(20.dp)
-                        )
-                    }
+                            .size(20.dp)
+                    )
+
+                    IconButton(
+                        icon = R.drawable.play_skip_forward,
+                        color = colorPalette.text,
+                        onClick = binder.player::seekToNext,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
+                            .size(20.dp)
+                    )
                 }
 
                 Spacer(
@@ -335,65 +320,60 @@ fun PlayerView(
                         .padding(horizontal = 8.dp)
                         .fillMaxHeight()
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.ellipsis_horizontal),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
-                        modifier = Modifier
-                            .clickable {
-                                menuState.display {
-                                    val resultRegistryOwner =
-                                        LocalActivityResultRegistryOwner.current
+                    IconButton(
+                        icon = R.drawable.ellipsis_horizontal,
+                        color = colorPalette.text,
+                        onClick = {
+                            menuState.display {
+                                val resultRegistryOwner =
+                                    LocalActivityResultRegistryOwner.current
 
-                                    BaseMediaItemMenu(
-                                        mediaItem = mediaItem,
-                                        onStartRadio = {
-                                            binder.stopRadio()
-                                            binder.player.seamlessPlay(mediaItem)
-                                            binder.setupRadio(
-                                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                            )
-                                        },
-                                        onGoToEqualizer = {
-                                            val intent =
-                                                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                                                    putExtra(
-                                                        AudioEffect.EXTRA_AUDIO_SESSION,
-                                                        binder.player.audioSessionId
-                                                    )
-                                                    putExtra(
-                                                        AudioEffect.EXTRA_PACKAGE_NAME,
-                                                        context.packageName
-                                                    )
-                                                    putExtra(
-                                                        AudioEffect.EXTRA_CONTENT_TYPE,
-                                                        AudioEffect.CONTENT_TYPE_MUSIC
-                                                    )
-                                                }
-
-                                            if (intent.resolveActivity(context.packageManager) != null) {
-                                                val contract =
-                                                    ActivityResultContracts.StartActivityForResult()
-
-                                                resultRegistryOwner?.activityResultRegistry
-                                                    ?.register("", contract) {}
-                                                    ?.launch(intent)
-                                            } else {
-                                                Toast
-                                                    .makeText(
-                                                        context,
-                                                        "No equalizer app found!",
-                                                        Toast.LENGTH_SHORT
-                                                    )
-                                                    .show()
+                                BaseMediaItemMenu(
+                                    mediaItem = mediaItem,
+                                    onStartRadio = {
+                                        binder.stopRadio()
+                                        binder.player.seamlessPlay(mediaItem)
+                                        binder.setupRadio(
+                                            NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                        )
+                                    },
+                                    onGoToEqualizer = {
+                                        val intent =
+                                            Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                                                putExtra(
+                                                    AudioEffect.EXTRA_AUDIO_SESSION,
+                                                    binder.player.audioSessionId
+                                                )
+                                                putExtra(
+                                                    AudioEffect.EXTRA_PACKAGE_NAME,
+                                                    context.packageName
+                                                )
+                                                putExtra(
+                                                    AudioEffect.EXTRA_CONTENT_TYPE,
+                                                    AudioEffect.CONTENT_TYPE_MUSIC
+                                                )
                                             }
-                                        },
-                                        onSetSleepTimer = {},
-                                        onDismiss = menuState::hide
-                                    )
-                                }
+
+                                        if (intent.resolveActivity(context.packageManager) != null) {
+                                            val contract =
+                                                ActivityResultContracts.StartActivityForResult()
+
+                                            resultRegistryOwner?.activityResultRegistry
+                                                ?.register("", contract) {}
+                                                ?.launch(intent)
+                                        } else {
+                                            Toast
+                                                .makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT)
+                                                .show()
+                                        }
+                                    },
+                                    onSetSleepTimer = {},
+                                    onDismiss = menuState::hide
+                                )
                             }
-                            .padding(all = 8.dp)
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
                             .size(20.dp)
                     )
 
