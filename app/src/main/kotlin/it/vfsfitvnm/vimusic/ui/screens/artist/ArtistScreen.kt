@@ -32,7 +32,7 @@ import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.PartialArtist
+import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.ArtistSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeAlbumsPageSaver
@@ -103,12 +103,13 @@ fun ArtistScreen(browseId: String) {
 
             query {
                 Database.upsert(
-                    PartialArtist(
+                    Artist(
                         id = browseId,
                         name = artistPage.name,
                         thumbnailUrl = artistPage.thumbnail?.url,
                         info = artistPage.description,
-                        timestamp = System.currentTimeMillis()
+                        timestamp = System.currentTimeMillis(),
+                        bookmarkedAt = artist?.bookmarkedAt
                     )
                 )
             }

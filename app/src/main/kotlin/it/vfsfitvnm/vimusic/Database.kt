@@ -40,7 +40,6 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
 import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.Format
-import it.vfsfitvnm.vimusic.models.PartialArtist
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
@@ -426,9 +425,6 @@ interface Database {
 
     @Upsert
     fun upsert(artist: Artist)
-
-    @Upsert(Artist::class)
-    fun upsert(artist: PartialArtist)
 
     @Delete
     fun delete(searchQuery: SearchQuery)

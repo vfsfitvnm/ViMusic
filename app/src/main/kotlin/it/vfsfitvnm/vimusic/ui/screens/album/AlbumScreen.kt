@@ -104,7 +104,8 @@ fun AlbumScreen(browseId: String) {
                         year = albumPage.year,
                         authorsText = albumPage.authors?.joinToString("") { it.name ?: "" },
                         shareUrl = albumPage.url,
-                        timestamp = System.currentTimeMillis()
+                        timestamp = System.currentTimeMillis(),
+                        bookmarkedAt = album?.bookmarkedAt
                     ),
                     albumPage
                         .songsPage
