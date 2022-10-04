@@ -20,9 +20,7 @@ fun ShimmerHost(content: @Composable ColumnScope.() -> Unit) {
             .drawWithContent {
                 drawContent()
                 drawRect(
-                    brush = Brush.verticalGradient(
-                        listOf(Color.Black, Color.Transparent)
-                    ),
+                    brush = Brush.verticalGradient(listOf(Color.Black, Color.Transparent)),
                     blendMode = BlendMode.DstIn
                 )
             },

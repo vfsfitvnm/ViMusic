@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens.search
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -102,10 +103,10 @@ fun OnlineSearch(
         if (isPlaylistUrl) textFieldValue.text.toUri().getQueryParameter("list") else null
     }
 
+    val rippleIndication = rememberRipple(bounded = false)
     val timeIconPainter = painterResource(R.drawable.time)
     val closeIconPainter = painterResource(R.drawable.close)
     val arrowForwardIconPainter = painterResource(R.drawable.arrow_forward)
-    val rippleIndication = rememberRipple(bounded = true)
 
     val focusRequester = remember {
         FocusRequester()
@@ -174,11 +175,7 @@ fun OnlineSearch(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .clickable(
-                        indication = rippleIndication,
-                        interactionSource = remember { MutableInteractionSource() },
-                        onClick = { onSearch(searchQuery.query) }
-                    )
+                    .clickable(onClick = { onSearch(searchQuery.query) })
                     .fillMaxWidth()
                     .padding(all = 16.dp)
             ) {
@@ -200,38 +197,44 @@ fun OnlineSearch(
                         .weight(1f)
                 )
 
-                Spacer(
+                Image(
+                    painter = closeIconPainter,
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                     modifier = Modifier
-                        .clickable {
-                            query {
-                                Database.delete(searchQuery)
+                        .clickable(
+                            indication = rippleIndication,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                query {
+                                    Database.delete(searchQuery)
+                                }
                             }
-                        }
+                        )
                         .padding(horizontal = 8.dp)
                         .size(20.dp)
-                        .paint(
-                            painter = closeIconPainter,
-                            colorFilter = ColorFilter.tint(colorPalette.textDisabled)
-                        )
                 )
 
-                Spacer(
+                Image(
+                    painter = arrowForwardIconPainter,
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                     modifier = Modifier
-                        .clickable {
-                            onTextFieldValueChanged(
-                                TextFieldValue(
-                                    text = searchQuery.query,
-                                    selection = TextRange(searchQuery.query.length)
+                        .clickable(
+                            indication = rippleIndication,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {
+                                onTextFieldValueChanged(
+                                    TextFieldValue(
+                                        text = searchQuery.query,
+                                        selection = TextRange(searchQuery.query.length)
+                                    )
                                 )
-                            )
-                        }
+                            }
+                        )
                         .rotate(225f)
                         .padding(horizontal = 8.dp)
-                        .size(20.dp)
-                        .paint(
-                            painter = arrowForwardIconPainter,
-                            colorFilter = ColorFilter.tint(colorPalette.textDisabled)
-                        )
+                        .size(22.dp)
                 )
             }
         }
@@ -241,11 +244,7 @@ fun OnlineSearch(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clickable(
-                            indication = rippleIndication,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = { onSearch(suggestion) }
-                        )
+                        .clickable(onClick = { onSearch(suggestion) })
                         .fillMaxWidth()
                         .padding(all = 16.dp)
                 ) {
@@ -263,23 +262,26 @@ fun OnlineSearch(
                             .weight(1f)
                     )
 
-                    Spacer(
+                    Image(
+                        painter = arrowForwardIconPainter,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.textDisabled),
                         modifier = Modifier
-                            .clickable {
-                                onTextFieldValueChanged(
-                                    TextFieldValue(
-                                        text = suggestion,
-                                        selection = TextRange(suggestion.length)
+                            .clickable(
+                                indication = rippleIndication,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    onTextFieldValueChanged(
+                                        TextFieldValue(
+                                            text = suggestion,
+                                            selection = TextRange(suggestion.length)
+                                        )
                                     )
-                                )
-                            }
+                                }
+                            )
                             .rotate(225f)
                             .padding(horizontal = 8.dp)
                             .size(22.dp)
-                            .paint(
-                                painter = arrowForwardIconPainter,
-                                colorFilter = ColorFilter.tint(colorPalette.textDisabled)
-                            )
                     )
                 }
             }

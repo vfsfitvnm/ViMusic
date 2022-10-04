@@ -7,7 +7,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -290,8 +288,6 @@ inline fun <T> ValueSelectorDialog(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
                             .clickable(
-                                indication = rememberRipple(bounded = true),
-                                interactionSource = remember { MutableInteractionSource() },
                                 onClick = {
                                     onDismiss()
                                     onValueSelected(value)
@@ -346,11 +342,7 @@ inline fun <T> ValueSelectorDialog(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
                     .clip(RoundedCornerShape(36.dp))
-                    .clickable(
-                        indication = rememberRipple(bounded = true),
-                        interactionSource = remember { MutableInteractionSource() },
-                        onClick = onDismiss
-                    )
+                    .clickable(onClick = onDismiss)
                     .padding(horizontal = 24.dp, vertical = 16.dp)
                     .align(Alignment.End)
             )

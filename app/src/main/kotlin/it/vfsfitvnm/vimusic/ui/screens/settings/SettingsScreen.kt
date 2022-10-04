@@ -2,10 +2,8 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -24,6 +22,7 @@ import it.vfsfitvnm.vimusic.ui.screens.settings.*
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
 
+@ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun SettingsScreen() {
@@ -139,12 +138,7 @@ fun SwitchSettingEntry(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .clickable(
-                indication = rememberRipple(bounded = true),
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = { onCheckedChange(!isChecked) },
-                enabled = isEnabled
-            )
+            .clickable(enabled = isEnabled) { onCheckedChange(!isChecked) }
             .alpha(if (isEnabled) 1f else 0.5f)
             .padding(start = 16.dp)
             .padding(all = 16.dp)
@@ -182,12 +176,7 @@ fun SettingsEntry(
 
     Column(
         modifier = modifier
-            .clickable(
-                indication = rememberRipple(bounded = true),
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = onClick,
-                enabled = isEnabled
-            )
+            .clickable(enabled = isEnabled, onClick = onClick)
             .alpha(if (isEnabled) 1f else 0.5f)
             .padding(start = 16.dp)
             .padding(all = 16.dp)

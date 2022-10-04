@@ -3,16 +3,13 @@ package it.vfsfitvnm.vimusic.ui.screens.search
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
@@ -51,8 +48,6 @@ fun LocalSongSearch(
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-
-    val rippleIndication = rememberRipple(bounded = true)
 
     val items by produceSaveableState(
         initialValue = emptyList(),
@@ -113,8 +108,6 @@ fun LocalSongSearch(
                 thumbnailSizeDp = thumbnailSizeDp,
                 modifier = Modifier
                     .combinedClickable(
-                        indication = rippleIndication,
-                        interactionSource = remember { MutableInteractionSource() },
                         onLongClick = {
                             menuState.display {
                                 InHistoryMediaItemMenu(song = song)

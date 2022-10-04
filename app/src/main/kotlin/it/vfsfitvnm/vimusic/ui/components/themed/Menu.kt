@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -65,12 +62,7 @@ fun MenuEntry(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier
-            .clickable(
-                indication = rememberRipple(bounded = true),
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = isEnabled,
-                onClick = onClick
-            )
+            .clickable(enabled = isEnabled, onClick = onClick)
             .fillMaxWidth()
             .alpha(if (isEnabled) 1f else 0.4f)
             .padding(horizontal = 24.dp, vertical = 16.dp)

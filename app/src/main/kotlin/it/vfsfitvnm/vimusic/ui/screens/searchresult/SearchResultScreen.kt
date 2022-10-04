@@ -5,10 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -77,7 +74,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
 
             val emptyItemsText = "No results found. Please try a different query or category"
 
-            val rippleIndication = rememberRipple(bounded = true)
+
 
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
@@ -125,8 +122,6 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
                                             .combinedClickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
                                                 onLongClick = {
                                                     menuState.display {
                                                         NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
@@ -173,11 +168,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
-                                            .clickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { albumRoute(album.info?.endpoint?.browseId) }
-                                            )
+                                            .clickable(onClick = { albumRoute(album.key) })
                                     )
 
                                 },
@@ -214,11 +205,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
-                                            .clickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { artistRoute(artist.info?.endpoint?.browseId) }
-                                            )
+                                            .clickable(onClick = { artistRoute(artist.key) })
                                     )
                                 },
                                 itemPlaceholderContent = {
@@ -257,8 +244,6 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailHeightDp = thumbnailHeightDp,
                                         modifier = Modifier
                                             .combinedClickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
                                                 onLongClick = {
                                                     menuState.display {
                                                         NonQueuedMediaItemMenu(mediaItem = video.asMediaItem)
@@ -314,11 +299,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
-                                            .clickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { playlistRoute(playlist.info?.endpoint?.browseId) }
-                                            )
+                                            .clickable(onClick = { playlistRoute(playlist.key) })
                                     )
                                 },
                                 itemPlaceholderContent = {

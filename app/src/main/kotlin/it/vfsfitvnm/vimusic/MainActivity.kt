@@ -323,7 +323,7 @@ class MainActivity : ComponentActivity() {
 
                 CompositionLocalProvider(
                     LocalAppearance provides appearance,
-                    LocalIndication provides rememberRipple(bounded = false),
+                    LocalIndication provides rememberRipple(bounded = true),
                     LocalRippleTheme provides rippleTheme,
                     LocalShimmerTheme provides shimmerTheme,
                     LocalPlayerServiceBinder provides binder,

@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import it.vfsfitvnm.route.Route0
 import it.vfsfitvnm.route.Route1
@@ -24,6 +25,7 @@ val viewPlaylistsRoute = Route0("createPlaylistRoute")
 @SuppressLint("ComposableNaming")
 @Suppress("NOTHING_TO_INLINE")
 @ExperimentalAnimationApi
+@ExperimentalFoundationApi
 @Composable
 inline fun RouteHandlerScope.globalRoutes() {
     albumRoute { browseId ->

@@ -41,6 +41,7 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
+import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
 import it.vfsfitvnm.vimusic.utils.bold
@@ -150,7 +151,8 @@ fun Controls(
                 .fillMaxWidth()
         ) {
             BasicText(
-                text = DateUtils.formatElapsedTime((scrubbingPosition ?: position) / 1000).removePrefix("0"),
+                text = DateUtils.formatElapsedTime((scrubbingPosition ?: position) / 1000)
+                    .removePrefix("0"),
                 style = typography.xxs.semiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -176,31 +178,35 @@ fun Controls(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            Image(
-                painter = painterResource(if (likedAt == null) R.drawable.heart_outline else R.drawable.heart),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.favoritesIcon),
-                modifier = Modifier
-                    .clickable {
-                        val currentMediaItem = binder.player.currentMediaItem
-                        query {
-                            if (Database.like(mediaId, if (likedAt == null) System.currentTimeMillis() else null) == 0) {
-                                currentMediaItem?.takeIf { it.mediaId == mediaId }?.let {
+            IconButton(
+                icon = if (likedAt == null) R.drawable.heart_outline else R.drawable.heart,
+                color = colorPalette.favoritesIcon,
+                onClick = {
+                    val currentMediaItem = binder.player.currentMediaItem
+                    query {
+                        if (Database.like(
+                                mediaId,
+                                if (likedAt == null) System.currentTimeMillis() else null
+                            ) == 0
+                        ) {
+                            currentMediaItem
+                                ?.takeIf { it.mediaId == mediaId }
+                                ?.let {
                                     Database.insert(currentMediaItem, Song::toggleLike)
                                 }
-                            }
                         }
                     }
+                },
+                modifier = Modifier
                     .weight(1f)
                     .size(24.dp)
             )
 
-            Image(
-                painter = painterResource(R.drawable.play_skip_back),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.text),
+            IconButton(
+                icon = R.drawable.play_skip_back,
+                color = colorPalette.text,
+                onClick = binder.player::forceSeekToPrevious,
                 modifier = Modifier
-                    .clickable(onClick = binder.player::forceSeekToPrevious)
                     .weight(1f)
                     .size(24.dp)
             )
@@ -241,33 +247,29 @@ fun Controls(
                     .width(8.dp)
             )
 
-            Image(
-                painter = painterResource(R.drawable.play_skip_forward),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette.text),
+            IconButton(
+                icon = R.drawable.play_skip_forward,
+                color = colorPalette.text,
+                onClick = binder.player::forceSeekToNext,
                 modifier = Modifier
-                    .clickable(onClick = binder.player::forceSeekToNext)
                     .weight(1f)
                     .size(24.dp)
             )
 
-            Image(
-                painter = painterResource(R.drawable.infinite),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(
-                    if (repeatMode == Player.REPEAT_MODE_ONE) {
-                        colorPalette.text
-                    } else {
-                        colorPalette.textDisabled
+            IconButton(
+                icon = R.drawable.infinite,
+                color = if (repeatMode == Player.REPEAT_MODE_ONE) {
+                    colorPalette.text
+                } else {
+                    colorPalette.textDisabled
+                },
+                onClick = {
+                    binder.player.repeatMode = when (binder.player.repeatMode) {
+                        Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
+                        else -> Player.REPEAT_MODE_ONE
                     }
-                ),
+                },
                 modifier = Modifier
-                    .clickable {
-                        binder.player.repeatMode = when (binder.player.repeatMode) {
-                            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
-                            else -> Player.REPEAT_MODE_ONE
-                        }
-                    }
                     .weight(1f)
                     .size(24.dp)
             )

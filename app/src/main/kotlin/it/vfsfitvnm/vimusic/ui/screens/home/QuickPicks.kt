@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,19 +21,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -43,6 +34,7 @@ import it.vfsfitvnm.vimusic.savers.InnertubeRelatedPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
@@ -84,8 +76,6 @@ fun QuickPicks(
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-
-    val rippleIndication = rememberRipple(bounded = true)
 
     val trending by produceSaveableState(
         initialValue = null,
@@ -146,8 +136,6 @@ fun QuickPicks(
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 modifier = Modifier
                                     .combinedClickable(
-                                        indication = rippleIndication,
-                                        interactionSource = remember { MutableInteractionSource() },
                                         onLongClick = {
                                             menuState.display {
                                                 NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
@@ -178,8 +166,6 @@ fun QuickPicks(
                             thumbnailSizeDp = songThumbnailSizeDp,
                             modifier = Modifier
                                 .combinedClickable(
-                                    indication = rippleIndication,
-                                    interactionSource = remember { MutableInteractionSource() },
                                     onLongClick = {
                                         menuState.display {
                                             NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
@@ -217,11 +203,7 @@ fun QuickPicks(
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
                             modifier = Modifier
-                                .clickable(
-                                    indication = rememberRipple(bounded = true),
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    onClick = { onAlbumClick(album.key) }
-                                )
+                                .clickable(onClick = { onAlbumClick(album.key) })
                         )
                     }
                 }
@@ -243,11 +225,7 @@ fun QuickPicks(
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
                             modifier = Modifier
-                                .clickable(
-                                    indication = rememberRipple(bounded = true),
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    onClick = { onArtistClick(artist.key) }
-                                )
+                                .clickable(onClick = { onArtistClick(artist.key) })
                         )
                     }
                 }
@@ -271,11 +249,7 @@ fun QuickPicks(
                             thumbnailSizeDp = playlistThumbnailSizeDp,
                             alternative = true,
                             modifier = Modifier
-                                .clickable(
-                                    indication = rememberRipple(bounded = true),
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    onClick = { onPlaylistClick(playlist.key) }
-                                )
+                                .clickable(onClick = { onPlaylistClick(playlist.key) })
                         )
                     }
                 }
@@ -287,20 +261,7 @@ fun QuickPicks(
                         .align(Alignment.CenterHorizontally)
                         .padding(all = 16.dp)
                 )
-            } ?: Column(
-                modifier = Modifier
-                    .shimmer()
-                    .graphicsLayer(alpha = 0.99f)
-                    .drawWithContent {
-                        drawContent()
-                        drawRect(
-                            brush = Brush.verticalGradient(
-                                listOf(Color.Black, Color.Transparent)
-                            ),
-                            blendMode = BlendMode.DstIn
-                        )
-                    }
-            ) {
+            } ?: ShimmerHost {
                 repeat(4) {
                     SongItemPlaceholder(
                         thumbnailSizeDp = songThumbnailSizeDp,

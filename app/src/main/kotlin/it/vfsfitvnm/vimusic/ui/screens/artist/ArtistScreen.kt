@@ -4,11 +4,9 @@ import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -17,10 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -260,7 +256,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
-                            val rippleIndication = rememberRipple(bounded = true)
+
 
                             ItemsPage(
                                 stateSaver = InnertubeSongsPageSaver,
@@ -297,8 +293,6 @@ fun ArtistScreen(browseId: String) {
                                         thumbnailSizePx = thumbnailSizePx,
                                         modifier = Modifier
                                             .combinedClickable(
-                                                indication = rippleIndication,
-                                                interactionSource = remember { MutableInteractionSource() },
                                                 onLongClick = {
                                                     menuState.display {
                                                         NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
@@ -357,11 +351,7 @@ fun ArtistScreen(browseId: String) {
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
-                                            .clickable(
-                                                indication = rememberRipple(bounded = true),
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { albumRoute(album.info?.endpoint?.browseId) }
-                                            )
+                                            .clickable(onClick = { albumRoute(album.key) })
                                     )
                                 },
                                 itemPlaceholderContent = {
@@ -409,11 +399,7 @@ fun ArtistScreen(browseId: String) {
                                         thumbnailSizePx = thumbnailSizePx,
                                         thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
-                                            .clickable(
-                                                indication = rememberRipple(bounded = true),
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                onClick = { albumRoute(album.info?.endpoint?.browseId) }
-                                            )
+                                            .clickable(onClick = { albumRoute(album.key) })
                                     )
                                 },
                                 itemPlaceholderContent = {

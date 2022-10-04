@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -109,8 +107,6 @@ fun PlayerBottomSheet(
         binder?.player ?: return@BottomSheet
 
         val menuState = LocalMenuState.current
-
-        val rippleIndication = rememberRipple(bounded = true)
 
         val thumbnailSizeDp = Dimensions.thumbnails.song
         val thumbnailSizePx = thumbnailSizeDp.px
@@ -209,8 +205,6 @@ fun PlayerBottomSheet(
                         },
                         modifier = Modifier
                             .combinedClickable(
-                                indication = rippleIndication,
-                                interactionSource = remember { MutableInteractionSource() },
                                 onLongClick = {
                                     menuState.display {
                                         QueuedMediaItemMenu(
@@ -259,11 +253,7 @@ fun PlayerBottomSheet(
 
             Box(
                 modifier = Modifier
-                    .clickable(
-                        indication = rememberRipple(bounded = true),
-                        interactionSource = remember { MutableInteractionSource() },
-                        onClick = layoutState::collapseSoft
-                    )
+                    .clickable(onClick = layoutState::collapseSoft)
                     .height(64.dp + bottomPadding)
                     .background(colorPalette.background2)
                     .fillMaxWidth()

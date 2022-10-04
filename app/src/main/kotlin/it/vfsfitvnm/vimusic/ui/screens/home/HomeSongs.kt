@@ -1,40 +1,31 @@
 package it.vfsfitvnm.vimusic.ui.screens.home
 
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
@@ -47,6 +38,7 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
+import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.ScrollToTop
 import it.vfsfitvnm.vimusic.ui.items.SongItem
@@ -74,8 +66,6 @@ fun HomeSongs() {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-
-    val rippleIndication = rememberRipple(bounded = true)
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -115,35 +105,22 @@ fun HomeSongs() {
                 contentType = 0
             ) {
                 Header(title = "Songs") {
-                    @Composable
-                    fun Item(
-                        @DrawableRes iconId: Int,
-                        targetSortBy: SongSortBy
-                    ) {
-                        Image(
-                            painter = painterResource(iconId),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(if (sortBy == targetSortBy) colorPalette.text else colorPalette.textDisabled),
-                            modifier = Modifier
-                                .clickable { sortBy = targetSortBy }
-                                .padding(all = 4.dp)
-                                .size(18.dp)
-                        )
-                    }
-
-                    Item(
-                        iconId = R.drawable.trending,
-                        targetSortBy = SongSortBy.PlayTime
+                    HeaderIconButton(
+                        icon = R.drawable.trending,
+                        color = if (sortBy == SongSortBy.PlayTime) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = SongSortBy.PlayTime }
                     )
 
-                    Item(
-                        iconId = R.drawable.text,
-                        targetSortBy = SongSortBy.Title
+                    HeaderIconButton(
+                        icon = R.drawable.text,
+                        color = if (sortBy == SongSortBy.Title) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = SongSortBy.Title }
                     )
 
-                    Item(
-                        iconId = R.drawable.time,
-                        targetSortBy = SongSortBy.DateAdded
+                    HeaderIconButton(
+                        icon = R.drawable.time,
+                        color = if (sortBy == SongSortBy.DateAdded) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = SongSortBy.DateAdded }
                     )
 
                     Spacer(
@@ -151,14 +128,11 @@ fun HomeSongs() {
                             .width(2.dp)
                     )
 
-                    Image(
-                        painter = painterResource(R.drawable.arrow_up),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette.text),
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette.text,
+                        onClick = { sortOrder = !sortOrder },
                         modifier = Modifier
-                            .clickable { sortOrder = !sortOrder }
-                            .padding(all = 4.dp)
-                            .size(18.dp)
                             .graphicsLayer { rotationZ = sortOrderIconRotation }
                     )
                 }
@@ -192,8 +166,6 @@ fun HomeSongs() {
                     }) else null,
                     modifier = Modifier
                         .combinedClickable(
-                            indication = rippleIndication,
-                            interactionSource = remember { MutableInteractionSource() },
                             onLongClick = {
                                 menuState.display {
                                     InHistoryMediaItemMenu(song = song)

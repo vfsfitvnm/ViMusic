@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,9 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -63,8 +60,6 @@ fun ArtistOverview(
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-
-    val rippleIndication = rememberRipple(bounded = true)
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
@@ -116,11 +111,7 @@ fun ArtistOverview(
                                 text = "View all",
                                 style = typography.xs.secondary,
                                 modifier = sectionTextModifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = onViewAllSongsClick
-                                    ),
+                                    .clickable(onClick = onViewAllSongsClick),
                             )
                         }
                     }
@@ -132,8 +123,6 @@ fun ArtistOverview(
                             thumbnailSizePx = songThumbnailSizePx,
                             modifier = Modifier
                                 .combinedClickable(
-                                    indication = rippleIndication,
-                                    interactionSource = remember { MutableInteractionSource() },
                                     onLongClick = {
                                         menuState.display {
                                             NonQueuedMediaItemMenu(mediaItem = song.asMediaItem)
@@ -170,11 +159,7 @@ fun ArtistOverview(
                                 text = "View all",
                                 style = typography.xs.secondary,
                                 modifier = sectionTextModifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = onViewAllAlbumsClick
-                                    ),
+                                    .clickable(onClick = onViewAllAlbumsClick),
                             )
                         }
                     }
@@ -193,11 +178,7 @@ fun ArtistOverview(
                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                 alternative = true,
                                 modifier = Modifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = { onAlbumClick(album.key) }
-                                    )
+                                    .clickable(onClick = { onAlbumClick(album.key) })
                             )
                         }
                     }
@@ -221,11 +202,7 @@ fun ArtistOverview(
                                 text = "View all",
                                 style = typography.xs.secondary,
                                 modifier = sectionTextModifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = onViewAllSinglesClick
-                                    ),
+                                    .clickable(onClick = onViewAllSinglesClick),
                             )
                         }
                     }
@@ -244,11 +221,7 @@ fun ArtistOverview(
                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                 alternative = true,
                                 modifier = Modifier
-                                    .clickable(
-                                        indication = rememberRipple(bounded = true),
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = { onAlbumClick(album.key) }
-                                    )
+                                    .clickable(onClick = { onAlbumClick(album.key) })
                             )
                         }
                     }
