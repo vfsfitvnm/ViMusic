@@ -150,7 +150,7 @@ fun Controls(
                 .fillMaxWidth()
         ) {
             BasicText(
-                text = DateUtils.formatElapsedTime((scrubbingPosition ?: position) / 1000),
+                text = DateUtils.formatElapsedTime((scrubbingPosition ?: position) / 1000).removePrefix("0"),
                 style = typography.xxs.semiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -158,7 +158,7 @@ fun Controls(
 
             if (duration != C.TIME_UNSET) {
                 BasicText(
-                    text = DateUtils.formatElapsedTime(duration / 1000),
+                    text = DateUtils.formatElapsedTime(duration / 1000).removePrefix("0"),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
