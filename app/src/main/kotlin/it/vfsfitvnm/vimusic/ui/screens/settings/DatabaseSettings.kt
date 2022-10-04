@@ -13,10 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.autoSaver
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import it.vfsfitvnm.vimusic.Database
@@ -26,7 +23,6 @@ import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.path
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.PlayerService
-import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
@@ -46,12 +42,11 @@ fun DatabaseSettings() {
     val context = LocalContext.current
     val (colorPalette) = LocalAppearance.current
 
-    var isShowingRestoreDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-
     val queriesCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
-        Database.queriesCount().flowOn(Dispatchers.IO).distinctUntilChanged().collect { value = it }
+        Database.queriesCount()
+            .flowOn(Dispatchers.IO)
+            .distinctUntilChanged()
+            .collect { value = it }
     }
 
     val openDocumentContract = ActivityResultContracts.OpenDocument()
@@ -62,12 +57,12 @@ fun DatabaseSettings() {
 
         query {
             Database.internal.checkpoint()
-            context.applicationContext.contentResolver.openOutputStream(uri)
-                ?.use { outputStream ->
-                    FileInputStream(Database.internal.path).use { inputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+
+            context.applicationContext.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                FileInputStream(Database.internal.path).use { inputStream ->
+                    inputStream.copyTo(outputStream)
                 }
+            }
         }
     }
 
@@ -78,11 +73,10 @@ fun DatabaseSettings() {
             Database.internal.checkpoint()
             Database.internal.close()
 
-            FileOutputStream(Database.internal.path).use { outputStream ->
-                context.applicationContext.contentResolver.openInputStream(uri)
-                    ?.use { inputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+            context.applicationContext.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(Database.internal.path).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
             }
 
             context.stopService(context.intent<PlayerService>())
@@ -90,34 +84,6 @@ fun DatabaseSettings() {
         }
     }
 
-    if (isShowingRestoreDialog) {
-        ConfirmationDialog(
-            text = "The application will automatically close itself to avoid problems after restoring the database.",
-            onDismiss = {
-                isShowingRestoreDialog = false
-            },
-            onConfirm = {
-                val input = arrayOf(
-                    "application/x-sqlite3",
-                    "application/vnd.sqlite3",
-                    "application/octet-stream"
-                )
-
-                if (openDocumentContract.createIntent(context, input)
-                        .resolveActivity(context.packageManager) != null
-                ) {
-                    restoreLauncher.launch(input)
-                } else {
-                    Toast.makeText(
-                        context,
-                        "Can't read the database from the external storage",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            },
-            confirmText = "Ok"
-        )
-    }
 
     Column(
         modifier = Modifier
@@ -164,11 +130,13 @@ fun DatabaseSettings() {
                 ) {
                     backupLauncher.launch(input)
                 } else {
-                    Toast.makeText(
-                        context,
-                        "Can't copy the database to the external storage",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast
+                        .makeText(
+                            context,
+                            "Can't copy the database to the external storage",
+                            Toast.LENGTH_SHORT
+                        )
+                        .show()
                 }
             }
         )
@@ -177,12 +145,30 @@ fun DatabaseSettings() {
 
         SettingsEntryGroupText(title = "RESTORE")
 
-        SettingsDescription(text = "Existing data will be overwritten.")
+        ImportantSettingsDescription(text = "Existing data will be overwritten.\n${context.applicationInfo.nonLocalizedLabel} will automatically close itself after restoring the database.")
 
         SettingsEntry(
             title = "Restore",
             text = "Import the database from the external storage",
-            onClick = { isShowingRestoreDialog = true }
+            onClick = {
+                val input = arrayOf(
+                    "application/x-sqlite3",
+                    "application/vnd.sqlite3",
+                    "application/octet-stream"
+                )
+
+                if (openDocumentContract.createIntent(context, input)
+                        .resolveActivity(context.packageManager) != null
+                ) {
+                    restoreLauncher.launch(input)
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Can't read the database from the external storage",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         )
     }
 }

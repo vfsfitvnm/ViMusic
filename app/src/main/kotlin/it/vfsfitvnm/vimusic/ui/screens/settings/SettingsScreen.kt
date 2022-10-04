@@ -211,6 +211,22 @@ fun SettingsDescription(
 }
 
 @Composable
+fun ImportantSettingsDescription(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    val (colorPalette, typography) = LocalAppearance.current
+
+    BasicText(
+        text = text,
+        style = typography.xxs.semiBold.color(colorPalette.red),
+        modifier = modifier
+            .padding(start = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
 fun SettingsEntryGroupText(
     title: String,
     modifier: Modifier = Modifier,
