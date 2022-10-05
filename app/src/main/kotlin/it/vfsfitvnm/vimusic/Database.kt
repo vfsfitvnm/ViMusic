@@ -300,16 +300,11 @@ interface Database {
     fun isImportedPlaylist(browseId: String): Flow<Boolean>
 
     @Transaction
-    @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId GROUP BY songId ORDER BY SUM(playTime / ((:now - timestamp) / 86400000.0)) LIMIT 1")
+    @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId GROUP BY songId ORDER BY SUM(CAST(playTime AS REAL) / (((:now - timestamp) / 86400000) + 1)) DESC LIMIT 1")
     @RewriteQueriesToDropUnusedColumns
     fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
 
-//    @Transaction
-//    @Query("SELECT songId FROM Event GROUP BY songId ORDER BY SUM(playTime / ((:now - timestamp) / 86400000.0)) LIMIT 1")
-//    @RewriteQueriesToDropUnusedColumns
-//    fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
-
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert
     fun insert(event: Event)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
