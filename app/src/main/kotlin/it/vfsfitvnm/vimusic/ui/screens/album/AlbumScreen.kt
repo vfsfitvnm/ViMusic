@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -44,7 +43,6 @@ import it.vfsfitvnm.vimusic.ui.items.AlbumItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
-import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.ui.styling.shimmer
@@ -182,25 +180,24 @@ fun AlbumScreen(browseId: String) {
             val thumbnailContent: @Composable ColumnScope.() -> Unit = {
                 val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
-                if (album?.timestamp == null) {
-                    Spacer(
-                        modifier = Modifier
-                            .shimmer()
-                            .align(Alignment.CenterHorizontally)
-                            .padding(all = 16.dp)
-                            .clip(thumbnailShape)
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .background(colorPalette.shimmer)
-                    )
-                } else {
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                    ) {
-                        val thumbnailSizeDp = maxWidth - Dimensions.navigationRailWidth
-                        val thumbnailSizePx = (thumbnailSizeDp - 32.dp).px
+                BoxWithConstraints(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    val thumbnailSizeDp = maxWidth - 64.dp
+                    val thumbnailSizePx = thumbnailSizeDp.px
 
+                    if (album?.timestamp == null) {
+                        Spacer(
+                            modifier = Modifier
+                                .padding(all = 16.dp)
+                                .shimmer()
+                                .clip(thumbnailShape)
+                                .size(thumbnailSizeDp)
+                                .background(colorPalette.shimmer)
+                        )
+                    } else {
                         AsyncImage(
                             model = album?.thumbnailUrl?.thumbnail(thumbnailSizePx),
                             contentDescription = null,

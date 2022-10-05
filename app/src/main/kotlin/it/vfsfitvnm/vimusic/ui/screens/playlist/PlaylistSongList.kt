@@ -99,9 +99,12 @@ fun PlaylistSongList(
             .collect { value = it }
     }
 
-    BoxWithConstraints {
-        val thumbnailSizeDp = maxWidth - Dimensions.navigationRailWidth
-        val thumbnailSizePx = (thumbnailSizeDp - 32.dp).px
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        val thumbnailSizeDp = maxWidth - 64.dp
+        val thumbnailSizePx = thumbnailSizeDp.px
 
         val songThumbnailSizeDp = Dimensions.thumbnails.song
         val songThumbnailSizePx = songThumbnailSizeDp.px
@@ -182,7 +185,6 @@ fun PlaylistSongList(
                             model = playlist.thumbnail?.size(thumbnailSizePx),
                             contentDescription = null,
                             modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
                                 .padding(all = 16.dp)
                                 .clip(thumbnailShape)
                                 .size(thumbnailSizeDp)
@@ -249,7 +251,6 @@ fun PlaylistSongList(
 
             Spacer(
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
                     .padding(all = 16.dp)
                     .clip(thumbnailShape)
                     .size(thumbnailSizeDp)

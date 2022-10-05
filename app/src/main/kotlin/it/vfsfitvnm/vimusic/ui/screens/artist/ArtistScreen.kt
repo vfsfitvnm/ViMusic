@@ -9,7 +9,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -125,25 +124,26 @@ fun ArtistScreen(browseId: String) {
 
         host {
             val thumbnailContent: @Composable ColumnScope.() -> Unit = {
-                if (artist?.timestamp == null) {
-                    Spacer(
-                        modifier = Modifier
-                            .shimmer()
-                            .align(Alignment.CenterHorizontally)
-                            .padding(all = 16.dp)
-                            .clip(CircleShape)
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .background(LocalAppearance.current.colorPalette.shimmer)
-                    )
-                } else {
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                    ) {
-                        val thumbnailSizeDp = maxWidth - Dimensions.navigationRailWidth
-                        val thumbnailSizePx = (thumbnailSizeDp - 32.dp).px
+                BoxWithConstraints(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    val thumbnailSizeDp = maxWidth - 64.dp
+                    val thumbnailSizePx = thumbnailSizeDp.px
 
+                    if (artist?.timestamp == null) {
+                        val (colorPalette) = LocalAppearance.current
+
+                        Spacer(
+                            modifier = Modifier
+                                .padding(all = 16.dp)
+                                .shimmer()
+                                .clip(CircleShape)
+                                .size(thumbnailSizeDp)
+                                .background(colorPalette.shimmer)
+                        )
+                    } else {
                         AsyncImage(
                             model = artist?.thumbnailUrl?.thumbnail(thumbnailSizePx),
                             contentDescription = null,

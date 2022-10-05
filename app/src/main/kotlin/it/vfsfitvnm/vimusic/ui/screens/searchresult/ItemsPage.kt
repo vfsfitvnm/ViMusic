@@ -103,7 +103,10 @@ inline fun <T : Innertube.Item> ItemsPage(
 
         if (!(itemsPage != null && itemsPage?.continuation == null)) {
             item(key = "loading") {
-                ShimmerHost {
+                ShimmerHost(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                ) {
                     repeat(if (itemsPage?.items.isNullOrEmpty()) initialPlaceholderCount else continuationPlaceholderCount) {
                         itemPlaceholderContent()
                     }

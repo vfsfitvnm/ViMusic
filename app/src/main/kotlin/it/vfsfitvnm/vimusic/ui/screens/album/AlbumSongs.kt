@@ -133,7 +133,10 @@ fun AlbumSongs(
 
             if (songs.isEmpty()) {
                 item(key = "loading") {
-                    ShimmerHost {
+                    ShimmerHost(
+                        modifier = Modifier
+                            .fillParentMaxSize()
+                    ) {
                         repeat(4) {
                             SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
                         }
