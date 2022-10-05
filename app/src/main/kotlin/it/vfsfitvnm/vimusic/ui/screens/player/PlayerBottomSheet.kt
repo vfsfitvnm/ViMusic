@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -128,6 +129,8 @@ fun PlayerBottomSheet(
         val paddingValues = WindowInsets.systemBars.asPaddingValues()
         val bottomPadding = paddingValues.calculateBottomPadding()
 
+        val rippleIndication = rememberRipple(bounded = false)
+
         Column {
             ReorderingLazyColumn(
                 reorderingState = reorderingState,
@@ -190,18 +193,14 @@ fun PlayerBottomSheet(
                             }
                         },
                         trailingContent = {
-                            Image(
-                                painter = painterResource(R.drawable.reorder),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                            IconButton(
+                                icon = R.drawable.reorder,
+                                color = colorPalette.textDisabled,
+                                indication = rippleIndication,
+                                onClick = {},
                                 modifier = Modifier
-                                    .clickable { }
-                                    .reorder(
-                                        reorderingState = reorderingState,
-                                        index = window.firstPeriodIndex
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .size(20.dp)
+                                    .reorder(reorderingState = reorderingState, index = window.firstPeriodIndex)
+                                    .size(18.dp)
                             )
                         },
                         modifier = Modifier

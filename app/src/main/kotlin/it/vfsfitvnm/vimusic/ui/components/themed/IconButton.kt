@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic.ui.components.themed
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.padding
@@ -21,13 +22,15 @@ fun HeaderIconButton(
     @DrawableRes icon: Int,
     color: Color,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    indication: Indication? = null
 ) {
     IconButton(
         icon = icon,
         color = color,
         onClick = onClick,
         enabled = enabled,
+        indication = indication,
         modifier = modifier
             .padding(all = 4.dp)
             .size(18.dp)
@@ -40,7 +43,8 @@ fun IconButton(
     @DrawableRes icon: Int,
     color: Color,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    indication: Indication? = null
 ) {
     Image(
         painter = painterResource(icon),
@@ -48,7 +52,7 @@ fun IconButton(
         colorFilter = ColorFilter.tint(color),
         modifier = Modifier
             .clickable(
-                indication = rememberRipple(bounded = false),
+                indication = indication ?: rememberRipple(bounded = false),
                 interactionSource = remember { MutableInteractionSource() },
                 enabled = enabled,
                 onClick = onClick

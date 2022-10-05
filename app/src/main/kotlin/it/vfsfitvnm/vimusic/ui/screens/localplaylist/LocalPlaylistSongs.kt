@@ -2,25 +2,21 @@ package it.vfsfitvnm.vimusic.ui.screens.localplaylist
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.reordering.ReorderingLazyColumn
 import it.vfsfitvnm.reordering.animateItemPlacement
@@ -41,6 +37,7 @@ import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
+import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
@@ -134,6 +131,8 @@ fun LocalPlaylistSongs(
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
+    val rippleIndication = rememberRipple(bounded = false)
+
     Box {
         ReorderingLazyColumn(
             reorderingState = reorderingState,
@@ -219,18 +218,14 @@ fun LocalPlaylistSongs(
                     thumbnailSizePx = thumbnailSizePx,
                     thumbnailSizeDp = thumbnailSizeDp,
                     trailingContent = {
-                        Image(
-                            painter = painterResource(R.drawable.reorder),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette.textSecondary),
+                        IconButton(
+                            icon = R.drawable.reorder,
+                            color = colorPalette.textDisabled,
+                            indication = rippleIndication,
+                            onClick = {},
                             modifier = Modifier
-                                .clickable { }
-                                .reorder(
-                                    reorderingState = reorderingState,
-                                    index = index
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                                .size(20.dp)
+                                .reorder(reorderingState = reorderingState, index = index)
+                                .size(18.dp)
                         )
                     },
                     modifier = Modifier

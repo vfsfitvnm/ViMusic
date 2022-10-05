@@ -146,12 +146,26 @@ fun SongItem(
         }
 
         ItemInfoContainer {
-            BasicText(
+            trailingContent?.let {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BasicText(
+                        text = title ?: "",
+                        style = typography.xs.semiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+
+                    it()
+                }
+            } ?: BasicText(
                 text = title ?: "",
                 style = typography.xs.semiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BasicText(
