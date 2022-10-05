@@ -2,9 +2,11 @@ package it.vfsfitvnm.vimusic.ui.screens.home
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,23 +14,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.savers.DetailedSongSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeRelatedPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
@@ -49,6 +57,7 @@ import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.SnapLayoutInfoProvider
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
@@ -109,8 +118,19 @@ fun QuickPicks(
         .padding(horizontal = 16.dp)
         .padding(top = 24.dp, bottom = 8.dp)
 
+    val quickPicksLazyGridItemWidthFactor = 0.9f
+    val quickPicksLazyGridState = rememberLazyGridState()
+    val snapLayoutInfoProvider = remember(quickPicksLazyGridState) {
+        SnapLayoutInfoProvider(
+            lazyGridState = quickPicksLazyGridState,
+            positionInLayout = {layoutSize, itemSize ->
+                (layoutSize * quickPicksLazyGridItemWidthFactor / 2f - itemSize / 2f)
+            }
+        )
+    }
+
     BoxWithConstraints {
-        val itemInHorizontalGridWidth = maxWidth * 0.9f
+        val itemInHorizontalGridWidth = maxWidth * quickPicksLazyGridItemWidthFactor
 
         Column(
             modifier = Modifier
@@ -123,7 +143,9 @@ fun QuickPicks(
 
             relatedPageResult?.getOrNull()?.let { related ->
                 LazyHorizontalGrid(
+                    state = quickPicksLazyGridState,
                     rows = GridCells.Fixed(4),
+                    flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
@@ -134,6 +156,15 @@ fun QuickPicks(
                                 song = song,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
+                                trailingContent = {
+                                      Image(
+                                          painter = painterResource(R.drawable.star),
+                                          contentDescription = null,
+                                          colorFilter = ColorFilter.tint(colorPalette.accent),
+                                          modifier = Modifier
+                                              .size(16.dp)
+                                      )
+                                },
                                 modifier = Modifier
                                     .combinedClickable(
                                         onLongClick = {
@@ -160,7 +191,7 @@ fun QuickPicks(
                     }
 
                     items(
-                        items = related.songs ?: emptyList(),
+                        items = related.songs?.dropLast(1) ?: emptyList(),
                         key = Innertube.SongItem::key
                     ) { song ->
                         SongItem(
@@ -192,71 +223,77 @@ fun QuickPicks(
                     }
                 }
 
-                BasicText(
-                    text = "Related albums",
-                    style = typography.m.semiBold,
-                    modifier = sectionTextModifier
-                )
+                related.albums?.let { albums ->
+                    BasicText(
+                        text = "Related albums",
+                        style = typography.m.semiBold,
+                        modifier = sectionTextModifier
+                    )
 
-                LazyRow {
-                    items(
-                        items = related.albums ?: emptyList(),
-                        key = Innertube.AlbumItem::key
-                    ) { album ->
-                        AlbumItem(
-                            album = album,
-                            thumbnailSizePx = albumThumbnailSizePx,
-                            thumbnailSizeDp = albumThumbnailSizeDp,
-                            alternative = true,
-                            modifier = Modifier
-                                .clickable(onClick = { onAlbumClick(album.key) })
-                        )
+                    LazyRow {
+                        items(
+                            items = albums,
+                            key = Innertube.AlbumItem::key
+                        ) { album ->
+                            AlbumItem(
+                                album = album,
+                                thumbnailSizePx = albumThumbnailSizePx,
+                                thumbnailSizeDp = albumThumbnailSizeDp,
+                                alternative = true,
+                                modifier = Modifier
+                                    .clickable(onClick = { onAlbumClick(album.key) })
+                            )
+                        }
                     }
                 }
 
-                BasicText(
-                    text = "Similar artists",
-                    style = typography.m.semiBold,
-                    modifier = sectionTextModifier
-                )
+                related.artists?.let { artists ->
+                    BasicText(
+                        text = "Similar artists",
+                        style = typography.m.semiBold,
+                        modifier = sectionTextModifier
+                    )
 
-                LazyRow {
-                    items(
-                        items = related.artists ?: emptyList(),
-                        key = Innertube.ArtistItem::key,
-                    ) { artist ->
-                        ArtistItem(
-                            artist = artist,
-                            thumbnailSizePx = artistThumbnailSizePx,
-                            thumbnailSizeDp = artistThumbnailSizeDp,
-                            alternative = true,
-                            modifier = Modifier
-                                .clickable(onClick = { onArtistClick(artist.key) })
-                        )
+                    LazyRow {
+                        items(
+                            items = artists,
+                            key = Innertube.ArtistItem::key,
+                        ) { artist ->
+                            ArtistItem(
+                                artist = artist,
+                                thumbnailSizePx = artistThumbnailSizePx,
+                                thumbnailSizeDp = artistThumbnailSizeDp,
+                                alternative = true,
+                                modifier = Modifier
+                                    .clickable(onClick = { onArtistClick(artist.key) })
+                            )
+                        }
                     }
                 }
 
-                BasicText(
-                    text = "Playlists you might like",
-                    style = typography.m.semiBold,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp, bottom = 8.dp)
-                )
+                related.playlists?.let { playlists ->
+                    BasicText(
+                        text = "Playlists you might like",
+                        style = typography.m.semiBold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 24.dp, bottom = 8.dp)
+                    )
 
-                LazyRow {
-                    items(
-                        items = related.playlists ?: emptyList(),
-                        key = Innertube.PlaylistItem::key,
-                    ) { playlist ->
-                        PlaylistItem(
-                            playlist = playlist,
-                            thumbnailSizePx = playlistThumbnailSizePx,
-                            thumbnailSizeDp = playlistThumbnailSizeDp,
-                            alternative = true,
-                            modifier = Modifier
-                                .clickable(onClick = { onPlaylistClick(playlist.key) })
-                        )
+                    LazyRow {
+                        items(
+                            items = playlists,
+                            key = Innertube.PlaylistItem::key,
+                        ) { playlist ->
+                            PlaylistItem(
+                                playlist = playlist,
+                                thumbnailSizePx = playlistThumbnailSizePx,
+                                thumbnailSizeDp = playlistThumbnailSizeDp,
+                                alternative = true,
+                                modifier = Modifier
+                                    .clickable(onClick = { onPlaylistClick(playlist.key) })
+                            )
+                        }
                     }
                 }
             } ?: relatedPageResult?.exceptionOrNull()?.let {
