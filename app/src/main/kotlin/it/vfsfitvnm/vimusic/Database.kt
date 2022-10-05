@@ -314,19 +314,10 @@ interface Database {
     fun insert(searchQuery: SearchQuery)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Artist): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Album): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(playlist: Playlist): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(songPlaylistMap: SongPlaylistMap): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(songAlbumMap: SongAlbumMap): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(songArtistMap: SongArtistMap): Long
@@ -339,6 +330,12 @@ interface Database {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertSongPlaylistMaps(songPlaylistMaps: List<SongPlaylistMap>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(album: Album, songAlbumMap: SongAlbumMap)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(artists: List<Artist>, songArtistMaps: List<SongArtistMap>)
 
     @Transaction
     fun insert(mediaItem: MediaItem, block: (Song) -> Song = { it }) {
@@ -353,61 +350,33 @@ interface Database {
         }
 
         mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
-            Album(
-                id = albumId,
-                title = mediaItem.mediaMetadata.albumTitle?.toString(),
-                year = null,
-                authorsText = null,
-                thumbnailUrl = null,
-                shareUrl = null,
-                timestamp = null,
-            ).also(::insert)
-
-            upsert(
-                SongAlbumMap(
-                    songId = song.id,
-                    albumId = albumId,
-                    position = null
-                )
+            insert(
+                Album(id = albumId, title = mediaItem.mediaMetadata.albumTitle?.toString()),
+                SongAlbumMap(songId = song.id, albumId = albumId, position = null)
             )
         }
 
         mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
             mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.let { artistIds ->
-                artistNames.mapIndexed { index, artistName ->
-                    Artist(
-                        id = artistIds[index],
-                        name = artistName,
-                        thumbnailUrl = null,
-                        info = null,
-                        timestamp = null
-                    ).also(::insert)
+                if (artistNames.size == artistIds.size) {
+                    insert(
+                        artistNames.mapIndexed { index, artistName ->
+                            Artist(id = artistIds[index], name = artistName)
+                        },
+                        artistIds.map { artistId ->
+                            SongArtistMap(songId = song.id, artistId = artistId)
+                        }
+                    )
                 }
             }
-        }?.forEach { artist ->
-            insert(
-                SongArtistMap(
-                    songId = song.id,
-                    artistId = artist.id
-                )
-            )
         }
     }
-
-    @Update
-    fun update(song: Song)
 
     @Update
     fun update(artist: Artist)
 
     @Update
     fun update(album: Album)
-
-    @Update
-    fun update(songAlbumMap: SongAlbumMap)
-
-    @Update
-    fun update(songPlaylistMap: SongPlaylistMap)
 
     @Update
     fun update(playlist: Playlist)
@@ -426,9 +395,6 @@ interface Database {
 
     @Delete
     fun delete(playlist: Playlist)
-
-    @Delete
-    fun delete(playlist: Album)
 
     @Delete
     fun delete(songPlaylistMap: SongPlaylistMap)
