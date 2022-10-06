@@ -200,7 +200,7 @@ fun SearchScreen(initialTextInput: String, onSearch: (String) -> Unit, onUri: (U
                                         exit = fadeOut(tween(100)),
                                     ) {
                                         BasicText(
-                                            text = "Enter a song, an album, an artist name...",
+                                            text = "Search...",
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                             style = typography.m.secondary,
