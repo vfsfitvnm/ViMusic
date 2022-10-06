@@ -39,6 +39,8 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
+import it.vfsfitvnm.vimusic.ui.components.themed.Menu
+import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
@@ -163,47 +165,64 @@ fun LocalPlaylistSongs(
                             .weight(1f)
                     )
 
-                    playlistWithSongs?.playlist?.browseId?.let { browseId ->
-                        HeaderIconButton(
-                            icon = R.drawable.sync,
-                            color = colorPalette.text,
-                            onClick = {
-                                transaction {
-                                    runBlocking(Dispatchers.IO) {
-                                        withContext(Dispatchers.IO) {
-                                            Innertube.playlistPage(BrowseBody(browseId = browseId))
-                                                ?.completed()
-                                        }
-                                    }?.getOrNull()?.let { remotePlaylist ->
-                                        Database.clearPlaylist(playlistId)
+                    HeaderIconButton(
+                        icon = R.drawable.ellipsis_horizontal,
+                        color = colorPalette.text,
+                        onClick = {
+                            menuState.display {
+                                Menu {
+                                    playlistWithSongs?.playlist?.browseId?.let { browseId ->
+                                        MenuEntry(
+                                            icon = R.drawable.sync,
+                                            text = "Sync",
+                                            onClick = {
+                                                menuState.hide()
+                                                transaction {
+                                                    runBlocking(Dispatchers.IO) {
+                                                        withContext(Dispatchers.IO) {
+                                                            Innertube.playlistPage(BrowseBody(browseId = browseId))
+                                                                ?.completed()
+                                                        }
+                                                    }?.getOrNull()?.let { remotePlaylist ->
+                                                        Database.clearPlaylist(playlistId)
 
-                                        remotePlaylist.songsPage
-                                            ?.items
-                                            ?.map(Innertube.SongItem::asMediaItem)
-                                            ?.onEach(Database::insert)
-                                            ?.mapIndexed { position, mediaItem ->
-                                                SongPlaylistMap(
-                                                    songId = mediaItem.mediaId,
-                                                    playlistId = playlistId,
-                                                    position = position
-                                                )
-                                            }?.let(Database::insertSongPlaylistMaps)
+                                                        remotePlaylist.songsPage
+                                                            ?.items
+                                                            ?.map(Innertube.SongItem::asMediaItem)
+                                                            ?.onEach(Database::insert)
+                                                            ?.mapIndexed { position, mediaItem ->
+                                                                SongPlaylistMap(
+                                                                    songId = mediaItem.mediaId,
+                                                                    playlistId = playlistId,
+                                                                    position = position
+                                                                )
+                                                            }?.let(Database::insertSongPlaylistMaps)
+                                                    }
+                                                }
+                                            }
+                                        )
                                     }
+
+                                    MenuEntry(
+                                        icon = R.drawable.pencil,
+                                        text = "Rename",
+                                        onClick = {
+                                            menuState.hide()
+                                            isRenaming = true
+                                        }
+                                    )
+
+                                    MenuEntry(
+                                        icon = R.drawable.trash,
+                                        text = "Delete",
+                                        onClick = {
+                                            menuState.hide()
+                                            isDeleting = true
+                                        }
+                                    )
                                 }
                             }
-                        )
-                    }
-
-                    HeaderIconButton(
-                        icon = R.drawable.pencil,
-                        color = colorPalette.text,
-                        onClick = { isRenaming = true }
-                    )
-
-                    HeaderIconButton(
-                        icon = R.drawable.trash,
-                        color = colorPalette.text,
-                        onClick = { isDeleting = true }
+                        }
                     )
                 }
             }
