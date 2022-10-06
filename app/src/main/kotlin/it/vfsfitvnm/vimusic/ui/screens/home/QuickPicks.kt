@@ -191,7 +191,7 @@ fun QuickPicks(
                     }
 
                     items(
-                        items = related.songs?.dropLast(1) ?: emptyList(),
+                        items = related.songs?.dropLast(if (trending == null) 0 else 1) ?: emptyList(),
                         key = Innertube.SongItem::key
                     ) { song ->
                         SongItem(
