@@ -296,9 +296,6 @@ interface Database {
     @Query("SELECT * FROM Song WHERE title LIKE :query OR artistsText LIKE :query")
     fun search(query: String): Flow<List<DetailedSong>>
 
-    @Query("SELECT EXISTS(SELECT 1 FROM Playlist WHERE browseId = :browseId)")
-    fun isImportedPlaylist(browseId: String): Flow<Boolean>
-
     @Transaction
     @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId GROUP BY songId ORDER BY SUM(CAST(playTime AS REAL) / (((:now - timestamp) / 86400000) + 1)) DESC LIMIT 1")
     @RewriteQueriesToDropUnusedColumns

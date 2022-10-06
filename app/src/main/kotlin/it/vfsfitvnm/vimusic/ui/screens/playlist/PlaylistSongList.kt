@@ -14,7 +14,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.autoSaver
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +27,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.InnertubePlaylistOrAlbumPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.transaction
@@ -37,6 +40,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
+import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.adaptiveThumbnailContent
 import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
@@ -54,7 +58,6 @@ import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
 import it.vfsfitvnm.youtubemusic.requests.playlistPage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 @ExperimentalFoundationApi
@@ -79,18 +82,38 @@ fun PlaylistSongList(
         }
     }
 
-    val isImported by produceSaveableState(
-        initialValue = null,
-        stateSaver = autoSaver<Boolean?>(),
-    ) {
-        Database
-            .isImportedPlaylist(browseId)
-            .flowOn(Dispatchers.IO)
-            .collect { value = it }
-    }
-
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
+
+    var isImportingPlaylist by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (isImportingPlaylist) {
+        TextFieldDialog(
+            hintText = "Enter the playlist name",
+            initialTextInput = playlistPage?.title ?: "",
+            onDismiss = { isImportingPlaylist = false },
+            onDone = { text ->
+                query {
+                    transaction {
+                        val playlistId = Database.insert(Playlist(name = text, browseId = browseId))
+
+                        playlistPage?.songsPage?.items
+                            ?.map(Innertube.SongItem::asMediaItem)
+                            ?.onEach(Database::insert)
+                            ?.mapIndexed { index, mediaItem ->
+                                SongPlaylistMap(
+                                    songId = mediaItem.mediaId,
+                                    playlistId = playlistId,
+                                    position = index
+                                )
+                            }?.let(Database::insertSongPlaylistMaps)
+                    }
+                }
+            }
+        )
+    }
 
     val headerContent: @Composable () -> Unit = {
         if (playlistPage == null) {
@@ -116,30 +139,9 @@ fun PlaylistSongList(
                 )
 
                 HeaderIconButton(
-                    icon = if (isImported == true) R.drawable.bookmark else R.drawable.bookmark_outline,
-                    color = colorPalette.accent,
-                    onClick = {
-                        transaction {
-                            val playlistId =
-                                Database.insert(
-                                    Playlist(
-                                        name = playlistPage?.title ?: "Unknown",
-                                        browseId = browseId
-                                    )
-                                )
-
-                            playlistPage?.songsPage?.items
-                                ?.map(Innertube.SongItem::asMediaItem)
-                                ?.onEach(Database::insert)
-                                ?.mapIndexed { index, mediaItem ->
-                                    SongPlaylistMap(
-                                        songId = mediaItem.mediaId,
-                                        playlistId = playlistId,
-                                        position = index
-                                    )
-                                }?.let(Database::insertSongPlaylistMaps)
-                        }
-                    }
+                    icon = R.drawable.add,
+                    color = colorPalette.text,
+                    onClick = { isImportingPlaylist = true }
                 )
 
                 HeaderIconButton(
