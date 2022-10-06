@@ -179,7 +179,7 @@ fun ConfirmationDialog(
     ) {
         BasicText(
             text = text,
-            style = typography.s.medium.center,
+            style = typography.xs.medium.center,
             modifier = Modifier
                 .padding(all = 16.dp)
         )
