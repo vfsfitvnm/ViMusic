@@ -43,6 +43,7 @@ import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
@@ -81,6 +82,7 @@ fun QuickPicks(
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
@@ -129,6 +131,8 @@ fun QuickPicks(
         )
     }
 
+    val scrollState = rememberScrollState()
+
     BoxWithConstraints {
         val itemInHorizontalGridWidth = maxWidth * quickPicksLazyGridItemWidthFactor
 
@@ -136,7 +140,7 @@ fun QuickPicks(
             modifier = Modifier
                 .background(colorPalette.background0)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(LocalPlayerAwarePaddingValues.current)
         ) {
             Header(title = "Quick picks")
@@ -345,5 +349,11 @@ fun QuickPicks(
                 }
             }
         }
+
+        FloatingActionsContainerWithScrollToTop(
+            scrollState = scrollState,
+            iconId = R.drawable.search,
+            onClick = onSearchClick
+        )
     }
 }

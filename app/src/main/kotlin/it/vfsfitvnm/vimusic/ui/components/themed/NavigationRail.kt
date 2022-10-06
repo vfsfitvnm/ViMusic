@@ -35,11 +35,11 @@ import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.semiBold
 
 @Composable
-fun NavigationRail(
+inline fun NavigationRail(
     topIconButtonId: Int,
-    onTopIconButtonClick: () -> Unit,
+    noinline onTopIconButtonClick: () -> Unit,
     tabIndex: Int,
-    onTabIndexChanged: (Int) -> Unit,
+    crossinline onTabIndexChanged: (Int) -> Unit,
     content: @Composable ColumnScope.(@Composable (Int, String, Int) -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -144,7 +144,7 @@ fun NavigationRail(
     }
 }
 
-private fun Modifier.vertical(enabled: Boolean = true) =
+fun Modifier.vertical(enabled: Boolean = true) =
     if (enabled)
         layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)

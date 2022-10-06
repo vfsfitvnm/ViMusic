@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens.home
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -7,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
@@ -14,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +35,7 @@ import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.PlaylistPreviewListSaver
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
@@ -47,11 +51,13 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 
+@ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
 fun HomePlaylists(
     onBuiltInPlaylist: (BuiltInPlaylist) -> Unit,
     onPlaylistClick: (Playlist) -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     val (colorPalette) = LocalAppearance.current
 
@@ -95,101 +101,112 @@ fun HomePlaylists(
     val thumbnailSizeDp = 108.dp
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(Dimensions.thumbnails.song * 2 + Dimensions.itemsVerticalPadding * 2),
-        contentPadding = LocalPlayerAwarePaddingValues.current,
-        verticalArrangement = Arrangement.spacedBy(Dimensions.itemsVerticalPadding * 2),
-        horizontalArrangement = Arrangement.spacedBy(
-            space = Dimensions.itemsVerticalPadding * 2,
-            alignment = Alignment.CenterHorizontally
-        ),
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorPalette.background0)
-    ) {
-        item(key = "header", contentType = 0, span = { GridItemSpan(maxLineSpan) }) {
-            Header(title = "Playlists") {
-                SecondaryTextButton(
-                    text = "New playlist",
-                    onClick = { isCreatingANewPlaylist = true }
-                )
+    val lazyGridState = rememberLazyGridState()
 
-                Spacer(
+    Box {
+        LazyVerticalGrid(
+            state = lazyGridState,
+            columns = GridCells.Adaptive(Dimensions.thumbnails.song * 2 + Dimensions.itemsVerticalPadding * 2),
+            contentPadding = LocalPlayerAwarePaddingValues.current,
+            verticalArrangement = Arrangement.spacedBy(Dimensions.itemsVerticalPadding * 2),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = Dimensions.itemsVerticalPadding * 2,
+                alignment = Alignment.CenterHorizontally
+            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colorPalette.background0)
+        ) {
+            item(key = "header", contentType = 0, span = { GridItemSpan(maxLineSpan) }) {
+                Header(title = "Playlists") {
+                    SecondaryTextButton(
+                        text = "New playlist",
+                        onClick = { isCreatingANewPlaylist = true }
+                    )
+
+                    Spacer(
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+
+                    HeaderIconButton(
+                        icon = R.drawable.medical,
+                        color = if (sortBy == PlaylistSortBy.SongCount) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = PlaylistSortBy.SongCount }
+                    )
+
+                    HeaderIconButton(
+                        icon = R.drawable.text,
+                        color = if (sortBy == PlaylistSortBy.Name) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = PlaylistSortBy.Name }
+                    )
+
+                    HeaderIconButton(
+                        icon = R.drawable.time,
+                        color = if (sortBy == PlaylistSortBy.DateAdded) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = PlaylistSortBy.DateAdded }
+                    )
+
+                    Spacer(
+                        modifier = Modifier
+                            .width(2.dp)
+                    )
+
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette.text,
+                        onClick = { sortOrder = !sortOrder },
+                        modifier = Modifier
+                            .graphicsLayer { rotationZ = sortOrderIconRotation }
+                    )
+                }
+            }
+
+            item(key = "favorites") {
+                PlaylistItem(
+                    icon = R.drawable.heart,
+                    colorTint = colorPalette.red,
+                    name = "Favorites",
+                    songCount = null,
+                    thumbnailSizeDp = thumbnailSizeDp,
+                    alternative = true,
                     modifier = Modifier
-                        .weight(1f)
+                        .clickable(onClick = { onBuiltInPlaylist(BuiltInPlaylist.Favorites) })
+                        .animateItemPlacement()
                 )
+            }
 
-                HeaderIconButton(
-                    icon = R.drawable.medical,
-                    color = if (sortBy == PlaylistSortBy.SongCount) colorPalette.text else colorPalette.textDisabled,
-                    onClick = { sortBy = PlaylistSortBy.SongCount }
-                )
-
-                HeaderIconButton(
-                    icon = R.drawable.text,
-                    color = if (sortBy == PlaylistSortBy.Name) colorPalette.text else colorPalette.textDisabled,
-                    onClick = { sortBy = PlaylistSortBy.Name }
-                )
-
-                HeaderIconButton(
-                    icon = R.drawable.time,
-                    color = if (sortBy == PlaylistSortBy.DateAdded) colorPalette.text else colorPalette.textDisabled,
-                    onClick = { sortBy = PlaylistSortBy.DateAdded }
-                )
-
-                Spacer(
+            item(key = "offline") {
+                PlaylistItem(
+                    icon = R.drawable.airplane,
+                    colorTint = colorPalette.blue,
+                    name = "Offline",
+                    songCount = null,
+                    thumbnailSizeDp = thumbnailSizeDp,
+                    alternative = true,
                     modifier = Modifier
-                        .width(2.dp)
+                        .clickable(onClick = { onBuiltInPlaylist(BuiltInPlaylist.Offline) })
+                        .animateItemPlacement()
                 )
+            }
 
-                HeaderIconButton(
-                    icon = R.drawable.arrow_up,
-                    color = colorPalette.text,
-                    onClick = { sortOrder = !sortOrder },
+            items(items = items, key = { it.playlist.id }) { playlistPreview ->
+                PlaylistItem(
+                    playlist = playlistPreview,
+                    thumbnailSizeDp = thumbnailSizeDp,
+                    thumbnailSizePx = thumbnailSizePx,
+                    alternative = true,
                     modifier = Modifier
-                        .graphicsLayer { rotationZ = sortOrderIconRotation }
+                        .clickable(onClick = { onPlaylistClick(playlistPreview.playlist) })
+                        .animateItemPlacement()
                 )
             }
         }
 
-        item(key = "favorites") {
-            PlaylistItem(
-                icon = R.drawable.heart,
-                colorTint = colorPalette.red,
-                name = "Favorites",
-                songCount = null,
-                thumbnailSizeDp = thumbnailSizeDp,
-                alternative = true,
-                modifier = Modifier
-                    .clickable(onClick = { onBuiltInPlaylist(BuiltInPlaylist.Favorites) })
-                    .animateItemPlacement()
-            )
-        }
-
-        item(key = "offline") {
-            PlaylistItem(
-                icon = R.drawable.airplane,
-                colorTint = colorPalette.blue,
-                name = "Offline",
-                songCount = null,
-                thumbnailSizeDp = thumbnailSizeDp,
-                alternative = true,
-                modifier = Modifier
-                    .clickable(onClick = { onBuiltInPlaylist(BuiltInPlaylist.Offline) })
-                    .animateItemPlacement()
-            )
-        }
-
-        items(items = items, key = { it.playlist.id }) { playlistPreview ->
-            PlaylistItem(
-                playlist = playlistPreview,
-                thumbnailSizeDp = thumbnailSizeDp,
-                thumbnailSizePx = thumbnailSizePx,
-                alternative = true,
-                modifier = Modifier
-                    .clickable(onClick = { onPlaylistClick(playlistPreview.playlist) })
-                    .animateItemPlacement()
-            )
-        }
+        FloatingActionsContainerWithScrollToTop(
+            lazyGridState = lazyGridState,
+            iconId = R.drawable.search,
+            onClick = onSearchClick
+        )
     }
 }

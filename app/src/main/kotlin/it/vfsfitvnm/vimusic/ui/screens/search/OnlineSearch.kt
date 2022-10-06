@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens.search
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -45,6 +47,7 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.SearchQuerySaver
 import it.vfsfitvnm.vimusic.savers.listSaver
 import it.vfsfitvnm.vimusic.savers.resultSaver
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -62,6 +65,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 
+@ExperimentalAnimationApi
 @Composable
 fun OnlineSearch(
     textFieldValue: TextFieldValue,
@@ -112,139 +116,74 @@ fun OnlineSearch(
         FocusRequester()
     }
 
-    LazyColumn(
-        contentPadding = LocalPlayerAwarePaddingValues.current,
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        item(
-            key = "header",
-            contentType = 0
+    val lazyListState = rememberLazyListState()
+
+    Box {
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = LocalPlayerAwarePaddingValues.current,
+            modifier = Modifier
+                .fillMaxSize()
         ) {
-            Header(
-                titleContent = {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = onTextFieldValueChanged,
-                        textStyle = typography.xxl.medium.align(TextAlign.End),
-                        singleLine = true,
-                        maxLines = 1,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                if (textFieldValue.text.isNotEmpty()) {
-                                    onSearch(textFieldValue.text)
-                                }
-                            }
-                        ),
-                        cursorBrush = SolidColor(colorPalette.text),
-                        decorationBox = decorationBox,
-                        modifier = Modifier
-                            .focusRequester(focusRequester)
-                    )
-                },
-                actionsContent = {
-                    if (playlistId != null) {
-                        val isAlbum = playlistId.startsWith("OLAK5uy_")
-
-                        SecondaryTextButton(
-                            text =  "View ${if (isAlbum) "album" else "playlist"}",
-                            onClick = { onViewPlaylist(textFieldValue.text) }
-                        )
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    if (textFieldValue.text.isNotEmpty()) {
-                        SecondaryTextButton(
-                            text =  "Clear",
-                            onClick = { onTextFieldValueChanged(TextFieldValue()) }
-                        )
-                    }
-                }
-            )
-        }
-
-        items(
-            items = history,
-            key = SearchQuery::id
-        ) { searchQuery ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clickable(onClick = { onSearch(searchQuery.query) })
-                    .fillMaxWidth()
-                    .padding(all = 16.dp)
+            item(
+                key = "header",
+                contentType = 0
             ) {
-                Spacer(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .size(20.dp)
-                        .paint(
-                            painter = timeIconPainter,
-                            colorFilter = ColorFilter.tint(colorPalette.textDisabled)
-                        )
-                )
-
-                BasicText(
-                    text = searchQuery.query,
-                    style = typography.s.secondary,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .weight(1f)
-                )
-
-                Image(
-                    painter = closeIconPainter,
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.textDisabled),
-                    modifier = Modifier
-                        .clickable(
-                            indication = rippleIndication,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
-                                query {
-                                    Database.delete(searchQuery)
+                Header(
+                    titleContent = {
+                        BasicTextField(
+                            value = textFieldValue,
+                            onValueChange = onTextFieldValueChanged,
+                            textStyle = typography.xxl.medium.align(TextAlign.End),
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    if (textFieldValue.text.isNotEmpty()) {
+                                        onSearch(textFieldValue.text)
+                                    }
                                 }
-                            }
+                            ),
+                            cursorBrush = SolidColor(colorPalette.text),
+                            decorationBox = decorationBox,
+                            modifier = Modifier
+                                .focusRequester(focusRequester)
                         )
-                        .padding(horizontal = 8.dp)
-                        .size(20.dp)
-                )
+                    },
+                    actionsContent = {
+                        if (playlistId != null) {
+                            val isAlbum = playlistId.startsWith("OLAK5uy_")
 
-                Image(
-                    painter = arrowForwardIconPainter,
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette.textDisabled),
-                    modifier = Modifier
-                        .clickable(
-                            indication = rippleIndication,
-                            interactionSource = remember { MutableInteractionSource() },
-                            onClick = {
-                                onTextFieldValueChanged(
-                                    TextFieldValue(
-                                        text = searchQuery.query,
-                                        selection = TextRange(searchQuery.query.length)
-                                    )
-                                )
-                            }
+                            SecondaryTextButton(
+                                text =  "View ${if (isAlbum) "album" else "playlist"}",
+                                onClick = { onViewPlaylist(textFieldValue.text) }
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
                         )
-                        .rotate(225f)
-                        .padding(horizontal = 8.dp)
-                        .size(22.dp)
+
+                        if (textFieldValue.text.isNotEmpty()) {
+                            SecondaryTextButton(
+                                text =  "Clear",
+                                onClick = { onTextFieldValueChanged(TextFieldValue()) }
+                            )
+                        }
+                    }
                 )
             }
-        }
 
-        suggestionsResult?.getOrNull()?.let { suggestions ->
-            items(items = suggestions) { suggestion ->
+            items(
+                items = history,
+                key = SearchQuery::id
+            ) { searchQuery ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clickable(onClick = { onSearch(suggestion) })
+                        .clickable(onClick = { onSearch(searchQuery.query) })
                         .fillMaxWidth()
                         .padding(all = 16.dp)
                 ) {
@@ -252,14 +191,36 @@ fun OnlineSearch(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .size(20.dp)
+                            .paint(
+                                painter = timeIconPainter,
+                                colorFilter = ColorFilter.tint(colorPalette.textDisabled)
+                            )
                     )
 
                     BasicText(
-                        text = suggestion,
+                        text = searchQuery.query,
                         style = typography.s.secondary,
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .weight(1f)
+                    )
+
+                    Image(
+                        painter = closeIconPainter,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette.textDisabled),
+                        modifier = Modifier
+                            .clickable(
+                                indication = rippleIndication,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    query {
+                                        Database.delete(searchQuery)
+                                    }
+                                }
+                            )
+                            .padding(horizontal = 8.dp)
+                            .size(20.dp)
                     )
 
                     Image(
@@ -273,8 +234,8 @@ fun OnlineSearch(
                                 onClick = {
                                     onTextFieldValueChanged(
                                         TextFieldValue(
-                                            text = suggestion,
-                                            selection = TextRange(suggestion.length)
+                                            text = searchQuery.query,
+                                            selection = TextRange(searchQuery.query.length)
                                         )
                                     )
                                 }
@@ -285,21 +246,71 @@ fun OnlineSearch(
                     )
                 }
             }
-        } ?: suggestionsResult?.exceptionOrNull()?.let {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    BasicText(
-                        text = "An error has occurred.",
-                        style = typography.s.secondary.center,
+
+            suggestionsResult?.getOrNull()?.let { suggestions ->
+                items(items = suggestions) { suggestion ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .align(Alignment.Center)
-                    )
+                            .clickable(onClick = { onSearch(suggestion) })
+                            .fillMaxWidth()
+                            .padding(all = 16.dp)
+                    ) {
+                        Spacer(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .size(20.dp)
+                        )
+
+                        BasicText(
+                            text = suggestion,
+                            style = typography.s.secondary,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .weight(1f)
+                        )
+
+                        Image(
+                            painter = arrowForwardIconPainter,
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.textDisabled),
+                            modifier = Modifier
+                                .clickable(
+                                    indication = rippleIndication,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    onClick = {
+                                        onTextFieldValueChanged(
+                                            TextFieldValue(
+                                                text = suggestion,
+                                                selection = TextRange(suggestion.length)
+                                            )
+                                        )
+                                    }
+                                )
+                                .rotate(225f)
+                                .padding(horizontal = 8.dp)
+                                .size(22.dp)
+                        )
+                    }
+                }
+            } ?: suggestionsResult?.exceptionOrNull()?.let {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        BasicText(
+                            text = "An error has occurred.",
+                            style = typography.s.secondary.center,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                        )
+                    }
                 }
             }
         }
+
+        FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
     }
 
     LaunchedEffect(Unit) {

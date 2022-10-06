@@ -114,8 +114,6 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                     Item(3, "Artists", R.drawable.person)
                     Item(4, "Albums", R.drawable.disc)
                 },
-                primaryIconButtonId = R.drawable.search,
-                onPrimaryIconButtonClick = { searchRoute("") }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
@@ -123,14 +121,24 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                             onAlbumClick = { albumRoute(it) },
                             onArtistClick = { artistRoute(it) },
                             onPlaylistClick = { playlistRoute(it) },
+                            onSearchClick = { searchRoute("") }
                         )
-                        1 -> HomeSongs()
+                        1 -> HomeSongs(
+                            onSearchClick = { searchRoute("") }
+                        )
                         2 -> HomePlaylists(
                             onBuiltInPlaylist = { builtInPlaylistRoute(it) },
-                            onPlaylistClick = { localPlaylistRoute(it.id) }
+                            onPlaylistClick = { localPlaylistRoute(it.id) },
+                            onSearchClick = { searchRoute("") }
                         )
-                        3 -> HomeArtistList(onArtistClick = { artistRoute(it.id) })
-                        4 -> HomeAlbums(onAlbumClick = { albumRoute(it.id) })
+                        3 -> HomeArtistList(
+                            onArtistClick = { artistRoute(it.id) },
+                            onSearchClick = { searchRoute("") }
+                        )
+                        4 -> HomeAlbums(
+                            onAlbumClick = { albumRoute(it.id) },
+                            onSearchClick = { searchRoute("") }
+                        )
                     }
                 }
             }

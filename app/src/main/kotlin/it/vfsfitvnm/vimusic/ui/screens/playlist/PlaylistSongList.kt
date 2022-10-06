@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.autoSaver
@@ -29,12 +30,12 @@ import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.adaptiveThumbnailContent
 import it.vfsfitvnm.vimusic.ui.items.SongItem
@@ -62,7 +63,7 @@ import kotlinx.coroutines.withContext
 fun PlaylistSongList(
     browseId: String,
 ) {
-    val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
+    val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
@@ -162,9 +163,12 @@ fun PlaylistSongList(
 
     val thumbnailContent = adaptiveThumbnailContent(playlistPage == null, playlistPage?.thumbnail?.url)
 
+    val lazyListState = rememberLazyListState()
+
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box {
             LazyColumn(
+                state = lazyListState,
                 contentPadding = LocalPlayerAwarePaddingValues.current,
                 modifier = Modifier
                     .background(colorPalette.background0)
@@ -219,13 +223,17 @@ fun PlaylistSongList(
                 }
             }
 
-            PrimaryButton(
+            FloatingActionsContainerWithScrollToTop(
+                lazyListState = lazyListState,
                 iconId = R.drawable.shuffle,
-                isEnabled = playlistPage?.songsPage?.items?.isNotEmpty() == true,
                 onClick = {
-                    playlistPage?.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayFromBeginning(mediaItems.shuffled())
+                    playlistPage?.songsPage?.items?.let { songs ->
+                        if (songs.isNotEmpty()) {
+                            binder?.stopRadio()
+                            binder?.player?.forcePlayFromBeginning(
+                                songs.shuffled().map(Innertube.SongItem::asMediaItem)
+                            )
+                        }
                     }
                 }
             )

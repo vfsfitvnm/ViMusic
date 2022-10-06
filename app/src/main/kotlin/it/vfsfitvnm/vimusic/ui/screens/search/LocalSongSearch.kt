@@ -3,9 +3,11 @@ package it.vfsfitvnm.vimusic.ui.screens.search
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
@@ -65,68 +68,75 @@ fun LocalSongSearch(
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    LazyColumn(
-        contentPadding = LocalPlayerAwarePaddingValues.current,
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        item(
-            key = "header",
-            contentType = 0
-        ) {
-            Header(
-                titleContent = {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = onTextFieldValueChanged,
-                        textStyle = typography.xxl.medium.align(TextAlign.End),
-                        singleLine = true,
-                        maxLines = 1,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        cursorBrush = SolidColor(colorPalette.text),
-                        decorationBox = decorationBox
-                    )
-                },
-                actionsContent = {
-                    if (textFieldValue.text.isNotEmpty()) {
-                        SecondaryTextButton(
-                            text = "Clear",
-                            onClick = { onTextFieldValueChanged(TextFieldValue()) }
-                        )
-                    }
-                }
-            )
-        }
+    val lazyListState = rememberLazyListState()
 
-        items(
-            items = items,
-            key = DetailedSong::id,
-        ) { song ->
-            SongItem(
-                song = song,
-                thumbnailSizePx = thumbnailSizePx,
-                thumbnailSizeDp = thumbnailSizeDp,
-                modifier = Modifier
-                    .combinedClickable(
-                        onLongClick = {
-                            menuState.display {
-                                InHistoryMediaItemMenu(
-                                    song = song,
-                                    onDismiss = menuState::hide
-                                )
-                            }
-                        },
-                        onClick = {
-                            val mediaItem = song.asMediaItem
-                            binder?.stopRadio()
-                            binder?.player?.forcePlay(mediaItem)
-                            binder?.setupRadio(
-                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+    Box {
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = LocalPlayerAwarePaddingValues.current,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            item(
+                key = "header",
+                contentType = 0
+            ) {
+                Header(
+                    titleContent = {
+                        BasicTextField(
+                            value = textFieldValue,
+                            onValueChange = onTextFieldValueChanged,
+                            textStyle = typography.xxl.medium.align(TextAlign.End),
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            cursorBrush = SolidColor(colorPalette.text),
+                            decorationBox = decorationBox
+                        )
+                    },
+                    actionsContent = {
+                        if (textFieldValue.text.isNotEmpty()) {
+                            SecondaryTextButton(
+                                text = "Clear",
+                                onClick = { onTextFieldValueChanged(TextFieldValue()) }
                             )
                         }
-                    )
-                    .animateItemPlacement()
-            )
+                    }
+                )
+            }
+
+            items(
+                items = items,
+                key = DetailedSong::id,
+            ) { song ->
+                SongItem(
+                    song = song,
+                    thumbnailSizePx = thumbnailSizePx,
+                    thumbnailSizeDp = thumbnailSizeDp,
+                    modifier = Modifier
+                        .combinedClickable(
+                            onLongClick = {
+                                menuState.display {
+                                    InHistoryMediaItemMenu(
+                                        song = song,
+                                        onDismiss = menuState::hide
+                                    )
+                                }
+                            },
+                            onClick = {
+                                val mediaItem = song.asMediaItem
+                                binder?.stopRadio()
+                                binder?.player?.forcePlay(mediaItem)
+                                binder?.setupRadio(
+                                    NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                )
+                            }
+                        )
+                        .animateItemPlacement()
+                )
+            }
         }
+
+        FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
     }
 }

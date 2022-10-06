@@ -35,13 +35,13 @@ import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.transaction
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.ConfirmationDialog
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.InPlaylistMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.Menu
 import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
-import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.items.SongItem
@@ -274,17 +274,18 @@ fun LocalPlaylistSongs(
             }
         }
 
-        PrimaryButton(
+        FloatingActionsContainerWithScrollToTop(
+            lazyListState = lazyListState,
             iconId = R.drawable.shuffle,
-            isEnabled = playlistWithSongs?.songs?.isNotEmpty() == true,
             onClick = {
-                playlistWithSongs?.songs
-                    ?.shuffled()
-                    ?.map(DetailedSong::asMediaItem)
-                    ?.let { mediaItems ->
+                playlistWithSongs?.songs?.let { songs ->
+                    if (songs.isNotEmpty()) {
                         binder?.stopRadio()
-                        binder?.player?.forcePlayFromBeginning(mediaItems)
+                        binder?.player?.forcePlayFromBeginning(
+                            songs.shuffled().map(DetailedSong::asMediaItem)
+                        )
                     }
+                }
             }
         )
     }

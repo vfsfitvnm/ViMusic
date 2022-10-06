@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
@@ -70,8 +72,11 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSize = thumbnailSizeDp.px
 
+    val lazyListState = rememberLazyListState()
+
     Box {
         LazyColumn(
+            state = lazyListState,
             contentPadding = LocalPlayerAwarePaddingValues.current,
             modifier = Modifier
                 .background(colorPalette.background0)
@@ -120,6 +125,7 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                                             song = song,
                                             onDismiss = menuState::hide
                                         )
+
                                         BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(
                                             song = song,
                                             onDismiss = menuState::hide
@@ -129,7 +135,10 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                             },
                             onClick = {
                                 binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(songs.map(DetailedSong::asMediaItem), index)
+                                binder?.player?.forcePlayAtIndex(
+                                    songs.map(DetailedSong::asMediaItem),
+                                    index
+                                )
                             }
                         )
                         .animateItemPlacement()
@@ -137,14 +146,16 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
             }
         }
 
-        PrimaryButton(
+        FloatingActionsContainerWithScrollToTop(
+            lazyListState = lazyListState,
             iconId = R.drawable.shuffle,
-            isEnabled = songs.isNotEmpty(),
             onClick = {
-                binder?.stopRadio()
-                binder?.player?.forcePlayFromBeginning(
-                    songs.shuffled().map(DetailedSong::asMediaItem)
-                )
+                if (songs.isNotEmpty()) {
+                    binder?.stopRadio()
+                    binder?.player?.forcePlayFromBeginning(
+                        songs.shuffled().map(DetailedSong::asMediaItem)
+                    )
+                }
             }
         )
     }

@@ -26,9 +26,9 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.items.AlbumItem
@@ -70,6 +70,8 @@ fun ArtistOverview(
         .padding(horizontal = 16.dp)
         .padding(top = 24.dp, bottom = 8.dp)
 
+    val scrollState = rememberScrollState()
+
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box {
             Column(
@@ -77,7 +79,7 @@ fun ArtistOverview(
                 modifier = Modifier
                     .background(colorPalette.background0)
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(LocalPlayerAwarePaddingValues.current)
             ) {
                 headerContent {
@@ -258,7 +260,8 @@ fun ArtistOverview(
             }
 
             youtubeArtistPage?.shuffleEndpoint?.let { shuffleEndpoint ->
-                PrimaryButton(
+                FloatingActionsContainerWithScrollToTop(
+                    scrollState = scrollState,
                     iconId = R.drawable.shuffle,
                     onClick = {
                         binder?.stopRadio()

@@ -7,11 +7,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -25,6 +27,7 @@ import it.vfsfitvnm.vimusic.enums.AlbumSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.savers.AlbumListSaver
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.items.AlbumItem
@@ -42,7 +45,8 @@ import kotlinx.coroutines.flow.flowOn
 @ExperimentalAnimationApi
 @Composable
 fun HomeAlbums(
-    onAlbumClick: (Album) -> Unit
+    onAlbumClick: (Album) -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     val (colorPalette) = LocalAppearance.current
 
@@ -68,62 +72,73 @@ fun HomeAlbums(
         animationSpec = tween(durationMillis = 400, easing = LinearEasing)
     )
 
-    LazyColumn(
-        contentPadding = LocalPlayerAwarePaddingValues.current,
-        modifier = Modifier
-            .background(colorPalette.background0)
-            .fillMaxSize()
-    ) {
-        item(
-            key = "header",
-            contentType = 0
+    val lazyListState = rememberLazyListState()
+
+    Box {
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = LocalPlayerAwarePaddingValues.current,
+            modifier = Modifier
+                .background(colorPalette.background0)
+                .fillMaxSize()
         ) {
-            Header(title = "Albums") {
-                HeaderIconButton(
-                    icon = R.drawable.calendar,
-                    color = if (sortBy == AlbumSortBy.Year) colorPalette.text else colorPalette.textDisabled,
-                    onClick = { sortBy = AlbumSortBy.Year }
-                )
+            item(
+                key = "header",
+                contentType = 0
+            ) {
+                Header(title = "Albums") {
+                    HeaderIconButton(
+                        icon = R.drawable.calendar,
+                        color = if (sortBy == AlbumSortBy.Year) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = AlbumSortBy.Year }
+                    )
 
-                HeaderIconButton(
-                    icon = R.drawable.text,
-                    color = if (sortBy == AlbumSortBy.Title) colorPalette.text else colorPalette.textDisabled,
-                    onClick = { sortBy = AlbumSortBy.Title }
-                )
+                    HeaderIconButton(
+                        icon = R.drawable.text,
+                        color = if (sortBy == AlbumSortBy.Title) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = AlbumSortBy.Title }
+                    )
 
-                HeaderIconButton(
-                    icon = R.drawable.time,
-                    color = if (sortBy == AlbumSortBy.DateAdded) colorPalette.text else colorPalette.textDisabled,
-                    onClick = { sortBy = AlbumSortBy.DateAdded }
-                )
+                    HeaderIconButton(
+                        icon = R.drawable.time,
+                        color = if (sortBy == AlbumSortBy.DateAdded) colorPalette.text else colorPalette.textDisabled,
+                        onClick = { sortBy = AlbumSortBy.DateAdded }
+                    )
 
-                Spacer(
+                    Spacer(
+                        modifier = Modifier
+                            .width(2.dp)
+                    )
+
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette.text,
+                        onClick = { sortOrder = !sortOrder },
+                        modifier = Modifier
+                            .graphicsLayer { rotationZ = sortOrderIconRotation }
+                    )
+                }
+            }
+
+            items(
+                items = items,
+                key = Album::id
+            ) { album ->
+                AlbumItem(
+                    album = album,
+                    thumbnailSizePx = thumbnailSizePx,
+                    thumbnailSizeDp = thumbnailSizeDp,
                     modifier = Modifier
-                        .width(2.dp)
-                )
-
-                HeaderIconButton(
-                    icon = R.drawable.arrow_up,
-                    color = colorPalette.text,
-                    onClick = { sortOrder = !sortOrder },
-                    modifier = Modifier
-                        .graphicsLayer { rotationZ = sortOrderIconRotation }
+                        .clickable(onClick = { onAlbumClick(album) })
+                        .animateItemPlacement()
                 )
             }
         }
 
-        items(
-            items = items,
-            key = Album::id
-        ) { album ->
-            AlbumItem(
-                album = album,
-                thumbnailSizePx = thumbnailSizePx,
-                thumbnailSizeDp = thumbnailSizeDp,
-                modifier = Modifier
-                    .clickable(onClick = { onAlbumClick(album) })
-                    .animateItemPlacement()
-            )
-        }
+        FloatingActionsContainerWithScrollToTop(
+            lazyListState = lazyListState,
+            iconId = R.drawable.search,
+            onClick = onSearchClick
+        )
     }
 }

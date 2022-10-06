@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -19,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 
-@SuppressLint("ModifierParameter")
 @ExperimentalAnimationApi
 @Composable
 fun Scaffold(
@@ -28,8 +26,6 @@ fun Scaffold(
     tabIndex: Int,
     onTabChanged: (Int) -> Unit,
     tabColumnContent: @Composable ColumnScope.(@Composable (Int, String, Int) -> Unit) -> Unit,
-    primaryIconButtonId: Int? = null,
-    onPrimaryIconButtonClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
@@ -69,14 +65,7 @@ fun Scaffold(
                     slideIntoContainer(slideDirection, animationSpec) with
                             slideOutOfContainer(slideDirection, animationSpec)
                 },
-                content = content,
-            )
-        }
-
-        primaryIconButtonId?.let {
-            PrimaryButton(
-                iconId = primaryIconButtonId,
-                onClick = onPrimaryIconButtonClick
+                content = content
             )
         }
     }
