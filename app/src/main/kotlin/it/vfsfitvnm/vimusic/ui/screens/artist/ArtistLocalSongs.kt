@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,10 +20,11 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
+import it.vfsfitvnm.vimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
-import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.flowOn
 fun ArtistLocalSongs(
     browseId: String,
     headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    thumbnailContent: @Composable ColumnScope.() -> Unit,
+    thumbnailContent: @Composable () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val (colorPalette) = LocalAppearance.current
@@ -63,79 +63,81 @@ fun ArtistLocalSongs(
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
 
-    Box {
-        LazyColumn(
-            contentPadding = LocalPlayerAwarePaddingValues.current,
-            modifier = Modifier
-                .background(colorPalette.background0)
-                .fillMaxSize()
-        ) {
-            item(
-                key = "header",
-                contentType = 0
+    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+        Box {
+            LazyColumn(
+                contentPadding = LocalPlayerAwarePaddingValues.current,
+                modifier = Modifier
+                    .background(colorPalette.background0)
+                    .fillMaxSize()
             ) {
-                Column {
-                    headerContent {
-                        SecondaryTextButton(
-                            text = "Enqueue",
-                            isEnabled = !songs.isNullOrEmpty(),
-                            onClick = {
-                                binder?.player?.enqueue(songs!!.map(DetailedSong::asMediaItem))
-                            }
-                        )
-                    }
-
-                    thumbnailContent()
-                }
-            }
-
-            songs?.let { songs ->
-                itemsIndexed(
-                    items = songs,
-                    key = { _, song -> song.id }
-                ) { index, song ->
-                    SongItem(
-                        song = song,
-                        thumbnailSizeDp = songThumbnailSizeDp,
-                        thumbnailSizePx = songThumbnailSizePx,
-                        modifier = Modifier
-                            .combinedClickable(
-                                onLongClick = {
-                                    menuState.display {
-                                        NonQueuedMediaItemMenu(
-                                            onDismiss = menuState::hide,
-                                            mediaItem = song.asMediaItem,
-                                        )
-                                    }
-                                },
+                item(
+                    key = "header",
+                    contentType = 0
+                ) {
+                    Column {
+                        headerContent {
+                            SecondaryTextButton(
+                                text = "Enqueue",
+                                isEnabled = !songs.isNullOrEmpty(),
                                 onClick = {
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlayAtIndex(
-                                        songs.map(DetailedSong::asMediaItem),
-                                        index
-                                    )
+                                    binder?.player?.enqueue(songs!!.map(DetailedSong::asMediaItem))
                                 }
                             )
-                    )
+                        }
+
+                        thumbnailContent()
+                    }
                 }
-            } ?: item(key = "loading") {
-                ShimmerHost {
-                    repeat(4) {
-                        SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+
+                songs?.let { songs ->
+                    itemsIndexed(
+                        items = songs,
+                        key = { _, song -> song.id }
+                    ) { index, song ->
+                        SongItem(
+                            song = song,
+                            thumbnailSizeDp = songThumbnailSizeDp,
+                            thumbnailSizePx = songThumbnailSizePx,
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onLongClick = {
+                                        menuState.display {
+                                            NonQueuedMediaItemMenu(
+                                                onDismiss = menuState::hide,
+                                                mediaItem = song.asMediaItem,
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayAtIndex(
+                                            songs.map(DetailedSong::asMediaItem),
+                                            index
+                                        )
+                                    }
+                                )
+                        )
+                    }
+                } ?: item(key = "loading") {
+                    ShimmerHost {
+                        repeat(4) {
+                            SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+                        }
                     }
                 }
             }
-        }
 
-        PrimaryButton(
-            iconId = R.drawable.shuffle,
-            isEnabled = !songs.isNullOrEmpty(),
-            onClick = {
-                binder?.stopRadio()
-                binder?.player?.forcePlayFromBeginning(
-                    songs!!.shuffled().map(DetailedSong::asMediaItem)
-                )
-            }
-        )
+            PrimaryButton(
+                iconId = R.drawable.shuffle,
+                isEnabled = !songs.isNullOrEmpty(),
+                onClick = {
+                    binder?.stopRadio()
+                    binder?.player?.forcePlayFromBeginning(
+                        songs!!.shuffled().map(DetailedSong::asMediaItem)
+                    )
+                }
+            )
+        }
     }
 }

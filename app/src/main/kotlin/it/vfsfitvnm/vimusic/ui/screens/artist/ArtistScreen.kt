@@ -3,25 +3,16 @@ package it.vfsfitvnm.vimusic.ui.screens.artist
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
@@ -40,6 +31,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.components.themed.adaptiveThumbnailContent
 import it.vfsfitvnm.vimusic.ui.items.AlbumItem
 import it.vfsfitvnm.vimusic.ui.items.AlbumItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.items.SongItem
@@ -50,13 +42,11 @@ import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.utils.artistScreenTabIndexKey
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
 import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
@@ -123,38 +113,12 @@ fun ArtistScreen(browseId: String) {
         globalRoutes()
 
         host {
-            val thumbnailContent: @Composable ColumnScope.() -> Unit = {
-                BoxWithConstraints(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    val thumbnailSizeDp = maxWidth - 64.dp
-                    val thumbnailSizePx = thumbnailSizeDp.px
-
-                    if (artist?.timestamp == null) {
-                        val (colorPalette) = LocalAppearance.current
-
-                        Spacer(
-                            modifier = Modifier
-                                .padding(all = 16.dp)
-                                .shimmer()
-                                .clip(CircleShape)
-                                .size(thumbnailSizeDp)
-                                .background(colorPalette.shimmer)
-                        )
-                    } else {
-                        AsyncImage(
-                            model = artist?.thumbnailUrl?.thumbnail(thumbnailSizePx),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(all = 16.dp)
-                                .clip(CircleShape)
-                                .size(thumbnailSizeDp)
-                        )
-                    }
-                }
-            }
+            val thumbnailContent =
+                adaptiveThumbnailContent(
+                    artist?.timestamp == null,
+                    artist?.thumbnailUrl,
+                    CircleShape
+                )
 
             val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit =
                 { textButton ->

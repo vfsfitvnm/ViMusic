@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
-import android.content.res.Configuration
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
@@ -27,12 +26,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.semiBold
 
 @Composable
@@ -45,9 +44,8 @@ fun NavigationRail(
     modifier: Modifier = Modifier
 ) {
     val (colorPalette, typography) = LocalAppearance.current
-    val configuration = LocalConfiguration.current
 
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isLandscape = isLandscape
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

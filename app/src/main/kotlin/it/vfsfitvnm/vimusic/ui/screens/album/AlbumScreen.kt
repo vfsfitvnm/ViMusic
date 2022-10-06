@@ -3,25 +3,16 @@ package it.vfsfitvnm.vimusic.ui.screens.album
 import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
@@ -38,6 +29,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
+import it.vfsfitvnm.vimusic.ui.components.themed.adaptiveThumbnailContent
 import it.vfsfitvnm.vimusic.ui.items.AlbumItem
 import it.vfsfitvnm.vimusic.ui.items.AlbumItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
@@ -45,10 +37,8 @@ import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
 import it.vfsfitvnm.youtubemusic.requests.albumPage
@@ -81,7 +71,11 @@ fun AlbumScreen(browseId: String) {
         stateSaver = nullableSaver(InnertubePlaylistOrAlbumPageSaver),
         tabIndex > 0
     ) {
-        if (value != null || (tabIndex == 0 && withContext(Dispatchers.IO) { Database.albumTimestamp(browseId) } != null)) return@produceSaveableState
+        if (value != null || (tabIndex == 0 && withContext(Dispatchers.IO) {
+                Database.albumTimestamp(
+                    browseId
+                )
+            } != null)) return@produceSaveableState
 
         withContext(Dispatchers.IO) {
             Innertube.albumPage(BrowseBody(browseId = browseId))
@@ -121,94 +115,70 @@ fun AlbumScreen(browseId: String) {
         globalRoutes()
 
         host {
-            val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = { textButton ->
-                if (album?.timestamp == null) {
-                    HeaderPlaceholder(
-                        modifier = Modifier
-                            .shimmer()
-                    )
-                } else {
-                    val (colorPalette) = LocalAppearance.current
-                    val context = LocalContext.current
-
-                    Header(title = album?.title ?: "Unknown") {
-                        textButton?.invoke()
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-                        HeaderIconButton(
-                            icon = if (album?.bookmarkedAt == null) {
-                                R.drawable.bookmark_outline
-                            } else {
-                                R.drawable.bookmark
-                            },
-                            color = colorPalette.accent,
-                            onClick = {
-                                val bookmarkedAt =
-                                    if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
-
-                                query {
-                                    album
-                                        ?.copy(bookmarkedAt = bookmarkedAt)
-                                        ?.let(Database::update)
-                                }
-                            }
-                        )
-
-                        HeaderIconButton(
-                            icon = R.drawable.share_social,
-                            color = colorPalette.text,
-                            onClick = {
-                                album?.shareUrl?.let { url ->
-                                    val sendIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        type = "text/plain"
-                                        putExtra(Intent.EXTRA_TEXT, url)
-                                    }
-
-                                    context.startActivity(Intent.createChooser(sendIntent, null))
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-
-            val thumbnailContent: @Composable ColumnScope.() -> Unit = {
-                val (colorPalette, _, thumbnailShape) = LocalAppearance.current
-
-                BoxWithConstraints(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    val thumbnailSizeDp = maxWidth - 64.dp
-                    val thumbnailSizePx = thumbnailSizeDp.px
-
+            val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit =
+                { textButton ->
                     if (album?.timestamp == null) {
-                        Spacer(
+                        HeaderPlaceholder(
                             modifier = Modifier
-                                .padding(all = 16.dp)
                                 .shimmer()
-                                .clip(thumbnailShape)
-                                .size(thumbnailSizeDp)
-                                .background(colorPalette.shimmer)
                         )
                     } else {
-                        AsyncImage(
-                            model = album?.thumbnailUrl?.thumbnail(thumbnailSizePx),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(all = 16.dp)
-                                .clip(thumbnailShape)
-                                .size(thumbnailSizeDp)
-                        )
+                        val (colorPalette) = LocalAppearance.current
+                        val context = LocalContext.current
+
+                        Header(title = album?.title ?: "Unknown") {
+                            textButton?.invoke()
+
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
+
+                            HeaderIconButton(
+                                icon = if (album?.bookmarkedAt == null) {
+                                    R.drawable.bookmark_outline
+                                } else {
+                                    R.drawable.bookmark
+                                },
+                                color = colorPalette.accent,
+                                onClick = {
+                                    val bookmarkedAt =
+                                        if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
+
+                                    query {
+                                        album
+                                            ?.copy(bookmarkedAt = bookmarkedAt)
+                                            ?.let(Database::update)
+                                    }
+                                }
+                            )
+
+                            HeaderIconButton(
+                                icon = R.drawable.share_social,
+                                color = colorPalette.text,
+                                onClick = {
+                                    album?.shareUrl?.let { url ->
+                                        val sendIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_TEXT, url)
+                                        }
+
+                                        context.startActivity(
+                                            Intent.createChooser(
+                                                sendIntent,
+                                                null
+                                            )
+                                        )
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
-            }
+
+            val thumbnailContent =
+                adaptiveThumbnailContent(album?.timestamp == null, album?.thumbnailUrl)
 
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
@@ -227,6 +197,7 @@ fun AlbumScreen(browseId: String) {
                             headerContent = headerContent,
                             thumbnailContent = thumbnailContent,
                         )
+
                         1 -> {
                             val thumbnailSizeDp = 108.dp
                             val thumbnailSizePx = thumbnailSizeDp.px

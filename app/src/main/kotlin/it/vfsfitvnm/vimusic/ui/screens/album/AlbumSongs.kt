@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,10 +23,11 @@ import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
+import it.vfsfitvnm.vimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
-import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -38,6 +38,7 @@ import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
+import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ import kotlinx.coroutines.flow.flowOn
 fun AlbumSongs(
     browseId: String,
     headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    thumbnailContent: @Composable ColumnScope.() -> Unit,
+    thumbnailContent: @Composable () -> Unit,
 ) {
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
@@ -67,93 +68,100 @@ fun AlbumSongs(
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
 
-    Box {
-        LazyColumn(
-            contentPadding = LocalPlayerAwarePaddingValues.current,
-            modifier = Modifier
-                .background(colorPalette.background0)
-                .fillMaxSize()
-        ) {
-            item(
-                key = "header",
-                contentType = 0
+    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+        Box {
+            LazyColumn(
+                contentPadding = LocalPlayerAwarePaddingValues.current,
+                modifier = Modifier
+                    .background(colorPalette.background0)
+                    .fillMaxSize()
             ) {
-                Column {
-                    headerContent {
-                        SecondaryTextButton(
-                            text = "Enqueue",
-                            isEnabled = songs.isNotEmpty(),
-                            onClick = {
-                                binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
-                            }
-                        )
+                item(
+                    key = "header",
+                    contentType = 0
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        headerContent {
+                            SecondaryTextButton(
+                                text = "Enqueue",
+                                isEnabled = songs.isNotEmpty(),
+                                onClick = {
+                                    binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
+                                }
+                            )
+                        }
+
+                        if (!isLandscape) {
+                            thumbnailContent()
+                        }
                     }
-
-                    thumbnailContent()
                 }
-            }
 
-            itemsIndexed(
-                items = songs,
-                key = { _, song -> song.id }
-            ) { index, song ->
-                SongItem(
-                    title = song.title,
-                    authors = song.artistsText,
-                    duration = song.durationText,
-                    thumbnailSizeDp = thumbnailSizeDp,
-                    thumbnailContent = {
-                        BasicText(
-                            text = "${index + 1}",
-                            style = typography.s.semiBold.center.color(colorPalette.textDisabled),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .width(thumbnailSizeDp)
-                                .align(Alignment.Center)
-                        )
-                    },
-                    modifier = Modifier
-                        .combinedClickable(
-                            onLongClick = {
-                                menuState.display {
-                                    NonQueuedMediaItemMenu(
-                                        onDismiss = menuState::hide,
-                                        mediaItem = song.asMediaItem,
+                itemsIndexed(
+                    items = songs,
+                    key = { _, song -> song.id }
+                ) { index, song ->
+                    SongItem(
+                        title = song.title,
+                        authors = song.artistsText,
+                        duration = song.durationText,
+                        thumbnailSizeDp = thumbnailSizeDp,
+                        thumbnailContent = {
+                            BasicText(
+                                text = "${index + 1}",
+                                style = typography.s.semiBold.center.color(colorPalette.textDisabled),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .width(thumbnailSizeDp)
+                                    .align(Alignment.Center)
+                            )
+                        },
+                        modifier = Modifier
+                            .combinedClickable(
+                                onLongClick = {
+                                    menuState.display {
+                                        NonQueuedMediaItemMenu(
+                                            onDismiss = menuState::hide,
+                                            mediaItem = song.asMediaItem,
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayAtIndex(
+                                        songs.map(DetailedSong::asMediaItem),
+                                        index
                                     )
                                 }
-                            },
-                            onClick = {
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(songs.map(DetailedSong::asMediaItem), index)
-                            }
-                        )
-                )
-            }
+                            )
+                    )
+                }
 
-            if (songs.isEmpty()) {
-                item(key = "loading") {
-                    ShimmerHost(
-                        modifier = Modifier
-                            .fillParentMaxSize()
-                    ) {
-                        repeat(4) {
-                            SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+                if (songs.isEmpty()) {
+                    item(key = "loading") {
+                        ShimmerHost(
+                            modifier = Modifier
+                                .fillParentMaxSize()
+                        ) {
+                            repeat(4) {
+                                SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+                            }
                         }
                     }
                 }
             }
-        }
 
-        PrimaryButton(
-            iconId = R.drawable.shuffle,
-            isEnabled = songs.isNotEmpty(),
-            onClick = {
-                binder?.stopRadio()
-                binder?.player?.forcePlayFromBeginning(
-                    songs.shuffled().map(DetailedSong::asMediaItem)
-                )
-            }
-        )
+            PrimaryButton(
+                iconId = R.drawable.shuffle,
+                isEnabled = songs.isNotEmpty(),
+                onClick = {
+                    binder?.stopRadio()
+                    binder?.player?.forcePlayFromBeginning(
+                        songs.shuffled().map(DetailedSong::asMediaItem)
+                    )
+                }
+            )
+        }
     }
 }
