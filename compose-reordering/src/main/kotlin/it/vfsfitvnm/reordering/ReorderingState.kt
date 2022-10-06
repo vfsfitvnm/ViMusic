@@ -52,6 +52,9 @@ class ReorderingState(
     internal var indexesToAnimate = mutableStateMapOf<Int, Animatable<Int, AnimationVector1D>>()
     private var animatablesPool: AnimatablesPool<Int, AnimationVector1D>? = null
 
+    val isDragging: Boolean
+        get() = draggingIndex != -1
+
     fun onDragStart(index: Int) {
         overscrolled = 0
         itemInfo = lazyListState.layoutInfo.visibleItemsInfo.find {

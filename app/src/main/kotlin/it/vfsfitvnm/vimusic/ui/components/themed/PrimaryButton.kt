@@ -21,14 +21,14 @@ fun PrimaryButton(
     onClick: () -> Unit,
     @DrawableRes iconId: Int,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true,
+    enabled: Boolean = true,
 ) {
     val (colorPalette) = LocalAppearance.current
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .clickable(enabled = isEnabled, onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .background(colorPalette.background2)
             .size(62.dp)
     ) {

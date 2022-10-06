@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.utils.isScrollingDown
-import it.vfsfitvnm.vimusic.utils.isScrollingDownToIsFar
+import it.vfsfitvnm.vimusic.utils.ScrollingInfo
+import it.vfsfitvnm.vimusic.utils.scrollingInfo
 import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
 
@@ -32,12 +32,13 @@ import kotlinx.coroutines.launch
 fun BoxScope.FloatingActionsContainerWithScrollToTop(
     lazyGridState: LazyGridState,
     modifier: Modifier = Modifier,
+    visible: Boolean = true,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val transitionState = remember {
-        MutableTransitionState(false to false)
-    }.apply { targetState = lazyGridState.isScrollingDownToIsFar() }
+        MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
+    }.apply { targetState = if (visible) lazyGridState.scrollingInfo() else null }
 
     FloatingActions(
         transitionState = transitionState,
@@ -53,12 +54,13 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
 fun BoxScope.FloatingActionsContainerWithScrollToTop(
     lazyListState: LazyListState,
     modifier: Modifier = Modifier,
+    visible: Boolean = true,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val transitionState = remember {
-        MutableTransitionState(false to false)
-    }.apply { targetState = lazyListState.isScrollingDownToIsFar() }
+        MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
+    }.apply { targetState = if (visible) lazyListState.scrollingInfo() else null }
 
     FloatingActions(
         transitionState = transitionState,
@@ -74,12 +76,13 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
 fun BoxScope.FloatingActionsContainerWithScrollToTop(
     scrollState: ScrollState,
     modifier: Modifier = Modifier,
+    visible: Boolean = true,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val transitionState = remember {
-        MutableTransitionState(false to false)
-    }.apply { targetState = scrollState.isScrollingDown() to false }
+        MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
+    }.apply { targetState = if (visible) scrollState.scrollingInfo() else null }
 
     FloatingActions(
         transitionState = transitionState,
@@ -92,13 +95,13 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
 @ExperimentalAnimationApi
 @Composable
 fun BoxScope.FloatingActions(
-    transitionState: MutableTransitionState<Pair<Boolean, Boolean>>,
+    transitionState: MutableTransitionState<ScrollingInfo?>,
     modifier: Modifier = Modifier,
     onScrollToTop: (suspend () -> Unit)? = null,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
 ) {
-    val transition = updateTransition(transitionState, "FloatingActionsContainer")
+    val transition = updateTransition(transitionState, "")
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -110,7 +113,7 @@ fun BoxScope.FloatingActions(
     ) {
         onScrollToTop?.let {
             transition.AnimatedVisibility(
-                visible = { it.first && it.second },
+                visible = { it?.isScrollingDown == false && it.isFar },
                 enter = slideInVertically(tween(500, if (iconId == null) 0 else 100)) { it },
                 exit = slideOutVertically(tween(500, 0)) { it },
             ) {
@@ -122,6 +125,7 @@ fun BoxScope.FloatingActions(
                             onScrollToTop()
                         }
                     },
+                    enabled = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
                     iconId = R.drawable.chevron_up,
                     modifier = Modifier
                         .padding(bottom = 16.dp)
@@ -132,13 +136,14 @@ fun BoxScope.FloatingActions(
         iconId?.let {
             onClick?.let {
                 transition.AnimatedVisibility(
-                    visible = { it.first },
+                    visible = { it?.isScrollingDown == false },
                     enter = slideInVertically(tween(500, 0)) { it },
                     exit = slideOutVertically(tween(500, 100)) { it },
                 ) {
                     PrimaryButton(
                         iconId = iconId,
                         onClick = onClick,
+                        enabled = transition.targetState?.isScrollingDown == false,
                         modifier = Modifier
                             .padding(bottom = 16.dp)
                     )
