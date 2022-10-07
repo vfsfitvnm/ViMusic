@@ -4,12 +4,10 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import it.vfsfitvnm.vimusic.models.Info
 
-object InfoSaver : Saver<Info, List<String>> {
-    override fun SaverScope.save(value: Info): List<String> = listOf(value.id, value.name)
+object InfoSaver : Saver<Info, List<String?>> {
+    override fun SaverScope.save(value: Info) = listOf(value.id, value.name)
 
-    override fun restore(value: List<String>): Info? {
-        return if (value.size == 2) Info(id = value[0], name = value[1]) else null
-    }
+    override fun restore(value: List<String?>) = Info(id = value[0] as String, name = value[1])
 }
 
 val InfoListSaver = listSaver(InfoSaver)
