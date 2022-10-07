@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -127,12 +128,11 @@ class MainActivity : ComponentActivity() {
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
-            var appearance by remember(isSystemInDarkTheme) {
+            var appearance by rememberSaveable(isSystemInDarkTheme, stateSaver = Appearance.Companion) {
                 with(preferences) {
                     val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
-                    val thumbnailRoundness =
-                        getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+                    val thumbnailRoundness = getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
                     val colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
