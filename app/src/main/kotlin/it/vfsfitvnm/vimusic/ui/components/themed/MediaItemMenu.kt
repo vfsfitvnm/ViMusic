@@ -376,6 +376,14 @@ fun MediaItemMenu(
                             }
                         )
                     }
+                    onAddToPlaylist?.let { onAddToPlayList ->
+                        MenuEntry(
+                            icon = R.drawable.download,
+                            text = "Download",
+                            onClick = {
+                                onDismiss()
+                            })
+                    }
 
                     onPlayNext?.let { onPlayNext ->
                         MenuEntry(
