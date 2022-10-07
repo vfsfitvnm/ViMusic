@@ -207,20 +207,6 @@ fun LocalPlaylistScreen(playlistId: Long) {
                                         menuState.display {
                                             Menu {
                                                 MenuEntry(
-                                                    icon = R.drawable.enqueue,
-                                                    text = "Enqueue",
-                                                    isEnabled = playlistWithSongs.songs.isNotEmpty(),
-                                                    onClick = {
-                                                        menuState.hide()
-                                                        binder?.player?.enqueue(
-                                                            playlistWithSongs.songs.map(
-                                                                DetailedSong::asMediaItem
-                                                            )
-                                                        )
-                                                    }
-                                                )
-
-                                                MenuEntry(
                                                     icon = R.drawable.pencil,
                                                     text = "Rename",
                                                     onClick = {
