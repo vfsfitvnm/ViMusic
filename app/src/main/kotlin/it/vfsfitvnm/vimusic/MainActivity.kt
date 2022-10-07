@@ -62,6 +62,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
+import it.vfsfitvnm.vimusic.ui.screens.artistRoute
 import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
 import it.vfsfitvnm.vimusic.ui.screens.player.Player
 import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
@@ -128,11 +129,15 @@ class MainActivity : ComponentActivity() {
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
-            var appearance by rememberSaveable(isSystemInDarkTheme, stateSaver = Appearance.Companion) {
+            var appearance by rememberSaveable(
+                isSystemInDarkTheme,
+                stateSaver = Appearance.Companion
+            ) {
                 with(preferences) {
                     val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
-                    val thumbnailRoundness = getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+                    val thumbnailRoundness =
+                        getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
                     val colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
@@ -225,6 +230,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
+
                             thumbnailRoundnessKey -> {
                                 val thumbnailRoundness =
                                     sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
@@ -379,23 +385,35 @@ class MainActivity : ComponentActivity() {
         Toast.makeText(this, "Opening url...", Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            uri.getQueryParameter("list")?.let { playlistId ->
-                val browseId = "VL$playlistId"
+            when (val path = uri.pathSegments.firstOrNull()) {
+                "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
+                    val browseId = "VL$playlistId"
 
-                if (playlistId.startsWith("OLAK5uy_")) {
-                    Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let { playlist ->
-                        playlist.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
-                            albumRoute.ensureGlobal(browseId)
+                    if (playlistId.startsWith("OLAK5uy_")) {
+                        Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let {
+                            it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
+                                albumRoute.ensureGlobal(browseId)
+                            }
                         }
+                    } else {
+                        playlistRoute.ensureGlobal(browseId)
                     }
-                } else {
-                    playlistRoute.ensureGlobal(browseId)
                 }
-            } ?: (uri.getQueryParameter("v") ?: uri.takeIf { uri.host == "youtu.be" }?.path?.drop(1))?.let { videoId ->
-                Innertube.song(videoId)?.getOrNull()?.let { song ->
-                    val binder = snapshotFlow { binder }.filterNotNull().first()
-                    withContext(Dispatchers.Main) {
-                        binder.player.forcePlay(song.asMediaItem)
+
+                "channel", "c" -> uri.lastPathSegment?.let { channelId ->
+                    artistRoute.ensureGlobal(channelId)
+                }
+
+                else -> when {
+                    path == "watch" -> uri.getQueryParameter("v")
+                    uri.host == "youtu.be" -> path
+                    else -> null
+                }?.let { videoId ->
+                    Innertube.song(videoId)?.getOrNull()?.let { song ->
+                        val binder = snapshotFlow { binder }.filterNotNull().first()
+                        withContext(Dispatchers.Main) {
+                            binder.player.forcePlay(song.asMediaItem)
+                        }
                     }
                 }
             }
