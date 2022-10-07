@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -55,12 +56,11 @@ fun DatabaseSettings() {
             query {
                 Database.internal.checkpoint()
 
-                context.applicationContext.contentResolver.openOutputStream(uri)
-                    ?.use { outputStream ->
-                        FileInputStream(Database.internal.path).use { inputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
+                context.applicationContext.contentResolver.openOutputStream(uri)?.use { output ->
+                    FileInputStream(Database.internal.path).use { input ->
+                        input.copyTo(output)
                     }
+                }
             }
         }
 
@@ -68,16 +68,19 @@ fun DatabaseSettings() {
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
+            Toast.makeText(
+                context,
+                "${context.applicationInfo.nonLocalizedLabel} is going to close itself after restoring the database",
+                Toast.LENGTH_SHORT
+            ).show()
+
             query {
                 Database.internal.checkpoint()
                 Database.internal.close()
 
-                context.applicationContext.contentResolver.openInputStream(uri)
-                    ?.use { inputStream ->
-                        FileOutputStream(Database.internal.path).use { outputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
+                context.applicationContext.contentResolver.openInputStream(uri)?.use { input ->
+                    FileOutputStream(Database.internal.path).use(input::copyTo)
+                }
 
                 context.stopService(context.intent<PlayerService>())
                 exitProcess(0)
