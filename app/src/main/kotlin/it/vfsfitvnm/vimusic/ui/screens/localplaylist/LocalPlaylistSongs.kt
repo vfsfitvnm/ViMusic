@@ -150,7 +150,7 @@ fun LocalPlaylistSongs(
                 Header(title = playlistWithSongs?.playlist?.name ?: "Unknown") {
                     SecondaryTextButton(
                         text = "Enqueue",
-                        isEnabled = playlistWithSongs?.songs?.isNotEmpty() == true,
+                        enabled = playlistWithSongs?.songs?.isNotEmpty() == true,
                         onClick = {
                             playlistWithSongs?.songs
                                 ?.map(DetailedSong::asMediaItem)

@@ -23,9 +23,8 @@ import it.vfsfitvnm.vimusic.savers.DetailedSongListSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
-import it.vfsfitvnm.vimusic.ui.components.themed.InFavoritesMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.InHistoryMediaItemMenu
-import it.vfsfitvnm.vimusic.ui.components.themed.PrimaryButton
+import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.items.SongItem
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -94,7 +93,7 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                 ) {
                     SecondaryTextButton(
                         text = "Enqueue",
-                        isEnabled = songs.isNotEmpty(),
+                        enabled = songs.isNotEmpty(),
                         onClick = {
                             binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
                         }
@@ -121,8 +120,8 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                             onLongClick = {
                                 menuState.display {
                                     when (builtInPlaylist) {
-                                        BuiltInPlaylist.Favorites -> InFavoritesMediaItemMenu(
-                                            song = song,
+                                        BuiltInPlaylist.Favorites -> NonQueuedMediaItemMenu(
+                                            mediaItem = song.asMediaItem,
                                             onDismiss = menuState::hide
                                         )
 

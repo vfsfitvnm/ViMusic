@@ -351,7 +351,7 @@ fun Lyrics(
                                 MenuEntry(
                                     icon = R.drawable.download,
                                     text = "Fetch lyrics again",
-                                    isEnabled = lyrics != null,
+                                    enabled = lyrics != null,
                                     onClick = {
                                         menuState.hide()
                                         query {

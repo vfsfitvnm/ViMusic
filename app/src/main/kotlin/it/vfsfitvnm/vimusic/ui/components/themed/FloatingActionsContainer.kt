@@ -60,7 +60,8 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
 ) {
     val transitionState = remember {
         MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
-    }.apply { targetState = if (visible) lazyListState.scrollingInfo() else null }
+    }.apply { targetState = lazyListState.scrollingInfo() }
+//    }.apply { targetState = if (visible) lazyListState.scrollingInfo() else null }
 
     FloatingActions(
         transitionState = transitionState,
@@ -125,7 +126,7 @@ fun BoxScope.FloatingActions(
                             onScrollToTop()
                         }
                     },
-                    enabled = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
+//                    enabled = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
                     iconId = R.drawable.chevron_up,
                     modifier = Modifier
                         .padding(bottom = 16.dp)

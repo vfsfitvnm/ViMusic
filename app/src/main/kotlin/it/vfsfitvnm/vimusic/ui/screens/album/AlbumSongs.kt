@@ -88,7 +88,7 @@ fun AlbumSongs(
                         headerContent {
                             SecondaryTextButton(
                                 text = "Enqueue",
-                                isEnabled = songs.isNotEmpty(),
+                                enabled = songs.isNotEmpty(),
                                 onClick = {
                                     binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
                                 }

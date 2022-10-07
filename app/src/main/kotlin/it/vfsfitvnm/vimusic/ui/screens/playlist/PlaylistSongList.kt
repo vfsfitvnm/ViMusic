@@ -125,7 +125,7 @@ fun PlaylistSongList(
             Header(title = playlistPage?.title ?: "Unknown") {
                 SecondaryTextButton(
                     text = "Enqueue",
-                    isEnabled = playlistPage?.songsPage?.items?.isNotEmpty() == true,
+                    enabled = playlistPage?.songsPage?.items?.isNotEmpty() == true,
                     onClick = {
                         playlistPage?.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->
                             binder?.player?.enqueue(mediaItems)

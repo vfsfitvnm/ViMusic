@@ -17,7 +17,8 @@ fun SecondaryTextButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true
+    enabled: Boolean = true,
+    alternative: Boolean = false
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
@@ -26,8 +27,8 @@ fun SecondaryTextButton(
         style = typography.xxs.medium,
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .clickable(enabled = isEnabled, onClick = onClick)
-            .background(colorPalette.background2)
+            .clickable(enabled = enabled, onClick = onClick)
+            .background(if (alternative) colorPalette.background0 else colorPalette.background2)
             .padding(all = 8.dp)
             .padding(horizontal = 8.dp)
     )
