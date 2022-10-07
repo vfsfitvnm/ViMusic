@@ -82,7 +82,6 @@ fun PlayerView(
 
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val layoutDirection = LocalLayoutDirection.current
 

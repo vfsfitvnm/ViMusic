@@ -59,9 +59,6 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.components.collapsedAnchor
-import it.vfsfitvnm.vimusic.ui.components.dismissedAnchor
-import it.vfsfitvnm.vimusic.ui.components.expandedAnchor
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
@@ -94,10 +91,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
-    companion object {
-        private var alreadyRunning = false
-    }
-
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
@@ -128,11 +121,7 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val playerBottomSheetAnchor = when {
-            intent?.extras?.getBoolean("expandPlayerBottomSheet") == true -> expandedAnchor
-            alreadyRunning -> collapsedAnchor
-            else -> dismissedAnchor.also { alreadyRunning = true }
-        }
+        val launchedFromNotification = intent?.extras?.getBoolean("expandPlayerBottomSheet") == true
 
         setContent {
             val coroutineScope = rememberCoroutineScope()
@@ -309,7 +298,6 @@ class MainActivity : ComponentActivity() {
                     dismissedBound = 0.dp,
                     collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
                     expandedBound = maxHeight,
-                    initialAnchor = playerBottomSheetAnchor
                 )
 
                 val playerAwarePaddingValues = if (playerBottomSheetState.isDismissed) {
@@ -342,16 +330,30 @@ class MainActivity : ComponentActivity() {
                     )
 
                     DisposableEffect(binder?.player) {
-                        binder?.player?.listener(object : Player.Listener {
-                            override fun onMediaItemTransition(
-                                mediaItem: MediaItem?,
-                                reason: Int
-                            ) {
+                        val player = binder?.player ?: return@DisposableEffect onDispose { }
+
+                        if (player.currentMediaItem == null) {
+                            if (!playerBottomSheetState.isDismissed) {
+                                playerBottomSheetState.dismiss()
+                            }
+                        } else {
+                            if (playerBottomSheetState.isDismissed) {
+                                if (launchedFromNotification) {
+                                    intent.replaceExtras(Bundle())
+                                    playerBottomSheetState.expandSoft()
+                                } else {
+                                    playerBottomSheetState.collapseSoft()
+                                }
+                            }
+                        }
+
+                        player.listener(object : Player.Listener {
+                            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                     playerBottomSheetState.expand(tween(500))
                                 }
                             }
-                        }) ?: onDispose { }
+                        })
                     }
 
                     BottomSheetMenu(
