@@ -76,7 +76,11 @@ fun Controls(
         mutableStateOf<Long?>(null)
     }
 
-    val likedAt by produceSaveableState<Long?>(initialValue = null, stateSaver = autoSaver()) {
+    val likedAt by produceSaveableState<Long?>(
+        initialValue = null,
+        stateSaver = autoSaver(),
+        mediaId
+    ) {
         Database
             .likedAt(mediaId)
             .flowOn(Dispatchers.IO)
