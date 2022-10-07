@@ -59,7 +59,7 @@ class ReorderingState(
         overscrolled = 0
         itemInfo = lazyListState.layoutInfo.visibleItemsInfo.find {
             it.index == index + extraItemCount
-        }!!
+        } ?: return
         onDragStart.invoke()
         draggingIndex = index
         reachedIndex = index
@@ -83,6 +83,7 @@ class ReorderingState(
     }
 
     fun onDrag(change: PointerInputChange, dragAmount: Offset) {
+        if (!isDragging) return
         change.consume()
 
         val delta = when (lazyListState.layoutInfo.orientation) {
@@ -163,6 +164,8 @@ class ReorderingState(
     }
 
     fun onDragEnd() {
+        if (!isDragging) return
+
         coroutineScope.launch {
             offset.animateTo((previousItemSize + nextItemSize) / 2)
 
