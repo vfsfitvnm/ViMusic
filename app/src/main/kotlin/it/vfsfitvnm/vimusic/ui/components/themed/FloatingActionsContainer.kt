@@ -60,8 +60,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
 ) {
     val transitionState = remember {
         MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
-    }.apply { targetState = lazyListState.scrollingInfo() }
-//    }.apply { targetState = if (visible) lazyListState.scrollingInfo() else null }
+    }.apply { targetState = if (visible) lazyListState.scrollingInfo() else null }
 
     FloatingActions(
         transitionState = transitionState,
@@ -103,6 +102,7 @@ fun BoxScope.FloatingActions(
     onClick: (() -> Unit)? = null,
 ) {
     val transition = updateTransition(transitionState, "")
+    val paddingValues = LocalPlayerAwarePaddingValues.current
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -110,7 +110,6 @@ fun BoxScope.FloatingActions(
         modifier = modifier
             .align(Alignment.BottomEnd)
             .padding(end = 16.dp)
-            .padding(LocalPlayerAwarePaddingValues.current)
     ) {
         onScrollToTop?.let {
             transition.AnimatedVisibility(
@@ -126,10 +125,11 @@ fun BoxScope.FloatingActions(
                             onScrollToTop()
                         }
                     },
-//                    enabled = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
+                    enabled = transition.targetState?.isScrollingDown == false && transition.targetState?.isFar == true,
                     iconId = R.drawable.chevron_up,
                     modifier = Modifier
                         .padding(bottom = 16.dp)
+                        .padding(paddingValues)
                 )
             }
         }
@@ -147,6 +147,7 @@ fun BoxScope.FloatingActions(
                         enabled = transition.targetState?.isScrollingDown == false,
                         modifier = Modifier
                             .padding(bottom = 16.dp)
+                            .padding(paddingValues)
                     )
                 }
             }
