@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -49,40 +48,41 @@ fun DatabaseSettings() {
             .collect { value = it }
     }
 
-    val openDocumentContract = ActivityResultContracts.OpenDocument()
-    val createDocumentContract = ActivityResultContracts.CreateDocument("application/vnd.sqlite3")
+    val backupLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/vnd.sqlite3")) { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
 
-    val backupLauncher = rememberLauncherForActivityResult(createDocumentContract) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
+            query {
+                Database.internal.checkpoint()
 
-        query {
-            Database.internal.checkpoint()
-
-            context.applicationContext.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                FileInputStream(Database.internal.path).use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+                context.applicationContext.contentResolver.openOutputStream(uri)
+                    ?.use { outputStream ->
+                        FileInputStream(Database.internal.path).use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
             }
         }
-    }
 
-    val restoreLauncher = rememberLauncherForActivityResult(openDocumentContract) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
+    val restoreLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
 
-        query {
-            Database.internal.checkpoint()
-            Database.internal.close()
+            query {
+                Database.internal.checkpoint()
+                Database.internal.close()
 
-            context.applicationContext.contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(Database.internal.path).use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+                context.applicationContext.contentResolver.openInputStream(uri)
+                    ?.use { inputStream ->
+                        FileOutputStream(Database.internal.path).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+
+                context.stopService(context.intent<PlayerService>())
+                exitProcess(0)
             }
-
-            context.stopService(context.intent<PlayerService>())
-            exitProcess(0)
         }
-    }
 
 
     Column(
@@ -123,21 +123,7 @@ fun DatabaseSettings() {
             onClick = {
                 @SuppressLint("SimpleDateFormat")
                 val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                val input = "vimusic_${dateFormat.format(Date())}.db"
-
-                if (createDocumentContract.createIntent(context, input)
-                        .resolveActivity(context.packageManager) != null
-                ) {
-                    backupLauncher.launch(input)
-                } else {
-                    Toast
-                        .makeText(
-                            context,
-                            "Can't copy the database to the external storage",
-                            Toast.LENGTH_SHORT
-                        )
-                        .show()
-                }
+                backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
             }
         )
 
@@ -151,23 +137,13 @@ fun DatabaseSettings() {
             title = "Restore",
             text = "Import the database from the external storage",
             onClick = {
-                val input = arrayOf(
-                    "application/x-sqlite3",
-                    "application/vnd.sqlite3",
-                    "application/octet-stream"
+                restoreLauncher.launch(
+                    arrayOf(
+                        "application/x-sqlite3",
+                        "application/vnd.sqlite3",
+                        "application/octet-stream"
+                    )
                 )
-
-                if (openDocumentContract.createIntent(context, input)
-                        .resolveActivity(context.packageManager) != null
-                ) {
-                    restoreLauncher.launch(input)
-                } else {
-                    Toast.makeText(
-                        context,
-                        "Can't read the database from the external storage",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
             }
         )
     }
