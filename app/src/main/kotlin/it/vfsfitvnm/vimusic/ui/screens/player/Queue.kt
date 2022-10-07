@@ -72,7 +72,7 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun PlayerBottomSheet(
+fun Queue(
     backgroundColorProvider: () -> Color,
     layoutState: BottomSheetState,
     modifier: Modifier = Modifier,
@@ -120,9 +120,7 @@ fun PlayerBottomSheet(
         val reorderingState = rememberReorderingState(
             lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex),
             key = windows,
-            onDragEnd = { fromIndex, toIndex ->
-                binder.player.moveMediaItem(fromIndex, toIndex)
-            },
+            onDragEnd = binder.player::moveMediaItem,
             extraItemCount = 0
         )
 

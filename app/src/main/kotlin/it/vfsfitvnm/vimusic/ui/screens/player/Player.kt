@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.media.audiofx.AudioEffect
 import android.widget.Toast
 import androidx.activity.compose.LocalActivityResultRegistryOwner
@@ -39,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +59,7 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.collapsedPlayerProgressBar
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.rememberMediaItem
 import it.vfsfitvnm.vimusic.utils.rememberPositionAndDuration
 import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
@@ -74,7 +73,7 @@ import kotlin.math.absoluteValue
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun PlayerView(
+fun Player(
     layoutState: BottomSheetState,
     modifier: Modifier = Modifier,
 ) {
@@ -82,7 +81,6 @@ fun PlayerView(
 
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
-    val configuration = LocalConfiguration.current
     val layoutDirection = LocalLayoutDirection.current
 
     binder?.player ?: return
@@ -225,96 +223,91 @@ fun PlayerView(
             layoutState.expandedBound
         )
 
-        when (configuration.orientation) {
-            Configuration.ORIENTATION_LANDSCAPE -> {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .background(colorPalette.background1)
-                        .padding(
-                            top = 32.dp + paddingValues.calculateTopPadding(),
-                            start = paddingValues.calculateStartPadding(layoutDirection),
-                            end = paddingValues.calculateEndPadding(layoutDirection),
-                            bottom = playerBottomSheetState.collapsedBound
-                        )
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .weight(0.66f)
-                            .padding(bottom = 16.dp)
-                    ) {
-                        Thumbnail(
-                            isShowingLyrics = isShowingLyrics,
-                            onShowLyrics = { isShowingLyrics = it },
-                            isShowingStatsForNerds = isShowingStatsForNerds,
-                            onShowStatsForNerds = { isShowingStatsForNerds = it },
-                            nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                        )
-                    }
+        val containerModifier = Modifier
+            .background(colorPalette.background1)
+            .padding(
+                top = paddingValues.calculateTopPadding(),
+                start = paddingValues.calculateStartPadding(layoutDirection),
+                end = paddingValues.calculateEndPadding(layoutDirection),
+                bottom = playerBottomSheetState.collapsedBound
+            )
 
-                    Controls(
-                        mediaId = mediaItem.mediaId,
-                        title = mediaItem.mediaMetadata.title?.toString(),
-                        artist = mediaItem.mediaMetadata.artist?.toString(),
-                        shouldBePlaying = shouldBePlaying,
-                        position = positionAndDuration.first,
-                        duration = positionAndDuration.second,
+        val thumbnailContent: @Composable (modifier: Modifier) -> Unit = { modifier ->
+            Thumbnail(
+                isShowingLyrics = isShowingLyrics,
+                onShowLyrics = { isShowingLyrics = it },
+                isShowingStatsForNerds = isShowingStatsForNerds,
+                onShowStatsForNerds = { isShowingStatsForNerds = it },
+                nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
+                modifier = modifier
+            )
+        }
+
+        val controlsContent: @Composable (modifier: Modifier) -> Unit = { modifier ->
+            Controls(
+                mediaId = mediaItem.mediaId,
+                title = mediaItem.mediaMetadata.title?.toString(),
+                artist = mediaItem.mediaMetadata.artist?.toString(),
+                shouldBePlaying = shouldBePlaying,
+                position = positionAndDuration.first,
+                duration = positionAndDuration.second,
+                modifier = modifier
+            )
+        }
+
+        if (isLandscape) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = containerModifier
+                    .padding(top = 32.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .weight(0.66f)
+                        .padding(bottom = 16.dp)
+                ) {
+                    thumbnailContent(
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .fillMaxHeight()
-                            .weight(1f)
+                            .padding(horizontal = 16.dp)
                     )
                 }
+
+                controlsContent(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxHeight()
+                        .weight(1f)
+                )
             }
-
-            else -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = containerModifier
+                    .padding(top = 54.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .background(colorPalette.background1)
-                        .padding(
-                            top = 54.dp + paddingValues.calculateTopPadding(),
-                            start = paddingValues.calculateStartPadding(layoutDirection),
-                            end = paddingValues.calculateEndPadding(layoutDirection),
-                            bottom = playerBottomSheetState.collapsedBound
-                        )
+                        .weight(1.25f)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
+                    thumbnailContent(
                         modifier = Modifier
-                            .weight(1.25f)
-                    ) {
-                        Thumbnail(
-                            isShowingLyrics = isShowingLyrics,
-                            onShowLyrics = { isShowingLyrics = it },
-                            isShowingStatsForNerds = isShowingStatsForNerds,
-                            onShowStatsForNerds = { isShowingStatsForNerds = it },
-                            nestedScrollConnectionProvider = layoutState::nestedScrollConnection,
-                            modifier = Modifier
-                                .padding(horizontal = 32.dp, vertical = 8.dp)
-                        )
-                    }
-
-                    Controls(
-                        mediaId = mediaItem.mediaId,
-                        title = mediaItem.mediaMetadata.title?.toString(),
-                        artist = mediaItem.mediaMetadata.artist?.toString(),
-                        shouldBePlaying = shouldBePlaying,
-                        position = positionAndDuration.first,
-                        duration = positionAndDuration.second,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .fillMaxWidth()
-                            .weight(1f)
+                            .padding(horizontal = 32.dp, vertical = 8.dp)
                     )
                 }
+
+                controlsContent(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
             }
         }
 
-        PlayerBottomSheet(
+
+        Queue(
             layoutState = playerBottomSheetState,
             content = {
                 Row(

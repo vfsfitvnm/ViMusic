@@ -63,7 +63,7 @@ import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
 import it.vfsfitvnm.vimusic.ui.screens.albumRoute
 import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
-import it.vfsfitvnm.vimusic.ui.screens.player.PlayerView
+import it.vfsfitvnm.vimusic.ui.screens.player.Player
 import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
@@ -323,7 +323,7 @@ class MainActivity : ComponentActivity() {
                         }
                     )
 
-                    PlayerView(
+                    Player(
                         layoutState = playerBottomSheetState,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
