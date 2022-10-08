@@ -37,8 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -53,9 +51,9 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
+import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.Menu
 import it.vfsfitvnm.vimusic.ui.components.themed.MenuEntry
-import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.TextPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.DefaultDarkColorPalette
@@ -89,7 +87,6 @@ fun Lyrics(
     mediaMetadataProvider: () -> MediaMetadata,
     durationProvider: () -> Long,
     onLyricsUpdate: (Boolean, String, String) -> Unit,
-    nestedScrollConnectionProvider: () -> NestedScrollConnection,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
@@ -274,7 +271,6 @@ fun Lyrics(
                             text = lyrics,
                             style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                             modifier = Modifier
-                                .nestedScroll(remember { nestedScrollConnectionProvider() })
                                 .verticalFadingEdge()
                                 .verticalScroll(rememberScrollState())
                                 .fillMaxWidth()

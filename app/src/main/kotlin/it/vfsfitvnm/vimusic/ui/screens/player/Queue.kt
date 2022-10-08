@@ -140,9 +140,7 @@ fun Queue(
                         .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .nestedScroll(remember {
-                            layoutState.nestedScrollConnection(reorderingState.lazyListState.firstVisibleItemIndex == 0 && reorderingState.lazyListState.firstVisibleItemScrollOffset == 0)
-                        })
+                        .nestedScroll(layoutState.preUpPostDownNestedScrollConnection)
 
                 ) {
                     items(
