@@ -93,12 +93,12 @@ fun ArtistOverview(
                         .padding(endPaddingValues)
                 ) {
                     headerContent {
-                        youtubeArtistPage?.radioEndpoint?.let { radioEndpoint ->
+                        youtubeArtistPage?.shuffleEndpoint?.let { endpoint ->
                             SecondaryTextButton(
-                                text = "Start radio",
+                                text = "Shuffle",
                                 onClick = {
                                     binder?.stopRadio()
-                                    binder?.playRadio(radioEndpoint)
+                                    binder?.playRadio(endpoint)
                                 }
                             )
                         }
@@ -276,13 +276,13 @@ fun ArtistOverview(
                 }
             }
 
-            youtubeArtistPage?.shuffleEndpoint?.let { shuffleEndpoint ->
+            youtubeArtistPage?.radioEndpoint?.let { endpoint ->
                 FloatingActionsContainerWithScrollToTop(
                     scrollState = scrollState,
-                    iconId = R.drawable.shuffle,
+                    iconId = R.drawable.radio,
                     onClick = {
                         binder?.stopRadio()
-                        binder?.playRadio(shuffleEndpoint)
+                        binder?.playRadio(endpoint)
                     }
                 )
             }
