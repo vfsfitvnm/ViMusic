@@ -21,6 +21,8 @@
 - Background playback
 - Cache audio chunks for offline playback
 - Search for songs, albums, artists videos and playlists
+- Bookmark artists and albums
+- Import playlists
 - Fetch, display and edit songs lyrics or synchronized lyrics
 - Local playlist management
 - Reorder songs in playlist or queue
@@ -29,7 +31,7 @@
 - Sleep timer
 - Audio normalization
 - Persistent queue
-- Open YouTube/YouTube Music links (`watch`, `playlist`)
+- Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
 - ...
 
 ## Installation
