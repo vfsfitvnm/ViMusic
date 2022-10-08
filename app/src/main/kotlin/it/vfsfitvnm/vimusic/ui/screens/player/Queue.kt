@@ -50,6 +50,7 @@ import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.MusicBars
+import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.QueuedMediaItemMenu
 import it.vfsfitvnm.vimusic.ui.items.SongItem
@@ -125,133 +126,149 @@ fun Queue(
             extraItemCount = 0
         )
 
-
-
         val rippleIndication = rememberRipple(bounded = false)
 
         Column {
-            ReorderingLazyColumn(
-                reorderingState = reorderingState,
-                contentPadding = windowInsets
-                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues(),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Box(
                 modifier = Modifier
-                    .background(colorPalette.background0)
-                    .fillMaxSize()
-                    .nestedScroll(remember {
-                        layoutState.nestedScrollConnection(reorderingState.lazyListState.firstVisibleItemIndex == 0 && reorderingState.lazyListState.firstVisibleItemScrollOffset == 0)
-                    })
                     .background(colorPalette.background1)
                     .weight(1f)
             ) {
-                items(
-                    items = windows,
-                    key = { it.uid.hashCode() }
-                ) { window ->
-                    val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
+                ReorderingLazyColumn(
+                    reorderingState = reorderingState,
+                    contentPadding = windowInsets
+                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .nestedScroll(remember {
+                            layoutState.nestedScrollConnection(reorderingState.lazyListState.firstVisibleItemIndex == 0 && reorderingState.lazyListState.firstVisibleItemScrollOffset == 0)
+                        })
 
-                    SongItem(
-                        song = window.mediaItem,
-                        thumbnailSizePx = thumbnailSizePx,
-                        thumbnailSizeDp = thumbnailSizeDp,
-                        onThumbnailContent = {
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = isPlayingThisMediaItem,
-                                enter = fadeIn(),
-                                exit = fadeOut(),
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .background(
-                                            color = Color.Black.copy(alpha = 0.25f),
-                                            shape = thumbnailShape
-                                        )
-                                        .size(Dimensions.thumbnails.song)
+                ) {
+                    items(
+                        items = windows,
+                        key = { it.uid.hashCode() }
+                    ) { window ->
+                        val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
+
+                        SongItem(
+                            song = window.mediaItem,
+                            thumbnailSizePx = thumbnailSizePx,
+                            thumbnailSizeDp = thumbnailSizeDp,
+                            onThumbnailContent = {
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = isPlayingThisMediaItem,
+                                    enter = fadeIn(),
+                                    exit = fadeOut(),
                                 ) {
-                                    if (shouldBePlaying) {
-                                        MusicBars(
-                                            color = colorPalette.onOverlay,
-                                            modifier = Modifier
-                                                .height(24.dp)
-                                        )
-                                    } else {
-                                        Image(
-                                            painter = painterResource(R.drawable.play),
-                                            contentDescription = null,
-                                            colorFilter = ColorFilter.tint(colorPalette.onOverlay),
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        trailingContent = {
-                            IconButton(
-                                icon = R.drawable.reorder,
-                                color = colorPalette.textDisabled,
-                                indication = rippleIndication,
-                                onClick = {},
-                                modifier = Modifier
-                                    .reorder(
-                                        reorderingState = reorderingState,
-                                        index = window.firstPeriodIndex
-                                    )
-                                    .size(18.dp)
-                            )
-                        },
-                        modifier = Modifier
-                            .combinedClickable(
-                                onLongClick = {
-                                    menuState.display {
-                                        QueuedMediaItemMenu(
-                                            mediaItem = window.mediaItem,
-                                            indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
-                                            onDismiss = menuState::hide
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    if (isPlayingThisMediaItem) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .background(
+                                                color = Color.Black.copy(alpha = 0.25f),
+                                                shape = thumbnailShape
+                                            )
+                                            .size(Dimensions.thumbnails.song)
+                                    ) {
                                         if (shouldBePlaying) {
-                                            binder.player.pause()
+                                            MusicBars(
+                                                color = colorPalette.onOverlay,
+                                                modifier = Modifier
+                                                    .height(24.dp)
+                                            )
                                         } else {
-                                            binder.player.play()
+                                            Image(
+                                                painter = painterResource(R.drawable.play),
+                                                contentDescription = null,
+                                                colorFilter = ColorFilter.tint(colorPalette.onOverlay),
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                            )
                                         }
-                                    } else {
-                                        binder.player.playWhenReady = true
-                                        binder.player.seekToDefaultPosition(window.firstPeriodIndex)
                                     }
                                 }
-                            )
-                            .animateItemPlacement(reorderingState = reorderingState)
-                            .draggedItem(
-                                reorderingState = reorderingState,
-                                index = window.firstPeriodIndex
-                            )
-                    )
-                }
-
-                item {
-                    if (binder.isLoadingRadio) {
-                        Column(
-                            modifier = Modifier
-                                .shimmer()
-                        ) {
-                            repeat(3) { index ->
-                                SongItemPlaceholder(
-                                    thumbnailSizeDp = Dimensions.thumbnails.song,
+                            },
+                            trailingContent = {
+                                IconButton(
+                                    icon = R.drawable.reorder,
+                                    color = colorPalette.textDisabled,
+                                    indication = rippleIndication,
+                                    onClick = {},
                                     modifier = Modifier
-                                        .alpha(1f - index * 0.125f)
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                                        .reorder(
+                                            reorderingState = reorderingState,
+                                            index = window.firstPeriodIndex
+                                        )
+                                        .size(18.dp)
                                 )
+                            },
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onLongClick = {
+                                        menuState.display {
+                                            QueuedMediaItemMenu(
+                                                mediaItem = window.mediaItem,
+                                                indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
+                                                onDismiss = menuState::hide
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        if (isPlayingThisMediaItem) {
+                                            if (shouldBePlaying) {
+                                                binder.player.pause()
+                                            } else {
+                                                binder.player.play()
+                                            }
+                                        } else {
+                                            binder.player.playWhenReady = true
+                                            binder.player.seekToDefaultPosition(window.firstPeriodIndex)
+                                        }
+                                    }
+                                )
+                                .animateItemPlacement(reorderingState = reorderingState)
+                                .draggedItem(
+                                    reorderingState = reorderingState,
+                                    index = window.firstPeriodIndex
+                                )
+                        )
+                    }
+
+                    item {
+                        if (binder.isLoadingRadio) {
+                            Column(
+                                modifier = Modifier
+                                    .shimmer()
+                            ) {
+                                repeat(3) { index ->
+                                    SongItemPlaceholder(
+                                        thumbnailSizeDp = Dimensions.thumbnails.song,
+                                        modifier = Modifier
+                                            .alpha(1f - index * 0.125f)
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp, horizontal = 16.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
+                FloatingActionsContainerWithScrollToTop(
+                    lazyListState = reorderingState.lazyListState,
+                    iconId = R.drawable.shuffle,
+                    visible = !reorderingState.isDragging,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal),
+                    onClick = {
+                        reorderingState.coroutineScope.launch {
+                            reorderingState.lazyListState.smoothScrollToTop()
+                        }.invokeOnCompletion {
+                            binder.player.shuffleQueue()
+                        }
+                    }
+                )
             }
+
 
             Box(
                 modifier = Modifier
@@ -281,22 +298,6 @@ fun Queue(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .size(18.dp)
-                )
-
-                IconButton(
-                    icon = R.drawable.shuffle,
-                    color = colorPalette.text,
-                    onClick = {
-                        reorderingState.coroutineScope.launch {
-                            reorderingState.lazyListState.smoothScrollToTop()
-                        }.invokeOnCompletion {
-                            binder.player.shuffleQueue()
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp, vertical = 8.dp)
-                        .size(20.dp)
-                        .align(Alignment.CenterEnd)
                 )
             }
         }

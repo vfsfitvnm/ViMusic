@@ -11,6 +11,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
@@ -38,6 +39,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
     visible: Boolean = true,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
+    windowInsets: WindowInsets = LocalPlayerAwareWindowInsets.current
 ) {
     val transitionState = remember {
         MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
@@ -48,6 +50,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
         onScrollToTop = lazyGridState::smoothScrollToTop,
         iconId = iconId,
         onClick = onClick,
+        windowInsets = windowInsets,
         modifier = modifier
     )
 }
@@ -60,6 +63,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
     visible: Boolean = true,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
+    windowInsets: WindowInsets = LocalPlayerAwareWindowInsets.current
 ) {
     val transitionState = remember {
         MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
@@ -70,6 +74,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
         onScrollToTop = lazyListState::smoothScrollToTop,
         iconId = iconId,
         onClick = onClick,
+        windowInsets = windowInsets,
         modifier = modifier
     )
 }
@@ -82,6 +87,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
     visible: Boolean = true,
     iconId: Int? = null,
     onClick: (() -> Unit)? = null,
+    windowInsets: WindowInsets = LocalPlayerAwareWindowInsets.current
 ) {
     val transitionState = remember {
         MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
@@ -91,6 +97,7 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
         transitionState = transitionState,
         iconId = iconId,
         onClick = onClick,
+        windowInsets = windowInsets,
         modifier = modifier
     )
 }
@@ -99,13 +106,13 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
 @Composable
 fun BoxScope.FloatingActions(
     transitionState: MutableTransitionState<ScrollingInfo?>,
+    windowInsets: WindowInsets,
     modifier: Modifier = Modifier,
     onScrollToTop: (suspend () -> Unit)? = null,
     iconId: Int? = null,
-    onClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
 ) {
     val transition = updateTransition(transitionState, "")
-    val windowInsets = LocalPlayerAwareWindowInsets.current
 
     val bottomPaddingValues = windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues()
 
