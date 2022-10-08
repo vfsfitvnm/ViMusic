@@ -28,6 +28,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
@@ -151,7 +152,11 @@ fun LocalPlaylistSongs(
                 key = "header",
                 contentType = 0
             ) {
-                Header(title = playlistWithSongs?.playlist?.name ?: "Unknown") {
+                Header(
+                    title = playlistWithSongs?.playlist?.name ?: "Unknown",
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                ) {
                     SecondaryTextButton(
                         text = "Enqueue",
                         enabled = playlistWithSongs?.songs?.isNotEmpty() == true,

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.semiBold
 
@@ -83,7 +86,11 @@ inline fun NavigationRail(
             )
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .width(if (isLandscape) Dimensions.navigationRailWidthLandscape else Dimensions.navigationRailWidth)
+        ) {
             val transition = updateTransition(targetState = tabIndex, label = null)
 
             content { index, text, icon ->
@@ -114,7 +121,7 @@ inline fun NavigationRail(
                 val textContent: @Composable () -> Unit = {
                     BasicText(
                         text = text,
-                        style = typography.xs.semiBold.copy(color = textColor),
+                        style = typography.xs.semiBold.center.color(textColor),
                         modifier = Modifier
                             .vertical(enabled = !isLandscape)
                             .rotate(if (isLandscape) 0f else -90f)
@@ -153,7 +160,7 @@ inline fun NavigationRail(
 fun Modifier.vertical(enabled: Boolean = true) =
     if (enabled)
         layout { measurable, constraints ->
-            val placeable = measurable.measure(constraints)
+            val placeable = measurable.measure(constraints.copy(maxWidth = Int.MAX_VALUE))
             layout(placeable.height, placeable.width) {
                 placeable.place(
                     x = -(placeable.width / 2 - placeable.height / 2),

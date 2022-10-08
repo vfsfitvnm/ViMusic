@@ -9,7 +9,6 @@ import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.with
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,42 +30,37 @@ fun Scaffold(
 ) {
     val (colorPalette) = LocalAppearance.current
 
-    Box(
+    Row(
         modifier = modifier
             .background(colorPalette.background0)
             .fillMaxSize()
     ) {
-        Row(
-            modifier = modifier
-                .fillMaxSize()
-        ) {
-            NavigationRail(
-                topIconButtonId = topIconButtonId,
-                onTopIconButtonClick = onTopIconButtonClick,
-                tabIndex = tabIndex,
-                onTabIndexChanged = onTabChanged,
-                content = tabColumnContent
-            )
+        NavigationRail(
+            topIconButtonId = topIconButtonId,
+            onTopIconButtonClick = onTopIconButtonClick,
+            tabIndex = tabIndex,
+            onTabIndexChanged = onTabChanged,
+            content = tabColumnContent
+        )
 
-            AnimatedContent(
-                targetState = tabIndex,
-                transitionSpec = {
-                    val slideDirection = when (targetState > initialState) {
-                        true -> AnimatedContentScope.SlideDirection.Up
-                        false -> AnimatedContentScope.SlideDirection.Down
-                    }
+        AnimatedContent(
+            targetState = tabIndex,
+            transitionSpec = {
+                val slideDirection = when (targetState > initialState) {
+                    true -> AnimatedContentScope.SlideDirection.Up
+                    false -> AnimatedContentScope.SlideDirection.Down
+                }
 
-                    val animationSpec = spring(
-                        dampingRatio = 0.9f,
-                        stiffness = Spring.StiffnessLow,
-                        visibilityThreshold = IntOffset.VisibilityThreshold
-                    )
+                val animationSpec = spring(
+                    dampingRatio = 0.9f,
+                    stiffness = Spring.StiffnessLow,
+                    visibilityThreshold = IntOffset.VisibilityThreshold
+                )
 
-                    slideIntoContainer(slideDirection, animationSpec) with
-                            slideOutOfContainer(slideDirection, animationSpec)
-                },
-                content = content
-            )
-        }
+                slideIntoContainer(slideDirection, animationSpec) with
+                        slideOutOfContainer(slideDirection, animationSpec)
+            },
+            content = content
+        )
     }
 }

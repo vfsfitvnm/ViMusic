@@ -12,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -296,76 +298,80 @@ fun Lyrics(
                 colorFilter = ColorFilter.tint(DefaultDarkColorPalette.text),
                 modifier = Modifier
                     .padding(all = 4.dp)
-                    .clickable {
-                        menuState.display {
-                            Menu {
-                                MenuEntry(
-                                    icon = R.drawable.time,
-                                    text = "Show ${if (isShowingSynchronizedLyrics) "un" else ""}synchronized lyrics",
-                                    secondaryText = if (isShowingSynchronizedLyrics) null else "Provided by kugou.com",
-                                    onClick = {
-                                        menuState.hide()
-                                        isShowingSynchronizedLyrics =
-                                            !isShowingSynchronizedLyrics
-                                    }
-                                )
-
-                                MenuEntry(
-                                    icon = R.drawable.pencil,
-                                    text = "Edit lyrics",
-                                    onClick = {
-                                        menuState.hide()
-                                        isEditing = true
-                                    }
-                                )
-
-                                MenuEntry(
-                                    icon = R.drawable.search,
-                                    text = "Search lyrics online",
-                                    onClick = {
-                                        menuState.hide()
-                                        val mediaMetadata = mediaMetadataProvider()
-
-                                        val intent =
-                                            Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                                putExtra(
-                                                    SearchManager.QUERY,
-                                                    "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
-                                                )
-                                            }
-
-                                        if (intent.resolveActivity(context.packageManager) != null) {
-                                            context.startActivity(intent)
-                                        } else {
-                                            Toast
-                                                .makeText(
-                                                    context,
-                                                    "No browser app found!",
-                                                    Toast.LENGTH_SHORT
-                                                )
-                                                .show()
+                    .clickable(
+                        indication = rememberRipple(bounded = false),
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = {
+                            menuState.display {
+                                Menu {
+                                    MenuEntry(
+                                        icon = R.drawable.time,
+                                        text = "Show ${if (isShowingSynchronizedLyrics) "un" else ""}synchronized lyrics",
+                                        secondaryText = if (isShowingSynchronizedLyrics) null else "Provided by kugou.com",
+                                        onClick = {
+                                            menuState.hide()
+                                            isShowingSynchronizedLyrics =
+                                                !isShowingSynchronizedLyrics
                                         }
-                                    }
-                                )
+                                    )
 
-                                MenuEntry(
-                                    icon = R.drawable.download,
-                                    text = "Fetch lyrics again",
-                                    enabled = lyrics != null,
-                                    onClick = {
-                                        menuState.hide()
-                                        query {
-                                            if (isShowingSynchronizedLyrics) {
-                                                Database.updateSynchronizedLyrics(mediaId, null)
+                                    MenuEntry(
+                                        icon = R.drawable.pencil,
+                                        text = "Edit lyrics",
+                                        onClick = {
+                                            menuState.hide()
+                                            isEditing = true
+                                        }
+                                    )
+
+                                    MenuEntry(
+                                        icon = R.drawable.search,
+                                        text = "Search lyrics online",
+                                        onClick = {
+                                            menuState.hide()
+                                            val mediaMetadata = mediaMetadataProvider()
+
+                                            val intent =
+                                                Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                                    putExtra(
+                                                        SearchManager.QUERY,
+                                                        "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
+                                                    )
+                                                }
+
+                                            if (intent.resolveActivity(context.packageManager) != null) {
+                                                context.startActivity(intent)
                                             } else {
-                                                Database.updateLyrics(mediaId, null)
+                                                Toast
+                                                    .makeText(
+                                                        context,
+                                                        "No browser app found!",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
                                             }
                                         }
-                                    }
-                                )
+                                    )
+
+                                    MenuEntry(
+                                        icon = R.drawable.download,
+                                        text = "Fetch lyrics again",
+                                        enabled = lyrics != null,
+                                        onClick = {
+                                            menuState.hide()
+                                            query {
+                                                if (isShowingSynchronizedLyrics) {
+                                                    Database.updateSynchronizedLyrics(mediaId, null)
+                                                } else {
+                                                    Database.updateLyrics(mediaId, null)
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
                             }
                         }
-                    }
+                    )
                     .padding(all = 8.dp)
                     .size(20.dp)
                     .align(Alignment.BottomEnd)

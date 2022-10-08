@@ -561,6 +561,7 @@ fun MediaItemMenu(
                                     DialogTextButton(
                                         text = "Set",
                                         enabled = amount > 0,
+                                        primary = true,
                                         onClick = {
                                             binder?.startSleepTimer(amount * 10 * 60 * 1000L)
                                             isShowingSleepTimerDialog = false
