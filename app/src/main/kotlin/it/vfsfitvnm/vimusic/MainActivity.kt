@@ -22,10 +22,11 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
@@ -34,6 +35,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +48,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -298,20 +301,23 @@ class MainActivity : ComponentActivity() {
                     .fillMaxSize()
                     .background(appearance.colorPalette.background0)
             ) {
-                val paddingValues = WindowInsets.systemBars.asPaddingValues()
+                val density = LocalDensity.current
+                val windowsInsets = WindowInsets.systemBars
+                val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
                 val playerBottomSheetState = rememberBottomSheetState(
                     dismissedBound = 0.dp,
-                    collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
+                    collapsedBound = Dimensions.collapsedPlayer + bottomDp,
                     expandedBound = maxHeight,
                 )
 
-                val playerAwarePaddingValues = if (playerBottomSheetState.isDismissed) {
-                    paddingValues
-                } else {
-                    object : PaddingValues by paddingValues {
-                        override fun calculateBottomPadding(): Dp =
-                            paddingValues.calculateBottomPadding() + Dimensions.collapsedPlayer
+                val playerAwareWindowInsets by remember(bottomDp, playerBottomSheetState.value) {
+                    derivedStateOf {
+                        val bottom = playerBottomSheetState.value.coerceIn(bottomDp, playerBottomSheetState.collapsedBound)
+
+                        windowsInsets
+                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                            .add(WindowInsets(bottom = bottom))
                     }
                 }
 
@@ -321,7 +327,7 @@ class MainActivity : ComponentActivity() {
                     LocalRippleTheme provides rippleTheme,
                     LocalShimmerTheme provides shimmerTheme,
                     LocalPlayerServiceBinder provides binder,
-                    LocalPlayerAwarePaddingValues provides playerAwarePaddingValues
+                    LocalPlayerAwareWindowInsets provides playerAwareWindowInsets
                 ) {
                     HomeScreen(
                         onPlaylistUrl = { url ->
@@ -335,38 +341,38 @@ class MainActivity : ComponentActivity() {
                             .align(Alignment.BottomCenter)
                     )
 
-                    DisposableEffect(binder?.player) {
-                        val player = binder?.player ?: return@DisposableEffect onDispose { }
-
-                        if (player.currentMediaItem == null) {
-                            if (!playerBottomSheetState.isDismissed) {
-                                playerBottomSheetState.dismiss()
-                            }
-                        } else {
-                            if (playerBottomSheetState.isDismissed) {
-                                if (launchedFromNotification) {
-                                    intent.replaceExtras(Bundle())
-                                    playerBottomSheetState.expandSoft()
-                                } else {
-                                    playerBottomSheetState.collapseSoft()
-                                }
-                            }
-                        }
-
-                        player.listener(object : Player.Listener {
-                            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                                    playerBottomSheetState.expand(tween(500))
-                                }
-                            }
-                        })
-                    }
-
                     BottomSheetMenu(
                         state = LocalMenuState.current,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                     )
+                }
+
+                DisposableEffect(binder?.player) {
+                    val player = binder?.player ?: return@DisposableEffect onDispose { }
+
+                    if (player.currentMediaItem == null) {
+                        if (!playerBottomSheetState.isDismissed) {
+                            playerBottomSheetState.dismiss()
+                        }
+                    } else {
+                        if (playerBottomSheetState.isDismissed) {
+                            if (launchedFromNotification) {
+                                intent.replaceExtras(Bundle())
+                                playerBottomSheetState.expandSoft()
+                            } else {
+                                playerBottomSheetState.collapseSoft()
+                            }
+                        }
+                    }
+
+                    player.listener(object : Player.Listener {
+                        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
+                                playerBottomSheetState.expand(tween(500))
+                            }
+                        }
+                    })
                 }
             }
         }
@@ -440,4 +446,4 @@ class MainActivity : ComponentActivity() {
 
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }
 
-val LocalPlayerAwarePaddingValues = staticCompositionLocalOf<PaddingValues> { TODO() }
+val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }

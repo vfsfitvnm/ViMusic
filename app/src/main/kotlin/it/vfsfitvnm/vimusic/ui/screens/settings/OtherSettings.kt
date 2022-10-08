@@ -22,7 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
@@ -51,7 +54,11 @@ fun OtherSettings() {
             .background(colorPalette.background0)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(LocalPlayerAwarePaddingValues.current)
+            .padding(
+                LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
+                    .asPaddingValues()
+            )
     ) {
         Header(title = "Other")
 

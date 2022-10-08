@@ -17,7 +17,10 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -75,7 +78,8 @@ inline fun <T : Innertube.Item> ItemsPage(
     Box {
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwarePaddingValues.current,
+            contentPadding = LocalPlayerAwareWindowInsets.current
+                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
             modifier = modifier
                 .fillMaxSize()
         ) {

@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -60,11 +63,14 @@ fun ArtistOverview(
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
+    val windowInsets = LocalPlayerAwareWindowInsets.current
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
     val albumThumbnailSizeDp = 108.dp
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
+
+    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
     val sectionTextModifier = Modifier
         .padding(horizontal = 16.dp)
@@ -80,17 +86,22 @@ fun ArtistOverview(
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(LocalPlayerAwarePaddingValues.current)
+                    .padding(windowInsets.only(WindowInsetsSides.Vertical).asPaddingValues())
             ) {
-                headerContent {
-                    youtubeArtistPage?.radioEndpoint?.let { radioEndpoint ->
-                        SecondaryTextButton(
-                            text = "Start radio",
-                            onClick = {
-                                binder?.stopRadio()
-                                binder?.playRadio(radioEndpoint)
-                            }
-                        )
+                Box(
+                    modifier = Modifier
+                        .padding(endPaddingValues)
+                ) {
+                    headerContent {
+                        youtubeArtistPage?.radioEndpoint?.let { radioEndpoint ->
+                            SecondaryTextButton(
+                                text = "Start radio",
+                                onClick = {
+                                    binder?.stopRadio()
+                                    binder?.playRadio(radioEndpoint)
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -103,6 +114,7 @@ fun ArtistOverview(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .padding(endPaddingValues)
                         ) {
                             BasicText(
                                 text = "Songs",
@@ -144,6 +156,7 @@ fun ArtistOverview(
                                             )
                                         }
                                     )
+                                    .padding(endPaddingValues)
                             )
                         }
                     }
@@ -154,6 +167,7 @@ fun ArtistOverview(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .padding(endPaddingValues)
                         ) {
                             BasicText(
                                 text = "Albums",
@@ -172,6 +186,7 @@ fun ArtistOverview(
                         }
 
                         LazyRow(
+                            contentPadding = endPaddingValues,
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
@@ -197,6 +212,7 @@ fun ArtistOverview(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .padding(endPaddingValues)
                         ) {
                             BasicText(
                                 text = "Singles",
@@ -215,6 +231,7 @@ fun ArtistOverview(
                         }
 
                         LazyRow(
+                            contentPadding = endPaddingValues,
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {

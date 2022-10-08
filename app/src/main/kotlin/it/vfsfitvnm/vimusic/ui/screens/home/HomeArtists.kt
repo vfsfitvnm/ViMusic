@@ -25,7 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ArtistSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
@@ -82,7 +85,8 @@ fun HomeArtistList(
         LazyVerticalGrid(
             state = lazyGridState,
             columns = GridCells.Adaptive(Dimensions.thumbnails.song * 2 + Dimensions.itemsVerticalPadding * 2),
-            contentPadding = LocalPlayerAwarePaddingValues.current,
+            contentPadding = LocalPlayerAwareWindowInsets.current
+                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
             verticalArrangement = Arrangement.spacedBy(Dimensions.itemsVerticalPadding * 2),
             horizontalArrangement = Arrangement.spacedBy(
                 space = Dimensions.itemsVerticalPadding * 2,

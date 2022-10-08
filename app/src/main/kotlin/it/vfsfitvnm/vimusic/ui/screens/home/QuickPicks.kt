@@ -10,9 +10,12 @@ import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +37,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.savers.DetailedSongSaver
@@ -87,6 +90,7 @@ fun QuickPicks(
     val (colorPalette, typography) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
+    val windowInsets = LocalPlayerAwareWindowInsets.current
 
     val trending by produceSaveableState(
         initialValue = null,
@@ -116,10 +120,6 @@ fun QuickPicks(
     val playlistThumbnailSizeDp = 108.dp
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
-    val sectionTextModifier = Modifier
-        .padding(horizontal = 16.dp)
-        .padding(top = 24.dp, bottom = 8.dp)
-
     val quickPicksLazyGridItemWidthFactor = 0.9f
     val quickPicksLazyGridState = rememberLazyGridState()
     val snapLayoutInfoProvider = remember(quickPicksLazyGridState) {
@@ -133,6 +133,13 @@ fun QuickPicks(
 
     val scrollState = rememberScrollState()
 
+    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
+
+    val sectionTextModifier = Modifier
+        .padding(horizontal = 16.dp)
+        .padding(top = 24.dp, bottom = 8.dp)
+        .padding(endPaddingValues)
+
     BoxWithConstraints {
         val itemInHorizontalGridWidth = maxWidth * quickPicksLazyGridItemWidthFactor
 
@@ -141,15 +148,20 @@ fun QuickPicks(
                 .background(colorPalette.background0)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(LocalPlayerAwarePaddingValues.current)
+                .padding(windowInsets.only(WindowInsetsSides.Vertical).asPaddingValues())
         ) {
-            Header(title = "Quick picks")
+            Header(
+                title = "Quick picks",
+                modifier = Modifier
+                    .padding(endPaddingValues)
+            )
 
             relatedPageResult?.getOrNull()?.let { related ->
                 LazyHorizontalGrid(
                     state = quickPicksLazyGridState,
                     rows = GridCells.Fixed(4),
                     flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
+                    contentPadding = endPaddingValues,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
@@ -234,7 +246,7 @@ fun QuickPicks(
                         modifier = sectionTextModifier
                     )
 
-                    LazyRow {
+                    LazyRow(contentPadding = endPaddingValues) {
                         items(
                             items = albums,
                             key = Innertube.AlbumItem::key
@@ -258,7 +270,7 @@ fun QuickPicks(
                         modifier = sectionTextModifier
                     )
 
-                    LazyRow {
+                    LazyRow(contentPadding = endPaddingValues) {
                         items(
                             items = artists,
                             key = Innertube.ArtistItem::key,
@@ -284,7 +296,7 @@ fun QuickPicks(
                             .padding(top = 24.dp, bottom = 8.dp)
                     )
 
-                    LazyRow {
+                    LazyRow(contentPadding = endPaddingValues) {
                         items(
                             items = playlists,
                             key = Innertube.PlaylistItem::key,

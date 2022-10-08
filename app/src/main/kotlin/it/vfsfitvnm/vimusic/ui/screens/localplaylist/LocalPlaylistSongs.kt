@@ -24,7 +24,10 @@ import it.vfsfitvnm.reordering.draggedItem
 import it.vfsfitvnm.reordering.rememberReorderingState
 import it.vfsfitvnm.reordering.reorder
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
@@ -138,7 +141,8 @@ fun LocalPlaylistSongs(
     Box {
         ReorderingLazyColumn(
             reorderingState = reorderingState,
-            contentPadding = LocalPlayerAwarePaddingValues.current,
+            contentPadding = LocalPlayerAwareWindowInsets.current
+                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
             modifier = Modifier
                 .background(colorPalette.background0)
                 .fillMaxSize()

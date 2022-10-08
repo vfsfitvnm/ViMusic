@@ -16,7 +16,10 @@ import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.checkpoint
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.path
@@ -90,7 +93,11 @@ fun DatabaseSettings() {
             .background(colorPalette.background0)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(LocalPlayerAwarePaddingValues.current)
+            .padding(
+                LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
+                    .asPaddingValues()
+            )
     ) {
         Header(title = "Database")
 

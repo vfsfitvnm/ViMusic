@@ -4,7 +4,10 @@ import android.text.format.Formatter
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
@@ -49,7 +52,11 @@ fun CacheSettings() {
             .background(colorPalette.background0)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(LocalPlayerAwarePaddingValues.current)
+            .padding(
+                LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
+                    .asPaddingValues()
+            )
     ) {
         Header(title = "Cache")
 
@@ -64,7 +71,14 @@ fun CacheSettings() {
 
             SettingsEntryGroupText(title = "IMAGE CACHE")
 
-            SettingsDescription(text = "${Formatter.formatShortFileSize(context, diskCacheSize)} used (${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(1)}%)")
+            SettingsDescription(
+                text = "${
+                    Formatter.formatShortFileSize(
+                        context,
+                        diskCacheSize
+                    )
+                } used (${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(1)}%)"
+            )
 
             EnumValueSelectorSettingsEntry(
                 title = "Max size",

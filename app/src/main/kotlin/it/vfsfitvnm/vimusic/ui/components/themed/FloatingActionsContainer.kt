@@ -11,6 +11,9 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -20,7 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import it.vfsfitvnm.vimusic.LocalPlayerAwarePaddingValues
+import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.utils.ScrollingInfo
 import it.vfsfitvnm.vimusic.utils.scrollingInfo
@@ -102,7 +105,9 @@ fun BoxScope.FloatingActions(
     onClick: (() -> Unit)? = null,
 ) {
     val transition = updateTransition(transitionState, "")
-    val paddingValues = LocalPlayerAwarePaddingValues.current
+    val windowInsets = LocalPlayerAwareWindowInsets.current
+
+    val bottomPaddingValues = windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues()
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -110,6 +115,7 @@ fun BoxScope.FloatingActions(
         modifier = modifier
             .align(Alignment.BottomEnd)
             .padding(end = 16.dp)
+            .padding(windowInsets.only(WindowInsetsSides.End).asPaddingValues())
     ) {
         onScrollToTop?.let {
             transition.AnimatedVisibility(
@@ -129,7 +135,7 @@ fun BoxScope.FloatingActions(
                     iconId = R.drawable.chevron_up,
                     modifier = Modifier
                         .padding(bottom = 16.dp)
-                        .padding(paddingValues)
+                        .padding(bottomPaddingValues)
                 )
             }
         }
@@ -147,7 +153,7 @@ fun BoxScope.FloatingActions(
                         enabled = transition.targetState?.isScrollingDown == false,
                         modifier = Modifier
                             .padding(bottom = 16.dp)
-                            .padding(paddingValues)
+                            .padding(bottomPaddingValues)
                     )
                 }
             }
