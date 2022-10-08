@@ -14,17 +14,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -39,7 +38,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -81,7 +79,6 @@ fun Player(
 
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
-    val layoutDirection = LocalLayoutDirection.current
 
     binder?.player ?: return
 
@@ -91,6 +88,11 @@ fun Player(
 
     val shouldBePlaying by rememberShouldBePlaying(binder.player)
     val positionAndDuration by rememberPositionAndDuration(binder.player)
+
+    val windowInsets = WindowInsets.systemBars
+
+    val horizontalBottomPaddingValues = windowInsets
+        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom).asPaddingValues()
 
     OnGlobalRoute {
         layoutState.collapseSoft()
@@ -110,7 +112,7 @@ fun Player(
                 modifier = Modifier
                     .background(colorPalette.background1)
                     .fillMaxSize()
-                    .navigationBarsPadding()
+                    .padding(horizontalBottomPaddingValues)
                     .drawBehind {
                         val progress =
                             positionAndDuration.first.toFloat() / positionAndDuration.second.absoluteValue
@@ -217,20 +219,19 @@ fun Player(
             mutableStateOf(false)
         }
 
-        val paddingValues = WindowInsets.navigationBars.asPaddingValues()
         val playerBottomSheetState = rememberBottomSheetState(
-            64.dp + paddingValues.calculateBottomPadding(),
+            64.dp + horizontalBottomPaddingValues.calculateBottomPadding(),
             layoutState.expandedBound
         )
 
         val containerModifier = Modifier
             .background(colorPalette.background1)
             .padding(
-                top = paddingValues.calculateTopPadding(),
-                start = paddingValues.calculateStartPadding(layoutDirection),
-                end = paddingValues.calculateEndPadding(layoutDirection),
-                bottom = playerBottomSheetState.collapsedBound
+                windowInsets
+                    .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                    .asPaddingValues()
             )
+            .padding(bottom = playerBottomSheetState.collapsedBound)
 
         val thumbnailContent: @Composable (modifier: Modifier) -> Unit = { modifier ->
             Thumbnail(

@@ -11,15 +11,13 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -38,7 +36,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
@@ -80,6 +77,11 @@ fun Queue(
 ) {
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
 
+    val windowInsets = WindowInsets.systemBars
+
+    val horizontalBottomPaddingValues = windowInsets
+        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom).asPaddingValues()
+
     BottomSheet(
         state = layoutState,
         modifier = modifier,
@@ -88,7 +90,7 @@ fun Queue(
                 modifier = Modifier
                     .drawBehind { drawRect(backgroundColorProvider()) }
                     .fillMaxSize()
-                    .navigationBarsPadding()
+                    .padding(horizontalBottomPaddingValues)
             ) {
                 Image(
                     painter = painterResource(R.drawable.playlist),
@@ -104,7 +106,6 @@ fun Queue(
         }
     ) {
         val binder = LocalPlayerServiceBinder.current
-        val layoutDirection = LocalLayoutDirection.current
 
         binder?.player ?: return@BottomSheet
 
@@ -124,19 +125,15 @@ fun Queue(
             extraItemCount = 0
         )
 
-        val paddingValues = WindowInsets.systemBars.asPaddingValues()
-        val bottomPadding = paddingValues.calculateBottomPadding()
+
 
         val rippleIndication = rememberRipple(bounded = false)
 
         Column {
             ReorderingLazyColumn(
                 reorderingState = reorderingState,
-                contentPadding = PaddingValues(
-                    top = paddingValues.calculateTopPadding(),
-                    start = paddingValues.calculateStartPadding(layoutDirection),
-                    end = paddingValues.calculateEndPadding(layoutDirection),
-                ),
+                contentPadding = windowInsets
+                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .background(colorPalette.background0)
@@ -197,7 +194,10 @@ fun Queue(
                                 indication = rippleIndication,
                                 onClick = {},
                                 modifier = Modifier
-                                    .reorder(reorderingState = reorderingState, index = window.firstPeriodIndex)
+                                    .reorder(
+                                        reorderingState = reorderingState,
+                                        index = window.firstPeriodIndex
+                                    )
                                     .size(18.dp)
                             )
                         },
@@ -256,11 +256,11 @@ fun Queue(
             Box(
                 modifier = Modifier
                     .clickable(onClick = layoutState::collapseSoft)
-                    .height(64.dp + bottomPadding)
                     .background(colorPalette.background2)
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
-                    .padding(bottom = bottomPadding)
+                    .padding(horizontalBottomPaddingValues)
+                    .height(64.dp)
             ) {
                 BasicText(
                     text = "${windows.size} songs",
