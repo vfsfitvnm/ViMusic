@@ -45,8 +45,7 @@ fun adaptiveThumbnailContent(
     val (colorPalette, _, thumbnailShape) = LocalAppearance.current
 
     BoxWithConstraints(contentAlignment = Alignment.Center) {
-        val size = if (isLandscape) maxHeight else maxWidth
-        val thumbnailSizeDp = size - 64.dp
+        val thumbnailSizeDp = if (isLandscape) (maxHeight - 128.dp) else (maxWidth - 64.dp)
         val thumbnailSizePx = thumbnailSizeDp.px
 
         val modifier = Modifier
