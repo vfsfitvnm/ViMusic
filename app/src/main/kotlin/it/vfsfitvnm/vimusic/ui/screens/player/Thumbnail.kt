@@ -160,7 +160,7 @@ fun Thumbnail(
                         is PlayableFormatNotFoundException -> "Couldn't find a playable audio format"
                         is UnplayableException -> "The original video source of this song has been deleted"
                         is LoginRequiredException -> "This song cannot be played due to server restrictions"
-                        is VideoIdMismatchException -> "The returned video id didn't match the requested one"
+                        is VideoIdMismatchException -> "The returned video id doesn't match the requested one"
                         else -> "An unknown playback error has occurred"
                     }
                 },

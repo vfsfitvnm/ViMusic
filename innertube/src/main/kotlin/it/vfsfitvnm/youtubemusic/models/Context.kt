@@ -14,7 +14,8 @@ data class Context(
         val platform: String,
         val hl: String = "en",
         val visitorData: String? = null,
-        val androidSdkVersion: Int? = null
+        val androidSdkVersion: Int? = null,
+        val userAgent: String? = null
     )
 
     @Serializable
@@ -37,7 +38,8 @@ data class Context(
                 clientName = "ANDROID",
                 clientVersion = "17.36.4",
                 platform = "MOBILE",
-                androidSdkVersion = 31,
+                androidSdkVersion = 30,
+                userAgent = "com.google.android.youtube/17.36.4 (Linux; U; Android 11) gzip"
             )
         )
 
