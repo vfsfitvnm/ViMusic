@@ -45,6 +45,6 @@ internal inline fun <R> runCatchingNonCancellable(block: () -> R): Result<R>? {
 
 infix operator fun <T : Innertube.Item> Innertube.ItemsPage<T>?.plus(other: Innertube.ItemsPage<T>) =
     other.copy(
-        items = this?.items?.plus(other.items ?: emptyList())?.distinctBy(Innertube.Item::key)
-            ?: other.items
+        items = (this?.items?.plus(other.items ?: emptyList())
+            ?: other.items)?.distinctBy(Innertube.Item::key)
     )
