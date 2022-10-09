@@ -5,18 +5,14 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        create("release") {
-        }
-    }
     compileSdk = 33
 
     defaultConfig {
         applicationId = "it.vfsfitvnm.vimusic"
         minSdk = 21
         targetSdk = 32
-        versionCode = 15
-        versionName = "0.4.3"
+        versionCode = 16
+        versionName = "0.5.0"
     }
 
     splits {
@@ -93,7 +89,7 @@ dependencies {
     kapt(libs.room.compiler)
     annotationProcessor(libs.room.compiler)
 
-    implementation(projects.youtubeMusic)
+    implementation(projects.innertube)
     implementation(projects.kugou)
 
     coreLibraryDesugaring(libs.desugaring)

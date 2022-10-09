@@ -10,14 +10,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -40,7 +38,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -74,36 +71,7 @@ fun BottomSheet(
                     onDragEnd = {
                         val velocity = -velocityTracker.calculateVelocity().y
                         velocityTracker.resetTracking()
-
-                        if (velocity > 250) {
-                            state.expand()
-                        } else if (velocity < -250) {
-                            if (state.value < state.collapsedBound && onDismiss != null) {
-                                state.dismiss()
-                                onDismiss.invoke()
-                            } else {
-                                state.collapse()
-                            }
-                        } else {
-                            val l0 = state.dismissedBound
-                            val l1 = (state.collapsedBound - state.dismissedBound) / 2
-                            val l2 = (state.expandedBound - state.collapsedBound) / 2
-                            val l3 = state.expandedBound
-
-                            when (state.value) {
-                                in l0..l1 -> {
-                                    if (onDismiss != null) {
-                                        state.dismiss()
-                                        onDismiss.invoke()
-                                    } else {
-                                        state.collapse()
-                                    }
-                                }
-                                in l1..l2 -> state.collapse()
-                                in l2..l3 -> state.expand()
-                                else -> Unit
-                            }
-                        }
+                        state.performFling(velocity, onDismiss)
                     }
                 )
             }
@@ -120,11 +88,7 @@ fun BottomSheet(
                     .graphicsLayer {
                         alpha = 1f - (state.progress * 16).coerceAtMost(1f)
                     }
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(bounded = true),
-                        onClick = state::expandSoft
-                    )
+                    .clickable(onClick = state::expandSoft)
                     .fillMaxWidth()
                     .height(state.collapsedBound),
                 content = collapsedContent
@@ -179,11 +143,11 @@ class BottomSheetState(
         }
     }
 
-    fun collapse() {
+    private fun collapse() {
         collapse(SpringSpec())
     }
 
-    fun expand() {
+    private fun expand() {
         expand(SpringSpec())
     }
 
@@ -208,21 +172,53 @@ class BottomSheetState(
         }
     }
 
-    fun nestedScrollConnection(initialIsTopReached: Boolean = true): NestedScrollConnection {
-        return object : NestedScrollConnection {
-            var isTopReached = initialIsTopReached
+    fun performFling(velocity: Float, onDismiss: (() -> Unit)?) {
+        if (velocity > 250) {
+            expand()
+        } else if (velocity < -250) {
+            if (value < collapsedBound && onDismiss != null) {
+                dismiss()
+                onDismiss.invoke()
+            } else {
+                collapse()
+            }
+        } else {
+            val l0 = dismissedBound
+            val l1 = (collapsedBound - dismissedBound) / 2
+            val l2 = (expandedBound - collapsedBound) / 2
+            val l3 = expandedBound
+
+            when (value) {
+                in l0..l1 -> {
+                    if (onDismiss != null) {
+                        dismiss()
+                        onDismiss.invoke()
+                    } else {
+                        collapse()
+                    }
+                }
+                in l1..l2 -> collapse()
+                in l2..l3 -> expand()
+                else -> Unit
+            }
+        }
+    }
+
+    val preUpPostDownNestedScrollConnection
+        get() =  object : NestedScrollConnection {
+            var isTopReached = false
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (isExpanded && available.y < 0) {
                     isTopReached = false
                 }
 
-                if (isTopReached) {
+                return if (isTopReached && available.y < 0 && source == NestedScrollSource.Drag) {
                     dispatchRawDelta(available.y)
-                    return available
+                    available
+                } else {
+                    Offset.Zero
                 }
-
-                return Offset.Zero
             }
 
             override fun onPostScroll(
@@ -234,44 +230,30 @@ class BottomSheetState(
                     isTopReached = consumed.y == 0f && available.y > 0
                 }
 
-                return Offset.Zero
+                return if (isTopReached && source == NestedScrollSource.Drag) {
+                    dispatchRawDelta(available.y)
+                    available
+                } else {
+                    Offset.Zero
+                }
             }
 
             override suspend fun onPreFling(available: Velocity): Velocity {
-                if (isTopReached) {
+                return if (isTopReached) {
                     val velocity = -available.y
-                    coroutineScope {
-                        if (velocity > 250) {
-                            expand()
-                        } else if (velocity < -250) {
-                            collapse()
-                        } else {
-                            val l0 = dismissedBound
-                            val l1 = (collapsedBound - dismissedBound) / 2
-                            val l2 = (expandedBound - collapsedBound) / 2
-                            val l3 = expandedBound
+                    performFling(velocity, null)
 
-                            when (value) {
-                                in l0..l1 -> collapse()
-                                in l1..l2 -> collapse()
-                                in l2..l3 -> expand()
-                                else -> Unit
-                            }
-                        }
-                    }
-
-                    return available
+                    available
+                } else {
+                    Velocity.Zero
                 }
-
-                return Velocity.Zero
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                 isTopReached = false
-                return super.onPostFling(consumed, available)
+                return Velocity.Zero
             }
         }
-    }
 }
 
 const val expandedAnchor = 2

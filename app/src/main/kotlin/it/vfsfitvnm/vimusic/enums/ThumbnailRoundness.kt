@@ -22,11 +22,4 @@ enum class ThumbnailRoundness {
             Heavy -> RoundedCornerShape(8.dp)
         }
     }
-
-    companion object {
-        val shape: Shape
-            @Composable
-            @ReadOnlyComposable
-            get() = LocalAppearance.current.thumbnailShape
-    }
 }

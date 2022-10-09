@@ -20,6 +20,7 @@ import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
+import android.text.format.DateUtils
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -65,6 +66,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
+import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.QueuedMediaItem
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.utils.InvincibleService
@@ -90,8 +92,10 @@ import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.timer
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.youtubemusic.models.bodies.PlayerBody
+import it.vfsfitvnm.youtubemusic.requests.player
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
@@ -100,6 +104,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
@@ -285,9 +290,24 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         val totalPlayTimeMs = playbackStats.totalPlayTimeMs
 
-        if (totalPlayTimeMs > 2000) {
+        if (totalPlayTimeMs > 5000) {
             query {
                 Database.incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
+            }
+        }
+
+        if (totalPlayTimeMs > 30000) {
+            query {
+                // THANKS, EXOPLAYER
+                if (runBlocking { Database.song(mediaItem.mediaId).first() } != null) {
+                    Database.insert(
+                        Event(
+                            songId = mediaItem.mediaId,
+                            timestamp = System.currentTimeMillis(),
+                            playTime = totalPlayTimeMs
+                        )
+                    )
+                }
             }
         }
     }
@@ -628,14 +648,21 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     ringBuffer.getOrNull(1)?.first -> dataSpec.withUri(ringBuffer.getOrNull(1)!!.second)
                     else -> {
                         val urlResult = runBlocking(Dispatchers.IO) {
-                            YouTube.player(videoId)
+                            Innertube.player(PlayerBody(videoId = videoId))
                         }?.mapCatching { body ->
-                            when (val status = body.playabilityStatus.status) {
+                            when (val status = body.playabilityStatus?.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
                                     format.itag == 251 || format.itag == 140
                                 }?.let { format ->
                                     val mediaItem = runBlocking(Dispatchers.Main) {
                                         player.findNextMediaItemById(videoId)
+                                    }
+
+                                    if (mediaItem?.mediaMetadata?.extras?.getString("durationText") == null) {
+                                        format.approxDurationMs?.div(1000)?.let(DateUtils::formatElapsedTime)?.removePrefix("0")?.let { durationText ->
+                                            mediaItem?.mediaMetadata?.extras?.putString("durationText", durationText)
+                                            Database.updateDurationText(videoId, durationText)
+                                        }
                                     }
 
                                     query {

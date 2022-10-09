@@ -52,11 +52,14 @@ class ReorderingState(
     internal var indexesToAnimate = mutableStateMapOf<Int, Animatable<Int, AnimationVector1D>>()
     private var animatablesPool: AnimatablesPool<Int, AnimationVector1D>? = null
 
+    val isDragging: Boolean
+        get() = draggingIndex != -1
+
     fun onDragStart(index: Int) {
         overscrolled = 0
         itemInfo = lazyListState.layoutInfo.visibleItemsInfo.find {
             it.index == index + extraItemCount
-        }!!
+        } ?: return
         onDragStart.invoke()
         draggingIndex = index
         reachedIndex = index
@@ -80,6 +83,7 @@ class ReorderingState(
     }
 
     fun onDrag(change: PointerInputChange, dragAmount: Offset) {
+        if (!isDragging) return
         change.consume()
 
         val delta = when (lazyListState.layoutInfo.orientation) {
@@ -160,6 +164,8 @@ class ReorderingState(
     }
 
     fun onDragEnd() {
+        if (!isDragging) return
+
         coroutineScope.launch {
             offset.animateTo((previousItemSize + nextItemSize) / 2)
 

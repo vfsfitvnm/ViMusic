@@ -6,10 +6,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -19,14 +19,14 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
@@ -35,20 +35,24 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.valentinilk.shimmer.LocalShimmerTheme
@@ -59,36 +63,39 @@ import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetMenu
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
-import it.vfsfitvnm.vimusic.ui.components.collapsedAnchor
-import it.vfsfitvnm.vimusic.ui.components.dismissedAnchor
-import it.vfsfitvnm.vimusic.ui.components.expandedAnchor
 import it.vfsfitvnm.vimusic.ui.components.rememberBottomSheetState
-import it.vfsfitvnm.vimusic.ui.screens.HomeScreen
-import it.vfsfitvnm.vimusic.ui.screens.IntentUriScreen
+import it.vfsfitvnm.vimusic.ui.screens.albumRoute
+import it.vfsfitvnm.vimusic.ui.screens.artistRoute
+import it.vfsfitvnm.vimusic.ui.screens.home.HomeScreen
+import it.vfsfitvnm.vimusic.ui.screens.player.Player
+import it.vfsfitvnm.vimusic.ui.screens.playlistRoute
 import it.vfsfitvnm.vimusic.ui.styling.Appearance
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.colorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.dynamicColorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.typographyOf
-import it.vfsfitvnm.vimusic.ui.views.PlayerView
+import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
+import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.listener
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
+import it.vfsfitvnm.youtubemusic.requests.playlistPage
+import it.vfsfitvnm.youtubemusic.requests.song
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
-    companion object {
-        private var alreadyRunning = false
-    }
-
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
@@ -102,7 +109,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private var binder by mutableStateOf<PlayerService.Binder?>(null)
-    private var uri by mutableStateOf<Uri?>(null, neverEqualPolicy())
 
     override fun onStart() {
         super.onStart()
@@ -120,19 +126,16 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val playerBottomSheetAnchor = when {
-            intent?.extras?.getBoolean("expandPlayerBottomSheet") == true -> expandedAnchor
-            alreadyRunning -> collapsedAnchor
-            else -> dismissedAnchor.also { alreadyRunning = true }
-        }
-
-        uri = intent?.data
+        val launchedFromNotification = intent?.extras?.getBoolean("expandPlayerBottomSheet") == true
 
         setContent {
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
-            var appearance by remember(isSystemInDarkTheme) {
+            var appearance by rememberSaveable(
+                isSystemInDarkTheme,
+                stateSaver = Appearance.Companion
+            ) {
                 with(preferences) {
                     val colorPaletteName = getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.System)
@@ -230,6 +233,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
+
                             thumbnailRoundnessKey -> {
                                 val thumbnailRoundness =
                                     sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
@@ -297,58 +301,45 @@ class MainActivity : ComponentActivity() {
                     .fillMaxSize()
                     .background(appearance.colorPalette.background0)
             ) {
-                val paddingValues = WindowInsets.systemBars.asPaddingValues()
+                val density = LocalDensity.current
+                val windowsInsets = WindowInsets.systemBars
+                val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
                 val playerBottomSheetState = rememberBottomSheetState(
                     dismissedBound = 0.dp,
-                    collapsedBound = Dimensions.collapsedPlayer + paddingValues.calculateBottomPadding(),
+                    collapsedBound = Dimensions.collapsedPlayer + bottomDp,
                     expandedBound = maxHeight,
-                    initialAnchor = playerBottomSheetAnchor
                 )
 
-                val playerAwarePaddingValues = if (playerBottomSheetState.isDismissed) {
-                    paddingValues
-                } else {
-                    object : PaddingValues by paddingValues {
-                        override fun calculateBottomPadding(): Dp =
-                            paddingValues.calculateBottomPadding() + Dimensions.collapsedPlayer
+                val playerAwareWindowInsets by remember(bottomDp, playerBottomSheetState.value) {
+                    derivedStateOf {
+                        val bottom = playerBottomSheetState.value.coerceIn(bottomDp, playerBottomSheetState.collapsedBound)
+
+                        windowsInsets
+                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                            .add(WindowInsets(bottom = bottom))
                     }
                 }
 
                 CompositionLocalProvider(
                     LocalAppearance provides appearance,
-                    LocalOverscrollConfiguration provides null,
-                    LocalIndication provides rememberRipple(bounded = false),
+                    LocalIndication provides rememberRipple(bounded = true),
                     LocalRippleTheme provides rippleTheme,
                     LocalShimmerTheme provides shimmerTheme,
                     LocalPlayerServiceBinder provides binder,
-                    LocalPlayerAwarePaddingValues provides playerAwarePaddingValues
+                    LocalPlayerAwareWindowInsets provides playerAwareWindowInsets
                 ) {
-                    when (val uri = uri) {
-                        null -> {
-                            HomeScreen()
-
-                            PlayerView(
-                                layoutState = playerBottomSheetState,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                            )
-
-                            DisposableEffect(binder?.player) {
-                                binder?.player?.listener(object : Player.Listener {
-                                    override fun onMediaItemTransition(
-                                        mediaItem: MediaItem?,
-                                        reason: Int
-                                    ) {
-                                        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                                            playerBottomSheetState.expand(tween(500))
-                                        }
-                                    }
-                                }) ?: onDispose { }
-                            }
+                    HomeScreen(
+                        onPlaylistUrl = { url ->
+                            onNewIntent(Intent.parseUri(url, 0))
                         }
-                        else -> IntentUriScreen(uri = uri)
-                    }
+                    )
+
+                    Player(
+                        layoutState = playerBottomSheetState,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                    )
 
                     BottomSheetMenu(
                         state = LocalMenuState.current,
@@ -356,13 +347,83 @@ class MainActivity : ComponentActivity() {
                             .align(Alignment.BottomCenter)
                     )
                 }
+
+                DisposableEffect(binder?.player) {
+                    val player = binder?.player ?: return@DisposableEffect onDispose { }
+
+                    if (player.currentMediaItem == null) {
+                        if (!playerBottomSheetState.isDismissed) {
+                            playerBottomSheetState.dismiss()
+                        }
+                    } else {
+                        if (playerBottomSheetState.isDismissed) {
+                            if (launchedFromNotification) {
+                                intent.replaceExtras(Bundle())
+                                playerBottomSheetState.expandSoft()
+                            } else {
+                                playerBottomSheetState.collapseSoft()
+                            }
+                        }
+                    }
+
+                    player.listener(object : Player.Listener {
+                        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
+                                playerBottomSheetState.expand(tween(500))
+                            }
+                        }
+                    })
+                }
             }
         }
+
+        onNewIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        uri = intent?.data
+
+        val uri = intent?.data ?: return
+
+        intent.data = null
+        this.intent = null
+
+        Toast.makeText(this, "Opening url...", Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            when (val path = uri.pathSegments.firstOrNull()) {
+                "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
+                    val browseId = "VL$playlistId"
+
+                    if (playlistId.startsWith("OLAK5uy_")) {
+                        Innertube.playlistPage(BrowseBody(browseId = browseId))?.getOrNull()?.let {
+                            it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
+                                albumRoute.ensureGlobal(browseId)
+                            }
+                        }
+                    } else {
+                        playlistRoute.ensureGlobal(browseId)
+                    }
+                }
+
+                "channel", "c" -> uri.lastPathSegment?.let { channelId ->
+                    artistRoute.ensureGlobal(channelId)
+                }
+
+                else -> when {
+                    path == "watch" -> uri.getQueryParameter("v")
+                    uri.host == "youtu.be" -> path
+                    else -> null
+                }?.let { videoId ->
+                    Innertube.song(videoId)?.getOrNull()?.let { song ->
+                        val binder = snapshotFlow { binder }.filterNotNull().first()
+                        withContext(Dispatchers.Main) {
+                            binder.player.forcePlay(song.asMediaItem)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {
@@ -385,4 +446,4 @@ class MainActivity : ComponentActivity() {
 
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }
 
-val LocalPlayerAwarePaddingValues = staticCompositionLocalOf<PaddingValues> { TODO() }
+val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }

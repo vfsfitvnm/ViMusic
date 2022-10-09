@@ -17,6 +17,7 @@ data class Typography(
     val s: TextStyle,
     val m: TextStyle,
     val l: TextStyle,
+    val xxl: TextStyle,
 )
 
 fun typographyOf(color: Color): Typography {
@@ -54,5 +55,6 @@ fun typographyOf(color: Color): Typography {
         s = textStyle.copy(fontSize = 16.sp),
         m = textStyle.copy(fontSize = 18.sp),
         l = textStyle.copy(fontSize = 20.sp),
+        xxl = textStyle.copy(fontSize = 32.sp),
     )
 }

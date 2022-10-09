@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -28,6 +29,8 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
+import it.vfsfitvnm.vimusic.enums.AlbumSortBy
+import it.vfsfitvnm.vimusic.enums.ArtistSortBy
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
@@ -35,6 +38,7 @@ import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
+import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
@@ -129,6 +133,9 @@ interface Database {
     @Query("UPDATE Song SET likedAt = :likedAt WHERE id = :songId")
     fun like(songId: String, likedAt: Long?): Int
 
+    @Query("UPDATE Song SET durationText = :durationText WHERE id = :songId")
+    fun updateDurationText(songId: String, durationText: String): Int
+
     @Query("SELECT lyrics FROM Song WHERE id = :songId")
     fun lyrics(songId: String): Flow<String?>
 
@@ -144,8 +151,79 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
+    @Query("SELECT timestamp FROM Artist WHERE id = :id")
+    fun artistTimestamp(id: String): Long?
+
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name DESC")
+    fun artistsByNameDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name ASC")
+    fun artistsByNameAsc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID DESC")
+    fun artistsByRowIdDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID ASC")
+    fun artistsByRowIdAsc(): Flow<List<Artist>>
+
+    fun artists(sortBy: ArtistSortBy, sortOrder: SortOrder): Flow<List<Artist>> {
+        return when (sortBy) {
+            ArtistSortBy.Name -> when (sortOrder) {
+                SortOrder.Ascending -> artistsByNameAsc()
+                SortOrder.Descending -> artistsByNameDesc()
+            }
+            ArtistSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> artistsByRowIdAsc()
+                SortOrder.Descending -> artistsByRowIdDesc()
+            }
+        }
+    }
+
     @Query("SELECT * FROM Album WHERE id = :id")
     fun album(id: String): Flow<Album?>
+
+    @Query("SELECT timestamp FROM Album WHERE id = :id")
+    fun albumTimestamp(id: String): Long?
+
+    @Transaction
+    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
+    @RewriteQueriesToDropUnusedColumns
+    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title ASC")
+    fun albumsByTitleAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY year ASC")
+    fun albumsByYearAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID ASC")
+    fun albumsByRowIdAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title DESC")
+    fun albumsByTitleDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY year DESC")
+    fun albumsByYearDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID DESC")
+    fun albumsByRowIdDesc(): Flow<List<Album>>
+
+    fun albums(sortBy: AlbumSortBy, sortOrder: SortOrder): Flow<List<Album>> {
+        return when (sortBy) {
+            AlbumSortBy.Title -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByTitleAsc()
+                SortOrder.Descending -> albumsByTitleDesc()
+            }
+            AlbumSortBy.Year -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByYearAsc()
+                SortOrder.Descending -> albumsByYearDesc()
+            }
+            AlbumSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> albumsByRowIdAsc()
+                SortOrder.Descending -> albumsByRowIdDesc()
+            }
+        }
+    }
 
     @Query("UPDATE Song SET totalPlayTimeMs = totalPlayTimeMs + :addition WHERE id = :id")
     fun incrementTotalPlayTimeMs(id: String, addition: Long)
@@ -190,11 +268,6 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
-    @Transaction
-    @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
-    @RewriteQueriesToDropUnusedColumns
-    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
-
     @Query("SELECT * FROM Format WHERE songId = :songId")
     fun format(songId: String): Flow<Format>
 
@@ -220,6 +293,17 @@ interface Database {
     @Query("SELECT loudnessDb FROM Format WHERE songId = :songId")
     fun loudnessDb(songId: String): Flow<Float?>
 
+    @Query("SELECT * FROM Song WHERE title LIKE :query OR artistsText LIKE :query")
+    fun search(query: String): Flow<List<DetailedSong>>
+
+    @Transaction
+    @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId GROUP BY songId ORDER BY SUM(CAST(playTime AS REAL) / (((:now - timestamp) / 86400000) + 1)) DESC LIMIT 1")
+    @RewriteQueriesToDropUnusedColumns
+    fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
+
+    @Insert
+    fun insert(event: Event)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(format: Format)
 
@@ -227,19 +311,10 @@ interface Database {
     fun insert(searchQuery: SearchQuery)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Artist): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(info: Album): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(playlist: Playlist): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(songPlaylistMap: SongPlaylistMap): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(songAlbumMap: SongAlbumMap): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(songArtistMap: SongArtistMap): Long
@@ -250,74 +325,55 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(queuedMediaItems: List<QueuedMediaItem>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertSongPlaylistMaps(songPlaylistMaps: List<SongPlaylistMap>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(album: Album, songAlbumMap: SongAlbumMap)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(artists: List<Artist>, songArtistMaps: List<SongArtistMap>)
+
     @Transaction
     fun insert(mediaItem: MediaItem, block: (Song) -> Song = { it }) {
         val song = Song(
             id = mediaItem.mediaId,
             title = mediaItem.mediaMetadata.title!!.toString(),
             artistsText = mediaItem.mediaMetadata.artist?.toString(),
-            durationText = mediaItem.mediaMetadata.extras?.getString("durationText")!!,
+            durationText = mediaItem.mediaMetadata.extras?.getString("durationText"),
             thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString()
         ).let(block).also { song ->
             if (insert(song) == -1L) return
         }
 
         mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
-            Album(
-                id = albumId,
-                title = mediaItem.mediaMetadata.albumTitle?.toString(),
-                year = null,
-                authorsText = null,
-                thumbnailUrl = null,
-                shareUrl = null,
-                timestamp = null,
-            ).also(::insert)
-
-            upsert(
-                SongAlbumMap(
-                    songId = song.id,
-                    albumId = albumId,
-                    position = null
-                )
+            insert(
+                Album(id = albumId, title = mediaItem.mediaMetadata.albumTitle?.toString()),
+                SongAlbumMap(songId = song.id, albumId = albumId, position = null)
             )
         }
 
         mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
             mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.let { artistIds ->
-                artistNames.mapIndexed { index, artistName ->
-                    Artist(
-                        id = artistIds[index],
-                        name = artistName,
-                        thumbnailUrl = null,
-                        info = null,
-                        timestamp = null,
-                    ).also(::insert)
+                if (artistNames.size == artistIds.size) {
+                    insert(
+                        artistNames.mapIndexed { index, artistName ->
+                            Artist(id = artistIds[index], name = artistName)
+                        },
+                        artistIds.map { artistId ->
+                            SongArtistMap(songId = song.id, artistId = artistId)
+                        }
+                    )
                 }
             }
-        }?.forEach { artist ->
-            insert(
-                SongArtistMap(
-                    songId = song.id,
-                    artistId = artist.id
-                )
-            )
         }
     }
-
-    @Update
-    fun update(song: Song)
 
     @Update
     fun update(artist: Artist)
 
     @Update
     fun update(album: Album)
-
-    @Update
-    fun update(songAlbumMap: SongAlbumMap)
-
-    @Update
-    fun update(songPlaylistMap: SongPlaylistMap)
 
     @Update
     fun update(playlist: Playlist)
@@ -338,9 +394,6 @@ interface Database {
     fun delete(playlist: Playlist)
 
     @Delete
-    fun delete(playlist: Album)
-
-    @Delete
     fun delete(songPlaylistMap: SongPlaylistMap)
 }
 
@@ -356,11 +409,12 @@ interface Database {
         SearchQuery::class,
         QueuedMediaItem::class,
         Format::class,
+        Event::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 17,
+    version = 21,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -376,6 +430,10 @@ interface Database {
         AutoMigration(from = 13, to = 14),
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
+        AutoMigration(from = 17, to = 18),
+        AutoMigration(from = 18, to = 19),
+        AutoMigration(from = 19, to = 20),
+        AutoMigration(from = 20, to = 21, spec = DatabaseInitializer.From20To21Migration::class),
     ],
 )
 @TypeConverters(Converters::class)
@@ -386,7 +444,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         lateinit var Instance: DatabaseInitializer
 
         context(Context)
-                operator fun invoke() {
+        operator fun invoke() {
             if (!::Instance.isInitialized) {
                 Instance = Room
                     .databaseBuilder(this@Context, DatabaseInitializer::class.java, "data.db")
@@ -509,6 +567,14 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             it.execSQL("ALTER TABLE Song_new RENAME TO Song;")
         }
     }
+
+    @DeleteColumn.Entries(
+        DeleteColumn("Artist", "shuffleVideoId"),
+        DeleteColumn("Artist", "shufflePlaylistId"),
+        DeleteColumn("Artist", "radioVideoId"),
+        DeleteColumn("Artist", "radioPlaylistId"),
+    )
+    class From20To21Migration : AutoMigrationSpec
 }
 
 @TypeConverters

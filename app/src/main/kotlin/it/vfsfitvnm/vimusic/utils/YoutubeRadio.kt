@@ -1,7 +1,10 @@
 package it.vfsfitvnm.vimusic.utils
 
 import androidx.media3.common.MediaItem
-import it.vfsfitvnm.youtubemusic.YouTube
+import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
+import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
+import it.vfsfitvnm.youtubemusic.requests.nextPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -17,20 +20,30 @@ data class YouTubeRadio(
         var mediaItems: List<MediaItem>? = null
 
         nextContinuation = withContext(Dispatchers.IO) {
-            YouTube.next(
-                videoId = videoId,
-                playlistId = playlistId,
-                params = parameters,
-                playlistSetVideoId = playlistSetVideoId,
-                continuation = nextContinuation
-            )?.getOrNull()?.let { nextResult ->
-                playlistId = nextResult.playlistId
-                parameters = nextResult.params
-                playlistSetVideoId = nextResult.playlistSetVideoId
+            val continuation = nextContinuation
 
-                mediaItems = nextResult.items?.map(YouTube.Item.Song::asMediaItem)
-                nextResult.continuation?.takeUnless { nextContinuation == nextResult.continuation }
+            if (continuation == null) {
+               Innertube.nextPage(
+                    NextBody(
+                        videoId = videoId,
+                        playlistId = playlistId,
+                        params = parameters,
+                        playlistSetVideoId = playlistSetVideoId
+                    )
+                )?.map { nextResult ->
+                    playlistId = nextResult.playlistId
+                    parameters = nextResult.params
+                    playlistSetVideoId = nextResult.playlistSetVideoId
+
+                    nextResult.itemsPage
+                }
+            } else {
+                Innertube.nextPage(ContinuationBody(continuation = continuation))
+            }?.getOrNull()?.let { songsPage ->
+                mediaItems = songsPage.items?.map(Innertube.SongItem::asMediaItem)
+                songsPage.continuation?.takeUnless { nextContinuation == it }
             }
+
         }
 
         return mediaItems ?: emptyList()

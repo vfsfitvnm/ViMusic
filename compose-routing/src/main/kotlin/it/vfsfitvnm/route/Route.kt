@@ -4,10 +4,9 @@ package it.vfsfitvnm.route
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 
 @Immutable
 open class Route internal constructor(val tag: String) {
@@ -23,20 +22,9 @@ open class Route internal constructor(val tag: String) {
         return tag.hashCode()
     }
 
-    object GlobalEmitter {
-        var listener: ((Route, Array<Any?>) -> Unit)? = null
-    }
-
     object Saver : androidx.compose.runtime.saveable.Saver<Route?, String> {
         override fun restore(value: String): Route? = value.takeIf(String::isNotEmpty)?.let(::Route)
         override fun SaverScope.save(value: Route?): String = value?.tag ?: ""
-    }
-}
-
-@Composable
-fun rememberRoute(route: Route? = null): MutableState<Route?> {
-    return rememberSaveable(stateSaver = Route.Saver) {
-        mutableStateOf(route)
     }
 }
 
@@ -51,7 +39,7 @@ class Route0(tag: String) : Route(tag) {
     }
 
     fun global() {
-        GlobalEmitter.listener?.invoke(this, emptyArray())
+        globalRouteFlow.tryEmit(this to emptyArray())
     }
 }
 
@@ -66,7 +54,12 @@ class Route1<P0>(tag: String) : Route(tag) {
     }
 
     fun global(p0: P0) {
-        GlobalEmitter.listener?.invoke(this, arrayOf(p0))
+        globalRouteFlow.tryEmit(this to arrayOf(p0))
+    }
+
+    suspend fun ensureGlobal(p0: P0) {
+        globalRouteFlow.subscriptionCount.filter { it > 0 }.first()
+        globalRouteFlow.emit(this to arrayOf(p0))
     }
 }
 
@@ -81,6 +74,6 @@ class Route2<P0, P1>(tag: String) : Route(tag) {
     }
 
     fun global(p0: P0, p1: P1) {
-        GlobalEmitter.listener?.invoke(this, arrayOf(p0, p1))
+        globalRouteFlow.tryEmit(this to arrayOf(p0, p1))
     }
 }

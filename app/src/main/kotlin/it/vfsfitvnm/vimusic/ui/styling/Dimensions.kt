@@ -10,6 +10,11 @@ import androidx.compose.ui.unit.dp
 object Dimensions {
     val itemsVerticalPadding = 8.dp
 
+    val navigationRailWidth = 64.dp
+    val navigationRailWidthLandscape = 128.dp
+    val navigationRailIconOffset = 6.dp
+    val headerHeight = 128.dp
+
     object thumbnails {
         val album = 128.dp
         val artist = 192.dp
@@ -17,7 +22,6 @@ object Dimensions {
         val playlist = album
 
         object player {
-            val songPreview = collapsedPlayer
             val song: Dp
                 @Composable
                 get() = with(LocalConfiguration.current) {

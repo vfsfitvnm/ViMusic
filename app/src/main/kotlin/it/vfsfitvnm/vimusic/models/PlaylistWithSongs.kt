@@ -19,9 +19,4 @@ data class PlaylistWithSongs(
         )
     )
     val songs: List<DetailedSong>
-) {
-    companion object {
-        val Empty = PlaylistWithSongs(Playlist(-1, ""), emptyList())
-        val NotFound = PlaylistWithSongs(Playlist(-2, "Not found"), emptyList())
-    }
-}
+)

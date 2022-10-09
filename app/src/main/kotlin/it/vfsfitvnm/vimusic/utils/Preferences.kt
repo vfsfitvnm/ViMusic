@@ -21,14 +21,19 @@ const val songSortOrderKey = "songSortOrder"
 const val songSortByKey = "songSortBy"
 const val playlistSortOrderKey = "playlistSortOrder"
 const val playlistSortByKey = "playlistSortBy"
-const val playlistGridExpandedKey = "playlistGridExpanded"
-const val searchFilterKey = "searchFilter"
+const val albumSortOrderKey = "albumSortOrder"
+const val albumSortByKey = "albumSortBy"
+const val artistSortOrderKey = "artistSortOrder"
+const val artistSortByKey = "artistSortBy"
 const val repeatModeKey = "repeatMode"
 const val skipSilenceKey = "skipSilence"
 const val volumeNormalizationKey = "volumeNormalization"
 const val persistentQueueKey = "persistentQueue"
 const val isShowingSynchronizedLyricsKey = "isShowingSynchronizedLyrics"
 const val isShowingThumbnailInLockscreenKey = "isShowingThumbnailInLockscreen"
+const val homeScreenTabIndexKey = "homeScreenTabIndex"
+const val searchResultScreenTabIndexKey = "searchResultScreenTabIndex"
+const val artistScreenTabIndexKey = "artistScreenTabIndex"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
@@ -57,6 +62,16 @@ fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean
     return remember {
         mutableStatePreferenceOf(context.preferences.getBoolean(key, defaultValue)) {
             context.preferences.edit { putBoolean(key, it) }
+        }
+    }
+}
+
+@Composable
+fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
+    val context = LocalContext.current
+    return remember {
+        mutableStatePreferenceOf(context.preferences.getInt(key, defaultValue)) {
+            context.preferences.edit { putInt(key, it) }
         }
     }
 }

@@ -6,18 +6,19 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { setUrl("https://jitpack.io") }
     }
 
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.7.10")
+            version("kotlin", "1.7.20")
             plugin("kotlin-serialization","org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
             library("kotlin-coroutines","org.jetbrains.kotlinx", "kotlinx-coroutines-core").version("1.6.4")
 
-            version("compose-compiler", "1.3.0")
+            version("compose-compiler", "1.3.2")
 
-            version("compose", "1.3.0-alpha03")
+            version("compose", "1.3.0-rc01")
             library("compose-foundation", "androidx.compose.foundation", "foundation").versionRef("compose")
             library("compose-ui", "androidx.compose.ui", "ui").versionRef("compose")
             library("compose-ui-util", "androidx.compose.ui", "ui-util").versionRef("compose")
@@ -61,6 +62,6 @@ rootProject.name = "ViMusic"
 include(":app")
 include(":compose-routing")
 include(":compose-reordering")
-include(":youtube-music")
+include(":innertube")
 include(":ktor-client-brotli")
 include(":kugou")
