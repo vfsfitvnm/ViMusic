@@ -11,8 +11,10 @@ data class Context(
     data class Client(
         val clientName: String,
         val clientVersion: String,
-        val visitorData: String?,
+        val platform: String,
         val hl: String = "en",
+        val visitorData: String? = null,
+        val androidSdkVersion: Int? = null
     )
 
     @Serializable
@@ -24,7 +26,8 @@ data class Context(
         val DefaultWeb = Context(
             client = Client(
                 clientName = "WEB_REMIX",
-                clientVersion = "1.20220328.01.00",
+                clientVersion = "1.20220918",
+                platform = "DESKTOP",
                 visitorData = "CgtsZG1ySnZiQWtSbyiMjuGSBg%3D%3D"
             )
         )
@@ -32,8 +35,9 @@ data class Context(
         val DefaultAndroid = Context(
             client = Client(
                 clientName = "ANDROID",
-                clientVersion = "16.50",
-                visitorData = null,
+                clientVersion = "17.36.4",
+                platform = "MOBILE",
+                androidSdkVersion = 31,
             )
         )
 
@@ -41,6 +45,7 @@ data class Context(
             client = Client(
                 clientName = "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
                 clientVersion = "2.0",
+                platform = "TV",
                 visitorData = null,
             )
         )

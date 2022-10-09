@@ -650,6 +650,10 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                         val urlResult = runBlocking(Dispatchers.IO) {
                             Innertube.player(PlayerBody(videoId = videoId))
                         }?.mapCatching { body ->
+                            if (body.videoDetails?.videoId != videoId) {
+                                throw VideoIdMismatchException()
+                            }
+
                             when (val status = body.playabilityStatus?.status) {
                                 "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
                                     format.itag == 251 || format.itag == 140
