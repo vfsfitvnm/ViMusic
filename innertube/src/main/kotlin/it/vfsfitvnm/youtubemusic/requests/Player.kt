@@ -18,7 +18,7 @@ suspend fun Innertube.player(body: PlayerBody) = runCatchingNonCancellable {
     val response = client.post(player) {
         setBody(body)
         body.context.client.userAgent?.let(::userAgent)
-        mask("playabilityStatus.status,playerConfig.audioConfig,streamingData.adaptiveFormats")
+        mask("playabilityStatus.status,playerConfig.audioConfig,streamingData.adaptiveFormats,videoDetails.videoId")
     }.body<PlayerResponse>()
 
     if (response.playabilityStatus?.status == "OK") {
@@ -45,7 +45,7 @@ suspend fun Innertube.player(body: PlayerBody) = runCatchingNonCancellable {
                     ),
                 )
             )
-            mask("playabilityStatus.status,playerConfig.audioConfig,streamingData.adaptiveFormats")
+            mask("playabilityStatus.status,playerConfig.audioConfig,streamingData.adaptiveFormats,videoDetails.videoId")
         }.body<PlayerResponse>()
 
         if (safePlayerResponse.playabilityStatus?.status != "OK") {
