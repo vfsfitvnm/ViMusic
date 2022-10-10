@@ -160,10 +160,10 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name ASC")
     fun artistsByNameAsc(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID DESC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY bookmarkedAt DESC")
     fun artistsByRowIdDesc(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID ASC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY bookmarkedAt ASC")
     fun artistsByRowIdAsc(): Flow<List<Artist>>
 
     fun artists(sortBy: ArtistSortBy, sortOrder: SortOrder): Flow<List<Artist>> {
@@ -196,7 +196,7 @@ interface Database {
     @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY year ASC")
     fun albumsByYearAsc(): Flow<List<Album>>
 
-    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID ASC")
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY bookmarkedAt ASC")
     fun albumsByRowIdAsc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title DESC")
@@ -205,7 +205,7 @@ interface Database {
     @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY year DESC")
     fun albumsByYearDesc(): Flow<List<Album>>
 
-    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY ROWID DESC")
+    @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY bookmarkedAt DESC")
     fun albumsByRowIdDesc(): Flow<List<Album>>
 
     fun albums(sortBy: AlbumSortBy, sortOrder: SortOrder): Flow<List<Album>> {
