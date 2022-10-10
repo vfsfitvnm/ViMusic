@@ -379,9 +379,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                             .setCustomCacheKey(mediaItem.mediaItem.mediaId)
                             .build()
                     },
-                    true
+                    index,
+                    queuedSong[index].position ?: C.TIME_UNSET
                 )
-                player.seekTo(index, queuedSong[index].position ?: 0)
                 player.prepare()
 
                 isNotificationStarted = true

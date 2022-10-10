@@ -43,9 +43,8 @@ fun Player.forcePlay(mediaItem: MediaItem) {
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
     if (mediaItems.isEmpty()) return
 
-    setMediaItems(mediaItems, true)
+    setMediaItems(mediaItems, mediaItemIndex, C.TIME_UNSET)
     playWhenReady = true
-    seekToDefaultPosition(mediaItemIndex)
     prepare()
 }
 
