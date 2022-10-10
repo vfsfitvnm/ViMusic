@@ -129,7 +129,7 @@ class BottomSheetState(
         1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
     }
 
-    private fun collapse(animationSpec: AnimationSpec<Dp>) {
+    fun collapse(animationSpec: AnimationSpec<Dp>) {
         onAnchorChanged(collapsedAnchor)
         coroutineScope.launch {
             animatable.animateTo(collapsedBound, animationSpec)

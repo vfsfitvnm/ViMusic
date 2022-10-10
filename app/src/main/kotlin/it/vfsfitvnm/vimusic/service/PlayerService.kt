@@ -377,7 +377,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                         mediaItem.mediaItem.buildUpon()
                             .setUri(mediaItem.mediaItem.mediaId)
                             .setCustomCacheKey(mediaItem.mediaItem.mediaId)
-                            .build()
+                            .build().apply {
+                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+                            }
                     },
                     index,
                     queuedSong[index].position ?: C.TIME_UNSET

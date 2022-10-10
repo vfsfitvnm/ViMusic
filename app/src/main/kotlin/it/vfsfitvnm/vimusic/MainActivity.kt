@@ -359,9 +359,9 @@ class MainActivity : ComponentActivity() {
                         if (playerBottomSheetState.isDismissed) {
                             if (launchedFromNotification) {
                                 intent.replaceExtras(Bundle())
-                                playerBottomSheetState.expandSoft()
+                                playerBottomSheetState.expand(tween(700))
                             } else {
-                                playerBottomSheetState.collapseSoft()
+                                playerBottomSheetState.collapse(tween(700))
                             }
                         }
                     }
@@ -369,7 +369,11 @@ class MainActivity : ComponentActivity() {
                     player.listener(object : Player.Listener {
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                                playerBottomSheetState.expand(tween(500))
+                                if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
+                                    playerBottomSheetState.expand(tween(500))
+                                } else {
+                                    playerBottomSheetState.collapse(tween(700))
+                                }
                             }
                         }
                     })
