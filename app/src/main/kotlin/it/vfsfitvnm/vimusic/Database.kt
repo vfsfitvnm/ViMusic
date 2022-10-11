@@ -2,7 +2,6 @@ package it.vfsfitvnm.vimusic
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
 import android.os.Parcel
 import androidx.core.database.getFloatOrNull
@@ -15,6 +14,7 @@ import androidx.room.DeleteTable
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.RenameColumn
 import androidx.room.RenameTable
 import androidx.room.RewriteQueriesToDropUnusedColumns
@@ -29,6 +29,7 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.SupportSQLiteQuery
 import it.vfsfitvnm.vimusic.enums.AlbumSortBy
 import it.vfsfitvnm.vimusic.enums.ArtistSortBy
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
@@ -410,6 +411,13 @@ interface Database {
 
     @Delete
     fun delete(songPlaylistMap: SongPlaylistMap)
+
+    @RawQuery
+    fun raw(supportSQLiteQuery: SupportSQLiteQuery): Int
+
+    fun checkpoint() {
+        raw(SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)"))
+    }
 }
 
 @androidx.room.Database(
@@ -635,19 +643,3 @@ fun transaction(block: () -> Unit) = with(DatabaseInitializer.Instance) {
 
 val RoomDatabase.path: String?
     get() = openHelper.writableDatabase.path
-
-fun RoomDatabase.checkpoint() {
-    openHelper.writableDatabase.run {
-        query("PRAGMA journal_mode").use { cursor ->
-            if (cursor.moveToFirst()) {
-                when (cursor.getString(0).lowercase()) {
-                    "wal" -> {
-                        query("PRAGMA wal_checkpoint").use(Cursor::moveToFirst)
-                        query("PRAGMA wal_checkpoint(TRUNCATE)").use(Cursor::moveToFirst)
-                        query("PRAGMA wal_checkpoint").use(Cursor::moveToFirst)
-                    }
-                }
-            }
-        }
-    }
-}

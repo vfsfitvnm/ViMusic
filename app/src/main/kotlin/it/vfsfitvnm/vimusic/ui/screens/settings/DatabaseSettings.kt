@@ -6,7 +6,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,10 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import it.vfsfitvnm.vimusic.checkpoint
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.path
 import it.vfsfitvnm.vimusic.query
@@ -56,7 +55,7 @@ fun DatabaseSettings() {
             if (uri == null) return@rememberLauncherForActivityResult
 
             query {
-                Database.internal.checkpoint()
+                Database.checkpoint()
 
                 context.applicationContext.contentResolver.openOutputStream(uri)
                     ?.use { outputStream ->
@@ -72,7 +71,7 @@ fun DatabaseSettings() {
             if (uri == null) return@rememberLauncherForActivityResult
 
             query {
-                Database.internal.checkpoint()
+                Database.checkpoint()
                 Database.internal.close()
 
                 context.applicationContext.contentResolver.openInputStream(uri)
