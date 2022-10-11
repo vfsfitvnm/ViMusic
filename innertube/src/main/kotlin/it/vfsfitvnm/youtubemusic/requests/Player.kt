@@ -6,7 +6,6 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.http.userAgent
 import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.Context
 import it.vfsfitvnm.youtubemusic.models.PlayerResponse
@@ -17,7 +16,6 @@ import kotlinx.serialization.Serializable
 suspend fun Innertube.player(body: PlayerBody) = runCatchingNonCancellable {
     val response = client.post(player) {
         setBody(body)
-        body.context.client.userAgent?.let(::userAgent)
         mask("playabilityStatus.status,playerConfig.audioConfig,streamingData.adaptiveFormats,videoDetails.videoId")
     }.body<PlayerResponse>()
 

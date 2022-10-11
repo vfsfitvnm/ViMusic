@@ -698,7 +698,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                                 itag = format.itag,
                                                 mimeType = format.mimeType,
                                                 bitrate = format.bitrate,
-                                                loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
+                                                loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()?.plus(7),
                                                 contentLength = format.contentLength,
                                                 lastModified = format.lastModified
                                             )

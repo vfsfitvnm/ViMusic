@@ -13,7 +13,7 @@ data class Context(
         val clientVersion: String,
         val platform: String,
         val hl: String = "en",
-        val visitorData: String? = null,
+        val visitorData: String = "CgtEUlRINDFjdm1YayjX1pSaBg%3D%3D",
         val androidSdkVersion: Int? = null,
         val userAgent: String? = null
     )
@@ -29,17 +29,16 @@ data class Context(
                 clientName = "WEB_REMIX",
                 clientVersion = "1.20220918",
                 platform = "DESKTOP",
-                visitorData = "CgtsZG1ySnZiQWtSbyiMjuGSBg%3D%3D"
             )
         )
 
         val DefaultAndroid = Context(
             client = Client(
-                clientName = "ANDROID",
-                clientVersion = "17.36.4",
+                clientName = "ANDROID_MUSIC",
+                clientVersion = "5.28.1",
                 platform = "MOBILE",
                 androidSdkVersion = 30,
-                userAgent = "com.google.android.youtube/17.36.4 (Linux; U; Android 11) gzip"
+                userAgent = "com.google.android.apps.youtube.music/5.28.1 (Linux; U; Android 11) gzip"
             )
         )
 
@@ -47,8 +46,7 @@ data class Context(
             client = Client(
                 clientName = "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
                 clientVersion = "2.0",
-                platform = "TV",
-                visitorData = null,
+                platform = "TV"
             )
         )
     }

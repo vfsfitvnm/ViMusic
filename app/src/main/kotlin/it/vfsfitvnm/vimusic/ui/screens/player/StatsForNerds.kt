@@ -205,7 +205,7 @@ fun StatsForNerds(
                                                             itag = format.itag,
                                                             mimeType = format.mimeType,
                                                             bitrate = format.bitrate,
-                                                            loudnessDb = response.playerConfig?.audioConfig?.loudnessDb?.toFloat(),
+                                                            loudnessDb = response.playerConfig?.audioConfig?.loudnessDb?.toFloat()?.plus(7),
                                                             contentLength = format.contentLength,
                                                             lastModified = format.lastModified
                                                         )
