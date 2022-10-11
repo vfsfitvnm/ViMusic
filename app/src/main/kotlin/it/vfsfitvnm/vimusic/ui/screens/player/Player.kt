@@ -58,6 +58,7 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.collapsedPlayerProgressBar
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.forceSeekToNext
 import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.rememberMediaItem
 import it.vfsfitvnm.vimusic.utils.rememberPositionAndDuration
@@ -198,7 +199,7 @@ fun Player(
                     IconButton(
                         icon = R.drawable.play_skip_forward,
                         color = colorPalette.text,
-                        onClick = binder.player::seekToNext,
+                        onClick = binder.player::forceSeekToNext,
                         modifier = Modifier
                             .padding(horizontal = 4.dp, vertical = 8.dp)
                             .size(20.dp)
