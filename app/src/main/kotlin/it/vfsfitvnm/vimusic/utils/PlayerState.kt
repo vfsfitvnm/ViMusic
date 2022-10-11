@@ -6,6 +6,7 @@ import androidx.compose.runtime.DisposableEffectResult
 import androidx.compose.runtime.DisposableEffectScope
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
@@ -50,7 +51,7 @@ fun rememberMediaItemIndex(player: Player): State<Int> {
 @Composable
 fun rememberMediaItem(player: Player): State<MediaItem?> {
     val state = remember(player) {
-        mutableStateOf(player.currentMediaItem)
+        mutableStateOf(player.currentMediaItem, neverEqualPolicy())
     }
 
     DisposableEffect(player) {

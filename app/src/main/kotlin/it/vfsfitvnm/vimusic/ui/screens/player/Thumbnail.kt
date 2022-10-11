@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +35,7 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.rememberError
+import it.vfsfitvnm.vimusic.utils.rememberMediaItem
 import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
 import it.vfsfitvnm.vimusic.utils.thumbnail
 import java.net.UnknownHostException
@@ -58,15 +58,16 @@ fun Thumbnail(
     }
 
     val mediaItemIndex by rememberMediaItemIndex(player)
+    val mediaItem by rememberMediaItem(player)
 
     val error by rememberError(player)
 
     AnimatedContent(
-        targetState = mediaItemIndex,
+        targetState = mediaItemIndex to mediaItem,
         transitionSpec = {
             val duration = 500
             val slideDirection =
-                if (targetState > initialState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
+                if (targetState.first > initialState.first) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
 
             ContentTransform(
                 targetContentEnter = slideIntoContainer(
@@ -91,10 +92,8 @@ fun Thumbnail(
             )
         },
         contentAlignment = Alignment.Center
-    ) { currentMediaItemIndex ->
-        val mediaItem = remember(currentMediaItemIndex) {
-            player.getMediaItemAt(currentMediaItemIndex)
-        }
+    ) { (_, currentMediaItem) ->
+        val currentMediaItem = currentMediaItem ?: return@AnimatedContent
 
         Box(
             modifier = modifier
@@ -103,7 +102,7 @@ fun Thumbnail(
                 .size(thumbnailSizeDp)
         ) {
             AsyncImage(
-                model = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
+                model = currentMediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -117,23 +116,23 @@ fun Thumbnail(
             )
 
             Lyrics(
-                mediaId = mediaItem.mediaId,
+                mediaId = currentMediaItem.mediaId,
                 isDisplayed = isShowingLyrics && error == null,
                 onDismiss = { onShowLyrics(false) },
                 onLyricsUpdate = { areSynchronized, mediaId, lyrics ->
                     query {
                         if (areSynchronized) {
                             if (Database.updateSynchronizedLyrics(mediaId, lyrics) == 0) {
-                                if (mediaId == mediaItem.mediaId) {
-                                    Database.insert(mediaItem) { song ->
+                                if (mediaId == currentMediaItem.mediaId) {
+                                    Database.insert(currentMediaItem) { song ->
                                         song.copy(synchronizedLyrics = lyrics)
                                     }
                                 }
                             }
                         } else {
                             if (Database.updateLyrics(mediaId, lyrics) == 0) {
-                                if (mediaId == mediaItem.mediaId) {
-                                    Database.insert(mediaItem) { song ->
+                                if (mediaId == currentMediaItem.mediaId) {
+                                    Database.insert(currentMediaItem) { song ->
                                         song.copy(lyrics = lyrics)
                                     }
                                 }
@@ -142,12 +141,12 @@ fun Thumbnail(
                     }
                 },
                 size = thumbnailSizeDp,
-                mediaMetadataProvider = mediaItem::mediaMetadata,
+                mediaMetadataProvider = currentMediaItem::mediaMetadata,
                 durationProvider = player::getDuration,
             )
 
             StatsForNerds(
-                mediaId = mediaItem.mediaId,
+                mediaId = currentMediaItem.mediaId,
                 isDisplayed = isShowingStatsForNerds && error == null,
                 onDismiss = { onShowStatsForNerds(false) }
             )
