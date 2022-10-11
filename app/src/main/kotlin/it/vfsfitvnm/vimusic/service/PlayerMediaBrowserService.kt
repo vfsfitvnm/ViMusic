@@ -24,7 +24,6 @@ import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
-import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.forceSeekToNext
 import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
 import it.vfsfitvnm.vimusic.utils.intent
@@ -232,6 +231,7 @@ class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             val data = mediaId?.split('/') ?: return
+            var index = 0
 
             coroutineScope.launch {
                 val mediaItems = when (data.getOrNull(0)) {
@@ -240,23 +240,14 @@ class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
                     MediaId.songs ->  data
                         .getOrNull(1)
                         ?.let { songId ->
-                            val index = lastSongs.indexOfFirst { it.id == songId }
-
-                            if (index != -1) {
-                                val mediaItems = lastSongs.map(DetailedSong::asMediaItem)
-
-                                withContext(Dispatchers.Main) {
-                                    player.forcePlayAtIndex(mediaItems, index)
-                                }
-                                return@launch
-                            }
-
-                            emptyList()
-                        } ?: emptyList()
+                            index = lastSongs.indexOfFirst { it.id == songId }
+                            lastSongs
+                        }
 
                     MediaId.favorites -> Database
                         .favorites()
                         .first()
+                        .shuffled()
 
                     MediaId.offline -> Database
                         .songsWithContentLength()
@@ -266,25 +257,26 @@ class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
                                 cache.isCached(song.id, 0, song.contentLength)
                             } ?: false
                         }
+                        .shuffled()
 
                     MediaId.playlists -> data
                         .getOrNull(1)
                         ?.toLongOrNull()
-                        ?.let { playlistId ->
-                            Database.playlistWithSongs(playlistId).first()?.songs
-                        } ?: emptyList()
+                        ?.let(Database::playlistWithSongs)
+                        ?.first()
+                        ?.songs
+                        ?.shuffled()
 
                     MediaId.albums -> data
                         .getOrNull(1)
-                        ?.let { albumId ->
-                            Database.albumSongs(albumId).first()
-                        } ?: emptyList()
+                        ?.let(Database::albumSongs)
+                        ?.first()
 
                     else -> emptyList()
-                }.map(DetailedSong::asMediaItem).shuffled()
+                }?.map(DetailedSong::asMediaItem) ?: return@launch
 
                 withContext(Dispatchers.Main) {
-                    player.forcePlayFromBeginning(mediaItems)
+                    player.forcePlayAtIndex(mediaItems, index.coerceIn(0, mediaItems.size))
                 }
             }
         }
