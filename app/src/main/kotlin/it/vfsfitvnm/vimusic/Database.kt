@@ -51,7 +51,6 @@ import it.vfsfitvnm.vimusic.models.SongArtistMap
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.models.SortedSongPlaylistMap
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 @Dao
 interface Database {
@@ -126,10 +125,6 @@ interface Database {
 
     @Query("SELECT * FROM Song WHERE id = :id")
     fun song(id: String): Flow<Song?>
-
-    @Transaction
-    @Query("SELECT * FROM Song WHERE id = :id")
-    fun songById(id: String): Flow<DetailedSong?>
 
     @Query("SELECT likedAt FROM Song WHERE id = :songId")
     fun likedAt(songId: String): Flow<Long?>
@@ -238,28 +233,44 @@ interface Database {
 
     @Transaction
     @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY name ASC")
-    fun playlistPreviewsByName(): Flow<List<PlaylistPreview>>
+    fun playlistPreviewsByNameAsc(): Flow<List<PlaylistPreview>>
 
     @Transaction
     @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY ROWID ASC")
-    fun playlistPreviewsByDateAdded(): Flow<List<PlaylistPreview>>
+    fun playlistPreviewsByDateAddedAsc(): Flow<List<PlaylistPreview>>
 
     @Transaction
     @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY songCount ASC")
-    fun playlistPreviewsByDateSongCount(): Flow<List<PlaylistPreview>>
+    fun playlistPreviewsByDateSongCountAsc(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY name DESC")
+    fun playlistPreviewsByNameDesc(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY ROWID DESC")
+    fun playlistPreviewsByDateAddedDesc(): Flow<List<PlaylistPreview>>
+
+    @Transaction
+    @Query("SELECT id, name, (SELECT COUNT(*) FROM SongPlaylistMap WHERE playlistId = id) as songCount FROM Playlist ORDER BY songCount DESC")
+    fun playlistPreviewsByDateSongCountDesc(): Flow<List<PlaylistPreview>>
 
     fun playlistPreviews(
         sortBy: PlaylistSortBy,
         sortOrder: SortOrder
     ): Flow<List<PlaylistPreview>> {
         return when (sortBy) {
-            PlaylistSortBy.Name -> playlistPreviewsByName()
-            PlaylistSortBy.DateAdded -> playlistPreviewsByDateAdded()
-            PlaylistSortBy.SongCount -> playlistPreviewsByDateSongCount()
-        }.map {
-            when (sortOrder) {
-                SortOrder.Ascending -> it
-                SortOrder.Descending -> it.reversed()
+            PlaylistSortBy.Name -> when (sortOrder) {
+                SortOrder.Ascending -> playlistPreviewsByNameAsc()
+                SortOrder.Descending -> playlistPreviewsByNameDesc()
+            }
+            PlaylistSortBy.SongCount -> when (sortOrder) {
+                SortOrder.Ascending -> playlistPreviewsByDateSongCountAsc()
+                SortOrder.Descending -> playlistPreviewsByDateSongCountDesc()
+            }
+            PlaylistSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> playlistPreviewsByDateAddedAsc()
+                SortOrder.Descending -> playlistPreviewsByDateAddedDesc()
             }
         }
     }
