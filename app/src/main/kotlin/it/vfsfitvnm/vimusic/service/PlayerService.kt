@@ -104,7 +104,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
@@ -298,16 +297,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         if (totalPlayTimeMs > 30000) {
             query {
-                // THANKS, EXOPLAYER
-                if (runBlocking { Database.song(mediaItem.mediaId).first() } != null) {
-                    Database.insert(
-                        Event(
-                            songId = mediaItem.mediaId,
-                            timestamp = System.currentTimeMillis(),
-                            playTime = totalPlayTimeMs
-                        )
+                Database.insert(
+                    Event(
+                        songId = mediaItem.mediaId,
+                        timestamp = System.currentTimeMillis(),
+                        playTime = totalPlayTimeMs
                     )
-                }
+                )
             }
         }
     }
@@ -322,20 +318,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         } else if (mediaItem.mediaMetadata.artworkUri == bitmapProvider.lastUri) {
             bitmapProvider.listener?.invoke(bitmapProvider.lastBitmap)
         }
-
-        // On playlist changed, we refresh the mediaSession queue
-//        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-//            mediaSession.setQueue(player.currentTimeline.mediaItems.mapIndexed { index, it ->
-//                MediaSession.QueueItem(
-//                    MediaDescription.Builder()
-//                        .setMediaId(it.mediaId)
-//                        .setTitle(it.mediaMetadata.title)
-//                        .setSubtitle(it.mediaMetadata.artist)
-//                        .setIconUri(it.mediaMetadata.artworkUri)
-//                        .build(), index.toLong()
-//                )
-//            })
-//        }
     }
 
     private fun maybeRecoverPlaybackError() {
@@ -483,10 +465,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     MediaMetadata.METADATA_KEY_ALBUM,
                     player.currentMediaItem?.mediaMetadata?.albumTitle
                 )
-//                .putBitmap(
-//                    MediaMetadata.METADATA_KEY_ALBUM_ART,
-//                    if (isShowingThumbnailInLockscreen) bitmapProvider.bitmap else null
-//                )
                 .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
                 .build().let(mediaSession::setMetadata)
         }
