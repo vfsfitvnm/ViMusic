@@ -1,0 +1,6 @@
+* Added Android Auto support (must be enabled in the settings)
+* Improved the audio normalization algorithm
+* Fixed a bug which caused play time of a song to be incorrectly calculated
+* Fixed a bug which caused artists and albums to be incorrectly sorted
+* Fixed a crash that occurred when searching
+* Fixed "this video in not available in your country" problem that affected GB users

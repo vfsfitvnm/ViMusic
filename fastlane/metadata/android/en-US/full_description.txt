@@ -15,5 +15,6 @@
 * Skip silence
 * Persistent queue
 * Loudness/audio normalization
+* Android Auto
 * Simple and minimal UI
 * Ridiculously lightweight APK

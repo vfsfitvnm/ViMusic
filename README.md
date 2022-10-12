@@ -30,6 +30,7 @@
 - Skip silence
 - Sleep timer
 - Audio normalization
+- Android Auto
 - Persistent queue
 - Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
 - ...
