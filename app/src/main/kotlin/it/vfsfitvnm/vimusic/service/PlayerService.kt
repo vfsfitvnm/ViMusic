@@ -104,10 +104,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 @Suppress("DEPRECATION")
 class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListener.Callback,
@@ -398,16 +399,20 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         player.currentMediaItem?.mediaId?.let { songId ->
             volumeNormalizationJob?.cancel()
-            volumeNormalizationJob = coroutineScope.launch(Dispatchers.IO) {
-                Database.loudnessDb(songId).cancellable().distinctUntilChanged()
-                    .collect { loudnessDb ->
-                        withContext(Dispatchers.Main) {
-                            player.volume = if (loudnessDb != null && loudnessDb > 0) {
-                                (1f - (0.01f + loudnessDb / 14)).coerceIn(0.1f, 1f)
-                            } else {
-                                1f
-                            }
-                        }
+            volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
+                Database
+                    .loudnessDb(songId)
+                    .cancellable()
+                    .distinctUntilChanged()
+                    .filterNotNull()
+                    .flowOn(Dispatchers.IO)
+                    .collect { x ->
+                        val x2 = x * x
+                        val x3 = x2 * x
+                        val x4 = x2 * x2
+
+                        player.volume =
+                            0.0000452661f * x4 - 0.0000870966f * x3 - 0.00251095f * x2 - 0.0336928f * x + 0.427456f
                     }
             }
         }
@@ -515,13 +520,16 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         when (key) {
             persistentQueueKey -> isPersistentQueueEnabled =
                 sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
+
             volumeNormalizationKey -> {
                 isVolumeNormalizationEnabled =
                     sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
                 maybeNormalizeVolume()
             }
+
             isInvincibilityEnabledKey -> isInvincibilityEnabled =
                 sharedPreferences.getBoolean(key, isInvincibilityEnabled)
+
             skipSilenceKey -> player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
             isShowingThumbnailInLockscreenKey -> {
                 isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
@@ -661,10 +669,15 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                     }
 
                                     if (mediaItem?.mediaMetadata?.extras?.getString("durationText") == null) {
-                                        format.approxDurationMs?.div(1000)?.let(DateUtils::formatElapsedTime)?.removePrefix("0")?.let { durationText ->
-                                            mediaItem?.mediaMetadata?.extras?.putString("durationText", durationText)
-                                            Database.updateDurationText(videoId, durationText)
-                                        }
+                                        format.approxDurationMs?.div(1000)
+                                            ?.let(DateUtils::formatElapsedTime)?.removePrefix("0")
+                                            ?.let { durationText ->
+                                                mediaItem?.mediaMetadata?.extras?.putString(
+                                                    "durationText",
+                                                    durationText
+                                                )
+                                                Database.updateDurationText(videoId, durationText)
+                                            }
                                     }
 
                                     query {
@@ -676,7 +689,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                                 itag = format.itag,
                                                 mimeType = format.mimeType,
                                                 bitrate = format.bitrate,
-                                                loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()?.plus(7),
+                                                loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()
+                                                    ?.plus(7),
                                                 contentLength = format.contentLength,
                                                 lastModified = format.lastModified
                                             )
@@ -685,6 +699,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
                                     format.url
                                 } ?: throw PlayableFormatNotFoundException()
+
                                 "UNPLAYABLE" -> throw UnplayableException()
                                 "LOGIN_REQUIRED" -> throw LoginRequiredException()
                                 else -> throw PlaybackException(
