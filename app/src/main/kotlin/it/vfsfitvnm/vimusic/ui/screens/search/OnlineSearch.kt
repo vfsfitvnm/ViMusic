@@ -44,6 +44,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
@@ -160,7 +161,9 @@ fun OnlineSearch(
                             val isAlbum = playlistId.startsWith("OLAK5uy_")
 
                             SecondaryTextButton(
-                                text =  "View ${if (isAlbum) "album" else "playlist"}",
+                                text = stringResource(
+                                    if (isAlbum) R.string.view_album else R.string.view_playlist
+                                ),
                                 onClick = { onViewPlaylist(textFieldValue.text) }
                             )
                         }
@@ -172,7 +175,7 @@ fun OnlineSearch(
 
                         if (textFieldValue.text.isNotEmpty()) {
                             SecondaryTextButton(
-                                text =  "Clear",
+                                text =  stringResource(R.string.clear),
                                 onClick = { onTextFieldValueChanged(TextFieldValue()) }
                             )
                         }
@@ -304,7 +307,7 @@ fun OnlineSearch(
                             .fillMaxSize()
                     ) {
                         BasicText(
-                            text = "An error has occurred.",
+                            text = stringResource(R.string.error_occurred),
                             style = typography.s.secondary.center,
                             modifier = Modifier
                                 .align(Alignment.Center)

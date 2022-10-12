@@ -22,6 +22,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
@@ -91,7 +92,7 @@ fun AlbumSongs(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         headerContent {
                             SecondaryTextButton(
-                                text = "Enqueue",
+                                text = stringResource(R.string.enqueue),
                                 enabled = songs.isNotEmpty(),
                                 onClick = {
                                     binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))

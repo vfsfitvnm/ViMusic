@@ -39,6 +39,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -381,7 +382,7 @@ private fun PlayerMenu(
                 resultRegistryOwner?.activityResultRegistry
                     ?.register("", contract) {}?.launch(intent)
             } else {
-                Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.no_equalizer_app_found), Toast.LENGTH_SHORT).show()
             }
         },
         onShowSleepTimer = {},

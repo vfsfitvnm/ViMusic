@@ -29,6 +29,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ArtistSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
@@ -101,7 +102,7 @@ fun HomeArtistList(
                 contentType = 0,
                 span = { GridItemSpan(maxLineSpan) }
             ) {
-                Header(title = "Artists") {
+                Header(title = stringResource(R.string.artists)) {
                     HeaderIconButton(
                         icon = R.drawable.text,
                         color = if (sortBy == ArtistSortBy.Name) colorPalette.text else colorPalette.textDisabled,

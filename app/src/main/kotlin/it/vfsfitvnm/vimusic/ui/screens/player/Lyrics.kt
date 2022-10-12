@@ -41,6 +41,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
@@ -155,7 +156,7 @@ fun Lyrics(
 
         if (isEditing) {
             TextFieldDialog(
-                hintText = "Enter the lyrics",
+                hintText = stringResource(R.string.enter_the_lyrics),
                 initialTextInput = lyrics ?: "",
                 singleLine = false,
                 maxLines = 10,
@@ -192,7 +193,10 @@ fun Lyrics(
                     .align(Alignment.TopCenter)
             ) {
                 BasicText(
-                    text = "An error has occurred while fetching the ${if (isShowingSynchronizedLyrics) "synchronized " else ""}lyrics",
+                    text = stringResource(
+                        R.string.lyrics_fetching_error,
+                        if (isShowingSynchronizedLyrics) stringResource(R.string.synced) else ""
+                    ),
                     style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
@@ -209,7 +213,7 @@ fun Lyrics(
                     .align(Alignment.TopCenter)
             ) {
                 BasicText(
-                    text = "${if (isShowingSynchronizedLyrics) "Synchronized l" else "L"}yrics are not available for this song",
+                    text = stringResource(R.string.sync_lyrics_not_available_for_song, if (isShowingSynchronizedLyrics) "l" else "L"),
                     style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
@@ -302,8 +306,13 @@ fun Lyrics(
                                 Menu {
                                     MenuEntry(
                                         icon = R.drawable.time,
-                                        text = "Show ${if (isShowingSynchronizedLyrics) "un" else ""}synchronized lyrics",
-                                        secondaryText = if (isShowingSynchronizedLyrics) null else "Provided by kugou.com",
+                                        text = stringResource(
+                                            R.string.show_un_or_sync_lyrics,
+                                            if (isShowingSynchronizedLyrics) "un" else ""
+                                        ),
+                                        secondaryText = if (isShowingSynchronizedLyrics) null else stringResource(
+                                            R.string.provided_by_kugou
+                                        ),
                                         onClick = {
                                             menuState.hide()
                                             isShowingSynchronizedLyrics =
@@ -313,7 +322,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.pencil,
-                                        text = "Edit lyrics",
+                                        text = stringResource(R.string.edit_lyrics),
                                         onClick = {
                                             menuState.hide()
                                             isEditing = true
@@ -322,7 +331,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.search,
-                                        text = "Search lyrics online",
+                                        text = stringResource(R.string.search_lyrics_online),
                                         onClick = {
                                             menuState.hide()
                                             val mediaMetadata = mediaMetadataProvider()
@@ -341,7 +350,7 @@ fun Lyrics(
                                                 Toast
                                                     .makeText(
                                                         context,
-                                                        "No browser app found!",
+                                                        context.getString(R.string.no_browser_app_found),
                                                         Toast.LENGTH_SHORT
                                                     )
                                                     .show()
@@ -351,7 +360,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.download,
-                                        text = "Fetch lyrics again",
+                                        text = stringResource(R.string.fetch_lyrics_again),
                                         enabled = lyrics != null,
                                         onClick = {
                                             menuState.hide()

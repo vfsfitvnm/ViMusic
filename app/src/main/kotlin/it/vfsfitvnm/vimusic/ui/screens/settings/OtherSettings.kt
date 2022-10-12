@@ -30,6 +30,8 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
 import androidx.compose.runtime.SnapshotMutationPolicy
 import it.vfsfitvnm.vimusic.service.PlayerMediaBrowserService
+import androidx.compose.ui.res.stringResource
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
@@ -84,34 +86,34 @@ fun OtherSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Other")
+        Header(title = stringResource(R.string.other))
 
-        SettingsEntryGroupText(title = "ANDROID AUTO")
+        SettingsEntryGroupText(title = stringResource(R.string.android_auto))
 
         SwitchSettingEntry(
-            title = "Android Auto",
-            text = "Enable Android Auto support",
+            title = stringResource(R.string.android_auto),
+            text = stringResource(R.string.enable_android_auto_support),
             isChecked = isAndroidAutoEnabled,
             onCheckedChange = { isAndroidAutoEnabled = it }
         )
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "SERVICE LIFETIME")
+        SettingsEntryGroupText(title = stringResource(R.string.service_lifetime_caps))
 
-        ImportantSettingsDescription(text = "If battery optimizations are applied, the playback notification can suddenly disappear when paused.")
+        SettingsDescription(text = stringResource(R.string.service_lifetime_desc))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            SettingsDescription(text = "Since Android 12, disabling battery optimizations is required for the \"Invincible service\" option to take effect.")
+            SettingsDescription(text = stringResource(R.string.service_lifetime_android_s_notification))
         }
 
         SettingsEntry(
-            title = "Ignore battery optimizations",
+            title = stringResource(R.string.ignore_battery_optimisation),
             isEnabled = !isIgnoringBatteryOptimizations,
             text = if (isIgnoringBatteryOptimizations) {
-                "Already unrestricted"
+                stringResource(R.string.already_unrestricted)
             } else {
-                "Disable background restrictions"
+                stringResource(R.string.disable_background_restrictions)
             },
             onClick = {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return@SettingsEntry
@@ -133,7 +135,7 @@ fun OtherSettings() {
                     } else {
                         Toast.makeText(
                             context,
-                            "Couldn't find battery optimization settings, please whitelist ViMusic manually",
+                            context.getString(R.string.battery_optimisation_whitelist_manually),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -142,8 +144,8 @@ fun OtherSettings() {
         )
 
         SwitchSettingEntry(
-            title = "Invincible service",
-            text = "When turning off battery optimizations is not enough",
+            title = stringResource(R.string.invincible_service),
+            text = stringResource(R.string.battery_optimization_not_enough),
             isChecked = isInvincibilityEnabled,
             onCheckedChange = { isInvincibilityEnabled = it }
         )

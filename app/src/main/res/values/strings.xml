@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="create_new_playlist_btn">New playlist</string>
+    <string name="start_radio">Start radio</string>
+    <string name="enter_a_name">Enter a name</string>
+    <string name="play_next">Play next</string>
+    <string name="enqueue">Enqueue</string>
+    <string name="equalizer">Equalizer</string>
+    <string name="sleep_timer">Sleep timer</string>
+    <string name="theme_mode">Theme mode</string>
+    <string name="no_items_found">No items found</string>
+    <string name="set_sleep_timer">Set sleep timer</string>
+    <string name="add_to_playlist">Add to playlist</string>
+    <string name="go_to_album">Go to album</string>
+    <string name="remove_from_queue">Remove from queue</string>
+    <string name="an_error_occurred">An error has occurred</string>
+    <string name="playlist_you_might_like">Playlists you might like</string>
+    <string name="remove_from_playlist">Remove from playlist</string>
+    <string name="artist_has_no_albums">This artist didn\'t release any album</string>
+    <string name="artist_has_no_single">This artist didn\'t release any single</string>
+    <string name="not_have_alternative_version">This album doesn\'t have any alternative version</string>
+    <string name="no_results_found_category">No results found. Please try a different query or category</string>
+    <string name="enter_playlist_name">Enter the playlist name</string>
+    <string name="enter_the_lyrics">Enter the lyrics</string>
+    <string name="edit_lyrics">Edit lyrics</string>
+    <string name="search_lyrics_online">Search lyrics online</string>
+    <string name="no_browser_app_found">No browser app found!</string>
+    <string name="fetch_lyrics_again">Fetch lyrics again</string>
+    <string name="no_equalizer_app_found">No equalizer app found!</string>
+    <string name="error_occurred">An error has occurred.</string>
+    <string name="view_album">View album</string>
+    <string name="view_playlist">View playlist</string>
+    <string name="view_source_code">View the source code</string>
+    <string name="report_an_issue">Report an issue</string>
+    <string name="github_redirection_preparing">You will be redirected to GitHub</string>
+    <string name="request_feature">Request a feature or suggest an idea</string>
+    <string name="thumbnail_roundness">Thumbnail roundness</string>
+    <string name="show_song_cover">Show song cover</string>
+    <string name="history_is_empty">History is empty</string>
+    <string name="max_size">Max size</string>
+    <string name="used"> used</string>
+    <string name="use_playing_cover_as_lockscreen">Use the playing song cover as the lockscreen wallpaper</string>
+    <string name="cache_runs_out_of_space_prepare">When the cache runs out of space, the resources that haven\'t been accessed for the longest time are cleared</string>
+    <string name="personal_prefs">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="existing_data_will_be_overwritten">"Existing data will be overwritten.\n%s will automatically close itself after restoring the database."</string>
+    <string name="clear_search_history">Clear search history</string>
+    <string name="export_db_to_ext">Export the database to the external storage</string>
+    <string name="export_db_from_ext">Import the database from the external storage</string>
+    <string name="opening_url">Opening url…</string>
+    <string name="player_and_audio">Player &amp; Audio</string>
+    <string name="persistent_queue">Persistent queue</string>
+    <string name="save_and_restore_songs">Save and restore playing songs</string>
+    <string name="skip_silence">Skip silence</string>
+    <string name="skip_silence_during_playback">Skip silent parts during playback</string>
+    <string name="loudness_normalization">Loudness normalization</string>
+    <string name="loudness_to_standard_level">Lower the volume to a standard level</string>
+    <string name="equalizer_interact">Interact with the system equalizer</string>
+    <string name="equalizer_no_app_found">No equalizer app found!</string>
+    <string name="android_auto">Android Auto</string>
+    <string name="enable_android_auto_support">Enable Android Auto support</string>
+
+
+    <string name="audio_caps">AUDIO</string>
+    <string name="image_cache_caps">IMAGE CACHE</string>
+    <string name="troubleshooting_caps">TROUBLESHOOTING</string>
+    <string name="colors_caps">COLORS</string>
+    <string name="backup_caps">BACKUP</string>
+    <string name="lockscreen_caps">LOCKSCREEN</string>
+    <string name="shapes_caps">SHAPES</string>
+    <string name="song_cache_caps">SONG CACHE</string>
+    <string name="fetch_missing_data">FETCH MISSING DATA</string>
+    <string name="search_history_caps">SEARCH HISTORY</string>
+    <string name="player_caps">PLAYER</string>
+    <string name="service_lifetime_caps">SERVICE LIFETIME</string>
+    <string name="android_auto_caps">ANDROID AUTO</string>
+
+    <string name="delete_search_queries">Delete %d search queries</string>
+    <string name="lyrics_fetching_error">An error has occurred while fetching the %s lyrics</string>
+    <string name="sync_lyrics_not_available_for_song">Synchronized %syrics are not available for this song</string>
+    <string name="show_un_or_sync_lyrics">Show %ssynchronized lyrics</string>
+    <string name="provided_by_kugou">Provided by kugou.com</string>
+    <string name="more_of_author">More of %s</string>
+    <string name="cache_used">%d used %d%</string>
+    <string name="song_counter">%d songs</string>
+    <string name="hours_minutes">%dh %dm</string>
+    <string name="time_left">%d left</string>
+
+    <!--Settings with desc -->
+    <string name="service_lifetime_desc">If battery optimizations are applied, the playback notification can suddenly disappear when paused.</string>
+    <string name="service_lifetime_android_s_notification">Since Android 12, disabling battery optimizations is required for the "Invincible service" option to take effect.</string>
+    <string name="ignore_battery_optimisation">Ignore battery optimizations</string>
+    <string name="already_unrestricted">Already unrestricted</string>
+    <string name="disable_background_restrictions">Disable background restrictions</string>
+    <string name="battery_optimisation_whitelist_manually">Couldn\'t find battery optimization settings, please whitelist ViMusic manually</string>
+    <string name="invincible_service">Invincible service</string>
+    <string name="battery_optimization_not_enough">When turning off battery optimizations is not enough</string>
+
+    <!--Default short buttons -->
+    <string name="id">Id</string>
+    <string name="appearance">Appearance</string>
+    <string name="volume">Volume</string>
+    <string name="loudness">Loudness</string>
+    <string name="theme">Theme</string>
+    <string name="player">Player</string>
+    <string name="bitrate">Bitrate</string>
+    <string name="online">Online</string>
+    <string name="size">Size</string>
+    <string name="cached">Cached</string>
+    <string name="backup">Backup</string>
+    <string name="restore">Restore</string>
+    <string name="cache">Cache</string>
+    <string name="no">No</string>
+    <string name="stop">Stop</string>
+    <string name="done">Done</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="confirm">Confirm</string>
+    <string name="database">Database</string>
+    <string name="set">Set</string>
+    <string name="hide">Hide</string>
+    <string name="unknown">Unknown</string>
+    <string name="songs">Songs</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+    <string name="albums">Albums</string>
+    <string name="related_albums">Related albums</string>
+    <string name="similar_artists">Similar artists</string>
+    <string name="artists">Artists</string>
+    <string name="videos">Videos</string>
+    <string name="playlists">Playlists</string>
+    <string name="about">About</string>
+    <string name="social_caps">SOCIAL</string>
+    <string name="github">GitHub</string>
+    <string name="featured">Featured</string>
+    <string name="singles">Singles</string>
+    <string name="sync">Sync</string>
+    <string name="synced">synchronized</string>
+    <string name="overview">Overview</string>
+    <string name="library">Library</string>
+    <string name="view_all">View all</string>
+    <string name="favorites">Favorites</string>
+    <string name="offline">Offline</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="other">Other</string>
+    <string name="quick_picks">Quick picks</string>
+    <string name="new_playlist">New playlist</string>
+    <string name="other_versions">Other versions</string>
+    <!--Default short buttons end-->
+
+    <!--Confirmations -->
+    <string name="hide_song_confirmation">Do you really hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.</string>
+    <string name="sleep_timer_confirmation">Do you want to stop the sleep timer?</string>
+    <string name="playlist_delete_confirmation">Do you really want to delete this playlist?</string>
+    <!--Confirmations end-->
+</resources>

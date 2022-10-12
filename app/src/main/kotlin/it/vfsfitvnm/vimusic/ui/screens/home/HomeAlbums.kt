@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
@@ -90,7 +91,7 @@ fun HomeAlbums(
                 key = "header",
                 contentType = 0
             ) {
-                Header(title = "Albums") {
+                Header(title = stringResource(R.string.albums)) {
                     HeaderIconButton(
                         icon = R.drawable.calendar,
                         color = if (sortBy == AlbumSortBy.Year) colorPalette.text else colorPalette.textDisabled,

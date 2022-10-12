@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
@@ -93,14 +94,14 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
             ) {
                 Header(
                     title = when (builtInPlaylist) {
-                        BuiltInPlaylist.Favorites -> "Favorites"
-                        BuiltInPlaylist.Offline -> "Offline"
+                        BuiltInPlaylist.Favorites -> stringResource(R.string.favorites)
+                        BuiltInPlaylist.Offline -> stringResource(R.string.offline)
                     },
                     modifier = Modifier
                         .padding(bottom = 8.dp)
                 ) {
                     SecondaryTextButton(
-                        text = "Enqueue",
+                        text = stringResource(R.string.enqueue),
                         enabled = songs.isNotEmpty(),
                         onClick = {
                             binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))

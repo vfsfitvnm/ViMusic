@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -392,7 +393,7 @@ class MainActivity : ComponentActivity() {
         intent.data = null
         this.intent = null
 
-        Toast.makeText(this, "Opening url...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, this.getString(R.string.opening_url), Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch(Dispatchers.IO) {
             when (val path = uri.pathSegments.firstOrNull()) {

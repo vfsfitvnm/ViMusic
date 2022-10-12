@@ -14,8 +14,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.BuildConfig
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -37,18 +39,18 @@ fun About() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "About") {
+        Header(title = stringResource(R.string.about)) {
             BasicText(
                 text = "v${BuildConfig.VERSION_NAME} by vfsfitvnm",
                 style = typography.s.secondary
             )
         }
 
-        SettingsEntryGroupText(title = "SOCIAL")
+        SettingsEntryGroupText(title = stringResource(R.string.social_caps))
 
         SettingsEntry(
-            title = "GitHub",
-            text = "View the source code",
+            title = stringResource(R.string.github),
+            text = stringResource(R.string.view_source_code),
             onClick = {
                 uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic")
             }
@@ -56,19 +58,19 @@ fun About() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "TROUBLESHOOTING")
+        SettingsEntryGroupText(title = stringResource(R.string.troubleshooting_caps))
 
         SettingsEntry(
-            title = "Report an issue",
-            text = "You will be redirected to GitHub",
+            title = stringResource(R.string.report_an_issue),
+            text = stringResource(R.string.github_redirection_preparing),
             onClick = {
                 uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=bug&template=bug_report.yaml")
             }
         )
 
         SettingsEntry(
-            title = "Request a feature or suggest an idea",
-            text = "You will be redirected to GitHub",
+            title = stringResource(R.string.request_feature),
+            text = stringResource(R.string.github_redirection_preparing),
             onClick = {
                 uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
             }

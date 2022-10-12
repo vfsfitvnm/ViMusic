@@ -23,6 +23,8 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.internal
 import it.vfsfitvnm.vimusic.path
 import it.vfsfitvnm.vimusic.query
+import androidx.compose.ui.res.stringResource
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -98,16 +100,16 @@ fun DatabaseSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Database")
+        Header(title = stringResource(R.string.database))
 
-        SettingsEntryGroupText(title = "SEARCH HISTORY")
+        SettingsEntryGroupText(title = stringResource(R.string.search_history_caps))
 
         SettingsEntry(
-            title = "Clear search history",
+            title = stringResource(R.string.clear_search_history),
             text = if (queriesCount > 0) {
-                "Delete $queriesCount search queries"
+                stringResource(R.string.delete_search_queries, queriesCount)
             } else {
-                "History is empty"
+                stringResource(R.string.history_is_empty)
             },
             isEnabled = queriesCount > 0,
             onClick = {
@@ -119,13 +121,13 @@ fun DatabaseSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "BACKUP")
+        SettingsEntryGroupText(title = stringResource(R.string.backup_caps))
 
-        SettingsDescription(text = "Personal preferences (i.e. the theme mode) and the cache are excluded.")
+        SettingsDescription(text = stringResource(R.string.personal_prefs))
 
         SettingsEntry(
-            title = "Backup",
-            text = "Export the database to the external storage",
+            title = stringResource(R.string.backup),
+            text = stringResource(R.string.export_db_to_ext),
             onClick = {
                 @SuppressLint("SimpleDateFormat")
                 val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
@@ -135,13 +137,13 @@ fun DatabaseSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "RESTORE")
+        SettingsEntryGroupText(title = stringResource(R.string.restore))
 
-        ImportantSettingsDescription(text = "Existing data will be overwritten.\n${context.applicationInfo.nonLocalizedLabel} will automatically close itself after restoring the database.")
+        ImportantSettingsDescription(text = stringResource(R.string.existing_data_will_be_overwritten, context.applicationInfo.nonLocalizedLabel))
 
         SettingsEntry(
-            title = "Restore",
-            text = "Import the database from the external storage",
+            title = stringResource(R.string.restore),
+            text = stringResource(R.string.export_db_from_ext),
             onClick = {
                 restoreLauncher.launch(
                     arrayOf(

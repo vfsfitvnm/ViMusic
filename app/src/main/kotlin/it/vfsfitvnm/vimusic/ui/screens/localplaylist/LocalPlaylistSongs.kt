@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.DetailedSong
@@ -106,7 +107,7 @@ fun LocalPlaylistSongs(
 
     if (isRenaming) {
         TextFieldDialog(
-            hintText = "Enter the playlist name",
+            hintText = stringResource(R.string.enter_playlist_name),
             initialTextInput = playlistWithSongs?.playlist?.name ?: "",
             onDismiss = { isRenaming = false },
             onDone = { text ->
@@ -123,7 +124,7 @@ fun LocalPlaylistSongs(
 
     if (isDeleting) {
         ConfirmationDialog(
-            text = "Do you really want to delete this playlist?",
+            text = stringResource(R.string.playlist_delete_confirmation),
             onDismiss = { isDeleting = false },
             onConfirm = {
                 query {
@@ -153,12 +154,12 @@ fun LocalPlaylistSongs(
                 contentType = 0
             ) {
                 Header(
-                    title = playlistWithSongs?.playlist?.name ?: "Unknown",
+                    title = playlistWithSongs?.playlist?.name ?: stringResource(R.string.unknown),
                     modifier = Modifier
                         .padding(bottom = 8.dp)
                 ) {
                     SecondaryTextButton(
-                        text = "Enqueue",
+                        text = stringResource(R.string.enqueue),
                         enabled = playlistWithSongs?.songs?.isNotEmpty() == true,
                         onClick = {
                             playlistWithSongs?.songs
@@ -183,7 +184,7 @@ fun LocalPlaylistSongs(
                                     playlistWithSongs?.playlist?.browseId?.let { browseId ->
                                         MenuEntry(
                                             icon = R.drawable.sync,
-                                            text = "Sync",
+                                            text = stringResource(R.string.sync),
                                             onClick = {
                                                 menuState.hide()
                                                 transaction {
@@ -214,7 +215,7 @@ fun LocalPlaylistSongs(
 
                                     MenuEntry(
                                         icon = R.drawable.pencil,
-                                        text = "Rename",
+                                        text = stringResource(R.string.rename),
                                         onClick = {
                                             menuState.hide()
                                             isRenaming = true
@@ -223,7 +224,7 @@ fun LocalPlaylistSongs(
 
                                     MenuEntry(
                                         icon = R.drawable.trash,
-                                        text = "Delete",
+                                        text = stringResource(R.string.delete),
                                         onClick = {
                                             menuState.hide()
                                             isDeleting = true

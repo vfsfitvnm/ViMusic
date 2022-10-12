@@ -26,6 +26,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Playlist
@@ -94,7 +95,7 @@ fun PlaylistSongList(
 
     if (isImportingPlaylist) {
         TextFieldDialog(
-            hintText = "Enter the playlist name",
+            hintText = stringResource(R.string.enter_playlist_name),
             initialTextInput = playlistPage?.title ?: "",
             onDismiss = { isImportingPlaylist = false },
             onDone = { text ->
@@ -125,9 +126,9 @@ fun PlaylistSongList(
                     .shimmer()
             )
         } else {
-            Header(title = playlistPage?.title ?: "Unknown") {
+            Header(title = playlistPage?.title ?: stringResource(R.string.unknown)) {
                 SecondaryTextButton(
-                    text = "Enqueue",
+                    text = stringResource(R.string.enqueue),
                     enabled = playlistPage?.songsPage?.items?.isNotEmpty() == true,
                     onClick = {
                         playlistPage?.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->

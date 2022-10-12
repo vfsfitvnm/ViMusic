@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -83,7 +84,7 @@ fun InHistoryMediaItemMenu(
 
     if (isHiding) {
         ConfirmationDialog(
-            text = "Do you really hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.",
+            text = stringResource(R.string.hide_song_confirmation),
             onDismiss = { isHiding = false },
             onConfirm = {
                 onDismiss()
@@ -274,7 +275,8 @@ fun MediaItemMenu(
         targetState = isViewingPlaylists,
         transitionSpec = {
             val animationSpec = tween<IntOffset>(400)
-            val slideDirection = if (targetState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
+            val slideDirection =
+                if (targetState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
 
             slideIntoContainer(slideDirection, animationSpec) with
                     slideOutOfContainer(slideDirection, animationSpec)
@@ -291,7 +293,7 @@ fun MediaItemMenu(
 
             if (isCreatingNewPlaylist && onAddToPlaylist != null) {
                 TextFieldDialog(
-                    hintText = "Enter the playlist name",
+                    hintText = stringResource(R.string.enter_playlist_name),
                     onDismiss = { isCreatingNewPlaylist = false },
                     onDone = { text ->
                         onDismiss()
@@ -326,7 +328,7 @@ fun MediaItemMenu(
 
                     if (onAddToPlaylist != null) {
                         SecondaryTextButton(
-                            text = "New playlist",
+                            text = stringResource(R.string.create_new_playlist_btn),
                             onClick = { isCreatingNewPlaylist = true },
                             alternative = true
                         )
@@ -338,7 +340,10 @@ fun MediaItemMenu(
                         MenuEntry(
                             icon = R.drawable.playlist,
                             text = playlistPreview.playlist.name,
-                            secondaryText = "${playlistPreview.songCount} songs",
+                            secondaryText = stringResource(
+                                R.string.song_counter,
+                                playlistPreview.songCount
+                            ),
                             onClick = {
                                 onDismiss()
                                 onAddToPlaylist(
@@ -408,7 +413,7 @@ fun MediaItemMenu(
                 onStartRadio?.let { onStartRadio ->
                     MenuEntry(
                         icon = R.drawable.radio,
-                        text = "Start radio",
+                        text = stringResource(R.string.start_radio),
                         onClick = {
                             onDismiss()
                             onStartRadio()
@@ -419,7 +424,7 @@ fun MediaItemMenu(
                 onPlayNext?.let { onPlayNext ->
                     MenuEntry(
                         icon = R.drawable.play_skip_forward,
-                        text = "Play next",
+                        text = stringResource(R.string.play_next),
                         onClick = {
                             onDismiss()
                             onPlayNext()
@@ -430,7 +435,7 @@ fun MediaItemMenu(
                 onEnqueue?.let { onEnqueue ->
                     MenuEntry(
                         icon = R.drawable.enqueue,
-                        text = "Enqueue",
+                        text = stringResource(R.string.enqueue),
                         onClick = {
                             onDismiss()
                             onEnqueue()
@@ -441,7 +446,7 @@ fun MediaItemMenu(
                 onGoToEqualizer?.let { onGoToEqualizer ->
                     MenuEntry(
                         icon = R.drawable.equalizer,
-                        text = "Equalizer",
+                        text = stringResource(R.string.equalizer),
                         onClick = {
                             onDismiss()
                             onGoToEqualizer()
@@ -465,9 +470,9 @@ fun MediaItemMenu(
                     if (isShowingSleepTimerDialog) {
                         if (sleepTimerMillisLeft != null) {
                             ConfirmationDialog(
-                                text = "Do you want to stop the sleep timer?",
-                                cancelText = "No",
-                                confirmText = "Stop",
+                                text = stringResource(R.string.sleep_timer_confirmation),
+                                cancelText = stringResource(R.string.no),
+                                confirmText = stringResource(R.string.stop),
                                 onDismiss = {
                                     isShowingSleepTimerDialog = false
                                     onDismiss()
@@ -486,7 +491,7 @@ fun MediaItemMenu(
                                 }
 
                                 BasicText(
-                                    text = "Set sleep timer",
+                                    text = stringResource(R.string.set_sleep_timer),
                                     style = typography.s.semiBold,
                                     modifier = Modifier
                                         .padding(vertical = 8.dp, horizontal = 24.dp)
@@ -518,13 +523,13 @@ fun MediaItemMenu(
 
                                     Box(contentAlignment = Alignment.Center) {
                                         BasicText(
-                                            text = "88h 88m",
+                                            text = stringResource(R.string.hours_minutes,88,88),
                                             style = typography.s.semiBold,
                                             modifier = Modifier
                                                 .alpha(0f)
                                         )
                                         BasicText(
-                                            text = "${amount / 6}h ${(amount % 6) * 10}m",
+                                            text = stringResource(R.string.hours_minutes, amount / 6,(amount % 6) * 10),
                                             style = typography.s.semiBold
                                         )
                                     }
@@ -551,7 +556,7 @@ fun MediaItemMenu(
                                         .fillMaxWidth()
                                 ) {
                                     DialogTextButton(
-                                        text = "Cancel",
+                                        text = stringResource(R.string.cancel),
                                         onClick = {
                                             isShowingSleepTimerDialog = false
                                             onDismiss()
@@ -559,7 +564,7 @@ fun MediaItemMenu(
                                     )
 
                                     DialogTextButton(
-                                        text = "Set",
+                                        text = stringResource(R.string.set),
                                         enabled = amount > 0,
                                         primary = true,
                                         onClick = {
@@ -575,13 +580,11 @@ fun MediaItemMenu(
 
                     MenuEntry(
                         icon = R.drawable.alarm,
-                        text = "Sleep timer",
+                        text = stringResource(R.string.sleep_timer),
                         secondaryText = sleepTimerMillisLeft?.let {
-                            "${
-                                DateUtils.formatElapsedTime(
-                                    it / 1000
-                                )
-                            } left"
+                            stringResource(R.string.time_left,DateUtils.formatElapsedTime(
+                                it / 1000
+                            ))
                         },
                         onClick = {
                             isShowingSleepTimerDialog = true
@@ -592,13 +595,15 @@ fun MediaItemMenu(
                 if (onAddToPlaylist != null) {
                     MenuEntry(
                         icon = R.drawable.playlist,
-                        text = "Add to playlist",
+                        text = stringResource(R.string.add_to_playlist),
                         onClick = { isViewingPlaylists = true },
                         trailingContent = {
                             Image(
                                 painter = painterResource(R.drawable.chevron_forward),
                                 contentDescription = null,
-                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(colorPalette.textSecondary),
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                    colorPalette.textSecondary
+                                ),
                                 modifier = Modifier
                                     .size(16.dp)
                             )
@@ -610,7 +615,7 @@ fun MediaItemMenu(
                     mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
                         MenuEntry(
                             icon = R.drawable.disc,
-                            text = "Go to album",
+                            text = stringResource(R.string.go_to_album),
                             onClick = {
                                 onDismiss()
                                 onGoToAlbum(albumId)
@@ -629,7 +634,7 @@ fun MediaItemMenu(
                                             if (authorId != null) {
                                                 MenuEntry(
                                                     icon = R.drawable.person,
-                                                    text = "More of $authorName",
+                                                    text = stringResource(R.string.more_of_author, authorName),
                                                     onClick = {
                                                         onDismiss()
                                                         onGoToArtist(authorId)
@@ -644,7 +649,7 @@ fun MediaItemMenu(
                 onRemoveFromQueue?.let { onRemoveFromQueue ->
                     MenuEntry(
                         icon = R.drawable.trash,
-                        text = "Remove from queue",
+                        text = stringResource(R.string.remove_from_queue),
                         onClick = {
                             onDismiss()
                             onRemoveFromQueue()
@@ -655,7 +660,7 @@ fun MediaItemMenu(
                 onRemoveFromPlaylist?.let { onRemoveFromPlaylist ->
                     MenuEntry(
                         icon = R.drawable.trash,
-                        text = "Remove from playlist",
+                        text = stringResource(R.string.remove_from_playlist),
                         onClick = {
                             onDismiss()
                             onRemoveFromPlaylist()
@@ -666,7 +671,7 @@ fun MediaItemMenu(
                 onHideFromDatabase?.let { onHideFromDatabase ->
                     MenuEntry(
                         icon = R.drawable.trash,
-                        text = "Hide",
+                        text = stringResource(R.string.hide),
                         onClick = onHideFromDatabase
                     )
                 }

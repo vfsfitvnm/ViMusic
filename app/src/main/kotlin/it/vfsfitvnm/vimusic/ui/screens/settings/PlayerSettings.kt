@@ -21,7 +21,9 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
@@ -55,13 +57,13 @@ fun PlayerSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Player & Audio")
+        Header(title = stringResource(R.string.player_and_audio))
 
-        SettingsEntryGroupText(title = "PLAYER")
+        SettingsEntryGroupText(title = stringResource(R.string.player_caps))
 
         SwitchSettingEntry(
-            title = "Persistent queue",
-            text = "Save and restore playing songs",
+            title = stringResource(R.string.persistent_queue),
+            text = stringResource(R.string.save_and_restore_songs),
             isChecked = persistentQueue,
             onCheckedChange = {
                 persistentQueue = it
@@ -70,11 +72,11 @@ fun PlayerSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "AUDIO")
+        SettingsEntryGroupText(title = stringResource(R.string.audio_caps))
 
         SwitchSettingEntry(
-            title = "Skip silence",
-            text = "Skip silent parts during playback",
+            title = stringResource(R.string.skip_silence),
+            text = stringResource(R.string.skip_silence_during_playback),
             isChecked = skipSilence,
             onCheckedChange = {
                 skipSilence = it
@@ -82,8 +84,8 @@ fun PlayerSettings() {
         )
 
         SwitchSettingEntry(
-            title = "Loudness normalization",
-            text = "Lower the volume to a standard level",
+            title = stringResource(R.string.loudness_normalization),
+            text = stringResource(R.string.loudness_to_standard_level),
             isChecked = volumeNormalization,
             onCheckedChange = {
                 volumeNormalization = it
@@ -91,8 +93,8 @@ fun PlayerSettings() {
         )
 
         SettingsEntry(
-            title = "Equalizer",
-            text = "Interact with the system equalizer",
+            title = stringResource(R.string.equalizer),
+            text = stringResource(R.string.equalizer_interact),
             onClick = {
                 val intent =
                     Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -110,7 +112,7 @@ fun PlayerSettings() {
                 if (intent.resolveActivity(context.packageManager) != null) {
                     activityResultLauncher.launch(intent)
                 } else {
-                    Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, context.getString(R.string.equalizer_no_app_found), Toast.LENGTH_SHORT)
                         .show()
                 }
             }

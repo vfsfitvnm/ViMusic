@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
@@ -25,7 +26,7 @@ fun LocalPlaylistScreen(playlistId: Long) {
                 tabIndex = 0,
                 onTabChanged = { },
                 tabColumnContent = { Item ->
-                    Item(0, "Songs", R.drawable.musical_notes)
+                    Item(0, stringResource(R.string.songs), R.drawable.musical_notes)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.defaultStacking
 import it.vfsfitvnm.route.defaultStill
@@ -108,11 +109,11 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                 tabIndex = tabIndex,
                 onTabChanged = onTabChanged,
                 tabColumnContent = { Item ->
-                    Item(0, "Quick picks", R.drawable.sparkles)
-                    Item(1, "Songs", R.drawable.musical_notes)
-                    Item(2, "Playlists", R.drawable.playlist)
-                    Item(3, "Artists", R.drawable.person)
-                    Item(4, "Albums", R.drawable.disc)
+                    Item(0, stringResource(R.string.quick_picks), R.drawable.sparkles)
+                    Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
+                    Item(2, stringResource(R.string.playlists), R.drawable.playlist)
+                    Item(3, stringResource(R.string.artists), R.drawable.person)
+                    Item(4, stringResource(R.string.albums), R.drawable.disc)
                 },
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

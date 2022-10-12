@@ -19,6 +19,8 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
+import androidx.compose.ui.res.stringResource
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -57,18 +59,18 @@ fun AppearanceSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Appearance")
+        Header(title = stringResource(R.string.appearance))
 
-        SettingsEntryGroupText(title = "COLORS")
+        SettingsEntryGroupText(title = stringResource(R.string.colors_caps))
 
         EnumValueSelectorSettingsEntry(
-            title = "Theme",
+            title = stringResource(R.string.theme),
             selectedValue = colorPaletteName,
             onValueSelected = { colorPaletteName = it }
         )
 
         EnumValueSelectorSettingsEntry(
-            title = "Theme mode",
+            title = stringResource(R.string.theme_mode),
             selectedValue = colorPaletteMode,
             isEnabled = colorPaletteName != ColorPaletteName.PureBlack,
             onValueSelected = { colorPaletteMode = it }
@@ -76,17 +78,24 @@ fun AppearanceSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "SHAPES")
+        SettingsEntryGroupText(title = stringResource(R.string.shapes_caps))
 
         EnumValueSelectorSettingsEntry(
-            title = "Thumbnail roundness",
+            title = stringResource(R.string.thumbnail_roundness),
             selectedValue = thumbnailRoundness,
             onValueSelected = { thumbnailRoundness = it },
             trailingContent = {
                 Spacer(
                     modifier = Modifier
-                        .border(width = 1.dp, color = colorPalette.accent,  shape = thumbnailRoundness.shape())
-                        .background(color = colorPalette.background1, shape = thumbnailRoundness.shape())
+                        .border(
+                            width = 1.dp,
+                            color = colorPalette.accent,
+                            shape = thumbnailRoundness.shape()
+                        )
+                        .background(
+                            color = colorPalette.background1,
+                            shape = thumbnailRoundness.shape()
+                        )
                         .size(36.dp)
                 )
             }
@@ -94,11 +103,11 @@ fun AppearanceSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "LOCKSCREEN")
+        SettingsEntryGroupText(title = stringResource(R.string.lockscreen_caps))
 
         SwitchSettingEntry(
-            title = "Show song cover",
-            text = "Use the playing song cover as the lockscreen wallpaper",
+            title = stringResource(R.string.show_song_cover),
+            text = stringResource(R.string.use_playing_cover_as_lockscreen),
             isChecked = isShowingThumbnailInLockscreen,
             onCheckedChange = { isShowingThumbnailInLockscreen = it }
         )

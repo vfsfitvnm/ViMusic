@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.route.RouteHandler
@@ -131,7 +132,7 @@ fun ArtistScreen(browseId: String) {
                         val (colorPalette) = LocalAppearance.current
                         val context = LocalContext.current
 
-                        Header(title = artist?.name ?: "Unknown") {
+                        Header(title = artist?.name ?: stringResource(R.string.unknown)) {
                             textButton?.invoke()
 
                             Spacer(
@@ -184,11 +185,11 @@ fun ArtistScreen(browseId: String) {
                 tabIndex = tabIndex,
                 onTabChanged = onTabIndexChanged,
                 tabColumnContent = { Item ->
-                    Item(0, "Overview", R.drawable.sparkles)
-                    Item(1, "Songs", R.drawable.musical_notes)
-                    Item(2, "Albums", R.drawable.disc)
-                    Item(3, "Singles", R.drawable.disc)
-                    Item(4, "Library", R.drawable.library)
+                    Item(0, stringResource(R.string.overview), R.drawable.sparkles)
+                    Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
+                    Item(2, stringResource(R.string.albums), R.drawable.disc)
+                    Item(3, stringResource(R.string.singles), R.drawable.disc)
+                    Item(4, stringResource(R.string.library), R.drawable.library)
                 },
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
@@ -275,7 +276,7 @@ fun ArtistScreen(browseId: String) {
                             ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 headerContent = headerContent,
-                                emptyItemsText = "This artist didn't release any album",
+                                emptyItemsText = stringResource(R.string.artist_has_no_albums),
                                 itemsPageProvider = youtubeArtist?.let {
                                     ({ continuation ->
                                         continuation?.let {
@@ -325,7 +326,7 @@ fun ArtistScreen(browseId: String) {
                             ItemsPage(
                                 stateSaver = InnertubeAlbumsPageSaver,
                                 headerContent = headerContent,
-                                emptyItemsText = "This artist didn't release any single",
+                                emptyItemsText = stringResource(R.string.artist_has_no_single),
                                 itemsPageProvider = youtubeArtist?.let {
                                     ({ continuation ->
                                         continuation?.let {
