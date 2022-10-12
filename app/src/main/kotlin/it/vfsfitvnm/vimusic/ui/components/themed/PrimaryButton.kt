@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.ui.styling.primaryButton
 
 @Composable
 fun PrimaryButton(
@@ -29,7 +30,7 @@ fun PrimaryButton(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable(enabled = enabled, onClick = onClick)
-            .background(colorPalette.background2)
+            .background(colorPalette.primaryButton)
             .size(62.dp)
     ) {
         Image(

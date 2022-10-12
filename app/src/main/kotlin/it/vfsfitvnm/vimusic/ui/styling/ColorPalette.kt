@@ -113,24 +113,31 @@ private fun dynamicColorPaletteOf(hsl: FloatArray, isDark: Boolean): ColorPalett
 }
 
 inline val ColorPalette.collapsedPlayerProgressBar: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
         text
     } else {
         accent
     }
 
 inline val ColorPalette.favoritesIcon: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
         red
     } else {
         accent
     }
 
 inline val ColorPalette.shimmer: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this == PureBlackColorPalette) {
+    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
         Color(0xff838383)
     } else {
         accent
+    }
+
+inline val ColorPalette.primaryButton: Color
+    get() = if (this === PureBlackColorPalette) {
+        Color(0xFF272727)
+    } else {
+        background2
     }
 
 inline val ColorPalette.overlay: Color
