@@ -3,7 +3,6 @@ package it.vfsfitvnm.vimusic.ui.components.themed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -77,12 +76,11 @@ fun HeaderPlaceholder(
 ) {
     val (colorPalette, typography) = LocalAppearance.current
 
-    Column(
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.Center,
+    Box(
+        contentAlignment = Alignment.CenterEnd,
         modifier = modifier
             .padding(horizontal = 16.dp)
-            .height(128.dp)
+            .height(Dimensions.headerHeight)
             .fillMaxWidth()
     ) {
         Box(
