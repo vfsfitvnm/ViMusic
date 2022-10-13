@@ -1,6 +1,8 @@
 package it.vfsfitvnm.youtubemusic.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class BrowseResponse(
@@ -15,7 +17,8 @@ data class BrowseResponse(
     )
 
     @Serializable
-    data class Header(
+    data class Header @OptIn(ExperimentalSerializationApi::class) constructor(
+        @JsonNames("musicVisualHeaderRenderer")
         val musicImmersiveHeaderRenderer: MusicImmersiveHeaderRenderer?,
         val musicDetailHeaderRenderer: MusicDetailHeaderRenderer?,
     ) {
@@ -33,6 +36,7 @@ data class BrowseResponse(
             val playButton: PlayButton?,
             val startRadioButton: StartRadioButton?,
             val thumbnail: ThumbnailRenderer?,
+            val foregroundThumbnail: ThumbnailRenderer?,
             val title: Runs?
         ) {
             @Serializable

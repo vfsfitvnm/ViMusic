@@ -16,7 +16,7 @@ object ArtistSaver : Saver<Artist, List<Any?>> {
 
     override fun restore(value: List<Any?>): Artist = Artist(
         id = value[0] as String,
-        name = value[1] as String,
+        name = value[1] as String?,
         thumbnailUrl = value[2] as String?,
         info = value[3] as String?,
         timestamp = value[4] as Long?,
