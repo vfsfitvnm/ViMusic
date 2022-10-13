@@ -13,7 +13,7 @@ object Dimensions {
     val navigationRailWidth = 64.dp
     val navigationRailWidthLandscape = 128.dp
     val navigationRailIconOffset = 6.dp
-    val headerHeight = 128.dp
+    val headerHeight = 140.dp
 
     object thumbnails {
         val album = 128.dp

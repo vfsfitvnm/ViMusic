@@ -4,12 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -49,28 +48,24 @@ fun Header(
 @Composable
 fun Header(
     modifier: Modifier = Modifier,
-    titleContent: @Composable ColumnScope.() -> Unit,
+    titleContent: @Composable () -> Unit,
     actionsContent: @Composable RowScope.() -> Unit,
 ) {
-    Column(
-        horizontalAlignment = Alignment.End,
+    Box(
+        contentAlignment = Alignment.CenterEnd,
         modifier = modifier
             .padding(horizontal = 16.dp)
             .height(Dimensions.headerHeight)
             .fillMaxWidth()
     ) {
-        Spacer(
-            modifier = Modifier
-                .height(48.dp),
-        )
-
         titleContent()
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .height(48.dp),
+                .align(Alignment.BottomEnd)
+                .heightIn(min = 48.dp),
             content = actionsContent,
         )
     }
