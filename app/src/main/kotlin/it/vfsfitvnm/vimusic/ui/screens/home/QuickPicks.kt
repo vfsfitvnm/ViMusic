@@ -40,6 +40,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.savers.DetailedSongSaver
 import it.vfsfitvnm.vimusic.savers.InnertubeRelatedPageSaver
 import it.vfsfitvnm.vimusic.savers.nullableSaver
@@ -75,7 +76,6 @@ import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
 import it.vfsfitvnm.youtubemusic.requests.relatedPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalFoundationApi
@@ -98,7 +98,6 @@ fun QuickPicks(
     ) {
         Database.trending()
             .flowOn(Dispatchers.IO)
-            .filterNotNull()
             .distinctUntilChanged()
             .collect { value = it }
     }
@@ -188,6 +187,11 @@ fun QuickPicks(
                                                 NonQueuedMediaItemMenu(
                                                     onDismiss = menuState::hide,
                                                     mediaItem = song.asMediaItem,
+                                                    onRemoveFromQuickPicks = {
+                                                        query {
+                                                            Database.clearEventsFor(song.id)
+                                                        }
+                                                    }
                                                 )
                                             }
                                         },
@@ -220,7 +224,7 @@ fun QuickPicks(
                                         menuState.display {
                                             NonQueuedMediaItemMenu(
                                                 onDismiss = menuState::hide,
-                                                mediaItem = song.asMediaItem,
+                                                mediaItem = song.asMediaItem
                                             )
                                         }
                                     },

@@ -43,6 +43,13 @@ fun DatabaseSettings() {
     val context = LocalContext.current
     val (colorPalette) = LocalAppearance.current
 
+    val eventsCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
+        Database.eventsCount()
+            .flowOn(Dispatchers.IO)
+            .distinctUntilChanged()
+            .collect { value = it }
+    }
+
     val queriesCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
         Database.queriesCount()
             .flowOn(Dispatchers.IO)
@@ -100,7 +107,7 @@ fun DatabaseSettings() {
     ) {
         Header(title = "Database")
 
-        SettingsEntryGroupText(title = "SEARCH HISTORY")
+        SettingsEntryGroupText(title = "CLEANUP")
 
         SettingsEntry(
             title = "Clear search history",
@@ -110,11 +117,18 @@ fun DatabaseSettings() {
                 "History is empty"
             },
             isEnabled = queriesCount > 0,
-            onClick = {
-                query {
-                    Database.clearQueries()
-                }
-            }
+            onClick = { query(Database::clearQueries) }
+        )
+
+        SettingsEntry(
+            title = "Reset quick picks",
+            text = if (eventsCount > 0) {
+                "Delete $eventsCount playback events"
+            } else {
+                "Quick picks are cleared"
+            },
+            isEnabled = eventsCount > 0,
+            onClick = { query(Database::clearEvents) }
         )
 
         SettingsGroupSpacer()

@@ -317,6 +317,15 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
 
+    @Query("SELECT COUNT (*) FROM Event")
+    fun eventsCount(): Flow<Int>
+
+    @Query("DELETE FROM Event")
+    fun clearEvents()
+
+    @Query("DELETE FROM Event WHERE songId = :songId")
+    fun clearEventsFor(songId: String)
+
     @Insert
     fun insert(event: Event)
 

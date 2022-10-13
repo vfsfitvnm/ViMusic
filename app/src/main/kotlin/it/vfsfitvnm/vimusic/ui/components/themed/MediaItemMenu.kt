@@ -134,6 +134,7 @@ fun NonQueuedMediaItemMenu(
     modifier: Modifier = Modifier,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
+    onRemoveFromQuickPicks: (() -> Unit)? = null,
 ) {
     val binder = LocalPlayerServiceBinder.current
 
@@ -154,6 +155,7 @@ fun NonQueuedMediaItemMenu(
         onEnqueue = { binder?.player?.enqueue(mediaItem) },
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
+        onRemoveFromQuickPicks = onRemoveFromQuickPicks,
         modifier = modifier
     )
 }
@@ -192,6 +194,7 @@ fun BaseMediaItemMenu(
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
+    onRemoveFromQuickPicks: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
 
@@ -232,6 +235,7 @@ fun BaseMediaItemMenu(
 
             context.startActivity(Intent.createChooser(sendIntent, null))
         },
+        onRemoveFromQuickPicks = onRemoveFromQuickPicks,
         modifier = modifier
     )
 }
@@ -253,6 +257,7 @@ fun MediaItemMenu(
     onAddToPlaylist: ((Playlist, Int) -> Unit)? = null,
     onGoToAlbum: ((String) -> Unit)? = null,
     onGoToArtist: ((String) -> Unit)? = null,
+    onRemoveFromQuickPicks: (() -> Unit)? = null,
     onShare: () -> Unit
 ) {
     val (colorPalette) = LocalAppearance.current
@@ -668,6 +673,17 @@ fun MediaItemMenu(
                         icon = R.drawable.trash,
                         text = "Hide",
                         onClick = onHideFromDatabase
+                    )
+                }
+
+                onRemoveFromQuickPicks?.let {
+                    MenuEntry(
+                        icon = R.drawable.trash,
+                        text = "Hide from \"Quick picks\"",
+                        onClick = {
+                            onDismiss()
+                            onRemoveFromQuickPicks()
+                        }
                     )
                 }
             }
