@@ -229,6 +229,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         maybeRestorePlayerQueue()
 
         mediaSession = MediaSession(baseContext, "PlayerService")
+        mediaSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS)
         mediaSession.setCallback(SessionCallback(player))
         mediaSession.setPlaybackState(stateBuilder.build())
         mediaSession.isActive = true
