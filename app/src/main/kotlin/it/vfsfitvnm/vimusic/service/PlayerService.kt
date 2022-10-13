@@ -406,7 +406,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     .distinctUntilChanged()
                     .filterNotNull()
                     .flowOn(Dispatchers.IO)
-                    .collect { x ->
+                    .collect { loudnessDb ->
+                        val x = loudnessDb.coerceIn(-10f, 10f)
                         val x2 = x * x
                         val x3 = x2 * x
                         val x4 = x2 * x2
