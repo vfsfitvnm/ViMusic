@@ -312,6 +312,8 @@ fun QuickPicks(
                         }
                     }
                 }
+
+                Unit
             } ?: relatedPageResult?.exceptionOrNull()?.let {
                 BasicText(
                     text = "An error has occurred",
