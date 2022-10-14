@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -23,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -41,7 +43,9 @@ import it.vfsfitvnm.vimusic.ui.items.SongItemPlaceholder
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.asMediaItem
+import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
@@ -86,7 +90,11 @@ fun ArtistOverview(
                     .background(colorPalette.background0)
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(windowInsets.only(WindowInsetsSides.Vertical).asPaddingValues())
+                    .padding(
+                        windowInsets
+                            .only(WindowInsetsSides.Vertical)
+                            .asPaddingValues()
+                    )
             ) {
                 Box(
                     modifier = Modifier
@@ -248,6 +256,56 @@ fun ArtistOverview(
                                         .clickable(onClick = { onAlbumClick(album.key) })
                                 )
                             }
+                        }
+                    }
+
+                    youtubeArtistPage.description?.let { description ->
+                        val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
+
+                        Row(
+                            modifier = Modifier
+                                .padding(top = 16.dp)
+                                .padding(vertical = 16.dp, horizontal = 8.dp)
+                                .padding(endPaddingValues)
+                        ) {
+                            BasicText(
+                                text = "“",
+                                style = typography.xxl.semiBold,
+                                modifier = Modifier
+                                    .offset(y = (-8).dp)
+                                    .align(Alignment.Top)
+                            )
+
+                            BasicText(
+                                text = if (attributionsIndex == -1) {
+                                    description
+                                } else {
+                                    description.substring(0, attributionsIndex)
+                                },
+                                style = typography.xxs.secondary,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .weight(1f)
+                            )
+
+                            BasicText(
+                                text = "„",
+                                style = typography.xxl.semiBold,
+                                modifier = Modifier
+                                    .offset(y = 4.dp)
+                                    .align(Alignment.Bottom)
+                            )
+                        }
+
+                        if (attributionsIndex != -1) {
+                            BasicText(
+                                text = "From Wikipedia under Creative Commons Attribution CC-BY-SA 3.0",
+                                style = typography.xxs.color(colorPalette.textDisabled).align(TextAlign.End),
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 16.dp)
+                                    .padding(endPaddingValues)
+                            )
                         }
                     }
                 } else {

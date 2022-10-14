@@ -48,8 +48,7 @@ suspend fun Innertube.artistPage(body: BrowseBody): Result<Innertube.ArtistPage>
                 .header
                 ?.musicImmersiveHeaderRenderer
                 ?.description
-                ?.text
-                ?.substringBeforeLast("\n\nFrom Wikipedia"),
+                ?.text,
             thumbnail = (response
                 .header
                 ?.musicImmersiveHeaderRenderer
