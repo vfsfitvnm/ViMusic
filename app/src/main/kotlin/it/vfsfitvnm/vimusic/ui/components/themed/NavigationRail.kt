@@ -59,8 +59,8 @@ inline fun NavigationRail(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .padding(paddingValues)
             .verticalScroll(rememberScrollState())
+            .padding(paddingValues)
     ) {
         Box(
             contentAlignment = Alignment.TopCenter,
