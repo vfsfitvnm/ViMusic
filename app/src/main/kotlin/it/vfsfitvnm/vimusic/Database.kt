@@ -2,6 +2,7 @@ package it.vfsfitvnm.vimusic
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
 import android.os.Parcel
 import androidx.core.database.getFloatOrNull
@@ -51,6 +52,7 @@ import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.models.SongArtistMap
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.models.SortedSongPlaylistMap
+import kotlin.jvm.Throws
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -326,7 +328,8 @@ interface Database {
     @Query("DELETE FROM Event WHERE songId = :songId")
     fun clearEventsFor(songId: String)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Throws(SQLException::class)
     fun insert(event: Event)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

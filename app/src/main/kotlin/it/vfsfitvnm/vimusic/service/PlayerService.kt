@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.database.SQLException
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaMetadata
@@ -299,13 +300,15 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         if (totalPlayTimeMs > 30000) {
             query {
-                Database.insert(
-                    Event(
-                        songId = mediaItem.mediaId,
-                        timestamp = System.currentTimeMillis(),
-                        playTime = totalPlayTimeMs
+                try {
+                    Database.insert(
+                        Event(
+                            songId = mediaItem.mediaId,
+                            timestamp = System.currentTimeMillis(),
+                            playTime = totalPlayTimeMs
+                        )
                     )
-                )
+                } catch (_: SQLException) { }
             }
         }
     }
