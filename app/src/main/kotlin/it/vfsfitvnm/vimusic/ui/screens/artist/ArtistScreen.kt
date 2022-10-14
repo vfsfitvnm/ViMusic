@@ -100,7 +100,6 @@ fun ArtistScreen(browseId: String) {
                         id = browseId,
                         name = artistPage.name,
                         thumbnailUrl = artistPage.thumbnail?.url,
-                        info = artistPage.description,
                         timestamp = System.currentTimeMillis(),
                         bookmarkedAt = artist?.bookmarkedAt
                     )

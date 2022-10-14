@@ -9,7 +9,6 @@ object ArtistSaver : Saver<Artist, List<Any?>> {
         value.id,
         value.name,
         value.thumbnailUrl,
-        value.info,
         value.timestamp,
         value.bookmarkedAt,
     )
@@ -18,9 +17,8 @@ object ArtistSaver : Saver<Artist, List<Any?>> {
         id = value[0] as String,
         name = value[1] as String?,
         thumbnailUrl = value[2] as String?,
-        info = value[3] as String?,
-        timestamp = value[4] as Long?,
-        bookmarkedAt = value[5] as Long?,
+        timestamp = value[3] as Long?,
+        bookmarkedAt = value[4] as Long?,
     )
 }
 

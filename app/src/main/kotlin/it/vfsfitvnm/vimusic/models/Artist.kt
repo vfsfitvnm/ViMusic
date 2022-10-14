@@ -10,7 +10,6 @@ data class Artist(
     @PrimaryKey val id: String,
     val name: String? = null,
     val thumbnailUrl: String? = null,
-    val info: String? = null,
     val timestamp: Long? = null,
     val bookmarkedAt: Long? = null,
 )

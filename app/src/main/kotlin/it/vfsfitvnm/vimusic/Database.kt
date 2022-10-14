@@ -449,7 +449,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 21,
+    version = 22,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -469,6 +469,7 @@ interface Database {
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21, spec = DatabaseInitializer.From20To21Migration::class),
+        AutoMigration(from = 21, to = 22, spec = DatabaseInitializer.From21To22Migration::class),
     ],
 )
 @TypeConverters(Converters::class)
@@ -610,6 +611,9 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         DeleteColumn("Artist", "radioPlaylistId"),
     )
     class From20To21Migration : AutoMigrationSpec
+
+    @DeleteColumn.Entries(DeleteColumn("Artist", "info"))
+    class From21To22Migration : AutoMigrationSpec
 }
 
 @TypeConverters
