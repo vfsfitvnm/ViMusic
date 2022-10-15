@@ -29,8 +29,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -66,8 +70,6 @@ import it.vfsfitvnm.vimusic.utils.SnapLayoutInfoProvider
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
-import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.youtubemusic.Innertube
@@ -92,22 +94,25 @@ fun QuickPicks(
     val menuState = LocalMenuState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
 
-    val trending by produceSaveableState(
-        initialValue = null,
-        stateSaver = nullableSaver(DetailedSongSaver),
-    ) {
+    var trending by rememberSaveable(stateSaver = nullableSaver(DetailedSongSaver)) {
+        mutableStateOf(null)
+    }
+
+    var relatedPageResult by rememberSaveable(stateSaver = resultSaver(nullableSaver(InnertubeRelatedPageSaver))) {
+        mutableStateOf(null)
+    }
+
+    LaunchedEffect(Unit) {
         Database.trending()
             .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
-            .collect { value = it }
-    }
-
-    val relatedPageResult by produceSaveableOneShotState(
-        initialValue = null,
-        stateSaver = resultSaver(nullableSaver(InnertubeRelatedPageSaver)),
-        trending?.id
-    ) {
-        value = Innertube.relatedPage(NextBody(videoId = (trending?.id ?: "J7p4bzqLvCw")))
+            .collect { song ->
+                if ((song == null && relatedPageResult == null) || trending?.id != song?.id) {
+                    relatedPageResult =
+                        Innertube.relatedPage(NextBody(videoId = (song?.id ?: "J7p4bzqLvCw")))
+                }
+                trending = song
+            }
     }
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
@@ -124,7 +129,7 @@ fun QuickPicks(
     val snapLayoutInfoProvider = remember(quickPicksLazyGridState) {
         SnapLayoutInfoProvider(
             lazyGridState = quickPicksLazyGridState,
-            positionInLayout = {layoutSize, itemSize ->
+            positionInLayout = { layoutSize, itemSize ->
                 (layoutSize * quickPicksLazyGridItemWidthFactor / 2f - itemSize / 2f)
             }
         )
@@ -172,13 +177,13 @@ fun QuickPicks(
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 trailingContent = {
-                                      Image(
-                                          painter = painterResource(R.drawable.star),
-                                          contentDescription = null,
-                                          colorFilter = ColorFilter.tint(colorPalette.accent),
-                                          modifier = Modifier
-                                              .size(16.dp)
-                                      )
+                                    Image(
+                                        painter = painterResource(R.drawable.star),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.tint(colorPalette.accent),
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                    )
                                 },
                                 modifier = Modifier
                                     .combinedClickable(
@@ -211,7 +216,8 @@ fun QuickPicks(
                     }
 
                     items(
-                        items = related.songs?.dropLast(if (trending == null) 0 else 1) ?: emptyList(),
+                        items = related.songs?.dropLast(if (trending == null) 0 else 1)
+                            ?: emptyList(),
                         key = Innertube.SongItem::key
                     ) { song ->
                         SongItem(
