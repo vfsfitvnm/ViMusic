@@ -83,7 +83,7 @@ fun InHistoryMediaItemMenu(
 
     if (isHiding) {
         ConfirmationDialog(
-            text = "Do you really hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.",
+            text = "Do you really want to hide this song? Its playback time and cache will be wiped.\nThis action is irreversible.",
             onDismiss = { isHiding = false },
             onConfirm = {
                 onDismiss()
