@@ -7,8 +7,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,8 +25,11 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.autoSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -41,9 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
@@ -57,7 +60,6 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.produceSaveableOneShotState
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.youtubemusic.Innertube
@@ -90,13 +92,15 @@ fun OnlineSearch(
             .collect { value = it }
     }
 
-    val suggestionsResult by produceSaveableOneShotState(
-        initialValue = null,
-        stateSaver = resultSaver(autoSaver<List<String>?>()),
-        textFieldValue.text
-    ) {
+    var suggestionsResult by rememberSaveable(stateSaver = resultSaver(autoSaver<List<String>?>())) {
+        mutableStateOf(null)
+    }
+
+    LaunchedEffect(textFieldValue.text) {
         if (textFieldValue.text.isNotEmpty()) {
-            value = Innertube.searchSuggestions(SearchSuggestionsBody(input = textFieldValue.text))
+            delay(200)
+            suggestionsResult =
+                Innertube.searchSuggestions(SearchSuggestionsBody(input = textFieldValue.text))
         }
     }
 

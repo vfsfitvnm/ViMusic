@@ -7,11 +7,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.ProduceStateScope
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import kotlin.coroutines.CoroutineContext
 import kotlin.experimental.ExperimentalTypeInference
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -46,31 +44,6 @@ fun <T> produceSaveableState(
 
     LaunchedEffect(key1) {
         ProduceSaveableStateScope(state, coroutineContext).producer()
-    }
-
-    return state
-}
-
-@Composable
-fun <T> produceSaveableOneShotState(
-    initialValue: T,
-    stateSaver: Saver<T, out Any>,
-    key1: Any?,
-    @BuilderInference producer: suspend ProduceStateScope<T>.() -> Unit
-): State<T> {
-    val state = rememberSaveable(stateSaver = stateSaver) {
-        mutableStateOf(initialValue)
-    }
-
-    var produced by rememberSaveable(key1) {
-        mutableStateOf(false)
-    }
-
-    LaunchedEffect(key1) {
-        if (!produced) {
-            ProduceSaveableStateScope(state, coroutineContext).producer()
-            produced = true
-        }
     }
 
     return state

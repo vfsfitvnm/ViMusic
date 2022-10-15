@@ -6,10 +6,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -38,12 +41,11 @@ import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.asMediaItem
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.youtubemusic.Innertube
 import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
 import it.vfsfitvnm.youtubemusic.requests.albumPage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
 @ExperimentalFoundationApi
@@ -52,63 +54,61 @@ import kotlinx.coroutines.withContext
 fun AlbumScreen(browseId: String) {
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    val (tabIndex, onTabChanged) = rememberSaveable {
+    var tabIndex by rememberSaveable {
         mutableStateOf(0)
     }
 
-    val album by produceSaveableState(
-        initialValue = null,
-        stateSaver = nullableSaver(AlbumSaver),
-    ) {
-        Database
-            .album(browseId)
-            .flowOn(Dispatchers.IO)
-            .collect { value = it }
+    var album by rememberSaveable(stateSaver = nullableSaver(AlbumSaver)) {
+        mutableStateOf(null)
     }
 
-    val innertubeAlbum by produceSaveableState(
-        initialValue = null,
-        stateSaver = nullableSaver(InnertubePlaylistOrAlbumPageSaver),
-        tabIndex > 0
-    ) {
-        if (value != null || (tabIndex == 0 && withContext(Dispatchers.IO) {
-                Database.albumTimestamp(
-                    browseId
-                )
-            } != null)) return@produceSaveableState
+    var albumPage by rememberSaveable(stateSaver = nullableSaver(InnertubePlaylistOrAlbumPageSaver)) {
+        mutableStateOf(null)
+    }
 
-        withContext(Dispatchers.IO) {
-            Innertube.albumPage(BrowseBody(browseId = browseId))
-        }?.onSuccess { albumPage ->
-            value = albumPage
+    LaunchedEffect(Unit) {
+        Database
+            .album(browseId)
+            .combine(snapshotFlow { tabIndex }) { album, tabIndex -> album to tabIndex }
+            .collect { (currentAlbum, tabIndex) ->
+                album = currentAlbum
 
-            query {
-                Database.upsert(
-                    Album(
-                        id = browseId,
-                        title = albumPage.title,
-                        thumbnailUrl = albumPage.thumbnail?.url,
-                        year = albumPage.year,
-                        authorsText = albumPage.authors?.joinToString("") { it.name ?: "" },
-                        shareUrl = albumPage.url,
-                        timestamp = System.currentTimeMillis(),
-                        bookmarkedAt = album?.bookmarkedAt
-                    ),
-                    albumPage
-                        .songsPage
-                        ?.items
-                        ?.map(Innertube.SongItem::asMediaItem)
-                        ?.onEach(Database::insert)
-                        ?.mapIndexed { position, mediaItem ->
-                            SongAlbumMap(
-                                songId = mediaItem.mediaId,
-                                albumId = browseId,
-                                position = position
-                            )
-                        } ?: emptyList()
-                )
+                if (albumPage == null && (currentAlbum?.timestamp == null || tabIndex == 1)) {
+                    withContext(Dispatchers.IO) {
+                        Innertube.albumPage(BrowseBody(browseId = browseId))
+                            ?.onSuccess { currentAlbumPage ->
+                                albumPage = currentAlbumPage
+
+                                Database.upsert(
+                                    Album(
+                                        id = browseId,
+                                        title = currentAlbumPage.title,
+                                        thumbnailUrl = currentAlbumPage.thumbnail?.url,
+                                        year = currentAlbumPage.year,
+                                        authorsText = currentAlbumPage.authors
+                                            ?.joinToString("") { it.name ?: "" },
+                                        shareUrl = currentAlbumPage.url,
+                                        timestamp = System.currentTimeMillis(),
+                                        bookmarkedAt = album?.bookmarkedAt
+                                    ),
+                                    currentAlbumPage
+                                        .songsPage
+                                        ?.items
+                                        ?.map(Innertube.SongItem::asMediaItem)
+                                        ?.onEach(Database::insert)
+                                        ?.mapIndexed { position, mediaItem ->
+                                            SongAlbumMap(
+                                                songId = mediaItem.mediaId,
+                                                albumId = browseId,
+                                                position = position
+                                            )
+                                        } ?: emptyList()
+                                )
+                            }
+                    }
+
+                }
             }
-        }
     }
 
     RouteHandler(listenToGlobalEmitter = true) {
@@ -184,7 +184,7 @@ fun AlbumScreen(browseId: String) {
                 topIconButtonId = R.drawable.chevron_back,
                 onTopIconButtonClick = pop,
                 tabIndex = tabIndex,
-                onTabChanged = onTabChanged,
+                onTabChanged = { tabIndex = it },
                 tabColumnContent = { Item ->
                     Item(0, "Songs", R.drawable.musical_notes)
                     Item(1, "Other versions", R.drawable.disc)
@@ -208,11 +208,11 @@ fun AlbumScreen(browseId: String) {
                                 initialPlaceholderCount = 1,
                                 continuationPlaceholderCount = 1,
                                 emptyItemsText = "This album doesn't have any alternative version",
-                                itemsPageProvider = innertubeAlbum?.let {
+                                itemsPageProvider = albumPage?.let {
                                     ({
                                         Result.success(
                                             Innertube.ItemsPage(
-                                                items = innertubeAlbum?.otherVersions,
+                                                items = albumPage?.otherVersions,
                                                 continuation = null
                                             )
                                         )
