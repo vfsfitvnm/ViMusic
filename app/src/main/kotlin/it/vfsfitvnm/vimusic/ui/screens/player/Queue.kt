@@ -1,6 +1,9 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -28,7 +31,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -128,6 +130,8 @@ fun Queue(
 
         val rippleIndication = rememberRipple(bounded = false)
 
+        val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
+
         Column {
             Box(
                 modifier = Modifier
@@ -137,7 +141,8 @@ fun Queue(
                 ReorderingLazyColumn(
                     reorderingState = reorderingState,
                     contentPadding = windowInsets
-                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top).asPaddingValues(),
+                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                        .asPaddingValues(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .nestedScroll(layoutState.preUpPostDownNestedScrollConnection)
@@ -154,10 +159,10 @@ fun Queue(
                             thumbnailSizePx = thumbnailSizePx,
                             thumbnailSizeDp = thumbnailSizeDp,
                             onThumbnailContent = {
-                                androidx.compose.animation.AnimatedVisibility(
-                                    visible = isPlayingThisMediaItem,
-                                    enter = fadeIn(),
-                                    exit = fadeOut(),
+                                musicBarsTransition.AnimatedVisibility(
+                                    visible = { it == window.firstPeriodIndex },
+                                    enter = fadeIn(tween(800)),
+                                    exit = fadeOut(tween(800)),
                                 ) {
                                     Box(
                                         contentAlignment = Alignment.Center,
