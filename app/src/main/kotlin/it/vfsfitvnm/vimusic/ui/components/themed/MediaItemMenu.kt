@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -63,6 +64,7 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.thumbnail
 import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -363,11 +365,22 @@ fun MediaItemMenu(
                 val thumbnailSizeDp = Dimensions.thumbnails.song
                 val thumbnailSizePx = thumbnailSizeDp.px
 
-                SongItem(
-                    song = mediaItem,
-                    thumbnailSizeDp = thumbnailSizeDp,
-                    thumbnailSizePx = thumbnailSizePx,
-                    trailingContent = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(end = 12.dp)
+                ) {
+                    SongItem(
+                        thumbnailUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)?.toString(),
+                        title = mediaItem.mediaMetadata.title.toString(),
+                        authors = mediaItem.mediaMetadata.artist.toString(),
+                        duration = null,
+                        thumbnailSizeDp = thumbnailSizeDp,
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         IconButton(
                             icon = if (likedAt == null) R.drawable.heart_outline else R.drawable.heart,
                             color = colorPalette.favoritesIcon,
@@ -386,10 +399,17 @@ fun MediaItemMenu(
                                 .padding(all = 4.dp)
                                 .size(18.dp)
                         )
-                    },
-                    modifier = Modifier
-                        .clickable(onClick = onShare)
-                )
+
+                        IconButton(
+                            icon = R.drawable.share_social,
+                            color = colorPalette.text,
+                            onClick = onShare,
+                            modifier = Modifier
+                                .padding(all = 4.dp)
+                                .size(18.dp)
+                        )
+                    }
+                }
 
                 Spacer(
                     modifier = Modifier
