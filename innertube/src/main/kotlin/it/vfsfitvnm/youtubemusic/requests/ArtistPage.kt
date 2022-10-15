@@ -20,8 +20,6 @@ suspend fun Innertube.artistPage(body: BrowseBody): Result<Innertube.ArtistPage>
             mask("contents,header")
         }.body<BrowseResponse>()
 
-        println(response)
-
         fun findSectionByTitle(text: String): SectionListRenderer.Content? {
             return response
                 .contents
