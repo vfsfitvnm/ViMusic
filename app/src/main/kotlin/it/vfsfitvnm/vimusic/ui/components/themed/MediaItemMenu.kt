@@ -406,7 +406,7 @@ fun MediaItemMenu(
                             onClick = onShare,
                             modifier = Modifier
                                 .padding(all = 4.dp)
-                                .size(18.dp)
+                                .size(17.dp)
                         )
                     }
                 }
