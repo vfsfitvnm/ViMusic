@@ -58,9 +58,9 @@ import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forcePlayFromBeginning
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.bodies.BrowseBody
-import it.vfsfitvnm.youtubemusic.requests.playlistPage
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.BrowseBody
+import it.vfsfitvnm.innertube.requests.playlistPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.runBlocking

@@ -6,10 +6,10 @@ import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import it.vfsfitvnm.vimusic.models.DetailedSong
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
-import it.vfsfitvnm.youtubemusic.requests.playlistPage
-import it.vfsfitvnm.youtubemusic.utils.plus
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
+import it.vfsfitvnm.innertube.requests.playlistPage
+import it.vfsfitvnm.innertube.utils.plus
 
 val Innertube.SongItem.asMediaItem: MediaItem
     get() = MediaItem.Builder()

@@ -43,11 +43,11 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.searchResultScreenTabIndexKey
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.bodies.ContinuationBody
-import it.vfsfitvnm.youtubemusic.models.bodies.SearchBody
-import it.vfsfitvnm.youtubemusic.requests.searchPage
-import it.vfsfitvnm.youtubemusic.utils.from
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
+import it.vfsfitvnm.innertube.models.bodies.SearchBody
+import it.vfsfitvnm.innertube.requests.searchPage
+import it.vfsfitvnm.innertube.utils.from
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

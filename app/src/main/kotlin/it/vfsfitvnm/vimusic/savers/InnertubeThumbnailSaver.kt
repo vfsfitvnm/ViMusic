@@ -2,7 +2,7 @@ package it.vfsfitvnm.vimusic.savers
 
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
-import it.vfsfitvnm.youtubemusic.models.Thumbnail
+import it.vfsfitvnm.innertube.models.Thumbnail
 
 object InnertubeThumbnailSaver : Saver<Thumbnail, List<Any?>> {
     override fun SaverScope.save(value: Thumbnail) = listOf(

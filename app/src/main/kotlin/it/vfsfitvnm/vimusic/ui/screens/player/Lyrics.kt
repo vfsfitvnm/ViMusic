@@ -68,9 +68,9 @@ import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.verticalFadingEdge
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
-import it.vfsfitvnm.youtubemusic.requests.lyrics
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.NextBody
+import it.vfsfitvnm.innertube.requests.lyrics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged

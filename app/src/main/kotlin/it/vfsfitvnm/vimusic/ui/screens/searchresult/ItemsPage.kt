@@ -28,8 +28,8 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.utils.plus
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.utils.plus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

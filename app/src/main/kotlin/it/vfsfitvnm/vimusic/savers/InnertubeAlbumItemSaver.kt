@@ -2,7 +2,7 @@ package it.vfsfitvnm.vimusic.savers
 
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
-import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.innertube.Innertube
 
 object InnertubeAlbumItemSaver : Saver<Innertube.AlbumItem, List<Any?>> {
     override fun SaverScope.save(value: Innertube.AlbumItem): List<Any?> = listOf(

@@ -72,10 +72,10 @@ import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
-import it.vfsfitvnm.youtubemusic.models.bodies.NextBody
-import it.vfsfitvnm.youtubemusic.requests.relatedPage
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
+import it.vfsfitvnm.innertube.models.bodies.NextBody
+import it.vfsfitvnm.innertube.requests.relatedPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn

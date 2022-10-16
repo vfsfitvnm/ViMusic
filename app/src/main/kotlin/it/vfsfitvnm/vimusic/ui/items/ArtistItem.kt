@@ -22,7 +22,7 @@ import it.vfsfitvnm.vimusic.ui.styling.shimmer
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
-import it.vfsfitvnm.youtubemusic.Innertube
+import it.vfsfitvnm.innertube.Innertube
 
 @Composable
 fun ArtistItem(
