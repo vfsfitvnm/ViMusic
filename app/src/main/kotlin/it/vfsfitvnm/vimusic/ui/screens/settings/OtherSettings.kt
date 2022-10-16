@@ -105,6 +105,8 @@ fun OtherSettings() {
 
         SettingsEntryGroupText(title = "ANDROID AUTO")
 
+        SettingsDescription(text = "Remember to enable \"Unknown sources\" in the Developer Settings of Android Auto.")
+
         SwitchSettingEntry(
             title = "Android Auto",
             text = "Enable Android Auto support",
