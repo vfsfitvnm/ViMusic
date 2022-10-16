@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.platform.LocalContext
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.defaultStacking
 import it.vfsfitvnm.route.defaultStill
@@ -30,13 +31,14 @@ import it.vfsfitvnm.vimusic.ui.screens.searchRoute
 import it.vfsfitvnm.vimusic.ui.screens.searchresult.SearchResultScreen
 import it.vfsfitvnm.vimusic.ui.screens.settings.SettingsScreen
 import it.vfsfitvnm.vimusic.ui.screens.settingsRoute
-import it.vfsfitvnm.vimusic.utils.homeScreenTabIndexKey
-import it.vfsfitvnm.vimusic.utils.rememberPreference
+import it.vfsfitvnm.vimusic.utils.*
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
+    val context = LocalContext.current
+
     val saveableStateHolder = rememberSaveableStateHolder()
 
     RouteHandler(
@@ -88,7 +90,7 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                     pop()
                     searchResultRoute(query)
 
-                    query {
+                    if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) query {
                         Database.insert(SearchQuery(query = query))
                     }
                 },
@@ -113,7 +115,7 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                     Item(2, "Playlists", R.drawable.playlist)
                     Item(3, "Artists", R.drawable.person)
                     Item(4, "Albums", R.drawable.disc)
-                },
+                }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
