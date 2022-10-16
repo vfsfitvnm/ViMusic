@@ -58,7 +58,6 @@ import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScr
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.medium
@@ -67,6 +66,8 @@ import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.models.bodies.SearchSuggestionsBody
 import it.vfsfitvnm.innertube.requests.searchSuggestions
+import it.vfsfitvnm.vimusic.utils.pauseSearchHistoryKey
+import it.vfsfitvnm.vimusic.utils.preferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -90,10 +91,12 @@ fun OnlineSearch(
         stateSaver = listSaver(SearchQuerySaver),
         key1 = textFieldValue.text
     ) {
-        Database.queries("%${textFieldValue.text}%")
-            .flowOn(Dispatchers.IO)
-            .distinctUntilChanged { old, new -> old.size == new.size }
-            .collect { value = it }
+        if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) {
+            Database.queries("%${textFieldValue.text}%")
+                .flowOn(Dispatchers.IO)
+                .distinctUntilChanged { old, new -> old.size == new.size }
+                .collect { value = it }
+        }
     }
 
     var suggestionsResult by rememberSaveable(stateSaver = resultSaver(autoSaver<List<String>?>())) {
@@ -188,7 +191,7 @@ fun OnlineSearch(
                 )
             }
 
-            if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) items(
+            items(
                 items = history,
                 key = SearchQuery::id
             ) { searchQuery ->

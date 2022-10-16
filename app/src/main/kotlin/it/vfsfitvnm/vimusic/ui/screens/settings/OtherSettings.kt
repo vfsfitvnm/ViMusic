@@ -35,7 +35,11 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.PlayerMediaBrowserService
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.utils.*
+import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
+import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
+import it.vfsfitvnm.vimusic.utils.pauseSearchHistoryKey
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -77,10 +81,7 @@ fun OtherSettings() {
             isIgnoringBatteryOptimizations = context.isIgnoringBatteryOptimizations
         }
 
-    var pauseSearchHistory by rememberPreference(
-        pauseSearchHistoryKey,
-        false
-    )
+    var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
 
     val queriesCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
         Database.queriesCount()
@@ -109,6 +110,28 @@ fun OtherSettings() {
             text = "Enable Android Auto support",
             isChecked = isAndroidAutoEnabled,
             onCheckedChange = { isAndroidAutoEnabled = it }
+        )
+
+        SettingsGroupSpacer()
+
+        SettingsEntryGroupText(title = "SEARCH HISTORY")
+
+        SwitchSettingEntry(
+            title = "Pause search history",
+            text = "Neither save new searched queries nor show history",
+            isChecked = pauseSearchHistory,
+            onCheckedChange = { pauseSearchHistory = it }
+        )
+
+        SettingsEntry(
+            title = "Clear search history",
+            text = if (queriesCount > 0) {
+                "Delete $queriesCount search queries"
+            } else {
+                "History is empty"
+            },
+            isEnabled = queriesCount > 0,
+            onClick = { query(Database::clearQueries) }
         )
 
         SettingsGroupSpacer()
@@ -162,26 +185,6 @@ fun OtherSettings() {
             text = "When turning off battery optimizations is not enough",
             isChecked = isInvincibilityEnabled,
             onCheckedChange = { isInvincibilityEnabled = it }
-        )
-
-        SettingsEntryGroupText(title = "SEARCH HISTORY")
-
-        SwitchSettingEntry(
-            title = "Pause search history",
-            text = "Neither save new searched queries nor show already existing items in the history",
-            isChecked = pauseSearchHistory,
-            onCheckedChange = { pauseSearchHistory = it }
-        )
-
-        SettingsEntry(
-            title = "Clear search history",
-            text = if (queriesCount > 0) {
-                "Delete $queriesCount search queries"
-            } else {
-                "History is empty"
-            },
-            isEnabled = queriesCount > 0,
-            onClick = { query(Database::clearQueries) }
         )
     }
 }
