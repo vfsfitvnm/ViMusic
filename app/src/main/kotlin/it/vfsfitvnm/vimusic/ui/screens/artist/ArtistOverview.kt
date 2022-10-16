@@ -49,8 +49,8 @@ import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

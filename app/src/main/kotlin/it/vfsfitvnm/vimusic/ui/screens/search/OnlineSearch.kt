@@ -59,9 +59,14 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.*
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.bodies.SearchSuggestionsBody
-import it.vfsfitvnm.youtubemusic.requests.searchSuggestions
+import it.vfsfitvnm.vimusic.utils.align
+import it.vfsfitvnm.vimusic.utils.center
+import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.produceSaveableState
+import it.vfsfitvnm.vimusic.utils.secondary
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.SearchSuggestionsBody
+import it.vfsfitvnm.innertube.requests.searchSuggestions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged

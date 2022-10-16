@@ -67,7 +67,7 @@ import it.vfsfitvnm.vimusic.utils.seamlessPlay
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
-import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import kotlin.math.absoluteValue
 
 @ExperimentalFoundationApi

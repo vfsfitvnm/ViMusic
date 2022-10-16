@@ -2,8 +2,8 @@ package it.vfsfitvnm.vimusic.savers
 
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
-import it.vfsfitvnm.youtubemusic.Innertube
-import it.vfsfitvnm.youtubemusic.models.NavigationEndpoint
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
 
 object InnertubeBrowseInfoSaver : Saver<Innertube.Info<NavigationEndpoint.Endpoint.Browse>, List<Any?>> {
     override fun SaverScope.save(value: Innertube.Info<NavigationEndpoint.Endpoint.Browse>) = listOf(
