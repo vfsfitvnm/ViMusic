@@ -28,14 +28,14 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.system.exitProcess
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalAnimationApi
 @Composable
@@ -45,13 +45,6 @@ fun DatabaseSettings() {
 
     val eventsCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
         Database.eventsCount()
-            .flowOn(Dispatchers.IO)
-            .distinctUntilChanged()
-            .collect { value = it }
-    }
-
-    val queriesCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
-        Database.queriesCount()
             .flowOn(Dispatchers.IO)
             .distinctUntilChanged()
             .collect { value = it }
@@ -93,7 +86,6 @@ fun DatabaseSettings() {
             }
         }
 
-
     Column(
         modifier = Modifier
             .background(colorPalette.background0)
@@ -108,17 +100,6 @@ fun DatabaseSettings() {
         Header(title = "Database")
 
         SettingsEntryGroupText(title = "CLEANUP")
-
-        SettingsEntry(
-            title = "Clear search history",
-            text = if (queriesCount > 0) {
-                "Delete $queriesCount search queries"
-            } else {
-                "History is empty"
-            },
-            isEnabled = queriesCount > 0,
-            onClick = { query(Database::clearQueries) }
-        )
 
         SettingsEntry(
             title = "Reset quick picks",

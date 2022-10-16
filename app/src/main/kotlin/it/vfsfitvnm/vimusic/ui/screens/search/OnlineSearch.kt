@@ -38,6 +38,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -57,6 +58,7 @@ import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScr
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.*
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.medium
@@ -79,6 +81,8 @@ fun OnlineSearch(
     onViewPlaylist: (String) -> Unit,
     decorationBox: @Composable (@Composable () -> Unit) -> Unit
 ) {
+    val context = LocalContext.current
+
     val (colorPalette, typography) = LocalAppearance.current
 
     val history by produceSaveableState(
@@ -108,7 +112,7 @@ fun OnlineSearch(
         val isPlaylistUrl = listOf(
             "https://www.youtube.com/playlist?",
             "https://music.youtube.com/playlist?",
-            "https://m.youtube.com/playlist?",
+            "https://m.youtube.com/playlist?"
         ).any(textFieldValue.text::startsWith)
 
         if (isPlaylistUrl) textFieldValue.text.toUri().getQueryParameter("list") else null
@@ -164,7 +168,7 @@ fun OnlineSearch(
                             val isAlbum = playlistId.startsWith("OLAK5uy_")
 
                             SecondaryTextButton(
-                                text =  "View ${if (isAlbum) "album" else "playlist"}",
+                                text = "View ${if (isAlbum) "album" else "playlist"}",
                                 onClick = { onViewPlaylist(textFieldValue.text) }
                             )
                         }
@@ -176,7 +180,7 @@ fun OnlineSearch(
 
                         if (textFieldValue.text.isNotEmpty()) {
                             SecondaryTextButton(
-                                text =  "Clear",
+                                text = "Clear",
                                 onClick = { onTextFieldValueChanged(TextFieldValue()) }
                             )
                         }
@@ -184,7 +188,7 @@ fun OnlineSearch(
                 )
             }
 
-            items(
+            if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) items(
                 items = history,
                 key = SearchQuery::id
             ) { searchQuery ->
