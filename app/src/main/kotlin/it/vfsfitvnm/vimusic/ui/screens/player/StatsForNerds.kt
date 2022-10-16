@@ -26,8 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.Player
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.PlayerBody
+import it.vfsfitvnm.innertube.requests.player
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.Format
@@ -35,12 +39,9 @@ import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.overlay
+import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.rememberVolume
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.PlayerBody
-import it.vfsfitvnm.innertube.requests.player
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -70,7 +71,17 @@ fun StatsForNerds(
             Database.format(mediaId).distinctUntilChanged()
         }.collectAsState(initial = null, context = Dispatchers.IO)
 
-        val volume by rememberVolume(binder.player)
+        var volume by remember {
+            mutableStateOf(binder.player.volume)
+        }
+
+        binder.player.DisposableListener {
+            object : Player.Listener {
+                override fun onVolumeChanged(newVolume: Float) {
+                    volume = newVolume
+                }
+            }
+        }
 
         DisposableEffect(mediaId) {
             val listener = object : Cache.Listener {
@@ -193,7 +204,8 @@ fun StatsForNerds(
                             onClick = {
                                 query {
                                     runBlocking(Dispatchers.IO) {
-                                        Innertube.player(PlayerBody(videoId = mediaId))
+                                        Innertube
+                                            .player(PlayerBody(videoId = mediaId))
                                             ?.map { response ->
                                                 response.streamingData?.adaptiveFormats
                                                     ?.findLast { format ->
@@ -205,7 +217,9 @@ fun StatsForNerds(
                                                             itag = format.itag,
                                                             mimeType = format.mimeType,
                                                             bitrate = format.bitrate,
-                                                            loudnessDb = response.playerConfig?.audioConfig?.loudnessDb?.toFloat()?.plus(7),
+                                                            loudnessDb = response.playerConfig?.audioConfig?.loudnessDb
+                                                                ?.toFloat()
+                                                                ?.plus(7),
                                                             contentLength = format.contentLength,
                                                             lastModified = format.lastModified
                                                         )

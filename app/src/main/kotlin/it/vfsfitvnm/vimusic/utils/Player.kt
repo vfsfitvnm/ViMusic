@@ -5,6 +5,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 
+val Player.currentWindow: Timeline.Window?
+    get() = if (mediaItemCount == 0) null else currentTimeline.getWindow(currentMediaItemIndex, Timeline.Window())
+
 val Timeline.mediaItems: List<MediaItem>
     get() = List(windowCount) {
         getWindow(it, Timeline.Window()).mediaItem

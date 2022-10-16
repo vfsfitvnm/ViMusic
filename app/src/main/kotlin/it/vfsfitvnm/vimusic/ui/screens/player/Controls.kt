@@ -45,10 +45,10 @@ import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
+import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.forceSeekToNext
 import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
-import it.vfsfitvnm.vimusic.utils.rememberRepeatMode
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +70,17 @@ fun Controls(
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
 
-    val repeatMode by rememberRepeatMode(binder.player)
+    var repeatMode by remember {
+        mutableStateOf(binder.player.repeatMode)
+    }
+
+    binder.player.DisposableListener {
+        object : Player.Listener {
+            override fun onRepeatModeChanged(newRepeatMode: Int) {
+                repeatMode = newRepeatMode
+            }
+        }
+    }
 
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)

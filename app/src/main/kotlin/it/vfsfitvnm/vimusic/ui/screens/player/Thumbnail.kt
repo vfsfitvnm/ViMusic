@@ -17,12 +17,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -34,9 +40,8 @@ import it.vfsfitvnm.vimusic.service.VideoIdMismatchException
 import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
-import it.vfsfitvnm.vimusic.utils.rememberError
-import it.vfsfitvnm.vimusic.utils.rememberMediaItem
-import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
+import it.vfsfitvnm.vimusic.utils.currentWindow
+import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.thumbnail
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
@@ -57,17 +62,38 @@ fun Thumbnail(
         it to (it - 64.dp).px
     }
 
-    val mediaItemIndex by rememberMediaItemIndex(player)
-    val mediaItem by rememberMediaItem(player)
+    var nullableWindow by remember {
+        mutableStateOf(player.currentWindow)
+    }
 
-    val error by rememberError(player)
+    var error by remember {
+        mutableStateOf<PlaybackException?>(player.playerError)
+    }
+
+    player.DisposableListener {
+        object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                nullableWindow = player.currentWindow
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                error = player.playerError
+            }
+
+            override fun onPlayerError(playbackException: PlaybackException) {
+                error = playbackException
+            }
+        }
+    }
+
+    val window = nullableWindow ?: return
 
     AnimatedContent(
-        targetState = mediaItemIndex to mediaItem,
+        targetState = window,
         transitionSpec = {
             val duration = 500
             val slideDirection =
-                if (targetState.first > initialState.first) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
+                if (targetState.firstPeriodIndex > initialState.firstPeriodIndex) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
 
             ContentTransform(
                 targetContentEnter = slideIntoContainer(
@@ -92,9 +118,7 @@ fun Thumbnail(
             )
         },
         contentAlignment = Alignment.Center
-    ) { (_, currentMediaItem) ->
-        val currentMediaItem = currentMediaItem ?: return@AnimatedContent
-
+    ) {currentWindow ->
         Box(
             modifier = modifier
                 .aspectRatio(1f)
@@ -102,7 +126,7 @@ fun Thumbnail(
                 .size(thumbnailSizeDp)
         ) {
             AsyncImage(
-                model = currentMediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
+                model = currentWindow.mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -116,23 +140,23 @@ fun Thumbnail(
             )
 
             Lyrics(
-                mediaId = currentMediaItem.mediaId,
+                mediaId = currentWindow.mediaItem.mediaId,
                 isDisplayed = isShowingLyrics && error == null,
                 onDismiss = { onShowLyrics(false) },
                 onLyricsUpdate = { areSynchronized, mediaId, lyrics ->
                     query {
                         if (areSynchronized) {
                             if (Database.updateSynchronizedLyrics(mediaId, lyrics) == 0) {
-                                if (mediaId == currentMediaItem.mediaId) {
-                                    Database.insert(currentMediaItem) { song ->
+                                if (mediaId == currentWindow.mediaItem.mediaId) {
+                                    Database.insert(currentWindow.mediaItem) { song ->
                                         song.copy(synchronizedLyrics = lyrics)
                                     }
                                 }
                             }
                         } else {
                             if (Database.updateLyrics(mediaId, lyrics) == 0) {
-                                if (mediaId == currentMediaItem.mediaId) {
-                                    Database.insert(currentMediaItem) { song ->
+                                if (mediaId == currentWindow.mediaItem.mediaId) {
+                                    Database.insert(currentWindow.mediaItem) { song ->
                                         song.copy(lyrics = lyrics)
                                     }
                                 }
@@ -141,12 +165,12 @@ fun Thumbnail(
                     }
                 },
                 size = thumbnailSizeDp,
-                mediaMetadataProvider = currentMediaItem::mediaMetadata,
+                mediaMetadataProvider = currentWindow.mediaItem::mediaMetadata,
                 durationProvider = player::getDuration,
             )
 
             StatsForNerds(
-                mediaId = currentMediaItem.mediaId,
+                mediaId = currentWindow.mediaItem.mediaId,
                 isDisplayed = isShowingStatsForNerds && error == null,
                 onDismiss = { onShowStatsForNerds(false) }
             )

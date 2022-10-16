@@ -31,6 +31,9 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -40,6 +43,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.reordering.ReorderingLazyColumn
 import it.vfsfitvnm.reordering.animateItemPlacement
@@ -61,12 +67,12 @@ import it.vfsfitvnm.vimusic.ui.styling.Dimensions
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.px
+import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.rememberMediaItemIndex
-import it.vfsfitvnm.vimusic.utils.rememberShouldBePlaying
-import it.vfsfitvnm.vimusic.utils.rememberWindows
+import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.shuffleQueue
 import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
+import it.vfsfitvnm.vimusic.utils.windows
 import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
@@ -112,19 +118,52 @@ fun Queue(
 
         binder?.player ?: return@BottomSheet
 
+        val player = binder.player
+
         val menuState = LocalMenuState.current
 
         val thumbnailSizeDp = Dimensions.thumbnails.song
         val thumbnailSizePx = thumbnailSizeDp.px
 
-        val mediaItemIndex by rememberMediaItemIndex(binder.player)
-        val windows by rememberWindows(binder.player)
-        val shouldBePlaying by rememberShouldBePlaying(binder.player)
+        var mediaItemIndex by remember {
+            mutableStateOf(if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex)
+        }
+
+        var windows by remember {
+            mutableStateOf(player.currentTimeline.windows)
+        }
+
+        var shouldBePlaying by remember {
+            mutableStateOf(binder.player.shouldBePlaying)
+        }
+
+        player.DisposableListener {
+            object : Player.Listener {
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    mediaItemIndex =
+                        if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex
+                }
+
+                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                    windows = timeline.windows
+                    mediaItemIndex =
+                        if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex
+                }
+
+                override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                    shouldBePlaying = binder.player.shouldBePlaying
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    shouldBePlaying = binder.player.shouldBePlaying
+                }
+            }
+        }
 
         val reorderingState = rememberReorderingState(
             lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = mediaItemIndex),
             key = windows,
-            onDragEnd = binder.player::moveMediaItem,
+            onDragEnd = player::moveMediaItem,
             extraItemCount = 0
         )
 
@@ -219,13 +258,13 @@ fun Queue(
                                     onClick = {
                                         if (isPlayingThisMediaItem) {
                                             if (shouldBePlaying) {
-                                                binder.player.pause()
+                                                player.pause()
                                             } else {
-                                                binder.player.play()
+                                                player.play()
                                             }
                                         } else {
-                                            binder.player.playWhenReady = true
-                                            binder.player.seekToDefaultPosition(window.firstPeriodIndex)
+                                            player.playWhenReady = true
+                                            player.seekToDefaultPosition(window.firstPeriodIndex)
                                         }
                                     }
                                 )
@@ -266,7 +305,7 @@ fun Queue(
                         reorderingState.coroutineScope.launch {
                             reorderingState.lazyListState.smoothScrollToTop()
                         }.invokeOnCompletion {
-                            binder.player.shuffleQueue()
+                            player.shuffleQueue()
                         }
                     }
                 )

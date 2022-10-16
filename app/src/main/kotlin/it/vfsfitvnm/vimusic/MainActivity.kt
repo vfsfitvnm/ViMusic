@@ -81,7 +81,6 @@ import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
-import it.vfsfitvnm.vimusic.utils.listener
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 import it.vfsfitvnm.innertube.Innertube
@@ -366,7 +365,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    player.listener(object : Player.Listener {
+                    val listener = object : Player.Listener {
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
@@ -376,7 +375,11 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-                    })
+                    }
+
+                    player.addListener(listener)
+
+                    onDispose { player.removeListener(listener) }
                 }
             }
         }
