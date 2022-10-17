@@ -284,11 +284,10 @@ fun Queue(
                             ) {
                                 repeat(3) { index ->
                                     SongItemPlaceholder(
-                                        thumbnailSizeDp = Dimensions.thumbnails.song,
+                                        thumbnailSizeDp = thumbnailSizeDp,
                                         modifier = Modifier
                                             .alpha(1f - index * 0.125f)
                                             .fillMaxWidth()
-                                            .padding(vertical = 4.dp, horizontal = 16.dp)
                                     )
                                 }
                             }
