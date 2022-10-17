@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +34,6 @@ import it.vfsfitvnm.innertube.requests.player
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.models.Format
-import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.overlay
@@ -44,8 +42,10 @@ import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 @Composable
 fun StatsForNerds(
@@ -67,9 +67,36 @@ fun StatsForNerds(
             mutableStateOf(binder.cache.getCachedBytes(mediaId, 0, -1))
         }
 
-        val format by remember(mediaId) {
-            Database.format(mediaId).distinctUntilChanged()
-        }.collectAsState(initial = null, context = Dispatchers.IO)
+        var format by remember {
+            mutableStateOf<Format?>(null)
+        }
+
+        LaunchedEffect(mediaId) {
+            Database.format(mediaId).distinctUntilChanged().collectLatest {
+                if (it?.itag == null) {
+                    withContext(Dispatchers.IO) {
+                        delay(3000)
+                        Innertube.player(PlayerBody(videoId = mediaId))?.onSuccess { response ->
+                            response.streamingData?.highestQualityFormat?.let { format ->
+                                Database.insert(
+                                    Format(
+                                        songId = mediaId,
+                                        itag = format.itag,
+                                        mimeType = format.mimeType,
+                                        bitrate = format.bitrate,
+                                        loudnessDb = response.playerConfig?.audioConfig?.normalizedLoudnessDb,
+                                        contentLength = format.contentLength,
+                                        lastModified = format.lastModified
+                                    )
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    format = it
+                }
+            }
+        }
 
         var volume by remember {
             mutableStateOf(binder.player.volume)
@@ -193,47 +220,6 @@ fun StatsForNerds(
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                 }
-            }
-
-            if (format != null && format?.itag == null) {
-                BasicText(
-                    text = "FETCH MISSING DATA",
-                    style = typography.xxs.medium.color(colorPalette.onOverlay),
-                    modifier = Modifier
-                        .clickable(
-                            onClick = {
-                                query {
-                                    runBlocking(Dispatchers.IO) {
-                                        Innertube
-                                            .player(PlayerBody(videoId = mediaId))
-                                            ?.map { response ->
-                                                response.streamingData?.adaptiveFormats
-                                                    ?.findLast { format ->
-                                                        format.itag == 251 || format.itag == 140
-                                                    }
-                                                    ?.let { format ->
-                                                        Format(
-                                                            songId = mediaId,
-                                                            itag = format.itag,
-                                                            mimeType = format.mimeType,
-                                                            bitrate = format.bitrate,
-                                                            loudnessDb = response.playerConfig?.audioConfig?.loudnessDb
-                                                                ?.toFloat()
-                                                                ?.plus(7),
-                                                            contentLength = format.contentLength,
-                                                            lastModified = format.lastModified
-                                                        )
-                                                    }
-                                            }
-                                    }
-                                        ?.getOrNull()
-                                        ?.let(Database::insert)
-                                }
-                            }
-                        )
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .align(Alignment.BottomEnd)
-                )
             }
         }
     }

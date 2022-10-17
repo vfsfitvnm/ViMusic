@@ -284,7 +284,7 @@ interface Database {
     fun artistSongs(artistId: String): Flow<List<DetailedSong>>
 
     @Query("SELECT * FROM Format WHERE songId = :songId")
-    fun format(songId: String): Flow<Format>
+    fun format(songId: String): Flow<Format?>
 
     @Transaction
     @Query("SELECT * FROM Song JOIN Format ON id = songId WHERE contentLength IS NOT NULL AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")

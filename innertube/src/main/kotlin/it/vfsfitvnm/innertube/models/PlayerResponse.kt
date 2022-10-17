@@ -20,14 +20,21 @@ data class PlayerResponse(
     ) {
         @Serializable
         data class AudioConfig(
-            val loudnessDb: Double?
-        )
+            private val loudnessDb: Double?
+        ) {
+            // For music clients only
+            val normalizedLoudnessDb: Float?
+                get() = loudnessDb?.plus(7)?.toFloat()
+        }
     }
 
     @Serializable
     data class StreamingData(
         val adaptiveFormats: List<AdaptiveFormat>?
     ) {
+        val highestQualityFormat: AdaptiveFormat?
+            get() = adaptiveFormats?.findLast { it.itag == 251 || it.itag == 140 }
+
         @Serializable
         data class AdaptiveFormat(
             val itag: Int,

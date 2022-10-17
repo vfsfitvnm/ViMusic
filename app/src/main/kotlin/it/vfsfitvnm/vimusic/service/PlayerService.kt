@@ -666,9 +666,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                             }
 
                             when (val status = body.playabilityStatus?.status) {
-                                "OK" -> body.streamingData?.adaptiveFormats?.findLast { format ->
-                                    format.itag == 251 || format.itag == 140
-                                }?.let { format ->
+                                "OK" -> body.streamingData?.highestQualityFormat?.let { format ->
                                     val mediaItem = runBlocking(Dispatchers.Main) {
                                         player.findNextMediaItemById(videoId)
                                     }
@@ -694,8 +692,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                                                 itag = format.itag,
                                                 mimeType = format.mimeType,
                                                 bitrate = format.bitrate,
-                                                loudnessDb = body.playerConfig?.audioConfig?.loudnessDb?.toFloat()
-                                                    ?.plus(7),
+                                                loudnessDb = body.playerConfig?.audioConfig?.normalizedLoudnessDb,
                                                 contentLength = format.contentLength,
                                                 lastModified = format.lastModified
                                             )
