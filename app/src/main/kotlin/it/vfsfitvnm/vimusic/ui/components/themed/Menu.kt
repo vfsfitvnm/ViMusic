@@ -1,7 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,7 +64,7 @@ fun MenuEntry(
             .clickable(enabled = enabled, onClick = onClick)
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.4f)
-            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .padding(horizontal = 24.dp)
     ) {
         Image(
             painter = painterResource(icon),
@@ -77,6 +76,7 @@ fun MenuEntry(
 
         Column(
             modifier = Modifier
+                .padding(vertical = 16.dp)
                 .weight(1f)
         ) {
             BasicText(

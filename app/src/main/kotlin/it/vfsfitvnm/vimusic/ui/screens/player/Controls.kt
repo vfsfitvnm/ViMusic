@@ -1,6 +1,5 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
-import android.text.format.DateUtils
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
@@ -49,6 +48,7 @@ import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.forceSeekToNext
 import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
+import it.vfsfitvnm.vimusic.utils.formatAsDuration
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import kotlinx.coroutines.Dispatchers
@@ -171,8 +171,7 @@ fun Controls(
                 .fillMaxWidth()
         ) {
             BasicText(
-                text = DateUtils.formatElapsedTime((scrubbingPosition ?: position) / 1000)
-                    .removePrefix("0"),
+                text = formatAsDuration(scrubbingPosition ?: position),
                 style = typography.xxs.semiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -180,7 +179,7 @@ fun Controls(
 
             if (duration != C.TIME_UNSET) {
                 BasicText(
-                    text = DateUtils.formatElapsedTime(duration / 1000).removePrefix("0"),
+                    text = formatAsDuration(duration),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

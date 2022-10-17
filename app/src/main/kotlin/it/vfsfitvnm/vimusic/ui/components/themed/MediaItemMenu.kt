@@ -1,11 +1,11 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
 import android.content.Intent
-import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.with
 import androidx.compose.foundation.Image
@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
@@ -63,9 +65,10 @@ import it.vfsfitvnm.vimusic.utils.addNext
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.enqueue
 import it.vfsfitvnm.vimusic.utils.forcePlay
+import it.vfsfitvnm.vimusic.utils.formatAsDuration
+import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
-import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -348,10 +351,7 @@ fun MediaItemMenu(
                             secondaryText = "${playlistPreview.songCount} songs",
                             onClick = {
                                 onDismiss()
-                                onAddToPlaylist(
-                                    playlistPreview.playlist,
-                                    playlistPreview.songCount
-                                )
+                                onAddToPlaylist(playlistPreview.playlist, playlistPreview.songCount)
                             }
                         )
                     }
@@ -493,19 +493,16 @@ fun MediaItemMenu(
                                 text = "Do you want to stop the sleep timer?",
                                 cancelText = "No",
                                 confirmText = "Stop",
-                                onDismiss = {
-                                    isShowingSleepTimerDialog = false
-                                    onDismiss()
-                                },
+                                onDismiss = { isShowingSleepTimerDialog = false },
                                 onConfirm = {
                                     binder?.cancelSleepTimer()
                                     onDismiss()
                                 }
                             )
                         } else {
-                            DefaultDialog(onDismiss = {
-                                isShowingSleepTimerDialog = false
-                            }) {
+                            DefaultDialog(
+                                onDismiss = { isShowingSleepTimerDialog = false }
+                            ) {
                                 var amount by remember {
                                     mutableStateOf(1)
                                 }
@@ -577,10 +574,7 @@ fun MediaItemMenu(
                                 ) {
                                     DialogTextButton(
                                         text = "Cancel",
-                                        onClick = {
-                                            isShowingSleepTimerDialog = false
-                                            onDismiss()
-                                        }
+                                        onClick = { isShowingSleepTimerDialog = false }
                                     )
 
                                     DialogTextButton(
@@ -590,7 +584,6 @@ fun MediaItemMenu(
                                         onClick = {
                                             binder?.startSleepTimer(amount * 10 * 60 * 1000L)
                                             isShowingSleepTimerDialog = false
-                                            onDismiss()
                                         }
                                     )
                                 }
@@ -601,15 +594,18 @@ fun MediaItemMenu(
                     MenuEntry(
                         icon = R.drawable.alarm,
                         text = "Sleep timer",
-                        secondaryText = sleepTimerMillisLeft?.let {
-                            "${
-                                DateUtils.formatElapsedTime(
-                                    it / 1000
+                        onClick = { isShowingSleepTimerDialog = true },
+                        trailingContent = sleepTimerMillisLeft?.let {
+                            {
+                                BasicText(
+                                    text = "${formatAsDuration(it)} left",
+                                    style = typography.xxs.medium,
+                                    modifier = modifier
+                                        .background(color = colorPalette.background0, shape = RoundedCornerShape(16.dp))
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        .animateContentSize()
                                 )
-                            } left"
-                        },
-                        onClick = {
-                            isShowingSleepTimerDialog = true
+                            }
                         }
                     )
                 }

@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.utils
 
 import android.net.Uri
+import android.text.format.DateUtils
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
@@ -91,6 +92,8 @@ fun String?.thumbnail(size: Int): String? {
 fun Uri?.thumbnail(size: Int): Uri? {
     return toString().thumbnail(size)?.toUri()
 }
+
+fun formatAsDuration(millis: Long) = DateUtils.formatElapsedTime(millis / 1000).removePrefix("0")
 
 suspend fun Result<Innertube.PlaylistOrAlbumPage>.completed(): Result<Innertube.PlaylistOrAlbumPage>? {
     var playlistPage = getOrNull() ?: return null
