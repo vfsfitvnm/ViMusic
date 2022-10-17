@@ -47,9 +47,7 @@
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/it.vfsfitvnm.vimusic/)
 
-## Similar projects, inspirations and acknowledgments
-- [**Beatbump**](https://github.com/snuffyDev/Beatbump): Alternative YouTube Music frontend built with Svelte/SvelteKit.
-- [**music**](https://github.com/z-huang/music): A material design music player with music from YouTube/YouTube Music.
+## Acknowledgments
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
 - [**ionicons**](https://github.com/ionic-team/ionicons): Premium hand-crafted icons built by Ionic, for Ionic apps and web apps everywhere.
 
