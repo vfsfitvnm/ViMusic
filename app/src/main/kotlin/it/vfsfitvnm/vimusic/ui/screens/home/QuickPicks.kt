@@ -76,6 +76,7 @@ import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import it.vfsfitvnm.innertube.models.bodies.NextBody
 import it.vfsfitvnm.innertube.requests.relatedPage
+import it.vfsfitvnm.vimusic.utils.isLandscape
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -124,18 +125,8 @@ fun QuickPicks(
     val playlistThumbnailSizeDp = 108.dp
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
-    val quickPicksLazyGridItemWidthFactor = 0.9f
-    val quickPicksLazyGridState = rememberLazyGridState()
-    val snapLayoutInfoProvider = remember(quickPicksLazyGridState) {
-        SnapLayoutInfoProvider(
-            lazyGridState = quickPicksLazyGridState,
-            positionInLayout = { layoutSize, itemSize ->
-                (layoutSize * quickPicksLazyGridItemWidthFactor / 2f - itemSize / 2f)
-            }
-        )
-    }
-
     val scrollState = rememberScrollState()
+    val quickPicksLazyGridState = rememberLazyGridState()
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
@@ -145,6 +136,21 @@ fun QuickPicks(
         .padding(endPaddingValues)
 
     BoxWithConstraints {
+        val quickPicksLazyGridItemWidthFactor = if (isLandscape && maxWidth * 0.475f >= 320.dp) {
+            0.475f
+        } else {
+            0.9f
+        }
+
+        val snapLayoutInfoProvider = remember(quickPicksLazyGridState) {
+            SnapLayoutInfoProvider(
+                lazyGridState = quickPicksLazyGridState,
+                positionInLayout = { layoutSize, itemSize ->
+                    (layoutSize * quickPicksLazyGridItemWidthFactor / 2f - itemSize / 2f)
+                }
+            )
+        }
+
         val itemInHorizontalGridWidth = maxWidth * quickPicksLazyGridItemWidthFactor
 
         Column(
@@ -152,7 +158,11 @@ fun QuickPicks(
                 .background(colorPalette.background0)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(windowInsets.only(WindowInsetsSides.Vertical).asPaddingValues())
+                .padding(
+                    windowInsets
+                        .only(WindowInsetsSides.Vertical)
+                        .asPaddingValues()
+                )
         ) {
             Header(
                 title = "Quick picks",
