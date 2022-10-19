@@ -1,11 +1,15 @@
 package it.vfsfitvnm.vimusic.ui.screens.settings
 
+import android.os.Build
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -16,9 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -27,6 +28,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.applyFontPaddingKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid13
 import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
@@ -114,15 +116,17 @@ fun AppearanceSettings() {
             onCheckedChange = { applyFontPadding = it }
         )
 
-        SettingsGroupSpacer()
+        if (!isAtLeastAndroid13) {
+            SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "LOCKSCREEN")
+            SettingsEntryGroupText(title = "LOCKSCREEN")
 
-        SwitchSettingEntry(
-            title = "Show song cover",
-            text = "Use the playing song cover as the lockscreen wallpaper",
-            isChecked = isShowingThumbnailInLockscreen,
-            onCheckedChange = { isShowingThumbnailInLockscreen = it }
-        )
+            SwitchSettingEntry(
+                title = "Show song cover",
+                text = "Use the playing song cover as the lockscreen wallpaper",
+                isChecked = isShowingThumbnailInLockscreen,
+                onCheckedChange = { isShowingThumbnailInLockscreen = it }
+            )
+        }
     }
 }

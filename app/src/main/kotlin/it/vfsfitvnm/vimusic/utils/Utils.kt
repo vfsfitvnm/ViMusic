@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.utils
 
 import android.net.Uri
+import android.os.Build
 import android.text.format.DateUtils
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -111,3 +112,6 @@ suspend fun Result<Innertube.PlaylistOrAlbumPage>.completed(): Result<Innertube.
 
     return Result.success(playlistPage)
 }
+
+inline val isAtLeastAndroid13
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU

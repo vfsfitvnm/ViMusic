@@ -86,6 +86,7 @@ import it.vfsfitvnm.vimusic.utils.forceSeekToNext
 import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid13
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.mediaItems
@@ -310,7 +311,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                             playTime = totalPlayTimeMs
                         )
                     )
-                } catch (_: SQLException) { }
+                } catch (_: SQLException) {
+                }
             }
         }
     }
@@ -426,8 +428,18 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     }
 
     private fun maybeShowSongCoverInLockScreen() {
-        val bitmap = if (isShowingThumbnailInLockscreen) bitmapProvider.bitmap else null
-        metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, bitmap)
+        val bitmap =
+            if (isAtLeastAndroid13 || isShowingThumbnailInLockscreen) bitmapProvider.bitmap else null
+
+        metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, bitmap)
+
+        if (isAtLeastAndroid13 && player.currentMediaItemIndex == 0) {
+            metadataBuilder.putText(
+                MediaMetadata.METADATA_KEY_TITLE,
+                "${player.mediaMetadata.title} "
+            )
+        }
+
         mediaSession.setMetadata(metadataBuilder.build())
     }
 
@@ -460,21 +472,14 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     override fun onEvents(player: Player, events: Player.Events) {
         if (player.duration != C.TIME_UNSET) {
-            metadataBuilder
-                .putText(
-                    MediaMetadata.METADATA_KEY_TITLE,
-                    player.currentMediaItem?.mediaMetadata?.title
-                )
-                .putText(
-                    MediaMetadata.METADATA_KEY_ARTIST,
-                    player.currentMediaItem?.mediaMetadata?.artist
-                )
-                .putText(
-                    MediaMetadata.METADATA_KEY_ALBUM,
-                    player.currentMediaItem?.mediaMetadata?.albumTitle
-                )
-                .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
-                .build().let(mediaSession::setMetadata)
+            mediaSession.setMetadata(
+                metadataBuilder
+                    .putText(MediaMetadata.METADATA_KEY_TITLE, player.mediaMetadata.title)
+                    .putText(MediaMetadata.METADATA_KEY_ARTIST, player.mediaMetadata.artist)
+                    .putText(MediaMetadata.METADATA_KEY_ALBUM, player.mediaMetadata.albumTitle)
+                    .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
+                    .build()
+            )
         }
 
         stateBuilder
@@ -538,6 +543,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                 isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
                 maybeShowSongCoverInLockScreen()
             }
+
             trackLoopEnabledKey, queueLoopEnabledKey -> {
                 player.repeatMode = when {
                     preferences.getBoolean(trackLoopEnabledKey, false) -> Player.REPEAT_MODE_ONE
