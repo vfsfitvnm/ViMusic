@@ -1,7 +1,11 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
@@ -14,6 +18,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -37,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -69,6 +75,8 @@ import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.medium
+import it.vfsfitvnm.vimusic.utils.queueLoopEnabledKey
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.shuffleQueue
 import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
@@ -119,6 +127,8 @@ fun Queue(
         binder?.player ?: return@BottomSheet
 
         val player = binder.player
+
+        var queueLoopEnabled by rememberPreference(queueLoopEnabledKey, defaultValue = true)
 
         val menuState = LocalMenuState.current
 
@@ -340,6 +350,38 @@ fun Queue(
                         .align(Alignment.Center)
                         .size(18.dp)
                 )
+
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { queueLoopEnabled = !queueLoopEnabled }
+                        .background(colorPalette.background1)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .align(Alignment.CenterEnd)
+                        .animateContentSize()
+                ) {
+                    BasicText(
+                        text = "Queue loop ",
+                        style = typography.xxs.medium,
+                    )
+
+                    AnimatedContent(
+                        targetState = queueLoopEnabled,
+                        transitionSpec = {
+                            val slideDirection = if (targetState) AnimatedContentScope.SlideDirection.Up else AnimatedContentScope.SlideDirection.Down
+
+                            ContentTransform(
+                                targetContentEnter = slideIntoContainer(slideDirection) + fadeIn(),
+                                initialContentExit = slideOutOfContainer(slideDirection) + fadeOut(),
+                            )
+                        }
+                    ) {
+                        BasicText(
+                            text = if (it) "on" else "off",
+                            style = typography.xxs.medium,
+                        )
+                    }
+                }
             }
         }
     }

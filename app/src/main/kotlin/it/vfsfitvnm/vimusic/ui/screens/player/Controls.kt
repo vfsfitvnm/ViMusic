@@ -44,13 +44,14 @@ import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
-import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.bold
 import it.vfsfitvnm.vimusic.utils.forceSeekToNext
 import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
 import it.vfsfitvnm.vimusic.utils.formatAsDuration
+import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.trackLoopEnabledKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -70,17 +71,7 @@ fun Controls(
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
 
-    var repeatMode by remember {
-        mutableStateOf(binder.player.repeatMode)
-    }
-
-    binder.player.DisposableListener {
-        object : Player.Listener {
-            override fun onRepeatModeChanged(newRepeatMode: Int) {
-                repeatMode = newRepeatMode
-            }
-        }
-    }
+    var trackLoopEnabled by rememberPreference(trackLoopEnabledKey, defaultValue = false)
 
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
@@ -277,17 +268,8 @@ fun Controls(
 
             IconButton(
                 icon = R.drawable.infinite,
-                color = if (repeatMode == Player.REPEAT_MODE_ONE) {
-                    colorPalette.text
-                } else {
-                    colorPalette.textDisabled
-                },
-                onClick = {
-                    binder.player.repeatMode = when (binder.player.repeatMode) {
-                        Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ALL
-                        else -> Player.REPEAT_MODE_ONE
-                    }
-                },
+                color = if (trackLoopEnabled) colorPalette.text else colorPalette.textDisabled,
+                onClick = { trackLoopEnabled = !trackLoopEnabled },
                 modifier = Modifier
                     .weight(1f)
                     .size(24.dp)

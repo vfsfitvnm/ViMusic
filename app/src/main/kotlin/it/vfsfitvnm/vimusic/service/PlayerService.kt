@@ -27,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.startForegroundService
-import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
@@ -63,6 +62,10 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.mkv.MatroskaExtractor
 import androidx.media3.extractor.mp4.FragmentedMp4Extractor
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
+import it.vfsfitvnm.innertube.models.bodies.PlayerBody
+import it.vfsfitvnm.innertube.requests.player
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
@@ -88,15 +91,12 @@ import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.mediaItems
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.preferences
-import it.vfsfitvnm.vimusic.utils.repeatModeKey
+import it.vfsfitvnm.vimusic.utils.queueLoopEnabledKey
 import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.timer
+import it.vfsfitvnm.vimusic.utils.trackLoopEnabledKey
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.NavigationEndpoint
-import it.vfsfitvnm.innertube.models.bodies.PlayerBody
-import it.vfsfitvnm.innertube.requests.player
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
@@ -219,10 +219,12 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             .setUsePlatformDiagnostics(false)
             .build()
 
-        player.repeatMode = when (preferences.getInt(repeatModeKey, Player.REPEAT_MODE_ALL)) {
-            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_ONE
-            else -> Player.REPEAT_MODE_ALL
+        player.repeatMode = when {
+            preferences.getBoolean(trackLoopEnabledKey, false) -> Player.REPEAT_MODE_ONE
+            preferences.getBoolean(queueLoopEnabledKey, true) -> Player.REPEAT_MODE_ALL
+            else -> Player.REPEAT_MODE_OFF
         }
+
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.addListener(this)
         player.addAnalyticsListener(PlaybackStatsListener(false, this))
@@ -456,10 +458,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             else -> PlaybackState.STATE_NONE
         }
 
-    override fun onRepeatModeChanged(repeatMode: Int) {
-        preferences.edit { putInt(repeatModeKey, repeatMode) }
-    }
-
     override fun onEvents(player: Player, events: Player.Events) {
         if (player.duration != C.TIME_UNSET) {
             metadataBuilder
@@ -539,6 +537,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             isShowingThumbnailInLockscreenKey -> {
                 isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
                 maybeShowSongCoverInLockScreen()
+            }
+            trackLoopEnabledKey, queueLoopEnabledKey -> {
+                player.repeatMode = when {
+                    preferences.getBoolean(trackLoopEnabledKey, false) -> Player.REPEAT_MODE_ONE
+                    preferences.getBoolean(queueLoopEnabledKey, true) -> Player.REPEAT_MODE_ALL
+                    else -> Player.REPEAT_MODE_OFF
+                }
             }
         }
     }
