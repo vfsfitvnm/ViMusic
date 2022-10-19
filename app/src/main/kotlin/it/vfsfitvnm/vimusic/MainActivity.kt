@@ -57,6 +57,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.BrowseBody
+import it.vfsfitvnm.innertube.requests.playlistPage
+import it.vfsfitvnm.innertube.requests.song
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -75,6 +79,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.colorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.dynamicColorPaletteOf
 import it.vfsfitvnm.vimusic.ui.styling.typographyOf
+import it.vfsfitvnm.vimusic.utils.applyFontPaddingKey
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
@@ -83,10 +88,7 @@ import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.BrowseBody
-import it.vfsfitvnm.innertube.requests.playlistPage
-import it.vfsfitvnm.innertube.requests.song
+import it.vfsfitvnm.vimusic.utils.useSystemFontKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterNotNull
@@ -141,6 +143,9 @@ class MainActivity : ComponentActivity() {
                     val thumbnailRoundness =
                         getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
+                    val useSystemFont = getBoolean(useSystemFontKey, false)
+                    val applyFontPadding = getBoolean(applyFontPaddingKey, false)
+
                     val colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, isSystemInDarkTheme)
 
@@ -149,7 +154,7 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(
                         Appearance(
                             colorPalette = colorPalette,
-                            typography = typographyOf(colorPalette.text),
+                            typography = typographyOf(colorPalette.text, useSystemFont, applyFontPadding),
                             thumbnailShape = thumbnailRoundness.shape()
                         )
                     )
@@ -176,7 +181,7 @@ class MainActivity : ComponentActivity() {
 
                             appearance = appearance.copy(
                                 colorPalette = colorPalette,
-                                typography = typographyOf(colorPalette.text)
+                                typography = appearance.typography.copy(colorPalette.text)
                             )
 
                             return@setBitmapListener
@@ -189,7 +194,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 appearance = appearance.copy(
                                     colorPalette = it,
-                                    typography = typographyOf(it.text)
+                                    typography = appearance.typography.copy(it.text)
                                 )
                             }
                         }
@@ -228,7 +233,7 @@ class MainActivity : ComponentActivity() {
 
                                     appearance = appearance.copy(
                                         colorPalette = colorPalette,
-                                        typography = typographyOf(colorPalette.text),
+                                        typography = appearance.typography.copy(colorPalette.text),
                                     )
                                 }
                             }
@@ -239,6 +244,15 @@ class MainActivity : ComponentActivity() {
 
                                 appearance = appearance.copy(
                                     thumbnailShape = thumbnailRoundness.shape()
+                                )
+                            }
+
+                            useSystemFontKey, applyFontPaddingKey -> {
+                                val useSystemFont = sharedPreferences.getBoolean(useSystemFontKey, false)
+                                val applyFontPadding = sharedPreferences.getBoolean(applyFontPaddingKey, false)
+
+                                appearance = appearance.copy(
+                                    typography = typographyOf(appearance.colorPalette.text, useSystemFont, applyFontPadding),
                                 )
                             }
                         }

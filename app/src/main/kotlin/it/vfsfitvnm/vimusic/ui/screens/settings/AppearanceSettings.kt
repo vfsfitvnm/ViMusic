@@ -24,11 +24,13 @@ import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.applyFontPaddingKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteModeKey
 import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
+import it.vfsfitvnm.vimusic.utils.useSystemFontKey
 
 @ExperimentalAnimationApi
 @Composable
@@ -41,6 +43,8 @@ fun AppearanceSettings() {
         thumbnailRoundnessKey,
         ThumbnailRoundness.Light
     )
+    var useSystemFont by rememberPreference(useSystemFontKey, false)
+    var applyFontPadding by rememberPreference(applyFontPaddingKey, false)
     var isShowingThumbnailInLockscreen by rememberPreference(
         isShowingThumbnailInLockscreenKey,
         false
@@ -90,6 +94,24 @@ fun AppearanceSettings() {
                         .size(36.dp)
                 )
             }
+        )
+
+        SettingsGroupSpacer()
+
+        SettingsEntryGroupText(title = "TEXT")
+
+        SwitchSettingEntry(
+            title = "Use system font",
+            text = "Use the font applied by the system",
+            isChecked = useSystemFont,
+            onCheckedChange = { useSystemFont = it }
+        )
+
+        SwitchSettingEntry(
+            title = "Apply font padding",
+            text = "Add spacing around texts",
+            isChecked = applyFontPadding,
+            onCheckedChange = { applyFontPadding = it }
         )
 
         SettingsGroupSpacer()
