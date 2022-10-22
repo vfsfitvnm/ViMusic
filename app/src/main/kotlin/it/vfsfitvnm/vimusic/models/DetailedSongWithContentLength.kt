@@ -8,7 +8,7 @@ class DetailedSongWithContentLength(
     id: String,
     title: String,
     artistsText: String? = null,
-    durationText: String,
+    durationText: String?,
     thumbnailUrl: String?,
     totalPlayTimeMs: Long = 0,
     albumId: String?,
