@@ -19,6 +19,7 @@
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
+        android:banner="@mipmap/ic_banner"
         android:configChanges="colorMode|density|fontScale|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher_round"
@@ -37,6 +38,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
 
             <intent-filter>
