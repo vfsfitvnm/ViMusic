@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.service
 
 import android.os.Binder as AndroidBinder
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -14,6 +15,9 @@ import android.content.res.Configuration
 import android.database.SQLException
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.media.MediaMetadata
 import android.media.audiofx.AudioEffect
 import android.media.session.MediaSession
@@ -87,12 +91,14 @@ import it.vfsfitvnm.vimusic.utils.forceSeekToPrevious
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid13
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.mediaItems
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.queueLoopEnabledKey
+import it.vfsfitvnm.vimusic.utils.resumePlaybackWhenDeviceConnectedKey
 import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.timer
@@ -147,6 +153,9 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     private var isPersistentQueueEnabled = false
     private var isShowingThumbnailInLockscreen = true
     override var isInvincibilityEnabled = false
+
+    private var audioManager: AudioManager? = null
+    private var audioDeviceCallback: AudioDeviceCallback? = null
 
     private val binder = Binder()
 
@@ -248,6 +257,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         }
 
         registerReceiver(notificationActionReceiver, filter)
+
+        maybeResumePlaybackWhenDeviceConnected()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -443,6 +454,42 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         mediaSession.setMetadata(metadataBuilder.build())
     }
 
+    @SuppressLint("NewApi")
+    private fun maybeResumePlaybackWhenDeviceConnected() {
+        if (!isAtLeastAndroid6) return
+
+        if (preferences.getBoolean(resumePlaybackWhenDeviceConnectedKey, false)) {
+            if (audioManager == null) {
+                audioManager = getSystemService(AUDIO_SERVICE) as AudioManager?
+            }
+
+            audioDeviceCallback = object : AudioDeviceCallback() {
+                private fun canPlayMusic(audioDeviceInfo: AudioDeviceInfo): Boolean {
+                    if (!audioDeviceInfo.isSink) return false
+
+                    return audioDeviceInfo.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_HEADSET
+                }
+
+                override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
+                    if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
+                        player.play()
+                    }
+                }
+
+                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
+            }
+
+            audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)
+
+        } else {
+            audioManager?.unregisterAudioDeviceCallback(audioDeviceCallback)
+            audioDeviceCallback = null
+        }
+    }
+
     private fun sendOpenEqualizerIntent() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
@@ -534,6 +581,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
                 maybeNormalizeVolume()
             }
+
+            resumePlaybackWhenDeviceConnectedKey -> maybeResumePlaybackWhenDeviceConnected()
 
             isInvincibilityEnabledKey -> isInvincibilityEnabled =
                 sharedPreferences.getBoolean(key, isInvincibilityEnabled)
@@ -868,6 +917,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     private class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            println(intent.action)
             when (intent.action) {
                 Action.pause.value -> player.pause()
                 Action.play.value -> player.play()

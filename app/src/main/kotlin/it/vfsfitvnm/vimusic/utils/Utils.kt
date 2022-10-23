@@ -113,5 +113,8 @@ suspend fun Result<Innertube.PlaylistOrAlbumPage>.completed(): Result<Innertube.
     return Result.success(playlistPage)
 }
 
+inline val isAtLeastAndroid6
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+
 inline val isAtLeastAndroid13
     get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU

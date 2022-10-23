@@ -24,8 +24,11 @@ import androidx.compose.foundation.layout.only
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid13
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
 import it.vfsfitvnm.vimusic.utils.persistentQueueKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
+import it.vfsfitvnm.vimusic.utils.resumePlaybackWhenDeviceConnectedKey
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
 
@@ -37,6 +40,7 @@ fun PlayerSettings() {
     val binder = LocalPlayerServiceBinder.current
 
     var persistentQueue by rememberPreference(persistentQueueKey, false)
+    var resumePlaybackWhenDeviceConnected by rememberPreference(resumePlaybackWhenDeviceConnectedKey, false)
     var skipSilence by rememberPreference(skipSilenceKey, false)
     var volumeNormalization by rememberPreference(volumeNormalizationKey, false)
 
@@ -67,6 +71,17 @@ fun PlayerSettings() {
                 persistentQueue = it
             }
         )
+
+        if (isAtLeastAndroid6) {
+            SwitchSettingEntry(
+                title = "Resume playback",
+                text = "When a wired or bluetooth device is connected",
+                isChecked = resumePlaybackWhenDeviceConnected,
+                onCheckedChange = {
+                    resumePlaybackWhenDeviceConnected = it
+                }
+            )
+        }
 
         SettingsGroupSpacer()
 
