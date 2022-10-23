@@ -1,9 +1,9 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import android.widget.Toast
-import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -70,6 +70,7 @@ import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.thumbnail
+import it.vfsfitvnm.vimusic.utils.toast
 import kotlin.math.absoluteValue
 
 @ExperimentalFoundationApi
@@ -382,7 +383,9 @@ private fun PlayerMenu(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
-    val resultRegistryOwner = LocalActivityResultRegistryOwner.current
+
+    val activityResultLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
     BaseMediaItemMenu(
         mediaItem = mediaItem,
@@ -392,19 +395,16 @@ private fun PlayerMenu(
             binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
         },
         onGoToEqualizer = {
-            val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder.player.audioSessionId)
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-            }
-
-            if (intent.resolveActivity(context.packageManager) != null) {
-                val contract = ActivityResultContracts.StartActivityForResult()
-
-                resultRegistryOwner?.activityResultRegistry
-                    ?.register("", contract) {}?.launch(intent)
-            } else {
-                Toast.makeText(context, "No equalizer app found!", Toast.LENGTH_SHORT).show()
+            try {
+                activityResultLauncher.launch(
+                    Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder.player.audioSessionId)
+                        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                    }
+                )
+            } catch (e: ActivityNotFoundException) {
+                context.toast("Couldn't find an application to equalize audio")
             }
         },
         onShowSleepTimer = {},

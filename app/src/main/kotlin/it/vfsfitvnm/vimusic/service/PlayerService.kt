@@ -24,7 +24,6 @@ import android.media.audiofx.AudioEffect
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.text.format.DateUtils
 import androidx.compose.runtime.getValue
@@ -93,6 +92,7 @@ import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid13
 import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid8
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.isShowingThumbnailInLockscreenKey
 import it.vfsfitvnm.vimusic.utils.mediaItems
@@ -659,7 +659,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         val mediaMetadata = player.mediaMetadata
 
-        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val builder = if (isAtLeastAndroid8) {
             Notification.Builder(applicationContext, NotificationChannelId)
         } else {
             Notification.Builder(applicationContext)
@@ -706,7 +706,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     private fun createNotificationChannel() {
         notificationManager = getSystemService()
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (!isAtLeastAndroid8) return
 
         notificationManager?.run {
             if (getNotificationChannel(NotificationChannelId) == null) {
@@ -987,7 +987,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                 this@Context,
                 100,
                 Intent(value).setPackage(packageName),
-                PendingIntent.FLAG_UPDATE_CURRENT.or(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+                PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
             )
 
         companion object {

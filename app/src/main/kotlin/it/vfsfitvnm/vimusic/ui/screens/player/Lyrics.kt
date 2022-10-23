@@ -1,8 +1,8 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
 import android.app.SearchManager
+import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -45,6 +45,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.NextBody
+import it.vfsfitvnm.innertube.requests.lyrics
 import it.vfsfitvnm.kugou.KuGou
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
@@ -67,10 +70,8 @@ import it.vfsfitvnm.vimusic.utils.isShowingSynchronizedLyricsKey
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
+import it.vfsfitvnm.vimusic.utils.toast
 import it.vfsfitvnm.vimusic.utils.verticalFadingEdge
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.NextBody
-import it.vfsfitvnm.innertube.requests.lyrics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -327,24 +328,17 @@ fun Lyrics(
                                             menuState.hide()
                                             val mediaMetadata = mediaMetadataProvider()
 
-                                            val intent =
-                                                Intent(Intent.ACTION_WEB_SEARCH).apply {
-                                                    putExtra(
-                                                        SearchManager.QUERY,
-                                                        "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
-                                                    )
-                                                }
-
-                                            if (intent.resolveActivity(context.packageManager) != null) {
-                                                context.startActivity(intent)
-                                            } else {
-                                                Toast
-                                                    .makeText(
-                                                        context,
-                                                        "No browser app found!",
-                                                        Toast.LENGTH_SHORT
-                                                    )
-                                                    .show()
+                                            try {
+                                                context.startActivity(
+                                                    Intent(Intent.ACTION_WEB_SEARCH).apply {
+                                                        putExtra(
+                                                            SearchManager.QUERY,
+                                                            "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
+                                                        )
+                                                    }
+                                                )
+                                            } catch (e: ActivityNotFoundException) {
+                                                context.toast("Couldn't find an application to browse the Internet")
                                             }
                                         }
                                     )

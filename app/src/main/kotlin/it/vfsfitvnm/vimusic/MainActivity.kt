@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.graphics.Bitmap
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.widget.Toast
@@ -86,6 +85,8 @@ import it.vfsfitvnm.vimusic.utils.colorPaletteNameKey
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
+import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid8
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 import it.vfsfitvnm.vimusic.utils.useSystemFontKey
@@ -453,12 +454,12 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightNavigationBars = !isDark
         }
 
-        if (Build.VERSION.SDK_INT < 23) {
+        if (!isAtLeastAndroid6) {
             window.statusBarColor =
                 (if (isDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
         }
 
-        if (Build.VERSION.SDK_INT < 26) {
+        if (!isAtLeastAndroid8) {
             window.navigationBarColor =
                 (if (isDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
         }

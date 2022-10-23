@@ -5,8 +5,8 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.PowerManager
+import android.widget.Toast
 import androidx.core.content.getSystemService
 
 inline fun <reified T> Context.intent(): Intent =
@@ -14,7 +14,7 @@ inline fun <reified T> Context.intent(): Intent =
 
 inline fun <reified T : BroadcastReceiver> Context.broadCastPendingIntent(
     requestCode: Int = 0,
-    flags: Int = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0,
+    flags: Int = if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0,
 ): PendingIntent =
     PendingIntent.getBroadcast(this, requestCode, intent<T>(), flags)
 
@@ -27,12 +27,14 @@ inline fun <reified T : Activity> Context.activityPendingIntent(
         this,
         requestCode,
         intent<T>().apply(block),
-        (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0) or flags
+        (if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0) or flags
     )
 
 val Context.isIgnoringBatteryOptimizations: Boolean
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    get() = if (isAtLeastAndroid6) {
         getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) ?: true
     } else {
         true
     }
+
+fun Context.toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

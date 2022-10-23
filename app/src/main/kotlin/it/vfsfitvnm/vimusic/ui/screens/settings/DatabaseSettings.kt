@@ -1,6 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -28,14 +29,15 @@ import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
+import it.vfsfitvnm.vimusic.utils.toast
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.system.exitProcess
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalAnimationApi
 @Composable
@@ -124,7 +126,12 @@ fun DatabaseSettings() {
             onClick = {
                 @SuppressLint("SimpleDateFormat")
                 val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
+
+                try {
+                    backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
+                } catch (e: ActivityNotFoundException) {
+                    context.toast("Couldn't find an application to create documents")
+                }
             }
         )
 
@@ -138,13 +145,11 @@ fun DatabaseSettings() {
             title = "Restore",
             text = "Import the database from the external storage",
             onClick = {
-                restoreLauncher.launch(
-                    arrayOf(
-                        "application/x-sqlite3",
-                        "application/vnd.sqlite3",
-                        "application/octet-stream"
-                    )
-                )
+                try {
+                    restoreLauncher.launch(arrayOf("application/vnd.sqlite3"))
+                } catch (e: ActivityNotFoundException) {
+                    context.toast("Couldn't find an application to open documents")
+                }
             }
         )
     }

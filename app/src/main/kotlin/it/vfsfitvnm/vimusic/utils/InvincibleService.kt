@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Binder
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 
@@ -28,7 +27,7 @@ abstract class InvincibleService : Service() {
     private var invincibility: Invincibility? = null
 
     private val isAllowedToStartForegroundServices: Boolean
-        get() = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || isIgnoringBatteryOptimizations
+        get() = !isAtLeastAndroid12 || isIgnoringBatteryOptimizations
 
     override fun onBind(intent: Intent?): Binder? {
         invincibility?.stop()
