@@ -18,6 +18,7 @@ import android.graphics.Color
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.media.MediaDescription
 import android.media.MediaMetadata
 import android.media.audiofx.AudioEffect
 import android.media.session.MediaSession
@@ -338,6 +339,51 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         } else if (mediaItem.mediaMetadata.artworkUri == bitmapProvider.lastUri) {
             bitmapProvider.listener?.invoke(bitmapProvider.lastBitmap)
         }
+
+        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK) {
+            updateMediaSessionQueue(player.currentTimeline)
+        }
+    }
+
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
+            updateMediaSessionQueue(timeline)
+        }
+    }
+
+    private fun updateMediaSessionQueue(timeline: Timeline) {
+        val builder = MediaDescription.Builder()
+
+        val currentMediaItemIndex = player.currentMediaItemIndex
+        val lastIndex = timeline.windowCount - 1
+        var startIndex = currentMediaItemIndex - 7
+        var endIndex = currentMediaItemIndex + 7
+
+        if (startIndex < 0) {
+            endIndex -= startIndex
+        }
+
+        if (endIndex > lastIndex) {
+            startIndex -= (endIndex - lastIndex)
+            endIndex = lastIndex
+        }
+
+        startIndex = startIndex.coerceAtLeast(0)
+
+        mediaSession.setQueue(
+            List(endIndex - startIndex + 1) { index ->
+                val mediaItem = timeline.getWindow(index + startIndex, Timeline.Window()).mediaItem
+                MediaSession.QueueItem(
+                    builder
+                        .setMediaId(mediaItem.mediaId)
+                        .setTitle(mediaItem.mediaMetadata.title)
+                        .setSubtitle(mediaItem.mediaMetadata.artist)
+                        .setIconUri(mediaItem.mediaMetadata.artworkUri)
+                        .build(),
+                    index.toLong()
+                )
+            }
+        )
     }
 
     private fun maybeRecoverPlaybackError() {
