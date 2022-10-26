@@ -53,11 +53,11 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import com.valentinilk.shimmer.shimmer
-import it.vfsfitvnm.reordering.ReorderingLazyColumn
-import it.vfsfitvnm.reordering.animateItemPlacement
-import it.vfsfitvnm.reordering.draggedItem
-import it.vfsfitvnm.reordering.rememberReorderingState
-import it.vfsfitvnm.reordering.reorder
+import it.vfsfitvnm.compose.reordering.ReorderingLazyColumn
+import it.vfsfitvnm.compose.reordering.animateItemPlacement
+import it.vfsfitvnm.compose.reordering.draggedItem
+import it.vfsfitvnm.compose.reordering.rememberReorderingState
+import it.vfsfitvnm.compose.reordering.reorder
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet

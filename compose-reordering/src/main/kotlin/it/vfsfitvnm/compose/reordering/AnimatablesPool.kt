@@ -1,4 +1,4 @@
-package it.vfsfitvnm.reordering
+package it.vfsfitvnm.compose.reordering
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector

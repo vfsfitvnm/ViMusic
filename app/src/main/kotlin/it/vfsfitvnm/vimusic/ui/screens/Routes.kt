@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
-import it.vfsfitvnm.route.Route0
-import it.vfsfitvnm.route.Route1
-import it.vfsfitvnm.route.RouteHandlerScope
+import it.vfsfitvnm.compose.routing.Route0
+import it.vfsfitvnm.compose.routing.Route1
+import it.vfsfitvnm.compose.routing.RouteHandlerScope
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.ui.screens.album.AlbumScreen
 import it.vfsfitvnm.vimusic.ui.screens.artist.ArtistScreen

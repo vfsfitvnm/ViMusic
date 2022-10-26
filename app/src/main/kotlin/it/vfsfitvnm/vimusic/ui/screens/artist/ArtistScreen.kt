@@ -25,7 +25,7 @@ import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
 import it.vfsfitvnm.innertube.requests.artistPage
 import it.vfsfitvnm.innertube.requests.itemsPage
 import it.vfsfitvnm.innertube.utils.from
-import it.vfsfitvnm.route.RouteHandler
+import it.vfsfitvnm.compose.routing.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R

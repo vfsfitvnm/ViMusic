@@ -47,7 +47,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import it.vfsfitvnm.innertube.models.NavigationEndpoint
-import it.vfsfitvnm.route.OnGlobalRoute
+import it.vfsfitvnm.compose.routing.OnGlobalRoute
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.service.PlayerService

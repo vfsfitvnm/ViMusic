@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package it.vfsfitvnm.route
+package it.vfsfitvnm.compose.routing
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable

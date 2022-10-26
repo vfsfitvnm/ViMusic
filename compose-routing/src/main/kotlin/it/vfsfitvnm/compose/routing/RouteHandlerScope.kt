@@ -1,4 +1,4 @@
-package it.vfsfitvnm.route
+package it.vfsfitvnm.compose.routing
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable

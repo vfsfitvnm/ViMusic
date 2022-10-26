@@ -1,4 +1,4 @@
-package it.vfsfitvnm.route
+package it.vfsfitvnm.compose.routing
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ContentTransform

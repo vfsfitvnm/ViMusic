@@ -1,4 +1,4 @@
-package it.vfsfitvnm.reordering
+package it.vfsfitvnm.compose.reordering
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
