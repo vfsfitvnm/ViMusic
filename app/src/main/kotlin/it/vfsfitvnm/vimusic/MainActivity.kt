@@ -48,6 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -341,7 +343,8 @@ class MainActivity : ComponentActivity() {
                     LocalRippleTheme provides rippleTheme,
                     LocalShimmerTheme provides shimmerTheme,
                     LocalPlayerServiceBinder provides binder,
-                    LocalPlayerAwareWindowInsets provides playerAwareWindowInsets
+                    LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
+                    LocalLayoutDirection provides LayoutDirection.Ltr
                 ) {
                     HomeScreen(
                         onPlaylistUrl = { url ->
