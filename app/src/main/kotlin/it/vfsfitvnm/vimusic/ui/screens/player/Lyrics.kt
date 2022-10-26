@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -98,6 +100,7 @@ fun Lyrics(
         val (colorPalette, typography) = LocalAppearance.current
         val context = LocalContext.current
         val menuState = LocalMenuState.current
+        val currentView = LocalView.current
 
         var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)
 
@@ -172,6 +175,15 @@ fun Lyrics(
                     }
                 }
             )
+        }
+
+        if (isShowingSynchronizedLyrics) {
+            DisposableEffect(Unit) {
+                currentView.keepScreenOn = true
+                onDispose {
+                    currentView.keepScreenOn = false
+                }
+            }
         }
 
         Box(
