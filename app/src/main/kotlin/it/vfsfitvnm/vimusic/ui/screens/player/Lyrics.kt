@@ -32,7 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.autoSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,14 +70,12 @@ import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.isShowingSynchronizedLyricsKey
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.toast
 import it.vfsfitvnm.vimusic.utils.verticalFadingEdge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 
@@ -108,19 +106,16 @@ fun Lyrics(
             mutableStateOf(false)
         }
 
-        val lyrics by produceSaveableState(
-            initialValue = ".",
-            stateSaver = autoSaver<String?>(),
-            mediaId, isShowingSynchronizedLyrics
-        ) {
+        var lyrics by rememberSaveable {
+            mutableStateOf<String?>(".")
+        }
+
+        LaunchedEffect(mediaId, isShowingSynchronizedLyrics) {
             if (isShowingSynchronizedLyrics) {
                 Database.synchronizedLyrics(mediaId)
             } else {
                 Database.lyrics(mediaId)
-            }
-                .flowOn(Dispatchers.IO)
-                .distinctUntilChanged()
-                .collect { value = it }
+            }.distinctUntilChanged().collect { lyrics = it }
         }
 
         var isError by remember(lyrics) {

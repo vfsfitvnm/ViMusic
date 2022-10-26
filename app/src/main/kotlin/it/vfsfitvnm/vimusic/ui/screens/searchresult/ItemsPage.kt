@@ -2,8 +2,11 @@ package it.vfsfitvnm.vimusic.ui.screens.searchresult
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -11,32 +14,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import it.vfsfitvnm.compose.persist.persist
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.utils.plus
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.center
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.utils.plus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
 inline fun <T : Innertube.Item> ItemsPage(
-    stateSaver: Saver<Innertube.ItemsPage<T>, List<Any?>>,
+    tag: String,
     crossinline headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
     noinline itemPlaceholderContent: @Composable () -> Unit,
@@ -47,29 +47,29 @@ inline fun <T : Innertube.Item> ItemsPage(
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
 ) {
     val (_, typography) = LocalAppearance.current
-    val lazyListState = rememberLazyListState()
+
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
 
-    val itemsPage by produceSaveableState(
-        initialValue = null,
-        stateSaver = nullableSaver(stateSaver),
-        lazyListState, updatedItemsPageProvider
-    ) {
-        val currentItemsPageProvider = updatedItemsPageProvider ?: return@produceSaveableState
+    val lazyListState = rememberLazyListState()
+
+    var itemsPage by persist<Innertube.ItemsPage<T>?>(tag)
+
+    LaunchedEffect(lazyListState, updatedItemsPageProvider) {
+        val currentItemsPageProvider = updatedItemsPageProvider ?: return@LaunchedEffect
 
         snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.any { it.key == "loading" } }
             .collect { shouldLoadMore ->
                 if (!shouldLoadMore) return@collect
 
                 withContext(Dispatchers.IO) {
-                    currentItemsPageProvider(value?.continuation)
+                    currentItemsPageProvider(itemsPage?.continuation)
                 }?.onSuccess {
                     if (it == null) {
-                        if (value == null) {
-                            value = Innertube.ItemsPage(null, null)
+                        if (itemsPage == null) {
+                            itemsPage = Innertube.ItemsPage(null, null)
                         }
                     } else {
-                        value += it
+                        itemsPage += it
                     }
                 }
             }

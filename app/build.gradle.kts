@@ -70,6 +70,7 @@ kapt {
 }
 
 dependencies {
+    implementation(projects.composePersist)
     implementation(projects.composeRouting)
     implementation(projects.composeReordering)
 

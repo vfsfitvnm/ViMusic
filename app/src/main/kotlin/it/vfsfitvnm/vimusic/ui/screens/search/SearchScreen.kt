@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import it.vfsfitvnm.compose.persist.PersistMapCleanup
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
@@ -48,6 +49,8 @@ fun SearchScreen(
             )
         )
     }
+
+    PersistMapCleanup(tagPrefix = "search/")
 
     RouteHandler(listenToGlobalEmitter = true) {
         globalRoutes()

@@ -25,10 +25,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.autoSaver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,14 +43,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import it.vfsfitvnm.compose.persist.persist
+import it.vfsfitvnm.compose.persist.persistList
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.SearchSuggestionsBody
+import it.vfsfitvnm.innertube.requests.searchSuggestions
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.SearchQuery
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.SearchQuerySaver
-import it.vfsfitvnm.vimusic.savers.listSaver
-import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.SecondaryTextButton
@@ -61,17 +60,11 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.align
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.medium
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
-import it.vfsfitvnm.vimusic.utils.secondary
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.SearchSuggestionsBody
-import it.vfsfitvnm.innertube.requests.searchSuggestions
 import it.vfsfitvnm.vimusic.utils.pauseSearchHistoryKey
 import it.vfsfitvnm.vimusic.utils.preferences
-import kotlinx.coroutines.Dispatchers
+import it.vfsfitvnm.vimusic.utils.secondary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalAnimationApi
 @Composable
@@ -86,22 +79,17 @@ fun OnlineSearch(
 
     val (colorPalette, typography) = LocalAppearance.current
 
-    val history by produceSaveableState(
-        initialValue = emptyList(),
-        stateSaver = listSaver(SearchQuerySaver),
-        key1 = textFieldValue.text
-    ) {
+    var history by persistList<SearchQuery>("search/online/history")
+
+    LaunchedEffect(textFieldValue.text) {
         if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) {
             Database.queries("%${textFieldValue.text}%")
-                .flowOn(Dispatchers.IO)
                 .distinctUntilChanged { old, new -> old.size == new.size }
-                .collect { value = it }
+                .collect { history = it }
         }
     }
 
-    var suggestionsResult by rememberSaveable(stateSaver = resultSaver(autoSaver<List<String>?>())) {
-        mutableStateOf(null)
-    }
+    var suggestionsResult by persist<Result<List<String>?>?>("search/online/suggestionsResult")
 
     LaunchedEffect(textFieldValue.text) {
         if (textFieldValue.text.isNotEmpty()) {

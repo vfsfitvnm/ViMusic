@@ -31,24 +31,24 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import it.vfsfitvnm.compose.persist.persist
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.NavigationEndpoint
+import it.vfsfitvnm.innertube.models.bodies.NextBody
+import it.vfsfitvnm.innertube.requests.relatedPage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.DetailedSongSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeRelatedPageSaver
-import it.vfsfitvnm.vimusic.savers.nullableSaver
-import it.vfsfitvnm.vimusic.savers.resultSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -70,16 +70,10 @@ import it.vfsfitvnm.vimusic.utils.SnapLayoutInfoProvider
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.center
 import it.vfsfitvnm.vimusic.utils.forcePlay
+import it.vfsfitvnm.vimusic.utils.isLandscape
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.NavigationEndpoint
-import it.vfsfitvnm.innertube.models.bodies.NextBody
-import it.vfsfitvnm.innertube.requests.relatedPage
-import it.vfsfitvnm.vimusic.utils.isLandscape
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -95,25 +89,18 @@ fun QuickPicks(
     val menuState = LocalMenuState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
 
-    var trending by rememberSaveable(stateSaver = nullableSaver(DetailedSongSaver)) {
-        mutableStateOf(null)
-    }
+    var trending by persist<DetailedSong?>("home/trending")
 
-    var relatedPageResult by rememberSaveable(stateSaver = resultSaver(nullableSaver(InnertubeRelatedPageSaver))) {
-        mutableStateOf(null)
-    }
+    var relatedPageResult by persist<Result<Innertube.RelatedPage?>?>(tag = "home/relatedPageResult")
 
     LaunchedEffect(Unit) {
-        Database.trending()
-            .flowOn(Dispatchers.IO)
-            .distinctUntilChanged()
-            .collect { song ->
-                if ((song == null && relatedPageResult == null) || trending?.id != song?.id) {
-                    relatedPageResult =
-                        Innertube.relatedPage(NextBody(videoId = (song?.id ?: "J7p4bzqLvCw")))
-                }
-                trending = song
+        Database.trending().distinctUntilChanged().collect { song ->
+            if ((song == null && relatedPageResult == null) || trending?.id != song?.id) {
+                relatedPageResult =
+                    Innertube.relatedPage(NextBody(videoId = (song?.id ?: "J7p4bzqLvCw")))
             }
+            trending = song
+        }
     }
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song

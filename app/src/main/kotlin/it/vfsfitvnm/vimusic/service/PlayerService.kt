@@ -963,7 +963,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     private class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            println(intent.action)
             when (intent.action) {
                 Action.pause.value -> player.pause()
                 Action.play.value -> player.play()

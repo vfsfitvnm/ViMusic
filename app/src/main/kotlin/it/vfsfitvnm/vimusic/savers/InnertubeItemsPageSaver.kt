@@ -1,4 +1,0 @@
-package it.vfsfitvnm.vimusic.savers
-
-val InnertubeSongsPageSaver = innertubeItemsPageSaver(InnertubeSongItemListSaver)
-val InnertubeAlbumsPageSaver = innertubeItemsPageSaver(InnertubeAlbumItemListSaver)

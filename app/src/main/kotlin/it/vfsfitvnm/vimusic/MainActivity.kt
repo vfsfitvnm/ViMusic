@@ -58,6 +58,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
+import it.vfsfitvnm.compose.persist.PersistMap
+import it.vfsfitvnm.compose.persist.PersistMapOwner
 import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.models.bodies.BrowseBody
 import it.vfsfitvnm.innertube.requests.playlistPage
@@ -99,7 +101,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), PersistMapOwner {
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
@@ -114,19 +116,19 @@ class MainActivity : ComponentActivity() {
 
     private var binder by mutableStateOf<PlayerService.Binder?>(null)
 
+    override lateinit var persistMap: PersistMap
+
     override fun onStart() {
         super.onStart()
         bindService(intent<PlayerService>(), serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
-    override fun onStop() {
-        unbindService(serviceConnection)
-        super.onStop()
-    }
-
     @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        @Suppress("DEPRECATION", "UNCHECKED_CAST")
+        persistMap = lastCustomNonConfigurationInstance as? PersistMap ?: PersistMap()
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -449,6 +451,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onRetainCustomNonConfigurationInstance() = persistMap
+
+    override fun onStop() {
+        unbindService(serviceConnection)
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        if (!isChangingConfigurations) {
+            persistMap.clear()
+        }
+
+        super.onDestroy()
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {

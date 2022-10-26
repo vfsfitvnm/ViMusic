@@ -10,8 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -19,17 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.compose.persist.PersistMapCleanup
+import it.vfsfitvnm.compose.persist.persist
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.BrowseBody
+import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
+import it.vfsfitvnm.innertube.requests.artistPage
+import it.vfsfitvnm.innertube.requests.itemsPage
+import it.vfsfitvnm.innertube.utils.from
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Artist
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.ArtistSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeAlbumsPageSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeArtistPageSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeSongsPageSaver
-import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
@@ -51,12 +52,6 @@ import it.vfsfitvnm.vimusic.utils.artistScreenTabIndexKey
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.BrowseBody
-import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
-import it.vfsfitvnm.innertube.requests.artistPage
-import it.vfsfitvnm.innertube.requests.itemsPage
-import it.vfsfitvnm.innertube.utils.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -71,13 +66,11 @@ fun ArtistScreen(browseId: String) {
 
     var tabIndex by rememberPreference(artistScreenTabIndexKey, defaultValue = 0)
 
-    var artist by rememberSaveable(stateSaver = nullableSaver(ArtistSaver)) {
-        mutableStateOf(null)
-    }
+    PersistMapCleanup(tagPrefix = "artist/$browseId/")
 
-    var artistPage by rememberSaveable(stateSaver = nullableSaver(InnertubeArtistPageSaver)) {
-        mutableStateOf(null)
-    }
+    var artist by persist<Artist?>("artist/$browseId/artist")
+
+    var artistPage by persist<Innertube.ArtistPage?>("artist/$browseId/artistPage")
 
     LaunchedEffect(Unit) {
         Database
@@ -209,7 +202,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = InnertubeSongsPageSaver,
+                                tag = "artist/$browseId/songs",
                                 headerContent = headerContent,
                                 itemsPageProvider = artistPage?.let {
                                     ({ continuation ->
@@ -272,7 +265,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = InnertubeAlbumsPageSaver,
+                                tag = "artist/$browseId/albums",
                                 headerContent = headerContent,
                                 emptyItemsText = "This artist didn't release any album",
                                 itemsPageProvider = artistPage?.let {
@@ -322,7 +315,7 @@ fun ArtistScreen(browseId: String) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = InnertubeAlbumsPageSaver,
+                                tag = "artist/$browseId/singles",
                                 headerContent = headerContent,
                                 emptyItemsText = "This artist didn't release any single",
                                 itemsPageProvider = artistPage?.let {

@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import it.vfsfitvnm.compose.persist.persistList
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.R
@@ -36,8 +38,8 @@ import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Playlist
+import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.PlaylistPreviewListSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
@@ -49,10 +51,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.playlistSortByKey
 import it.vfsfitvnm.vimusic.utils.playlistSortOrderKey
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -85,15 +84,10 @@ fun HomePlaylists(
     var sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
     var sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
 
-    val items by produceSaveableState(
-        initialValue = emptyList(),
-        stateSaver = PlaylistPreviewListSaver,
-        sortBy, sortOrder,
-    ) {
-        Database
-            .playlistPreviews(sortBy, sortOrder)
-            .flowOn(Dispatchers.IO)
-            .collect { value = it }
+    var items by persistList<PlaylistPreview>("home/playlists")
+
+    LaunchedEffect(sortBy, sortOrder) {
+        Database.playlistPreviews(sortBy, sortOrder).collect { items = it }
     }
 
     val sortOrderIconRotation by animateFloatAsState(

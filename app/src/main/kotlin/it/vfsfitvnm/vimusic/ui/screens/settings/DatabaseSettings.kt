@@ -15,8 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.autoSaver
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import it.vfsfitvnm.vimusic.Database
@@ -28,16 +29,13 @@ import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.intent
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.toast
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.system.exitProcess
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalAnimationApi
 @Composable
@@ -45,12 +43,9 @@ fun DatabaseSettings() {
     val context = LocalContext.current
     val (colorPalette) = LocalAppearance.current
 
-    val eventsCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
-        Database.eventsCount()
-            .flowOn(Dispatchers.IO)
-            .distinctUntilChanged()
-            .collect { value = it }
-    }
+    val eventsCount by remember {
+        Database.eventsCount().distinctUntilChanged()
+    }.collectAsState(initial = 0)
 
     val backupLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/vnd.sqlite3")) { uri ->

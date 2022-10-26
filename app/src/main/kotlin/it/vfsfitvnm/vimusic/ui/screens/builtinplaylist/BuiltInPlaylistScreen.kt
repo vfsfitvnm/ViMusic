@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import it.vfsfitvnm.compose.persist.PersistMapCleanup
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
@@ -24,6 +25,8 @@ fun BuiltInPlaylistScreen(builtInPlaylist: BuiltInPlaylist) {
             BuiltInPlaylist.Offline -> 1
         })
     }
+
+    PersistMapCleanup(tagPrefix = "${builtInPlaylist.name}/")
 
     RouteHandler(listenToGlobalEmitter = true) {
         globalRoutes()

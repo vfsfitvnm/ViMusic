@@ -9,16 +9,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import it.vfsfitvnm.compose.persist.PersistMapCleanup
+import it.vfsfitvnm.compose.persist.persistMap
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
+import it.vfsfitvnm.innertube.models.bodies.SearchBody
+import it.vfsfitvnm.innertube.requests.searchPage
+import it.vfsfitvnm.innertube.utils.from
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.savers.InnertubeAlbumsPageSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeArtistItemListSaver
-import it.vfsfitvnm.vimusic.savers.InnertubePlaylistItemListSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeSongsPageSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeVideoItemListSaver
-import it.vfsfitvnm.vimusic.savers.innertubeItemsPageSaver
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.NonQueuedMediaItemMenu
@@ -43,18 +45,16 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlay
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.searchResultScreenTabIndexKey
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
-import it.vfsfitvnm.innertube.models.bodies.SearchBody
-import it.vfsfitvnm.innertube.requests.searchPage
-import it.vfsfitvnm.innertube.utils.from
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
 fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
+    val context = LocalContext.current
     val saveableStateHolder = rememberSaveableStateHolder()
     val (tabIndex, onTabIndexChanges) = rememberPreference(searchResultScreenTabIndexKey, 0)
+
+    PersistMapCleanup(tagPrefix = "searchResults/$query/")
 
     RouteHandler(listenToGlobalEmitter = true) {
         globalRoutes()
@@ -66,6 +66,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                     modifier = Modifier
                         .pointerInput(Unit) {
                             detectTapGestures {
+                                context.persistMap?.keys?.removeAll {
+                                    it.startsWith("searchResults/$query/")
+                                }
                                 onSearchAgain()
                             }
                         }
@@ -73,8 +76,6 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
             }
 
             val emptyItemsText = "No results found. Please try a different query or category"
-
-
 
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
@@ -99,7 +100,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = InnertubeSongsPageSaver,
+                                tag = "searchResults/$query/songs",
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
@@ -149,7 +150,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = InnertubeAlbumsPageSaver,
+                                tag = "searchResults/$query/albums",
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
@@ -186,7 +187,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = innertubeItemsPageSaver(InnertubeArtistItemListSaver),
+                                tag = "searchResults/$query/artists",
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
@@ -224,7 +225,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailWidthDp = 128.dp
 
                             ItemsPage(
-                                stateSaver = innertubeItemsPageSaver(InnertubeVideoItemListSaver),
+                                tag = "searchResults/$query/videos",
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
@@ -277,7 +278,7 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = innertubeItemsPageSaver(InnertubePlaylistItemListSaver),
+                                tag = "searchResults/$query/${if (tabIndex == 4) "playlists" else "featured"}",
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         val filter = if (tabIndex == 4) {

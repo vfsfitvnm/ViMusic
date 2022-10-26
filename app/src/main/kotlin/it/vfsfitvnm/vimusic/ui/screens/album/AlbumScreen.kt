@@ -17,17 +17,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import it.vfsfitvnm.compose.persist.PersistMapCleanup
+import it.vfsfitvnm.compose.persist.persist
+import it.vfsfitvnm.innertube.Innertube
+import it.vfsfitvnm.innertube.models.bodies.BrowseBody
+import it.vfsfitvnm.innertube.requests.albumPage
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.SongAlbumMap
 import it.vfsfitvnm.vimusic.query
-import it.vfsfitvnm.vimusic.savers.AlbumSaver
-import it.vfsfitvnm.vimusic.savers.InnertubeAlbumItemListSaver
-import it.vfsfitvnm.vimusic.savers.InnertubePlaylistOrAlbumPageSaver
-import it.vfsfitvnm.vimusic.savers.innertubeItemsPageSaver
-import it.vfsfitvnm.vimusic.savers.nullableSaver
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderIconButton
 import it.vfsfitvnm.vimusic.ui.components.themed.HeaderPlaceholder
@@ -41,9 +41,6 @@ import it.vfsfitvnm.vimusic.ui.screens.searchresult.ItemsPage
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.px
 import it.vfsfitvnm.vimusic.utils.asMediaItem
-import it.vfsfitvnm.innertube.Innertube
-import it.vfsfitvnm.innertube.models.bodies.BrowseBody
-import it.vfsfitvnm.innertube.requests.albumPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
@@ -58,13 +55,10 @@ fun AlbumScreen(browseId: String) {
         mutableStateOf(0)
     }
 
-    var album by rememberSaveable(stateSaver = nullableSaver(AlbumSaver)) {
-        mutableStateOf(null)
-    }
+    var album by persist<Album?>("album/$browseId/album")
+    var albumPage by persist<Innertube.PlaylistOrAlbumPage?>("album/$browseId/albumPage")
 
-    var albumPage by rememberSaveable(stateSaver = nullableSaver(InnertubePlaylistOrAlbumPageSaver)) {
-        mutableStateOf(null)
-    }
+    PersistMapCleanup(tagPrefix = "album/$browseId/")
 
     LaunchedEffect(Unit) {
         Database
@@ -205,7 +199,7 @@ fun AlbumScreen(browseId: String) {
                             val thumbnailSizePx = thumbnailSizeDp.px
 
                             ItemsPage(
-                                stateSaver = innertubeItemsPageSaver(InnertubeAlbumItemListSaver),
+                                tag = "album/$browseId/alternatives",
                                 headerContent = headerContent,
                                 initialPlaceholderCount = 1,
                                 continuationPlaceholderCount = 1,

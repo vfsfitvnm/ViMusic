@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalContext
+import it.vfsfitvnm.compose.persist.PersistMapCleanup
 import it.vfsfitvnm.route.RouteHandler
 import it.vfsfitvnm.route.defaultStacking
 import it.vfsfitvnm.route.defaultStill
@@ -41,6 +42,8 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 @Composable
 fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
     val saveableStateHolder = rememberSaveableStateHolder()
+
+    PersistMapCleanup("home/")
 
     RouteHandler(
         listenToGlobalEmitter = true,

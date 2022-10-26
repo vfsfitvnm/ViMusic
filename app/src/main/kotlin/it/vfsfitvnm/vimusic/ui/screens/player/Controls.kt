@@ -52,9 +52,7 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.trackLoopEnabledKey
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @Composable
 fun Controls(
@@ -82,11 +80,7 @@ fun Controls(
     }
 
     LaunchedEffect(mediaId) {
-        Database
-            .likedAt(mediaId)
-            .flowOn(Dispatchers.IO)
-            .distinctUntilChanged()
-            .collect { likedAt = it }
+        Database.likedAt(mediaId).distinctUntilChanged().collect { likedAt = it }
     }
 
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")

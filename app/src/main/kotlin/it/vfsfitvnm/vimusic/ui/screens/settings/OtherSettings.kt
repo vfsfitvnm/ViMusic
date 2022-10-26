@@ -21,10 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SnapshotMutationPolicy
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,12 +39,9 @@ import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
 import it.vfsfitvnm.vimusic.utils.isIgnoringBatteryOptimizations
 import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.pauseSearchHistoryKey
-import it.vfsfitvnm.vimusic.utils.produceSaveableState
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.toast
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
@@ -86,12 +83,9 @@ fun OtherSettings() {
 
     var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
 
-    val queriesCount by produceSaveableState(initialValue = 0, stateSaver = autoSaver()) {
-        Database.queriesCount()
-            .flowOn(Dispatchers.IO)
-            .distinctUntilChanged()
-            .collect { value = it }
-    }
+    val queriesCount by remember {
+        Database.queriesCount().distinctUntilChanged()
+    }.collectAsState(initial = 0)
 
     Column(
         modifier = Modifier
