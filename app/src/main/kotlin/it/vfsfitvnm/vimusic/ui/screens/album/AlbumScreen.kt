@@ -79,6 +79,8 @@ fun AlbumScreen(browseId: String) {
                             ?.onSuccess { currentAlbumPage ->
                                 albumPage = currentAlbumPage
 
+                                Database.clearAlbum(browseId)
+
                                 Database.upsert(
                                     Album(
                                         id = browseId,

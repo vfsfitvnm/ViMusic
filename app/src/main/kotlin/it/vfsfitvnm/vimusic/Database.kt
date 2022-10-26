@@ -305,6 +305,9 @@ interface Database {
     @Query("DELETE FROM SongPlaylistMap WHERE playlistId = :id")
     fun clearPlaylist(id: Long)
 
+    @Query("DELETE FROM SongAlbumMap WHERE albumId = :id")
+    fun clearAlbum(id: String)
+
     @Query("SELECT loudnessDb FROM Format WHERE songId = :songId")
     fun loudnessDb(songId: String): Flow<Float?>
 
