@@ -100,7 +100,7 @@ fun PlayerSettings() {
 
         SwitchSettingEntry(
             title = "Loudness normalization",
-            text = "Lower the volume to a standard level",
+            text = "Adjust the volume to a fixed level",
             isChecked = volumeNormalization,
             onCheckedChange = {
                 volumeNormalization = it

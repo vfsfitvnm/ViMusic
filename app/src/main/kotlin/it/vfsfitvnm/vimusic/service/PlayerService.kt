@@ -21,6 +21,7 @@ import android.media.AudioManager
 import android.media.MediaDescription
 import android.media.MediaMetadata
 import android.media.audiofx.AudioEffect
+import android.media.audiofx.LoudnessEnhancer
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.net.Uri
@@ -103,6 +104,7 @@ import it.vfsfitvnm.vimusic.utils.resumePlaybackWhenDeviceConnectedKey
 import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.timer
+import it.vfsfitvnm.vimusic.utils.toast
 import it.vfsfitvnm.vimusic.utils.trackLoopEnabledKey
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
 import kotlin.math.roundToInt
@@ -112,9 +114,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
@@ -150,13 +150,14 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
     private var volumeNormalizationJob: Job? = null
 
-    private var isVolumeNormalizationEnabled = false
     private var isPersistentQueueEnabled = false
     private var isShowingThumbnailInLockscreen = true
     override var isInvincibilityEnabled = false
 
     private var audioManager: AudioManager? = null
     private var audioDeviceCallback: AudioDeviceCallback? = null
+
+    private var loudnessEnhancer: LoudnessEnhancer? = null
 
     private val binder = Binder()
 
@@ -188,7 +189,6 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
 
         val preferences = preferences
         isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
-        isVolumeNormalizationEnabled = preferences.getBoolean(volumeNormalizationKey, false)
         isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
         isShowingThumbnailInLockscreen =
             preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
@@ -283,6 +283,8 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         mediaSession.isActive = false
         mediaSession.release()
         cache.release()
+
+        loudnessEnhancer?.release()
 
         super.onDestroy()
     }
@@ -456,30 +458,30 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     }
 
     private fun maybeNormalizeVolume() {
-        if (!isVolumeNormalizationEnabled) {
+        if (!preferences.getBoolean(volumeNormalizationKey, false)) {
+            loudnessEnhancer?.enabled = false
+            loudnessEnhancer?.release()
+            loudnessEnhancer = null
             volumeNormalizationJob?.cancel()
             player.volume = 1f
             return
         }
 
+        if (loudnessEnhancer == null) {
+            loudnessEnhancer = LoudnessEnhancer(player.audioSessionId)
+        }
+
         player.currentMediaItem?.mediaId?.let { songId ->
             volumeNormalizationJob?.cancel()
             volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
-                Database
-                    .loudnessDb(songId)
-                    .cancellable()
-                    .distinctUntilChanged()
-                    .filterNotNull()
-                    .flowOn(Dispatchers.IO)
-                    .collect { loudnessDb ->
-                        val x = loudnessDb.coerceIn(-10f, 10f)
-                        val x2 = x * x
-                        val x3 = x2 * x
-                        val x4 = x2 * x2
-
-                        player.volume =
-                            0.0000452661f * x4 - 0.0000870966f * x3 - 0.00251095f * x2 - 0.0336928f * x + 0.427456f
+                Database.loudnessDb(songId).cancellable().collectLatest { loudnessDb ->
+                    try {
+                        loudnessEnhancer?.setTargetGain(-((loudnessDb ?: 0f) * 100).toInt() + 500)
+                        loudnessEnhancer?.enabled = true
+                    } catch (_: Exception) {
+                        toast("Couldn't normalize volume!")
                     }
+                }
             }
         }
     }
@@ -622,11 +624,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
             persistentQueueKey -> isPersistentQueueEnabled =
                 sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
 
-            volumeNormalizationKey -> {
-                isVolumeNormalizationEnabled =
-                    sharedPreferences.getBoolean(key, isVolumeNormalizationEnabled)
-                maybeNormalizeVolume()
-            }
+            volumeNormalizationKey -> maybeNormalizeVolume()
 
             resumePlaybackWhenDeviceConnectedKey -> maybeResumePlaybackWhenDeviceConnected()
 
