@@ -141,7 +141,9 @@ fun DatabaseSettings() {
             text = "Import the database from the external storage",
             onClick = {
                 try {
-                    restoreLauncher.launch(arrayOf("application/vnd.sqlite3"))
+                    restoreLauncher.launch(
+                        arrayOf("application/vnd.sqlite3", "application/octet-stream")
+                    )
                 } catch (e: ActivityNotFoundException) {
                     context.toast("Couldn't find an application to open documents")
                 }
