@@ -38,10 +38,10 @@ import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
 import it.vfsfitvnm.vimusic.models.Album
 import it.vfsfitvnm.vimusic.models.Artist
-import it.vfsfitvnm.vimusic.models.DetailedSong
-import it.vfsfitvnm.vimusic.models.DetailedSongWithContentLength
+import it.vfsfitvnm.vimusic.models.SongWithContentLength
 import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.Format
+import it.vfsfitvnm.vimusic.models.Info
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
@@ -62,34 +62,34 @@ interface Database {
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID ASC")
     @RewriteQueriesToDropUnusedColumns
-    fun songsByRowIdAsc(): Flow<List<DetailedSong>>
+    fun songsByRowIdAsc(): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY ROWID DESC")
     @RewriteQueriesToDropUnusedColumns
-    fun songsByRowIdDesc(): Flow<List<DetailedSong>>
+    fun songsByRowIdDesc(): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title ASC")
     @RewriteQueriesToDropUnusedColumns
-    fun songsByTitleAsc(): Flow<List<DetailedSong>>
+    fun songsByTitleAsc(): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY title DESC")
     @RewriteQueriesToDropUnusedColumns
-    fun songsByTitleDesc(): Flow<List<DetailedSong>>
+    fun songsByTitleDesc(): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs ASC")
     @RewriteQueriesToDropUnusedColumns
-    fun songsByPlayTimeAsc(): Flow<List<DetailedSong>>
+    fun songsByPlayTimeAsc(): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT * FROM Song WHERE totalPlayTimeMs > 0 ORDER BY totalPlayTimeMs DESC")
     @RewriteQueriesToDropUnusedColumns
-    fun songsByPlayTimeDesc(): Flow<List<DetailedSong>>
+    fun songsByPlayTimeDesc(): Flow<List<Song>>
 
-    fun songs(sortBy: SongSortBy, sortOrder: SortOrder): Flow<List<DetailedSong>> {
+    fun songs(sortBy: SongSortBy, sortOrder: SortOrder): Flow<List<Song>> {
         return when (sortBy) {
             SongSortBy.PlayTime -> when (sortOrder) {
                 SortOrder.Ascending -> songsByPlayTimeAsc()
@@ -109,7 +109,7 @@ interface Database {
     @Transaction
     @Query("SELECT * FROM Song WHERE likedAt IS NOT NULL ORDER BY likedAt DESC")
     @RewriteQueriesToDropUnusedColumns
-    fun favorites(): Flow<List<DetailedSong>>
+    fun favorites(): Flow<List<Song>>
 
     @Query("SELECT * FROM QueuedMediaItem")
     fun queue(): List<QueuedMediaItem>
@@ -187,7 +187,7 @@ interface Database {
     @Transaction
     @Query("SELECT * FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = :albumId AND position IS NOT NULL ORDER BY position")
     @RewriteQueriesToDropUnusedColumns
-    fun albumSongs(albumId: String): Flow<List<DetailedSong>>
+    fun albumSongs(albumId: String): Flow<List<Song>>
 
     @Query("SELECT * FROM Album WHERE bookmarkedAt IS NOT NULL ORDER BY title ASC")
     fun albumsByTitleAsc(): Flow<List<Album>>
@@ -281,15 +281,14 @@ interface Database {
     @Transaction
     @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
     @RewriteQueriesToDropUnusedColumns
-    fun artistSongs(artistId: String): Flow<List<DetailedSong>>
+    fun artistSongs(artistId: String): Flow<List<Song>>
 
     @Query("SELECT * FROM Format WHERE songId = :songId")
     fun format(songId: String): Flow<Format?>
 
     @Transaction
-    @Query("SELECT * FROM Song JOIN Format ON id = songId WHERE contentLength IS NOT NULL AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
-    @RewriteQueriesToDropUnusedColumns
-    fun songsWithContentLength(): Flow<List<DetailedSongWithContentLength>>
+    @Query("SELECT Song.*, contentLength FROM Song JOIN Format ON id = songId WHERE contentLength IS NOT NULL AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
+    fun songsWithContentLength(): Flow<List<SongWithContentLength>>
 
     @Query("""
         UPDATE SongPlaylistMap SET position = 
@@ -312,12 +311,18 @@ interface Database {
     fun loudnessDb(songId: String): Flow<Float?>
 
     @Query("SELECT * FROM Song WHERE title LIKE :query OR artistsText LIKE :query")
-    fun search(query: String): Flow<List<DetailedSong>>
+    fun search(query: String): Flow<List<Song>>
+
+    @Query("SELECT albumId AS id, NULL AS name FROM SongAlbumMap WHERE songId = :songId")
+    fun songAlbumInfo(songId: String): Info
+
+    @Query("SELECT id, name FROM Artist LEFT JOIN SongArtistMap ON id = artistId WHERE songId = :songId")
+    fun songArtistInfo(songId: String): List<Info>
 
     @Transaction
     @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId GROUP BY songId ORDER BY SUM(CAST(playTime AS REAL) / (((:now - timestamp) / 86400000) + 1)) DESC LIMIT 1")
     @RewriteQueriesToDropUnusedColumns
-    fun trending(now: Long = System.currentTimeMillis()): Flow<DetailedSong?>
+    fun trending(now: Long = System.currentTimeMillis()): Flow<Song?>
 
     @Query("SELECT COUNT (*) FROM Event")
     fun eventsCount(): Flow<Int>

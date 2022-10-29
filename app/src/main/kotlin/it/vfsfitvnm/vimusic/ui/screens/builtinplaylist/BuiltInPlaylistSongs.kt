@@ -26,7 +26,8 @@ import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.BuiltInPlaylist
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Song
+import it.vfsfitvnm.vimusic.models.SongWithContentLength
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -53,7 +54,7 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
 
-    var songs by persistList<DetailedSong>("${builtInPlaylist.name}/songs")
+    var songs by persistList<Song>("${builtInPlaylist.name}/songs")
 
     LaunchedEffect(Unit) {
         when (builtInPlaylist) {
@@ -66,9 +67,9 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                 .map { songs ->
                     songs.filter { song ->
                         song.contentLength?.let {
-                            binder?.cache?.isCached(song.id, 0, song.contentLength)
+                            binder?.cache?.isCached(song.song.id, 0, song.contentLength)
                         } ?: false
-                    }
+                    }.map(SongWithContentLength::song)
                 }
         }.collect { songs = it }
     }
@@ -103,7 +104,7 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                         text = "Enqueue",
                         enabled = songs.isNotEmpty(),
                         onClick = {
-                            binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
+                            binder?.player?.enqueue(songs.map(Song::asMediaItem))
                         }
                     )
 
@@ -143,7 +144,7 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                             onClick = {
                                 binder?.stopRadio()
                                 binder?.player?.forcePlayAtIndex(
-                                    songs.map(DetailedSong::asMediaItem),
+                                    songs.map(Song::asMediaItem),
                                     index
                                 )
                             }
@@ -160,7 +161,7 @@ fun BuiltInPlaylistSongs(builtInPlaylist: BuiltInPlaylist) {
                 if (songs.isNotEmpty()) {
                     binder?.stopRadio()
                     binder?.player?.forcePlayFromBeginning(
-                        songs.shuffled().map(DetailedSong::asMediaItem)
+                        songs.shuffled().map(Song::asMediaItem)
                     )
                 }
             }

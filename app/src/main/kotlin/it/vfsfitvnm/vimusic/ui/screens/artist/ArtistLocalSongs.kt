@@ -24,7 +24,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -53,7 +53,7 @@ fun ArtistLocalSongs(
     val (colorPalette) = LocalAppearance.current
     val menuState = LocalMenuState.current
 
-    var songs by persist<List<DetailedSong>?>("artist/$browseId/localSongs")
+    var songs by persist<List<Song>?>("artist/$browseId/localSongs")
 
     LaunchedEffect(Unit) {
         Database.artistSongs(browseId).collect { songs = it }
@@ -84,7 +84,7 @@ fun ArtistLocalSongs(
                                 text = "Enqueue",
                                 enabled = !songs.isNullOrEmpty(),
                                 onClick = {
-                                    binder?.player?.enqueue(songs!!.map(DetailedSong::asMediaItem))
+                                    binder?.player?.enqueue(songs!!.map(Song::asMediaItem))
                                 }
                             )
                         }
@@ -115,7 +115,7 @@ fun ArtistLocalSongs(
                                     onClick = {
                                         binder?.stopRadio()
                                         binder?.player?.forcePlayAtIndex(
-                                            songs.map(DetailedSong::asMediaItem),
+                                            songs.map(Song::asMediaItem),
                                             index
                                         )
                                     }
@@ -139,7 +139,7 @@ fun ArtistLocalSongs(
                         if (songs.isNotEmpty()) {
                             binder?.stopRadio()
                             binder?.player?.forcePlayFromBeginning(
-                                songs.shuffled().map(DetailedSong::asMediaItem)
+                                songs.shuffled().map(Song::asMediaItem)
                             )
                         }
                     }

@@ -20,8 +20,9 @@ import androidx.media3.datasource.cache.Cache
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Album
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
+import it.vfsfitvnm.vimusic.models.Song
+import it.vfsfitvnm.vimusic.models.SongWithContentLength
 import it.vfsfitvnm.vimusic.utils.asMediaItem
 import it.vfsfitvnm.vimusic.utils.forcePlayAtIndex
 import it.vfsfitvnm.vimusic.utils.forceSeekToNext
@@ -36,7 +37,7 @@ import kotlinx.coroutines.withContext
 
 class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private var lastSongs = emptyList<DetailedSong>()
+    private var lastSongs = emptyList<Song>()
 
     private var bound = false
 
@@ -187,7 +188,7 @@ class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
             BrowserMediaItem.FLAG_PLAYABLE
         )
 
-    private val DetailedSong.asBrowserMediaItem
+    private val Song.asBrowserMediaItem
         inline get() = BrowserMediaItem(
             BrowserMediaDescription.Builder()
                 .setMediaId(MediaId.forSong(id))
@@ -254,9 +255,10 @@ class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
                         .first()
                         .filter { song ->
                             song.contentLength?.let {
-                                cache.isCached(song.id, 0, song.contentLength)
+                                cache.isCached(song.song.id, 0, it)
                             } ?: false
                         }
+                        .map(SongWithContentLength::song)
                         .shuffled()
 
                     MediaId.playlists -> data
@@ -273,7 +275,7 @@ class PlayerMediaBrowserService : MediaBrowserService(), ServiceConnection {
                         ?.first()
 
                     else -> emptyList()
-                }?.map(DetailedSong::asMediaItem) ?: return@launch
+                }?.map(Song::asMediaItem) ?: return@launch
 
                 withContext(Dispatchers.Main) {
                     player.forcePlayAtIndex(mediaItems, index.coerceIn(0, mediaItems.size))

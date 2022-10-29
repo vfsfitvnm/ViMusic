@@ -36,8 +36,8 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.transaction
@@ -158,7 +158,7 @@ fun LocalPlaylistSongs(
                         enabled = playlistWithSongs?.songs?.isNotEmpty() == true,
                         onClick = {
                             playlistWithSongs?.songs
-                                ?.map(DetailedSong::asMediaItem)
+                                ?.map(Song::asMediaItem)
                                 ?.let { mediaItems ->
                                     binder?.player?.enqueue(mediaItems)
                                 }
@@ -266,7 +266,7 @@ fun LocalPlaylistSongs(
                             },
                             onClick = {
                                 playlistWithSongs?.songs
-                                    ?.map(DetailedSong::asMediaItem)
+                                    ?.map(Song::asMediaItem)
                                     ?.let { mediaItems ->
                                         binder?.stopRadio()
                                         binder?.player?.forcePlayAtIndex(mediaItems, index)
@@ -288,7 +288,7 @@ fun LocalPlaylistSongs(
                     if (songs.isNotEmpty()) {
                         binder?.stopRadio()
                         binder?.player?.forcePlayFromBeginning(
-                            songs.shuffled().map(DetailedSong::asMediaItem)
+                            songs.shuffled().map(Song::asMediaItem)
                         )
                     }
                 }

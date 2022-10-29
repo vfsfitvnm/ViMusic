@@ -18,5 +18,5 @@ data class PlaylistWithSongs(
             entityColumn = "songId"
         )
     )
-    val songs: List<DetailedSong>
+    val songs: List<Song>
 )

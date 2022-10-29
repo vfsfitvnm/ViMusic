@@ -27,7 +27,7 @@ import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -59,7 +59,7 @@ fun AlbumSongs(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
 
-    var songs by persistList<DetailedSong>("album/$browseId/songs")
+    var songs by persistList<Song>("album/$browseId/songs")
 
     LaunchedEffect(Unit) {
         Database.albumSongs(browseId).collect { songs = it }
@@ -89,7 +89,7 @@ fun AlbumSongs(
                                 text = "Enqueue",
                                 enabled = songs.isNotEmpty(),
                                 onClick = {
-                                    binder?.player?.enqueue(songs.map(DetailedSong::asMediaItem))
+                                    binder?.player?.enqueue(songs.map(Song::asMediaItem))
                                 }
                             )
                         }
@@ -133,7 +133,7 @@ fun AlbumSongs(
                                 onClick = {
                                     binder?.stopRadio()
                                     binder?.player?.forcePlayAtIndex(
-                                        songs.map(DetailedSong::asMediaItem),
+                                        songs.map(Song::asMediaItem),
                                         index
                                     )
                                 }
@@ -162,7 +162,7 @@ fun AlbumSongs(
                     if (songs.isNotEmpty()) {
                         binder?.stopRadio()
                         binder?.player?.forcePlayFromBeginning(
-                            songs.shuffled().map(DetailedSong::asMediaItem)
+                            songs.shuffled().map(Song::asMediaItem)
                         )
                     }
                 }

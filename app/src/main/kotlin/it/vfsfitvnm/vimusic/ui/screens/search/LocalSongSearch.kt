@@ -27,7 +27,7 @@ import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -54,7 +54,7 @@ fun LocalSongSearch(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
 
-    var items by persistList<DetailedSong>("search/local/songs")
+    var items by persistList<Song>("search/local/songs")
 
     LaunchedEffect(textFieldValue.text) {
         if (textFieldValue.text.length > 1) {
@@ -105,7 +105,7 @@ fun LocalSongSearch(
 
             items(
                 items = items,
-                key = DetailedSong::id,
+                key = Song::id,
             ) { song ->
                 SongItem(
                     song = song,

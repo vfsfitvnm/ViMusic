@@ -38,7 +38,8 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.SongSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Song
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -58,6 +59,8 @@ import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.songSortByKey
 import it.vfsfitvnm.vimusic.utils.songSortOrderKey
+import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.flow.first
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -75,9 +78,12 @@ fun HomeSongs(
     var sortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
     var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
 
-    var items by persistList<DetailedSong>("home/songs")
+    var items by persistList<Song>("home/songs")
 
     LaunchedEffect(sortBy, sortOrder) {
+        // 670, 58, 97, 91, 94
+        println("took ${measureTimeMillis { Database.songs(sortBy, sortOrder).first() }}ms")
+
         Database.songs(sortBy, sortOrder).collect { items = it }
     }
 
@@ -175,7 +181,7 @@ fun HomeSongs(
                             onClick = {
                                 binder?.stopRadio()
                                 binder?.player?.forcePlayAtIndex(
-                                    items.map(DetailedSong::asMediaItem),
+                                    items.map(Song::asMediaItem),
                                     index
                                 )
                             }

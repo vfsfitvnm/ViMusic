@@ -7,11 +7,11 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import it.vfsfitvnm.vimusic.models.DetailedSong
 import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.models.bodies.ContinuationBody
 import it.vfsfitvnm.innertube.requests.playlistPage
 import it.vfsfitvnm.innertube.utils.plus
+import it.vfsfitvnm.vimusic.models.Song
 
 val Innertube.SongItem.asMediaItem: MediaItem
     get() = MediaItem.Builder()
@@ -26,7 +26,6 @@ val Innertube.SongItem.asMediaItem: MediaItem
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
-                        "videoId" to key,
                         "albumId" to album?.endpoint?.browseId,
                         "durationText" to durationText,
                         "artistNames" to authors?.filter { it.endpoint != null }?.mapNotNull { it.name },
@@ -49,7 +48,6 @@ val Innertube.VideoItem.asMediaItem: MediaItem
                 .setArtworkUri(thumbnail?.url?.toUri())
                 .setExtras(
                     bundleOf(
-                        "videoId" to key,
                         "durationText" to durationText,
                         "artistNames" to if (isOfficialMusicVideo) authors?.filter { it.endpoint != null }?.mapNotNull { it.name } else null,
                         "artistIds" to if (isOfficialMusicVideo) authors?.mapNotNull { it.endpoint?.browseId } else null,
@@ -59,7 +57,7 @@ val Innertube.VideoItem.asMediaItem: MediaItem
         )
         .build()
 
-val DetailedSong.asMediaItem: MediaItem
+val Song.asMediaItem: MediaItem
     get() = MediaItem.Builder()
         .setMediaMetadata(
             MediaMetadata.Builder()
@@ -68,10 +66,6 @@ val DetailedSong.asMediaItem: MediaItem
                 .setArtworkUri(thumbnailUrl?.toUri())
                 .setExtras(
                     bundleOf(
-                        "videoId" to id,
-                        "albumId" to albumId,
-                        "artistNames" to artists?.map { it.name },
-                        "artistIds" to artists?.map { it.id },
                         "durationText" to durationText
                     )
                 )

@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +49,7 @@ import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.PlaylistSortBy
 import it.vfsfitvnm.vimusic.enums.SortOrder
-import it.vfsfitvnm.vimusic.models.DetailedSong
+import it.vfsfitvnm.vimusic.models.Info
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.models.SongPlaylistMap
@@ -69,15 +70,16 @@ import it.vfsfitvnm.vimusic.utils.formatAsDuration
 import it.vfsfitvnm.vimusic.utils.medium
 import it.vfsfitvnm.vimusic.utils.semiBold
 import it.vfsfitvnm.vimusic.utils.thumbnail
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
 
 @ExperimentalAnimationApi
 @Composable
 fun InHistoryMediaItemMenu(
     onDismiss: () -> Unit,
-    song: DetailedSong,
+    song: Song,
     modifier: Modifier = Modifier
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -115,7 +117,7 @@ fun InPlaylistMediaItemMenu(
     onDismiss: () -> Unit,
     playlistId: Long,
     positionInPlaylist: Int,
-    song: DetailedSong,
+    song: Song,
     modifier: Modifier = Modifier
 ) {
     NonQueuedMediaItemMenu(
@@ -276,15 +278,43 @@ fun MediaItemMenu(
         mutableStateOf(0.dp)
     }
 
-    val likedAt by remember(mediaItem.mediaId) {
-        Database.likedAt(mediaItem.mediaId).distinctUntilChanged()
-    }.collectAsState(initial = null, context = Dispatchers.IO)
+    var albumInfo by remember {
+        mutableStateOf(mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+            Info(albumId, null)
+        })
+    }
+
+    var artistsInfo by remember {
+        mutableStateOf(
+            mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
+                mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.let { artistIds ->
+                    artistNames.zip(artistIds).map { (authorName, authorId) ->
+                        Info(authorId, authorName)
+                    }
+                }
+            }
+        )
+    }
+
+    var likedAt by remember {
+        mutableStateOf<Long?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            if (albumInfo == null) albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
+            if (artistsInfo == null) artistsInfo = Database.songArtistInfo(mediaItem.mediaId)
+
+            Database.likedAt(mediaItem.mediaId).collect { likedAt = it }
+        }
+    }
 
     AnimatedContent(
         targetState = isViewingPlaylists,
         transitionSpec = {
             val animationSpec = tween<IntOffset>(400)
-            val slideDirection = if (targetState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
+            val slideDirection =
+                if (targetState) AnimatedContentScope.SlideDirection.Left else AnimatedContentScope.SlideDirection.Right
 
             slideIntoContainer(slideDirection, animationSpec) with
                     slideOutOfContainer(slideDirection, animationSpec)
@@ -371,7 +401,8 @@ fun MediaItemMenu(
                         .padding(end = 12.dp)
                 ) {
                     SongItem(
-                        thumbnailUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)?.toString(),
+                        thumbnailUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)
+                            ?.toString(),
                         title = mediaItem.mediaMetadata.title.toString(),
                         authors = mediaItem.mediaMetadata.artist.toString(),
                         duration = null,
@@ -601,7 +632,10 @@ fun MediaItemMenu(
                                     text = "${formatAsDuration(it)} left",
                                     style = typography.xxs.medium,
                                     modifier = modifier
-                                        .background(color = colorPalette.background0, shape = RoundedCornerShape(16.dp))
+                                        .background(
+                                            color = colorPalette.background0,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
                                         .padding(horizontal = 16.dp, vertical = 8.dp)
                                         .animateContentSize()
                                 )
@@ -619,7 +653,9 @@ fun MediaItemMenu(
                             Image(
                                 painter = painterResource(R.drawable.chevron_forward),
                                 contentDescription = null,
-                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(colorPalette.textSecondary),
+                                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                    colorPalette.textSecondary
+                                ),
                                 modifier = Modifier
                                     .size(16.dp)
                             )
@@ -628,7 +664,7 @@ fun MediaItemMenu(
                 }
 
                 onGoToAlbum?.let { onGoToAlbum ->
-                    mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+                    albumInfo?.let { (albumId) ->
                         MenuEntry(
                             icon = R.drawable.disc,
                             text = "Go to album",
@@ -641,25 +677,16 @@ fun MediaItemMenu(
                 }
 
                 onGoToArtist?.let { onGoToArtist ->
-                    mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")
-                        ?.let { artistNames ->
-                            mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")
-                                ?.let { artistIds ->
-                                    artistNames.zip(artistIds)
-                                        .forEach { (authorName, authorId) ->
-                                            if (authorId != null) {
-                                                MenuEntry(
-                                                    icon = R.drawable.person,
-                                                    text = "More of $authorName",
-                                                    onClick = {
-                                                        onDismiss()
-                                                        onGoToArtist(authorId)
-                                                    }
-                                                )
-                                            }
-                                        }
-                                }
-                        }
+                    artistsInfo?.forEach { (authorId, authorName) ->
+                        MenuEntry(
+                            icon = R.drawable.person,
+                            text = "More of $authorName",
+                            onClick = {
+                                onDismiss()
+                                onGoToArtist(authorId)
+                            }
+                        )
+                    }
                 }
 
                 onRemoveFromQueue?.let { onRemoveFromQueue ->
