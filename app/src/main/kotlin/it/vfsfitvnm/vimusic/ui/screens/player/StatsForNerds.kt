@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
 import it.vfsfitvnm.innertube.Innertube
@@ -37,7 +36,6 @@ import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.onOverlay
 import it.vfsfitvnm.vimusic.ui.styling.overlay
-import it.vfsfitvnm.vimusic.utils.DisposableListener
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.medium
 import kotlin.math.roundToInt
@@ -75,7 +73,7 @@ fun StatsForNerds(
             Database.format(mediaId).distinctUntilChanged().collectLatest {
                 if (it?.itag == null) {
                     withContext(Dispatchers.IO) {
-                        delay(3000)
+                        delay(2000)
                         Innertube.player(PlayerBody(videoId = mediaId))?.onSuccess { response ->
                             response.streamingData?.highestQualityFormat?.let { format ->
                                 Database.insert(
@@ -98,18 +96,6 @@ fun StatsForNerds(
             }
         }
 
-        var volume by remember {
-            mutableStateOf(binder.player.volume)
-        }
-
-        binder.player.DisposableListener {
-            object : Player.Listener {
-                override fun onVolumeChanged(newVolume: Float) {
-                    volume = newVolume
-                }
-            }
-        }
-
         DisposableEffect(mediaId) {
             val listener = object : Cache.Listener {
                 override fun onSpanAdded(cache: Cache, span: CacheSpan) {
@@ -120,11 +106,8 @@ fun StatsForNerds(
                     cachedBytes -= span.length
                 }
 
-                override fun onSpanTouched(
-                    cache: Cache,
-                    oldSpan: CacheSpan,
-                    newSpan: CacheSpan
-                ) = Unit
+                override fun onSpanTouched(cache: Cache, oldSpan: CacheSpan, newSpan: CacheSpan) =
+                    Unit
             }
 
             binder.cache.addListener(mediaId, listener)
@@ -158,11 +141,7 @@ fun StatsForNerds(
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
-                        text = "Volume",
-                        style = typography.xs.medium.color(colorPalette.onOverlay)
-                    )
-                    BasicText(
-                        text = "Loudness",
+                        text = "Itag",
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
@@ -177,46 +156,48 @@ fun StatsForNerds(
                         text = "Cached",
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
+                    BasicText(
+                        text = "Loudness",
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
+                    )
                 }
 
                 Column {
                     BasicText(
                         text = mediaId,
+                        maxLines = 1,
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
-                        text = "${volume.times(100).roundToInt()}%",
+                        text = format?.itag?.toString() ?: "Unknown",
+                        maxLines = 1,
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
-                        text = format?.loudnessDb?.let { loudnessDb ->
-                            "%.2f dB".format(loudnessDb)
-                        } ?: "Unknown",
+                        text = format?.bitrate?.let { "${it / 1000} kbps" } ?: "Unknown",
+                        maxLines = 1,
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
-                        text = format?.bitrate?.let { bitrate ->
-                            "${bitrate / 1000} kbps"
-                        } ?: "Unknown",
-                        style = typography.xs.medium.color(colorPalette.onOverlay)
-                    )
-                    BasicText(
-                        text = format?.contentLength?.let { contentLength ->
-                            Formatter.formatShortFileSize(
-                                context,
-                                contentLength
-                            )
-                        } ?: "Unknown",
+                        text = format?.contentLength
+                            ?.let { Formatter.formatShortFileSize(context, it) } ?: "Unknown",
+                        maxLines = 1,
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                     BasicText(
                         text = buildString {
                             append(Formatter.formatShortFileSize(context, cachedBytes))
 
-                            format?.contentLength?.let { contentLength ->
-                                append(" (${(cachedBytes.toFloat() / contentLength * 100).roundToInt()}%)")
+                            format?.contentLength?.let {
+                                append(" (${(cachedBytes.toFloat() / it * 100).roundToInt()}%)")
                             }
                         },
+                        maxLines = 1,
+                        style = typography.xs.medium.color(colorPalette.onOverlay)
+                    )
+                    BasicText(
+                        text = format?.loudnessDb?.let { "%.2f dB".format(it) } ?: "Unknown",
+                        maxLines = 1,
                         style = typography.xs.medium.color(colorPalette.onOverlay)
                     )
                 }
