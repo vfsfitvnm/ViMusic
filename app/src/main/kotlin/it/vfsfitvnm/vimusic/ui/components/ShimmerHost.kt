@@ -1,5 +1,6 @@
 package it.vfsfitvnm.vimusic.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
@@ -16,10 +17,12 @@ import com.valentinilk.shimmer.shimmer
 fun ShimmerHost(
     modifier: Modifier = Modifier,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         horizontalAlignment = horizontalAlignment,
+        verticalArrangement = verticalArrangement,
         modifier = modifier
             .shimmer()
             .graphicsLayer(alpha = 0.99f)

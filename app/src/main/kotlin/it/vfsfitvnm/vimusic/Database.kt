@@ -42,6 +42,7 @@ import it.vfsfitvnm.vimusic.models.SongWithContentLength
 import it.vfsfitvnm.vimusic.models.Event
 import it.vfsfitvnm.vimusic.models.Format
 import it.vfsfitvnm.vimusic.models.Info
+import it.vfsfitvnm.vimusic.models.Lyrics
 import it.vfsfitvnm.vimusic.models.Playlist
 import it.vfsfitvnm.vimusic.models.PlaylistPreview
 import it.vfsfitvnm.vimusic.models.PlaylistWithSongs
@@ -138,17 +139,8 @@ interface Database {
     @Query("UPDATE Song SET durationText = :durationText WHERE id = :songId")
     fun updateDurationText(songId: String, durationText: String): Int
 
-    @Query("SELECT lyrics FROM Song WHERE id = :songId")
-    fun lyrics(songId: String): Flow<String?>
-
-    @Query("SELECT synchronizedLyrics FROM Song WHERE id = :songId")
-    fun synchronizedLyrics(songId: String): Flow<String?>
-
-    @Query("UPDATE Song SET lyrics = :lyrics WHERE id = :songId")
-    fun updateLyrics(songId: String, lyrics: String?): Int
-
-    @Query("UPDATE Song SET synchronizedLyrics = :lyrics WHERE id = :songId")
-    fun updateSynchronizedLyrics(songId: String, lyrics: String?): Int
+    @Query("SELECT * FROM Lyrics WHERE songId = :songId")
+    fun lyrics(songId: String): Flow<Lyrics?>
 
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
@@ -412,6 +404,9 @@ interface Database {
     fun update(playlist: Playlist)
 
     @Upsert
+    fun upsert(lyrics: Lyrics)
+
+    @Upsert
     fun upsert(album: Album, songAlbumMaps: List<SongAlbumMap>)
 
     @Upsert
@@ -450,11 +445,12 @@ interface Database {
         QueuedMediaItem::class,
         Format::class,
         Event::class,
+        Lyrics::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 22,
+    version = 23,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -492,7 +488,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     .addMigrations(
                         From8To9Migration(),
                         From10To11Migration(),
-                        From14To15Migration()
+                        From14To15Migration(),
+                        From22To23Migration()
                     )
                     .build()
             }
@@ -619,6 +616,27 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     @DeleteColumn.Entries(DeleteColumn("Artist", "info"))
     class From21To22Migration : AutoMigrationSpec
+
+    class From22To23Migration : Migration(22, 23) {
+        override fun migrate(it: SupportSQLiteDatabase) {
+            it.execSQL("CREATE TABLE IF NOT EXISTS Lyrics (`songId` TEXT NOT NULL, `fixed` TEXT, `synced` TEXT, PRIMARY KEY(`songId`), FOREIGN KEY(`songId`) REFERENCES `Song`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
+
+            it.query(SimpleSQLiteQuery("SELECT id, lyrics, synchronizedLyrics FROM Song;")).use { cursor ->
+                val lyricsValues = ContentValues(3)
+                while (cursor.moveToNext()) {
+                    lyricsValues.put("songId", cursor.getString(0))
+                    lyricsValues.put("fixed", cursor.getString(1))
+                    lyricsValues.put("synced", cursor.getString(2))
+                    it.insert("Lyrics", CONFLICT_IGNORE, lyricsValues)
+                }
+            }
+
+            it.execSQL("CREATE TABLE IF NOT EXISTS Song_new (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT, `thumbnailUrl` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+            it.execSQL("INSERT INTO Song_new(id, title, artistsText, durationText, thumbnailUrl, likedAt, totalPlayTimeMs) SELECT id, title, artistsText, durationText, thumbnailUrl, likedAt, totalPlayTimeMs FROM Song;")
+            it.execSQL("DROP TABLE Song;")
+            it.execSQL("ALTER TABLE Song_new RENAME TO Song;")
+        }
+    }
 }
 
 @TypeConverters

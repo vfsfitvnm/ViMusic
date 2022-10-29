@@ -88,7 +88,6 @@ dependencies {
 
     implementation(libs.room)
     kapt(libs.room.compiler)
-    annotationProcessor(libs.room.compiler)
 
     implementation(projects.innertube)
     implementation(projects.kugou)

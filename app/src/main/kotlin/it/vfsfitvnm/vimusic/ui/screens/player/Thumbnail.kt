@@ -32,7 +32,6 @@ import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
-import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.LoginRequiredException
 import it.vfsfitvnm.vimusic.service.PlayableFormatNotFoundException
 import it.vfsfitvnm.vimusic.service.UnplayableException
@@ -143,27 +142,7 @@ fun Thumbnail(
                 mediaId = currentWindow.mediaItem.mediaId,
                 isDisplayed = isShowingLyrics && error == null,
                 onDismiss = { onShowLyrics(false) },
-                onLyricsUpdate = { areSynchronized, mediaId, lyrics ->
-                    query {
-                        if (areSynchronized) {
-                            if (Database.updateSynchronizedLyrics(mediaId, lyrics) == 0) {
-                                if (mediaId == currentWindow.mediaItem.mediaId) {
-                                    Database.insert(currentWindow.mediaItem) { song ->
-                                        song.copy(synchronizedLyrics = lyrics)
-                                    }
-                                }
-                            }
-                        } else {
-                            if (Database.updateLyrics(mediaId, lyrics) == 0) {
-                                if (mediaId == currentWindow.mediaItem.mediaId) {
-                                    Database.insert(currentWindow.mediaItem) { song ->
-                                        song.copy(lyrics = lyrics)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
+                ensureSongInserted = { Database.insert(currentWindow.mediaItem) },
                 size = thumbnailSizeDp,
                 mediaMetadataProvider = currentWindow.mediaItem::mediaMetadata,
                 durationProvider = player::getDuration,
