@@ -37,7 +37,6 @@ import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.IllegalSeekPositionException
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -955,16 +954,12 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     private class SessionCallback(private val player: Player) : MediaSession.Callback() {
         override fun onPlay() = player.play()
         override fun onPause() = player.pause()
-        override fun onSkipToPrevious() = player.forceSeekToPrevious()
-        override fun onSkipToNext() = player.forceSeekToNext()
+        override fun onSkipToPrevious() = runCatching(player::forceSeekToPrevious).let { }
+        override fun onSkipToNext() = runCatching(player::forceSeekToNext).let { }
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
         override fun onStop() = player.pause()
         override fun onRewind() = player.seekToDefaultPosition()
-
-        override fun onSkipToQueueItem(id: Long) = try {
-            player.seekToDefaultPosition(id.toInt())
-        } catch (_: IllegalSeekPositionException) {
-        }
+        override fun onSkipToQueueItem(id: Long) = runCatching { player.seekToDefaultPosition(id.toInt()) }.let { }
     }
 
     private class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
