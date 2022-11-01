@@ -37,6 +37,7 @@ import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.IllegalSeekPositionException
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -382,7 +383,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                         .setSubtitle(mediaItem.mediaMetadata.artist)
                         .setIconUri(mediaItem.mediaMetadata.artworkUri)
                         .build(),
-                    index.toLong()
+                    (index + startIndex).toLong()
                 )
             }
         )
@@ -957,6 +958,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         override fun onSkipToPrevious() = player.forceSeekToPrevious()
         override fun onSkipToNext() = player.forceSeekToNext()
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
+        override fun onStop() = player.pause()
+        override fun onRewind() = player.seekToDefaultPosition()
+
+        override fun onSkipToQueueItem(id: Long) = try {
+            player.seekToDefaultPosition(id.toInt())
+        } catch (_: IllegalSeekPositionException) {
+        }
     }
 
     private class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
