@@ -70,28 +70,31 @@ fun StatsForNerds(
         }
 
         LaunchedEffect(mediaId) {
-            Database.format(mediaId).distinctUntilChanged().collectLatest {
-                if (it?.itag == null) {
-                    withContext(Dispatchers.IO) {
-                        delay(2000)
-                        Innertube.player(PlayerBody(videoId = mediaId))?.onSuccess { response ->
-                            response.streamingData?.highestQualityFormat?.let { format ->
-                                Database.insert(
-                                    Format(
-                                        songId = mediaId,
-                                        itag = format.itag,
-                                        mimeType = format.mimeType,
-                                        bitrate = format.bitrate,
-                                        loudnessDb = response.playerConfig?.audioConfig?.normalizedLoudnessDb,
-                                        contentLength = format.contentLength,
-                                        lastModified = format.lastModified
+            Database.format(mediaId).distinctUntilChanged().collectLatest { currentFormat ->
+                if (currentFormat?.itag == null) {
+                    binder.player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
+                        withContext(Dispatchers.IO) {
+                            delay(2000)
+                            Innertube.player(PlayerBody(videoId = mediaId))?.onSuccess { response ->
+                                response.streamingData?.highestQualityFormat?.let { format ->
+                                    Database.insert(mediaItem)
+                                    Database.insert(
+                                        Format(
+                                            songId = mediaId,
+                                            itag = format.itag,
+                                            mimeType = format.mimeType,
+                                            bitrate = format.bitrate,
+                                            loudnessDb = response.playerConfig?.audioConfig?.normalizedLoudnessDb,
+                                            contentLength = format.contentLength,
+                                            lastModified = format.lastModified
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }
                 } else {
-                    format = it
+                    format = currentFormat
                 }
             }
         }
