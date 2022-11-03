@@ -130,10 +130,13 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         .setActions(
             PlaybackState.ACTION_PLAY
                     or PlaybackState.ACTION_PAUSE
+                    or PlaybackState.ACTION_PLAY_PAUSE
+                    or PlaybackState.ACTION_STOP
                     or PlaybackState.ACTION_SKIP_TO_PREVIOUS
                     or PlaybackState.ACTION_SKIP_TO_NEXT
-                    or PlaybackState.ACTION_PLAY_PAUSE
+                    or PlaybackState.ACTION_SKIP_TO_QUEUE_ITEM
                     or PlaybackState.ACTION_SEEK_TO
+                    or PlaybackState.ACTION_REWIND
         )
 
     private val metadataBuilder = MediaMetadata.Builder()
