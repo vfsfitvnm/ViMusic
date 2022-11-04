@@ -104,7 +104,6 @@ import it.vfsfitvnm.vimusic.utils.resumePlaybackWhenDeviceConnectedKey
 import it.vfsfitvnm.vimusic.utils.shouldBePlaying
 import it.vfsfitvnm.vimusic.utils.skipSilenceKey
 import it.vfsfitvnm.vimusic.utils.timer
-import it.vfsfitvnm.vimusic.utils.toast
 import it.vfsfitvnm.vimusic.utils.trackLoopEnabledKey
 import it.vfsfitvnm.vimusic.utils.volumeNormalizationKey
 import kotlin.math.roundToInt
@@ -481,9 +480,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
                     try {
                         loudnessEnhancer?.setTargetGain(-((loudnessDb ?: 0f) * 100).toInt() + 500)
                         loudnessEnhancer?.enabled = true
-                    } catch (_: Exception) {
-                        toast("Couldn't normalize volume!")
-                    }
+                    } catch (_: Exception) { }
                 }
             }
         }
