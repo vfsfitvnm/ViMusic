@@ -102,6 +102,7 @@ fun OnlineSearch(
     val playlistId = remember(textFieldValue.text) {
         val isPlaylistUrl = listOf(
             "https://www.youtube.com/playlist?",
+            "https://youtube.com/playlist?",
             "https://music.youtube.com/playlist?",
             "https://m.youtube.com/playlist?"
         ).any(textFieldValue.text::startsWith)
