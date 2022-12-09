@@ -273,8 +273,8 @@ fun Queue(
                                                 player.play()
                                             }
                                         } else {
-                                            player.playWhenReady = true
                                             player.seekToDefaultPosition(window.firstPeriodIndex)
+                                            player.playWhenReady = true
                                         }
                                     }
                                 )
