@@ -142,7 +142,11 @@ fun DatabaseSettings() {
             onClick = {
                 try {
                     restoreLauncher.launch(
-                        arrayOf("application/vnd.sqlite3", "application/octet-stream")
+                        arrayOf(
+                            "application/vnd.sqlite3",
+                            "application/x-sqlite3",
+                            "application/octet-stream"
+                        )
                     )
                 } catch (e: ActivityNotFoundException) {
                     context.toast("Couldn't find an application to open documents")
