@@ -34,7 +34,7 @@ dependencyResolutionManagement {
             library("room", "androidx.room", "room-ktx").versionRef("room")
             library("room-compiler", "androidx.room", "room-compiler").versionRef("room")
 
-            version("media3", "1.0.0-beta02")
+            version("media3", "1.0.0-beta03")
             library("exoplayer", "androidx.media3", "media3-exoplayer").versionRef("media3")
 
             version("ktor", "2.1.2")
