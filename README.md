@@ -33,7 +33,7 @@
 - Android Auto
 - Persistent queue
 - Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
-- ...
+- gesture support
 
 ## Installation
 
