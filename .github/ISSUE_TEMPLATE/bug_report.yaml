@@ -1,14 +1,12 @@
 name: Bug report
-description: Create a bug report to help us improve
+description: Something isn't working, uh?
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        **1- I am able to reproduce the bug with the [latest version](https://github.com/vfsfitvnm/vimusic/releases/latest).**
-        **2- I've checked that there is no issue about this bug.**
-        **3- This issue contains only one bug.**
-        **4- The title of this issue accurately describes the bug.**
+      ## ⚠ Make sure you are able to reproduce the bug with the [latest version](https://github.com/vfsfitvnm/vimusic/releases/latest).
+      ## ⚠️Make sure there is no issue about this bug already.
 
   - type: textarea
     id: reproduce-steps
@@ -65,7 +63,7 @@ body:
     attributes:
       label: ViMusic version
       placeholder: |
-        Example: "0.1.2"
+        Example: "0.5.4"
     validations:
       required: true
 
