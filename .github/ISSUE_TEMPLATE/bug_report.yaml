@@ -5,8 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-      ## ⚠ Make sure you are able to reproduce the bug with the [latest version](https://github.com/vfsfitvnm/vimusic/releases/latest).
-      ## ⚠️Make sure there is no issue about this bug already.
+      - ⚠️ **Make sure you are able to reproduce the bug with the [latest version](https://github.com/vfsfitvnm/vimusic/releases/latest).**
+      - ⚠️ **Make sure there is no issue about this bug already.**
 
   - type: textarea
     id: reproduce-steps
