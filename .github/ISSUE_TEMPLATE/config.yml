@@ -1,5 +1,1 @@
 blank_issues_enabled: false
-contact_links:
-  - name: 🐛 Bug report
-    url: https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=bug&template=bug_report.yaml
-    about: Something isn't working, uh?
