@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="AlbumsHeader">Álbumes</string>
+    <string name="ArtistsHeader">Artistas</string>
+    <string name="PlaylistNameHint">Introduce el nombre de la lista</string>
+    <string name="PlaylistsHeader">Listas</string>
+    <string name="NewPlaylist">Nueva lista</string>
+    <string name="Favorites">Favoritos</string>
+    <string name="Offline">Sin conexión</string>
+    <string name="PlaylistIdNullError">el Id de la lista de reproducción no puede ser nulo</string>
+    <string name="ScaffoldQuickPicks">Selección rápida</string>
+    <string name="ScaffoldSongs">Canciones</string>
+    <string name="ScaffoldPlaylists">Listas</string>
+    <string name="ScaffoldArtists">Artistas</string>
+    <string name="ScaffoldAlbums">Álbumes</string>
+    <string name="SongsHeader">Canciones</string>
+    <string name="QuickPicksHeader">Selección rápida</string>
+    <string name="RelatedAlbums">Álbumes relacionados</string>
+    <string name="SimilarArtists">Artistas similares</string>
+    <string name="PlaylistsMightLike">Listas que te podrían gustar</string>
+    <string name="OcurredError">Ha ocurrido un error</string>
 </resources>

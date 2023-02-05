@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.compose.persist.PersistMapCleanup
 import it.vfsfitvnm.compose.routing.RouteHandler
 import it.vfsfitvnm.compose.routing.defaultStacking
@@ -69,7 +70,7 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
 
         localPlaylistRoute { playlistId ->
             LocalPlaylistScreen(
-                playlistId = playlistId ?: error("playlistId cannot be null")
+                playlistId = playlistId ?: error(stringResource(R.string.PlaylistIdNullError))
             )
         }
 
@@ -119,11 +120,11 @@ fun HomeScreen(onPlaylistUrl: (String) -> Unit) {
                 tabIndex = tabIndex,
                 onTabChanged = onTabChanged,
                 tabColumnContent = { Item ->
-                    Item(0, "Quick picks", R.drawable.sparkles)
-                    Item(1, "Songs", R.drawable.musical_notes)
-                    Item(2, "Playlists", R.drawable.playlist)
-                    Item(3, "Artists", R.drawable.person)
-                    Item(4, "Albums", R.drawable.disc)
+                    Item(0, stringResource(R.string.ScaffoldQuickPicks), R.drawable.sparkles)
+                    Item(1, stringResource(R.string.ScaffoldSongs), R.drawable.musical_notes)
+                    Item(2, stringResource(R.string.ScaffoldPlaylists), R.drawable.playlist)
+                    Item(3, stringResource(R.string.ScaffoldArtists), R.drawable.person)
+                    Item(4, stringResource(R.string.ScaffoldAlbums), R.drawable.disc)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
