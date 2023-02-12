@@ -10,6 +10,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.persist.PersistMapCleanup
 import it.vfsfitvnm.compose.persist.persistMap
@@ -75,7 +76,8 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                 )
             }
 
-            val emptyItemsText = "No results found. Please try a different query or category"
+            val emptyItemsText =
+                stringResource(id = R.string.no_results_found_try_different_query_or_category)
 
             Scaffold(
                 topIconButtonId = R.drawable.chevron_back,
@@ -83,12 +85,12 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                 tabIndex = tabIndex,
                 onTabChanged = onTabIndexChanges,
                 tabColumnContent = { Item ->
-                    Item(0, "Songs", R.drawable.musical_notes)
-                    Item(1, "Albums", R.drawable.disc)
-                    Item(2, "Artists", R.drawable.person)
-                    Item(3, "Videos", R.drawable.film)
-                    Item(4, "Playlists", R.drawable.playlist)
-                    Item(5, "Featured", R.drawable.playlist)
+                    Item(0, stringResource(id = R.string.songs), R.drawable.musical_notes)
+                    Item(1, stringResource(id = R.string.albums), R.drawable.disc)
+                    Item(2, stringResource(id = R.string.artists), R.drawable.person)
+                    Item(3, stringResource(id = R.string.videos), R.drawable.film)
+                    Item(4, stringResource(id = R.string.playlists), R.drawable.playlist)
+                    Item(5, stringResource(id = R.string.featured), R.drawable.playlist)
                 }
             ) { tabIndex ->
                 saveableStateHolder.SaveableStateProvider(tabIndex) {
@@ -104,7 +106,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
-                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Song.value),
+                                            body = SearchBody(
+                                                query = query,
+                                                params = Innertube.SearchFilter.Song.value
+                                            ),
                                             fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
                                         )
                                     } else {
@@ -126,9 +131,9 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                                 onLongClick = {
                                                     menuState.display {
                                                         NonQueuedMediaItemMenu(
-                                        onDismiss = menuState::hide,
-                                        mediaItem = song.asMediaItem,
-                                    )
+                                                            onDismiss = menuState::hide,
+                                                            mediaItem = song.asMediaItem,
+                                                        )
                                                     }
                                                 },
                                                 onClick = {
@@ -154,7 +159,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
-                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Album.value),
+                                            body = SearchBody(
+                                                query = query,
+                                                params = Innertube.SearchFilter.Album.value
+                                            ),
                                             fromMusicShelfRendererContent = Innertube.AlbumItem::from
                                         )
                                     } else {
@@ -191,7 +199,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
-                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Artist.value),
+                                            body = SearchBody(
+                                                query = query,
+                                                params = Innertube.SearchFilter.Artist.value
+                                            ),
                                             fromMusicShelfRendererContent = Innertube.ArtistItem::from
                                         )
                                     } else {
@@ -229,7 +240,10 @@ fun SearchResultScreen(query: String, onSearchAgain: () -> Unit) {
                                 itemsPageProvider = { continuation ->
                                     if (continuation == null) {
                                         Innertube.searchPage(
-                                            body = SearchBody(query = query, params = Innertube.SearchFilter.Video.value),
+                                            body = SearchBody(
+                                                query = query,
+                                                params = Innertube.SearchFilter.Video.value
+                                            ),
                                             fromMusicShelfRendererContent = Innertube.VideoItem::from
                                         )
                                     } else {

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +28,7 @@ import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -95,7 +97,7 @@ fun LocalSongSearch(
                     actionsContent = {
                         if (textFieldValue.text.isNotEmpty()) {
                             SecondaryTextButton(
-                                text = "Clear",
+                                text = stringResource(id = R.string.clear),
                                 onClick = { onTextFieldValueChanged(TextFieldValue()) }
                             )
                         }

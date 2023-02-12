@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.compose.persist.persist
 import it.vfsfitvnm.innertube.Innertube
@@ -92,7 +93,7 @@ fun PlaylistSongList(
 
     if (isImportingPlaylist) {
         TextFieldDialog(
-            hintText = "Enter the playlist name",
+            hintText = stringResource(id = R.string.enter_playlist_name),
             initialTextInput = playlistPage?.title ?: "",
             onDismiss = { isImportingPlaylist = false },
             onDone = { text ->
@@ -123,9 +124,9 @@ fun PlaylistSongList(
                     .shimmer()
             )
         } else {
-            Header(title = playlistPage?.title ?: "Unknown") {
+            Header(title = playlistPage?.title ?: stringResource(id = R.string.unknown)) {
                 SecondaryTextButton(
-                    text = "Enqueue",
+                    text = stringResource(id = R.string.enqueue),
                     enabled = playlistPage?.songsPage?.items?.isNotEmpty() == true,
                     onClick = {
                         playlistPage?.songsPage?.items?.map(Innertube.SongItem::asMediaItem)?.let { mediaItems ->

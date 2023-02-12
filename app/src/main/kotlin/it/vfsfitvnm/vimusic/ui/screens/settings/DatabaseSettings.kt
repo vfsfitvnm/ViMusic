@@ -20,11 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import it.vfsfitvnm.vimusic.Database
-import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
-import it.vfsfitvnm.vimusic.internal
-import it.vfsfitvnm.vimusic.path
-import it.vfsfitvnm.vimusic.query
+import androidx.compose.ui.res.stringResource
+import it.vfsfitvnm.vimusic.*
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -94,16 +91,16 @@ fun DatabaseSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Database")
+        Header(title = stringResource(id = R.string.database))
 
-        SettingsEntryGroupText(title = "CLEANUP")
+        SettingsEntryGroupText(title = stringResource(id = R.string.cleanup).uppercase())
 
         SettingsEntry(
-            title = "Reset quick picks",
+            title = stringResource(id = R.string.reset_quick_picks),
             text = if (eventsCount > 0) {
-                "Delete $eventsCount playback events"
+                stringResource(id = R.string.delete) + " $eventsCount " + stringResource(id = R.string.playback_events)
             } else {
-                "Quick picks are cleared"
+                stringResource(id = R.string.quick_picks_are_cleared)
             },
             isEnabled = eventsCount > 0,
             onClick = { query(Database::clearEvents) }
@@ -111,13 +108,13 @@ fun DatabaseSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "BACKUP")
+        SettingsEntryGroupText(title = stringResource(id = R.string.backup).uppercase())
 
-        SettingsDescription(text = "Personal preferences (i.e. the theme mode) and the cache are excluded.")
+        SettingsDescription(text = stringResource(id = R.string.backup_description))
 
         SettingsEntry(
-            title = "Backup",
-            text = "Export the database to the external storage",
+            title = stringResource(id = R.string.backup),
+            text = stringResource(id = R.string.backup_action_description),
             onClick = {
                 @SuppressLint("SimpleDateFormat")
                 val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
@@ -125,20 +122,24 @@ fun DatabaseSettings() {
                 try {
                     backupLauncher.launch("vimusic_${dateFormat.format(Date())}.db")
                 } catch (e: ActivityNotFoundException) {
-                    context.toast("Couldn't find an application to create documents")
+                    context.toast(context.getString(R.string.could_not_find_app_to_create_documents))
                 }
             }
         )
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "RESTORE")
+        SettingsEntryGroupText(title = stringResource(id = R.string.restore))
 
-        ImportantSettingsDescription(text = "Existing data will be overwritten.\n${context.applicationInfo.nonLocalizedLabel} will automatically close itself after restoring the database.")
+        ImportantSettingsDescription(
+            text = stringResource(id = R.string.existing_data_will_be_overwritten) + "\n${context.applicationInfo.nonLocalizedLabel} " + stringResource(
+                id = R.string.will_automatically_close_after_restoring
+            )
+        )
 
         SettingsEntry(
-            title = "Restore",
-            text = "Import the database from the external storage",
+            title = stringResource(id = R.string.restore),
+            text = stringResource(id = R.string.restore_description),
             onClick = {
                 try {
                     restoreLauncher.launch(
@@ -149,7 +150,7 @@ fun DatabaseSettings() {
                         )
                     )
                 } catch (e: ActivityNotFoundException) {
-                    context.toast("Couldn't find an application to open documents")
+                    context.toast(context.getString(R.string.could_not_find_app_to_open_documents))
                 }
             }
         )

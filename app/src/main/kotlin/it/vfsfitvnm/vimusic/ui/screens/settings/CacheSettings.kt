@@ -18,10 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -58,9 +60,9 @@ fun CacheSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Cache")
+        Header(title = stringResource(id = R.string.cache))
 
-        SettingsDescription(text = "When the cache runs out of space, the resources that haven't been accessed for the longest time are cleared")
+        SettingsDescription(text = stringResource(id = R.string.cache_description))
 
         Coil.imageLoader(context).diskCache?.let { diskCache ->
             val diskCacheSize = remember(diskCache) {
@@ -69,7 +71,7 @@ fun CacheSettings() {
 
             SettingsGroupSpacer()
 
-            SettingsEntryGroupText(title = "IMAGE CACHE")
+            SettingsEntryGroupText(title = stringResource(id = R.string.image_cache).uppercase())
 
             SettingsDescription(
                 text = "${
@@ -77,11 +79,15 @@ fun CacheSettings() {
                         context,
                         diskCacheSize
                     )
-                } used (${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(1)}%)"
+                } " + stringResource(id = R.string.used) + " (${
+                    diskCacheSize * 100 / coilDiskCacheMaxSize.bytes.coerceAtLeast(
+                        1
+                    )
+                }%)"
             )
 
             EnumValueSelectorSettingsEntry(
-                title = "Max size",
+                title = stringResource(id = R.string.max_size),
                 selectedValue = coilDiskCacheMaxSize,
                 onValueSelected = { coilDiskCacheMaxSize = it }
             )
@@ -96,12 +102,12 @@ fun CacheSettings() {
 
             SettingsGroupSpacer()
 
-            SettingsEntryGroupText(title = "SONG CACHE")
+            SettingsEntryGroupText(title = stringResource(id = R.string.song_cache).uppercase())
 
             SettingsDescription(
                 text = buildString {
                     append(Formatter.formatShortFileSize(context, diskCacheSize))
-                    append(" used")
+                    append(" " + stringResource(id = R.string.used))
                     when (val size = exoPlayerDiskCacheMaxSize) {
                         ExoPlayerDiskCacheMaxSize.Unlimited -> {}
                         else -> append(" (${diskCacheSize * 100 / size.bytes}%)")
@@ -109,10 +115,19 @@ fun CacheSettings() {
                 }
             )
 
+            val unlimitedSize = stringResource(id = R.string.unlimited_size)
+
             EnumValueSelectorSettingsEntry(
-                title = "Max size",
+                title = stringResource(id = R.string.max_size),
                 selectedValue = exoPlayerDiskCacheMaxSize,
-                onValueSelected = { exoPlayerDiskCacheMaxSize = it }
+                onValueSelected = { exoPlayerDiskCacheMaxSize = it },
+                valueText = {
+                    if (it == ExoPlayerDiskCacheMaxSize.Unlimited) {
+                        unlimitedSize
+                    } else {
+                        it.name
+                    }
+                }
             )
         }
     }

@@ -44,6 +44,7 @@ import it.vfsfitvnm.vimusic.utils.asMediaItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.stringResource
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -182,8 +183,8 @@ fun AlbumScreen(browseId: String) {
                 tabIndex = tabIndex,
                 onTabChanged = { tabIndex = it },
                 tabColumnContent = { Item ->
-                    Item(0, "Songs", R.drawable.musical_notes)
-                    Item(1, "Other versions", R.drawable.disc)
+                    Item(0, stringResource(id = R.string.songs), R.drawable.musical_notes)
+                    Item(1, stringResource(id = R.string.other_versions), R.drawable.disc)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
@@ -203,7 +204,7 @@ fun AlbumScreen(browseId: String) {
                                 headerContent = headerContent,
                                 initialPlaceholderCount = 1,
                                 continuationPlaceholderCount = 1,
-                                emptyItemsText = "This album doesn't have any alternative version",
+                                emptyItemsText = stringResource(id = R.string.album_no_alternative_version),
                                 itemsPageProvider = albumPage?.let {
                                     ({
                                         Result.success(

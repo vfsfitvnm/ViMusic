@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -331,7 +332,7 @@ fun Queue(
                     .height(64.dp)
             ) {
                 BasicText(
-                    text = "${windows.size} songs",
+                    text = "${windows.size} " + stringResource(id = R.string.songs).lowercase(),
                     style = typography.xxs.medium,
                     modifier = Modifier
                         .background(
@@ -361,14 +362,15 @@ fun Queue(
                         .animateContentSize()
                 ) {
                     BasicText(
-                        text = "Queue loop ",
+                        text = stringResource(id = R.string.queue_loop) + " ",
                         style = typography.xxs.medium,
                     )
 
                     AnimatedContent(
                         targetState = queueLoopEnabled,
                         transitionSpec = {
-                            val slideDirection = if (targetState) AnimatedContentScope.SlideDirection.Up else AnimatedContentScope.SlideDirection.Down
+                            val slideDirection =
+                                if (targetState) AnimatedContentScope.SlideDirection.Up else AnimatedContentScope.SlideDirection.Down
 
                             ContentTransform(
                                 targetContentEnter = slideIntoContainer(slideDirection) + fadeIn(),
@@ -377,7 +379,9 @@ fun Queue(
                         }
                     ) {
                         BasicText(
-                            text = if (it) "on" else "off",
+                            text = if (it) stringResource(id = R.string.queue_loop_on) else stringResource(
+                                id = R.string.queue_loop_off
+                            ),
                             style = typography.xxs.medium,
                         )
                     }

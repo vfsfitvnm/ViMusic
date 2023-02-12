@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -160,7 +161,9 @@ fun OnlineSearch(
                             val isAlbum = playlistId.startsWith("OLAK5uy_")
 
                             SecondaryTextButton(
-                                text = "View ${if (isAlbum) "album" else "playlist"}",
+                                text = if (isAlbum) stringResource(id = R.string.view_album) else stringResource(
+                                    id = R.string.view_playlist
+                                ),
                                 onClick = { onViewPlaylist(textFieldValue.text) }
                             )
                         }
@@ -172,7 +175,7 @@ fun OnlineSearch(
 
                         if (textFieldValue.text.isNotEmpty()) {
                             SecondaryTextButton(
-                                text = "Clear",
+                                text = stringResource(id = R.string.clear),
                                 onClick = { onTextFieldValueChanged(TextFieldValue()) }
                             )
                         }

@@ -20,11 +20,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.persist.persist
 import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.utils.plus
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.ShimmerHost
 import it.vfsfitvnm.vimusic.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
@@ -43,7 +45,7 @@ inline fun <T : Innertube.Item> ItemsPage(
     modifier: Modifier = Modifier,
     initialPlaceholderCount: Int = 8,
     continuationPlaceholderCount: Int = 3,
-    emptyItemsText: String = "No items found",
+    emptyItemsText: String = stringResource(id = R.string.no_items_found),
     noinline itemsPageProvider: (suspend (String?) -> Result<Innertube.ItemsPage<T>?>?)? = null,
 ) {
     val (_, typography) = LocalAppearance.current

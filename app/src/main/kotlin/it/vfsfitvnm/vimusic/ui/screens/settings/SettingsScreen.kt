@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.routing.RouteHandler
 import it.vfsfitvnm.vimusic.R
@@ -53,12 +54,12 @@ fun SettingsScreen() {
                 tabIndex = tabIndex,
                 onTabChanged = onTabChanged,
                 tabColumnContent = { Item ->
-                    Item(0, "Appearance", R.drawable.color_palette)
-                    Item(1, "Player", R.drawable.play)
-                    Item(2, "Cache", R.drawable.server)
-                    Item(3, "Database", R.drawable.server)
-                    Item(4, "Other", R.drawable.shapes)
-                    Item(5, "About", R.drawable.information)
+                    Item(0, stringResource(id = R.string.appearance), R.drawable.color_palette)
+                    Item(1, stringResource(id = R.string.player), R.drawable.play)
+                    Item(2, stringResource(id = R.string.cache), R.drawable.server)
+                    Item(3, stringResource(id = R.string.database), R.drawable.server)
+                    Item(4, stringResource(id = R.string.other), R.drawable.shapes)
+                    Item(5, stringResource(id = R.string.about), R.drawable.information)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(currentTabIndex) {

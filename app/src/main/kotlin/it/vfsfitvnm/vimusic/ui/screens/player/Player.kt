@@ -404,7 +404,7 @@ private fun PlayerMenu(
                     }
                 )
             } catch (e: ActivityNotFoundException) {
-                context.toast("Couldn't find an application to equalize audio")
+                context.toast(context.getString(R.string.could_not_find_application_to_equalize_audio))
             }
         },
         onShowSleepTimer = {},

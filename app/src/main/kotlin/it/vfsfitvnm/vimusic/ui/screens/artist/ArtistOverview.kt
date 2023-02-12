@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.innertube.Innertube
@@ -103,7 +104,7 @@ fun ArtistOverview(
                     headerContent {
                         youtubeArtistPage?.shuffleEndpoint?.let { endpoint ->
                             SecondaryTextButton(
-                                text = "Shuffle",
+                                text = stringResource(id = R.string.shuffle),
                                 onClick = {
                                     binder?.stopRadio()
                                     binder?.playRadio(endpoint)
@@ -125,14 +126,14 @@ fun ArtistOverview(
                                 .padding(endPaddingValues)
                         ) {
                             BasicText(
-                                text = "Songs",
+                                text = stringResource(id = R.string.songs),
                                 style = typography.m.semiBold,
                                 modifier = sectionTextModifier
                             )
 
                             youtubeArtistPage.songsEndpoint?.let {
                                 BasicText(
-                                    text = "View all",
+                                    text = stringResource(id = R.string.view_all),
                                     style = typography.xs.secondary,
                                     modifier = sectionTextModifier
                                         .clickable(onClick = onViewAllSongsClick),
@@ -178,14 +179,14 @@ fun ArtistOverview(
                                 .padding(endPaddingValues)
                         ) {
                             BasicText(
-                                text = "Albums",
+                                text = stringResource(id = R.string.albums),
                                 style = typography.m.semiBold,
                                 modifier = sectionTextModifier
                             )
 
                             youtubeArtistPage.albumsEndpoint?.let {
                                 BasicText(
-                                    text = "View all",
+                                    text = stringResource(id = R.string.view_all),
                                     style = typography.xs.secondary,
                                     modifier = sectionTextModifier
                                         .clickable(onClick = onViewAllAlbumsClick),
@@ -223,14 +224,14 @@ fun ArtistOverview(
                                 .padding(endPaddingValues)
                         ) {
                             BasicText(
-                                text = "Singles",
+                                text = stringResource(id = R.string.singles),
                                 style = typography.m.semiBold,
                                 modifier = sectionTextModifier
                             )
 
                             youtubeArtistPage.singlesEndpoint?.let {
                                 BasicText(
-                                    text = "View all",
+                                    text = stringResource(id = R.string.view_all),
                                     style = typography.xs.secondary,
                                     modifier = sectionTextModifier
                                         .clickable(onClick = onViewAllSinglesClick),
@@ -299,7 +300,7 @@ fun ArtistOverview(
 
                         if (attributionsIndex != -1) {
                             BasicText(
-                                text = "From Wikipedia under Creative Commons Attribution CC-BY-SA 3.0",
+                                text = stringResource(id = R.string.from_wikipedia_CC_BY_SA_3_0),
                                 style = typography.xxs.color(colorPalette.textDisabled).align(TextAlign.End),
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)

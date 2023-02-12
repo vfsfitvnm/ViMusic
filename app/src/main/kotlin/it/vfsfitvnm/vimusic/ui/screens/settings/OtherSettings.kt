@@ -28,8 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.service.PlayerMediaBrowserService
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -98,36 +100,36 @@ fun OtherSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Other")
+        Header(title = stringResource(id = R.string.other))
 
-        SettingsEntryGroupText(title = "ANDROID AUTO")
+        SettingsEntryGroupText(title = stringResource(id = R.string.android_auto).uppercase())
 
-        SettingsDescription(text = "Remember to enable \"Unknown sources\" in the Developer Settings of Android Auto.")
+        SettingsDescription(text = stringResource(id = R.string.android_auto_description))
 
         SwitchSettingEntry(
-            title = "Android Auto",
-            text = "Enable Android Auto support",
+            title = stringResource(id = R.string.android_auto),
+            text = stringResource(id = R.string.android_auto_action_description),
             isChecked = isAndroidAutoEnabled,
             onCheckedChange = { isAndroidAutoEnabled = it }
         )
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "SEARCH HISTORY")
+        SettingsEntryGroupText(title = stringResource(id = R.string.search_history).uppercase())
 
         SwitchSettingEntry(
-            title = "Pause search history",
-            text = "Neither save new searched queries nor show history",
+            title = stringResource(id = R.string.pause_search_history),
+            text = stringResource(id = R.string.pause_search_history_description),
             isChecked = pauseSearchHistory,
             onCheckedChange = { pauseSearchHistory = it }
         )
 
         SettingsEntry(
-            title = "Clear search history",
+            title = stringResource(id = R.string.clear_search_history),
             text = if (queriesCount > 0) {
-                "Delete $queriesCount search queries"
+                stringResource(id = R.string.delete) + " $queriesCount " + stringResource(id = R.string.search_queries)
             } else {
-                "History is empty"
+                stringResource(id = R.string.history_is_empty)
             },
             isEnabled = queriesCount > 0,
             onClick = { query(Database::clearQueries) }
@@ -135,21 +137,21 @@ fun OtherSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "SERVICE LIFETIME")
+        SettingsEntryGroupText(title = stringResource(id = R.string.service_lifetime).uppercase())
 
-        ImportantSettingsDescription(text = "If battery optimizations are applied, the playback notification can suddenly disappear when paused.")
+        ImportantSettingsDescription(text = stringResource(id = R.string.service_lifetime_description))
 
         if (isAtLeastAndroid12) {
-            SettingsDescription(text = "Since Android 12, disabling battery optimizations is required for the \"Invincible service\" option to take effect.")
+            SettingsDescription(text = stringResource(id = R.string.invincible_service_description))
         }
 
         SettingsEntry(
-            title = "Ignore battery optimizations",
+            title = stringResource(id = R.string.ignore_battery_optimizations),
             isEnabled = !isIgnoringBatteryOptimizations,
             text = if (isIgnoringBatteryOptimizations) {
-                "Already unrestricted"
+                stringResource(id = R.string.already_unrestricted)
             } else {
-                "Disable background restrictions"
+                stringResource(id = R.string.disable_background_restrictions)
             },
             onClick = {
                 if (!isAtLeastAndroid6) return@SettingsEntry
@@ -166,15 +168,15 @@ fun OtherSettings() {
                             Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                         )
                     } catch (e: ActivityNotFoundException) {
-                        context.toast("Couldn't find battery optimization settings, please whitelist ViMusic manually")
+                        context.toast(context.getString(R.string.could_not_find_battery_optimization_settings_whitelist_manually))
                     }
                 }
             }
         )
 
         SwitchSettingEntry(
-            title = "Invincible service",
-            text = "When turning off battery optimizations is not enough",
+            title = stringResource(id = R.string.invincible_service),
+            text = stringResource(id = R.string.invincible_service_action_description),
             isChecked = isInvincibilityEnabled,
             onCheckedChange = { isInvincibilityEnabled = it }
         )

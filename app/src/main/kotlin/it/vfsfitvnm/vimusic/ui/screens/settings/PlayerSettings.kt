@@ -20,8 +20,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
@@ -61,13 +63,13 @@ fun PlayerSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Player & Audio")
+        Header(title = stringResource(id = R.string.player_and_audio))
 
-        SettingsEntryGroupText(title = "PLAYER")
+        SettingsEntryGroupText(title = stringResource(id = R.string.player).uppercase())
 
         SwitchSettingEntry(
-            title = "Persistent queue",
-            text = "Save and restore playing songs",
+            title = stringResource(id = R.string.persistent_queue),
+            text = stringResource(id = R.string.persistent_queue_description),
             isChecked = persistentQueue,
             onCheckedChange = {
                 persistentQueue = it
@@ -76,8 +78,8 @@ fun PlayerSettings() {
 
         if (isAtLeastAndroid6) {
             SwitchSettingEntry(
-                title = "Resume playback",
-                text = "When a wired or bluetooth device is connected",
+                title = stringResource(id = R.string.resume_playback),
+                text = stringResource(id = R.string.resume_playback_description),
                 isChecked = resumePlaybackWhenDeviceConnected,
                 onCheckedChange = {
                     resumePlaybackWhenDeviceConnected = it
@@ -87,11 +89,11 @@ fun PlayerSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "AUDIO")
+        SettingsEntryGroupText(title = stringResource(id = R.string.audio).uppercase())
 
         SwitchSettingEntry(
-            title = "Skip silence",
-            text = "Skip silent parts during playback",
+            title = stringResource(id = R.string.skip_silence),
+            text = stringResource(id = R.string.skip_silence_description),
             isChecked = skipSilence,
             onCheckedChange = {
                 skipSilence = it
@@ -99,8 +101,8 @@ fun PlayerSettings() {
         )
 
         SwitchSettingEntry(
-            title = "Loudness normalization",
-            text = "Adjust the volume to a fixed level",
+            title = stringResource(id = R.string.loudness_normalization),
+            text = stringResource(id = R.string.loudness_normalization_description),
             isChecked = volumeNormalization,
             onCheckedChange = {
                 volumeNormalization = it
@@ -108,8 +110,8 @@ fun PlayerSettings() {
         )
 
         SettingsEntry(
-            title = "Equalizer",
-            text = "Interact with the system equalizer",
+            title = stringResource(id = R.string.equalizer),
+            text = stringResource(id = R.string.equalizer_description),
             onClick = {
                 val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                     putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder?.player?.audioSessionId)
@@ -120,7 +122,7 @@ fun PlayerSettings() {
                 try {
                     activityResultLauncher.launch(intent)
                 } catch (e: ActivityNotFoundException) {
-                    context.toast("Couldn't find an application to equalize audio")
+                    context.toast(context.getString(R.string.could_not_find_application_to_equalize_audio))
                 }
             }
         )

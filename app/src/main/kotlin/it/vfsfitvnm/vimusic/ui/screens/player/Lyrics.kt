@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
@@ -169,7 +170,7 @@ fun Lyrics(
 
         if (isEditing) {
             TextFieldDialog(
-                hintText = "Enter the lyrics",
+                hintText = stringResource(id = R.string.enter_lyrics),
                 initialTextInput = text ?: "",
                 singleLine = false,
                 maxLines = 10,
@@ -218,7 +219,12 @@ fun Lyrics(
                     .align(Alignment.TopCenter)
             ) {
                 BasicText(
-                    text = "An error has occurred while fetching the ${if (isShowingSynchronizedLyrics) "synchronized " else ""}lyrics",
+                    text =
+                    if (isShowingSynchronizedLyrics) stringResource(
+                        id = R.string.error_occurred_while_fetching_synchronized_lyrics
+                    ) else stringResource(
+                        id = R.string.error_occurred_while_fetching_lyrics
+                    ),
                     style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
@@ -235,7 +241,9 @@ fun Lyrics(
                     .align(Alignment.TopCenter)
             ) {
                 BasicText(
-                    text = "${if (isShowingSynchronizedLyrics) "Synchronized l" else "L"}yrics are not available for this song",
+                    text = if (isShowingSynchronizedLyrics) stringResource(id = R.string.synchronized_lyrics_not_available) else stringResource(
+                        id = R.string.lyrics_not_available
+                    ),
                     style = typography.xs.center.medium.color(PureBlackColorPalette.text),
                     modifier = Modifier
                         .background(Color.Black.copy(0.4f))
@@ -334,8 +342,11 @@ fun Lyrics(
                                 Menu {
                                     MenuEntry(
                                         icon = R.drawable.time,
-                                        text = "Show ${if (isShowingSynchronizedLyrics) "un" else ""}synchronized lyrics",
-                                        secondaryText = if (isShowingSynchronizedLyrics) null else "Provided by kugou.com",
+                                        text = if (isShowingSynchronizedLyrics) stringResource(id = R.string.show_unsynchronized_lyrics) else stringResource(
+                                            id = R.string.show_synchronized_lyrics
+                                        ),
+                                        secondaryText =
+                                        if (isShowingSynchronizedLyrics) null else stringResource(id = R.string.synchronized_lyrics_provided_by),
                                         onClick = {
                                             menuState.hide()
                                             isShowingSynchronizedLyrics =
@@ -345,7 +356,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.pencil,
-                                        text = "Edit lyrics",
+                                        text = stringResource(id = R.string.edit_lyrics),
                                         onClick = {
                                             menuState.hide()
                                             isEditing = true
@@ -354,29 +365,30 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.search,
-                                        text = "Search lyrics online",
+                                        text = stringResource(id = R.string.search_lyrics_online),
                                         onClick = {
                                             menuState.hide()
                                             val mediaMetadata = mediaMetadataProvider()
 
                                             try {
+                                                val lyricsWord = context.getString(R.string.lyrics)
                                                 context.startActivity(
                                                     Intent(Intent.ACTION_WEB_SEARCH).apply {
                                                         putExtra(
                                                             SearchManager.QUERY,
-                                                            "${mediaMetadata.title} ${mediaMetadata.artist} lyrics"
+                                                            "${mediaMetadata.title} ${mediaMetadata.artist} " + lyricsWord
                                                         )
                                                     }
                                                 )
                                             } catch (e: ActivityNotFoundException) {
-                                                context.toast("Couldn't find an application to browse the Internet")
+                                                context.toast(context.getString(R.string.could_not_find_app_to_browse_the_internet))
                                             }
                                         }
                                     )
 
                                     MenuEntry(
                                         icon = R.drawable.download,
-                                        text = "Fetch lyrics again",
+                                        text = stringResource(id = R.string.fetch_lyrics_again),
                                         enabled = lyrics != null,
                                         onClick = {
                                             menuState.hide()
