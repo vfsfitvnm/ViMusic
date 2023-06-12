@@ -2,15 +2,20 @@ package it.vfsfitvnm.vimusic.ui.screens.settings
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,9 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import it.vfsfitvnm.compose.routing.RouteHandler
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.ui.components.themed.DialogTextButton
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
@@ -32,6 +41,7 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.toast
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -191,6 +201,54 @@ fun SettingsEntry(
 
         trailingContent?.invoke()
     }
+}
+
+@Composable
+fun TextDialogSettingEntry(
+    title: String,
+    text: String,
+    currentText: String,
+    onTextSave: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
+) {
+    val (colorPalette, typography) = LocalAppearance.current
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var textValue by remember { mutableStateOf(currentText) }
+
+    if (showDialog) {
+        Dialog(onDismissRequest = { showDialog = false }) {
+            Box(Modifier.background(colorPalette.background0).width(300.dp)) {
+                Column(Modifier.padding(16.dp,24.dp)) {
+                    BasicText(text = title)
+                    Box(
+                        Modifier
+                            .background(color = colorPalette.background2)
+                            .height(24.dp)
+                            .fillMaxWidth()
+                    ) {
+                        BasicTextField(
+                            value = textValue, onValueChange = { textValue = it },
+                            enabled = isEnabled, modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    DialogTextButton(text = "Save", onClick = { onTextSave(textValue)
+                    context.toast("Preference Saved")})
+                }
+            }
+        }
+    }
+    SettingsEntry(
+        title = title,
+        text = text,
+        isEnabled = isEnabled,
+        onClick = { showDialog = true },
+        trailingContent = { },
+        modifier = modifier
+    )
 }
 
 @Composable
