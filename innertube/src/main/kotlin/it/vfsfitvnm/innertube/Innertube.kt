@@ -52,8 +52,8 @@ object Innertube {
                     proxy = Proxy(
                         it.proxyMode,
                         InetSocketAddress(
-                            it.http_proxy_host,
-                            it.http_proxy_port
+                            it.proxyHost,
+                            it.proxyPort
                         )
                     )
                 }

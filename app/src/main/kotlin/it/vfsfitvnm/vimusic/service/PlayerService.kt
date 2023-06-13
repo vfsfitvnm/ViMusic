@@ -745,7 +745,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     private fun okHttpClient() : OkHttpClient{
         ProxyPreferences.preference?.let{
             return OkHttpClient.Builder()
-                .proxy(Proxy(it.proxyMode,InetSocketAddress(it.http_proxy_host,it.http_proxy_port)))
+                .proxy(Proxy(it.proxyMode,InetSocketAddress(it.proxyHost,it.proxyPort)))
                 .connectTimeout(Duration.ofSeconds(16))
                 .readTimeout(Duration.ofSeconds(8))
                 .build()

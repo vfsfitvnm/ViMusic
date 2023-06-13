@@ -7,7 +7,7 @@ object ProxyPreferences {
 }
 
 data class ProxyPreferenceItem(
-    var http_proxy_host: String,
-    var http_proxy_port: Int,
+    var proxyHost: String,
+    var proxyPort: Int,
     var proxyMode: Proxy.Type
 )
