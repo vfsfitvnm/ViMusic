@@ -96,6 +96,7 @@ import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid8
 import it.vfsfitvnm.vimusic.utils.isProxyEnabledKey
 import it.vfsfitvnm.vimusic.utils.preferences
 import it.vfsfitvnm.vimusic.utils.proxyHostNameKey
+import it.vfsfitvnm.vimusic.utils.proxyModeKey
 import it.vfsfitvnm.vimusic.utils.proxyPortKey
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 import it.vfsfitvnm.vimusic.utils.useSystemFontKey
@@ -105,6 +106,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.Proxy
 
 class MainActivity : ComponentActivity(), PersistMapOwner {
     private val serviceConnection = object : ServiceConnection {
@@ -143,8 +145,9 @@ class MainActivity : ComponentActivity(), PersistMapOwner {
             if(getBoolean(isProxyEnabledKey,false)) {
                 val hostName = getString(proxyHostNameKey,null)
                 val proxyPort = getInt(proxyPortKey, 8080)
+                val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
                 hostName?.let { hName->
-                    ProxyPreferences.preference = ProxyPreferenceItem(hName,proxyPort)
+                    ProxyPreferences.preference = ProxyPreferenceItem(hName,proxyPort,proxyMode)
                 }
             }
         }

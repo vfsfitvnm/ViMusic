@@ -41,6 +41,7 @@ const val pauseSearchHistoryKey = "pauseSearchHistory"
 const val isProxyEnabledKey = "isProxyEnabled"
 const val proxyHostNameKey = "proxyHostname"
 const val proxyPortKey = "proxyPortKey"
+const val proxyModeKey = "ProxyModeKey"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

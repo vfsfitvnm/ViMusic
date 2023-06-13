@@ -42,10 +42,12 @@ import it.vfsfitvnm.vimusic.utils.isInvincibilityEnabledKey
 import it.vfsfitvnm.vimusic.utils.isProxyEnabledKey
 import it.vfsfitvnm.vimusic.utils.pauseSearchHistoryKey
 import it.vfsfitvnm.vimusic.utils.proxyHostNameKey
+import it.vfsfitvnm.vimusic.utils.proxyModeKey
 import it.vfsfitvnm.vimusic.utils.proxyPortKey
 import it.vfsfitvnm.vimusic.utils.rememberPreference
 import it.vfsfitvnm.vimusic.utils.toast
 import kotlinx.coroutines.flow.distinctUntilChanged
+import java.net.Proxy
 
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
@@ -81,6 +83,8 @@ fun OtherSettings() {
     var proxyHost by rememberPreference(proxyHostNameKey, defaultValue = "")
 
     var proxyPort by rememberPreference(proxyPortKey, defaultValue = 1080)
+
+    var proxyMode by rememberPreference(proxyModeKey, defaultValue = Proxy.Type.HTTP)
 
     var isIgnoringBatteryOptimizations by remember {
         mutableStateOf(context.isIgnoringBatteryOptimizations)
@@ -200,6 +204,8 @@ fun OtherSettings() {
 
         AnimatedVisibility(visible = isProxyEnabled) {
             Column {
+                EnumValueSelectorSettingsEntry(title = "Proxy Mode",
+                    selectedValue = proxyMode, onValueSelected = {proxyMode = it})
                 TextDialogSettingEntry(
                     title = "Host",
                     text = "Set Http proxy hostname",

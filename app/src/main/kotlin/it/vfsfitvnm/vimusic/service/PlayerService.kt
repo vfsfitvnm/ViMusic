@@ -43,7 +43,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
@@ -746,7 +745,7 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
     private fun okHttpClient() : OkHttpClient{
         ProxyPreferences.preference?.let{
             return OkHttpClient.Builder()
-                .proxy(Proxy(Proxy.Type.HTTP,InetSocketAddress(it.http_proxy_host,it.http_proxy_port)))
+                .proxy(Proxy(it.proxyMode,InetSocketAddress(it.http_proxy_host,it.http_proxy_port)))
                 .connectTimeout(Duration.ofSeconds(16))
                 .readTimeout(Duration.ofSeconds(8))
                 .build()

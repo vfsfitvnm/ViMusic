@@ -50,7 +50,7 @@ object Innertube {
         ProxyPreferences.preference?.let {
                 engine {
                     proxy = Proxy(
-                        Proxy.Type.HTTP,
+                        it.proxyMode,
                         InetSocketAddress(
                             it.http_proxy_host,
                             it.http_proxy_port
