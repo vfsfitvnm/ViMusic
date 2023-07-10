@@ -58,8 +58,10 @@ import it.vfsfitvnm.compose.reordering.animateItemPlacement
 import it.vfsfitvnm.compose.reordering.draggedItem
 import it.vfsfitvnm.compose.reordering.rememberReorderingState
 import it.vfsfitvnm.compose.reordering.reorder
+import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
 import it.vfsfitvnm.vimusic.ui.components.LocalMenuState
@@ -318,6 +320,7 @@ fun Queue(
                         }
                     }
                 )
+
             }
 
 
@@ -330,16 +333,23 @@ fun Queue(
                     .padding(horizontalBottomPaddingValues)
                     .height(64.dp)
             ) {
+
                 BasicText(
-                    text = "${windows.size} songs",
+                    text = "Clear ${windows.size} Songs",
                     style = typography.xxs.medium,
                     modifier = Modifier
-                        .background(
-                            color = colorPalette.background1,
-                            shape = RoundedCornerShape(16.dp)
-                        )
                         .align(Alignment.CenterStart)
-                        .padding(all = 8.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+                            binder.stopRadio()
+                            binder.player.clearMediaItems()
+
+                            query {
+                                Database.clearQueue()
+                            }
+                        }
+                        .background(colorPalette.background1)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
 
                 Image(
@@ -368,7 +378,8 @@ fun Queue(
                     AnimatedContent(
                         targetState = queueLoopEnabled,
                         transitionSpec = {
-                            val slideDirection = if (targetState) AnimatedContentScope.SlideDirection.Up else AnimatedContentScope.SlideDirection.Down
+                            val slideDirection =
+                                if (targetState) AnimatedContentScope.SlideDirection.Up else AnimatedContentScope.SlideDirection.Down
 
                             ContentTransform(
                                 targetContentEnter = slideIntoContainer(slideDirection) + fadeIn(),
