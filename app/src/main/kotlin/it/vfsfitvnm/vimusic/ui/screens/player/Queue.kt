@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -331,7 +332,7 @@ fun Queue(
                     .height(64.dp)
             ) {
                 BasicText(
-                    text = "${windows.size} songs",
+                    text = "${windows.size} " + stringResource(R.string.songs),
                     style = typography.xxs.medium,
                     modifier = Modifier
                         .background(
@@ -361,7 +362,7 @@ fun Queue(
                         .animateContentSize()
                 ) {
                     BasicText(
-                        text = "Queue loop ",
+                        text = stringResource(R.string.queue_loop),
                         style = typography.xxs.medium,
                     )
 

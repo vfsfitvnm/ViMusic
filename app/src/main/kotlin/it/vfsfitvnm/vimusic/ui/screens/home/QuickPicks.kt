@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.persist.persist
 import it.vfsfitvnm.innertube.Innertube
@@ -152,7 +153,7 @@ fun QuickPicks(
                 )
         ) {
             Header(
-                title = "Quick picks",
+                title = stringResource(R.string.quick_picks),
                 modifier = Modifier
                     .padding(endPaddingValues)
             )
@@ -248,7 +249,7 @@ fun QuickPicks(
 
                 related.albums?.let { albums ->
                     BasicText(
-                        text = "Related albums",
+                        text = stringResource(R.string.related_albums),
                         style = typography.m.semiBold,
                         modifier = sectionTextModifier
                     )
@@ -272,7 +273,7 @@ fun QuickPicks(
 
                 related.artists?.let { artists ->
                     BasicText(
-                        text = "Similar artists",
+                        text = stringResource(R.string.similar_artists),
                         style = typography.m.semiBold,
                         modifier = sectionTextModifier
                     )
@@ -296,7 +297,7 @@ fun QuickPicks(
 
                 related.playlists?.let { playlists ->
                     BasicText(
-                        text = "Playlists you might like",
+                        text = stringResource(R.string.playlists_you_might_like),
                         style = typography.m.semiBold,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
@@ -323,7 +324,7 @@ fun QuickPicks(
                 Unit
             } ?: relatedPageResult?.exceptionOrNull()?.let {
                 BasicText(
-                    text = "An error has occurred",
+                    text = stringResource(R.string.an_error_has_occurred),
                     style = typography.s.secondary.center,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)

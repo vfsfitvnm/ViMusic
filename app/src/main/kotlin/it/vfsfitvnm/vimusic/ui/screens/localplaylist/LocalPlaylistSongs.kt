@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.persist.persist
 import it.vfsfitvnm.innertube.Innertube
@@ -102,7 +103,7 @@ fun LocalPlaylistSongs(
 
     if (isRenaming) {
         TextFieldDialog(
-            hintText = "Enter the playlist name",
+            hintText = stringResource(R.string.enter_the_playlist_name),
             initialTextInput = playlistWithSongs?.playlist?.name ?: "",
             onDismiss = { isRenaming = false },
             onDone = { text ->
@@ -119,7 +120,7 @@ fun LocalPlaylistSongs(
 
     if (isDeleting) {
         ConfirmationDialog(
-            text = "Do you really want to delete this playlist?",
+            text = stringResource(R.string.delete_playlist),
             onDismiss = { isDeleting = false },
             onConfirm = {
                 query {
@@ -154,7 +155,7 @@ fun LocalPlaylistSongs(
                         .padding(bottom = 8.dp)
                 ) {
                     SecondaryTextButton(
-                        text = "Enqueue",
+                        text = stringResource(R.string.enqueue),
                         enabled = playlistWithSongs?.songs?.isNotEmpty() == true,
                         onClick = {
                             playlistWithSongs?.songs
@@ -179,7 +180,7 @@ fun LocalPlaylistSongs(
                                     playlistWithSongs?.playlist?.browseId?.let { browseId ->
                                         MenuEntry(
                                             icon = R.drawable.sync,
-                                            text = "Sync",
+                                            text = stringResource(R.string.sync),
                                             onClick = {
                                                 menuState.hide()
                                                 transaction {
@@ -210,7 +211,7 @@ fun LocalPlaylistSongs(
 
                                     MenuEntry(
                                         icon = R.drawable.pencil,
-                                        text = "Rename",
+                                        text = stringResource(R.string.rename),
                                         onClick = {
                                             menuState.hide()
                                             isRenaming = true
@@ -219,7 +220,7 @@ fun LocalPlaylistSongs(
 
                                     MenuEntry(
                                         icon = R.drawable.trash,
-                                        text = "Delete",
+                                        text = stringResource(R.string.delete),
                                         onClick = {
                                             menuState.hide()
                                             isDeleting = true

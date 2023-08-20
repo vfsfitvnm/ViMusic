@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.persist.persistList
 import it.vfsfitvnm.vimusic.Database
@@ -69,7 +70,7 @@ fun HomePlaylists(
 
     if (isCreatingANewPlaylist) {
         TextFieldDialog(
-            hintText = "Enter the playlist name",
+            hintText = stringResource(R.string.enter_the_playlist_name),
             onDismiss = {
                 isCreatingANewPlaylist = false
             },
@@ -116,9 +117,9 @@ fun HomePlaylists(
                 .background(colorPalette.background0)
         ) {
             item(key = "header", contentType = 0, span = { GridItemSpan(maxLineSpan) }) {
-                Header(title = "Playlists") {
+                Header(title = stringResource(R.string.playlists)) {
                     SecondaryTextButton(
-                        text = "New playlist",
+                        text = stringResource(R.string.new_playlist),
                         onClick = { isCreatingANewPlaylist = true }
                     )
 
@@ -164,7 +165,7 @@ fun HomePlaylists(
                 PlaylistItem(
                     icon = R.drawable.heart,
                     colorTint = colorPalette.red,
-                    name = "Favorites",
+                    name = stringResource(R.string.favorites),
                     songCount = null,
                     thumbnailSizeDp = thumbnailSizeDp,
                     alternative = true,
@@ -178,7 +179,7 @@ fun HomePlaylists(
                 PlaylistItem(
                     icon = R.drawable.airplane,
                     colorTint = colorPalette.blue,
-                    name = "Offline",
+                    name = stringResource(R.string.offline),
                     songCount = null,
                     thumbnailSizeDp = thumbnailSizeDp,
                     alternative = true,

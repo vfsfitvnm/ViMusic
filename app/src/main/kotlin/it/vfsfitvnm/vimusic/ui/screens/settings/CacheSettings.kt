@@ -18,10 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.CoilDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.enums.ExoPlayerDiskCacheMaxSize
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
@@ -58,9 +60,9 @@ fun CacheSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Cache")
+        Header(title = stringResource(R.string.cache))
 
-        SettingsDescription(text = "When the cache runs out of space, the resources that haven't been accessed for the longest time are cleared")
+        SettingsDescription(text = stringResource(R.string.cache_cleared))
 
         Coil.imageLoader(context).diskCache?.let { diskCache ->
             val diskCacheSize = remember(diskCache) {
@@ -69,7 +71,7 @@ fun CacheSettings() {
 
             SettingsGroupSpacer()
 
-            SettingsEntryGroupText(title = "IMAGE CACHE")
+            SettingsEntryGroupText(title = stringResource(R.string.image_cache))
 
             SettingsDescription(
                 text = "${
@@ -81,7 +83,7 @@ fun CacheSettings() {
             )
 
             EnumValueSelectorSettingsEntry(
-                title = "Max size",
+                title = stringResource(R.string.max_size),
                 selectedValue = coilDiskCacheMaxSize,
                 onValueSelected = { coilDiskCacheMaxSize = it }
             )
@@ -96,7 +98,7 @@ fun CacheSettings() {
 
             SettingsGroupSpacer()
 
-            SettingsEntryGroupText(title = "SONG CACHE")
+            SettingsEntryGroupText(title = stringResource(R.string.song_cache))
 
             SettingsDescription(
                 text = buildString {
@@ -110,7 +112,7 @@ fun CacheSettings() {
             )
 
             EnumValueSelectorSettingsEntry(
-                title = "Max size",
+                title = stringResource(R.string.max_size),
                 selectedValue = exoPlayerDiskCacheMaxSize,
                 onValueSelected = { exoPlayerDiskCacheMaxSize = it }
             )

@@ -14,8 +14,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import it.vfsfitvnm.vimusic.BuildConfig
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Header
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.secondary
@@ -48,7 +50,7 @@ fun About() {
 
         SettingsEntry(
             title = "GitHub",
-            text = "View the source code",
+            text = stringResource(R.string.view_the_source_code),
             onClick = {
                 uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic")
             }
@@ -59,16 +61,16 @@ fun About() {
         SettingsEntryGroupText(title = "TROUBLESHOOTING")
 
         SettingsEntry(
-            title = "Report an issue",
-            text = "You will be redirected to GitHub",
+            title = stringResource(R.string.report_an_issue),
+            text = stringResource(R.string.you_will_be_redirected_to_github),
             onClick = {
                 uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=bug&template=bug_report.yaml")
             }
         )
 
         SettingsEntry(
-            title = "Request a feature or suggest an idea",
-            text = "You will be redirected to GitHub",
+            title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
+            text = stringResource(R.string.you_will_be_redirected_to_github),
             onClick = {
                 uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
             }

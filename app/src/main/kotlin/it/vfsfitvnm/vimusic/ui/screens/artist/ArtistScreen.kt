@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import it.vfsfitvnm.compose.persist.PersistMapCleanup
@@ -176,24 +177,26 @@ fun ArtistScreen(browseId: String) {
                 tabIndex = tabIndex,
                 onTabChanged = { tabIndex = it },
                 tabColumnContent = { Item ->
-                    Item(0, "Overview", R.drawable.sparkles)
-                    Item(1, "Songs", R.drawable.musical_notes)
-                    Item(2, "Albums", R.drawable.disc)
-                    Item(3, "Singles", R.drawable.disc)
-                    Item(4, "Library", R.drawable.library)
+                    Item(0, stringResource(R.string.overview), R.drawable.sparkles)
+                    Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
+                    Item(2, stringResource(R.string.albums), R.drawable.disc)
+                    Item(3, stringResource(R.string.singles), R.drawable.disc)
+                    Item(4, stringResource(R.string.library), R.drawable.library)
                 },
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
-                        0 -> ArtistOverview(
-                            youtubeArtistPage = artistPage,
-                            thumbnailContent = thumbnailContent,
-                            headerContent = headerContent,
-                            onAlbumClick = { albumRoute(it) },
-                            onViewAllSongsClick = { tabIndex = 1 },
-                            onViewAllAlbumsClick = { tabIndex = 2 },
-                            onViewAllSinglesClick = { tabIndex = 3 },
-                        )
+                        0 -> {
+                            ArtistOverview(
+                                youtubeArtistPage = artistPage,
+                                thumbnailContent = thumbnailContent,
+                                headerContent = headerContent,
+                                onAlbumClick = { albumRoute(it) },
+                                onViewAllSongsClick = { tabIndex = 1 },
+                                onViewAllAlbumsClick = { tabIndex = 2 },
+                                onViewAllSinglesClick = { tabIndex = 3 },
+                            )
+                        }
 
                         1 -> {
                             val binder = LocalPlayerServiceBinder.current
@@ -267,7 +270,7 @@ fun ArtistScreen(browseId: String) {
                             ItemsPage(
                                 tag = "artist/$browseId/albums",
                                 headerContent = headerContent,
-                                emptyItemsText = "This artist didn't release any album",
+                                emptyItemsText = stringResource(R.string.artist_no_release_album),
                                 itemsPageProvider = artistPage?.let {
                                     ({ continuation ->
                                         continuation?.let {
@@ -317,7 +320,7 @@ fun ArtistScreen(browseId: String) {
                             ItemsPage(
                                 tag = "artist/$browseId/singles",
                                 headerContent = headerContent,
-                                emptyItemsText = "This artist didn't release any single",
+                                emptyItemsText = stringResource(R.string.artist_no_release_single),
                                 itemsPageProvider = artistPage?.let {
                                     ({ continuation ->
                                         continuation?.let {
@@ -360,11 +363,13 @@ fun ArtistScreen(browseId: String) {
                             )
                         }
 
-                        4 -> ArtistLocalSongs(
-                            browseId = browseId,
-                            headerContent = headerContent,
-                            thumbnailContent = thumbnailContent,
-                        )
+                        4 -> {
+                            ArtistLocalSongs(
+                                browseId = browseId,
+                                headerContent = headerContent,
+                                thumbnailContent = thumbnailContent,
+                            )
+                        }
                     }
                 }
             }

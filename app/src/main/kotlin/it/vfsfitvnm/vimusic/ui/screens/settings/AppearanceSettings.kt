@@ -17,8 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.vimusic.LocalPlayerAwareWindowInsets
+import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -62,18 +64,18 @@ fun AppearanceSettings() {
                     .asPaddingValues()
             )
     ) {
-        Header(title = "Appearance")
+        Header(title = stringResource(R.string.appearance))
 
-        SettingsEntryGroupText(title = "COLORS")
+        SettingsEntryGroupText(title = stringResource(R.string.colors))
 
         EnumValueSelectorSettingsEntry(
-            title = "Theme",
+            title = stringResource(R.string.theme),
             selectedValue = colorPaletteName,
             onValueSelected = { colorPaletteName = it }
         )
 
         EnumValueSelectorSettingsEntry(
-            title = "Theme mode",
+            title = stringResource(R.string.theme_mode),
             selectedValue = colorPaletteMode,
             isEnabled = colorPaletteName != ColorPaletteName.PureBlack,
             onValueSelected = { colorPaletteMode = it }
@@ -81,17 +83,24 @@ fun AppearanceSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "SHAPES")
+        SettingsEntryGroupText(title = stringResource(R.string.shapes))
 
         EnumValueSelectorSettingsEntry(
-            title = "Thumbnail roundness",
+            title = stringResource(R.string.thumbnail_roundness),
             selectedValue = thumbnailRoundness,
             onValueSelected = { thumbnailRoundness = it },
             trailingContent = {
                 Spacer(
                     modifier = Modifier
-                        .border(width = 1.dp, color = colorPalette.accent,  shape = thumbnailRoundness.shape())
-                        .background(color = colorPalette.background1, shape = thumbnailRoundness.shape())
+                        .border(
+                            width = 1.dp,
+                            color = colorPalette.accent,
+                            shape = thumbnailRoundness.shape()
+                        )
+                        .background(
+                            color = colorPalette.background1,
+                            shape = thumbnailRoundness.shape()
+                        )
                         .size(36.dp)
                 )
             }
@@ -99,18 +108,18 @@ fun AppearanceSettings() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "TEXT")
+        SettingsEntryGroupText(title = stringResource(R.string.text))
 
         SwitchSettingEntry(
-            title = "Use system font",
-            text = "Use the font applied by the system",
+            title = stringResource(R.string.use_system_font),
+            text = stringResource(R.string.use_font_by_the_system),
             isChecked = useSystemFont,
             onCheckedChange = { useSystemFont = it }
         )
 
         SwitchSettingEntry(
-            title = "Apply font padding",
-            text = "Add spacing around texts",
+            title = stringResource(R.string.apply_font_padding),
+            text = stringResource(R.string.add_spacing_around_texts),
             isChecked = applyFontPadding,
             onCheckedChange = { applyFontPadding = it }
         )
@@ -118,11 +127,11 @@ fun AppearanceSettings() {
         if (!isAtLeastAndroid13) {
             SettingsGroupSpacer()
 
-            SettingsEntryGroupText(title = "LOCKSCREEN")
+            SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
 
             SwitchSettingEntry(
-                title = "Show song cover",
-                text = "Use the playing song cover as the lockscreen wallpaper",
+                title = stringResource(R.string.show_song_cover),
+                text = stringResource(R.string.use_song_cover_on_lockscreen),
                 isChecked = isShowingThumbnailInLockscreen,
                 onCheckedChange = { isShowingThumbnailInLockscreen = it }
             )

@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
@@ -169,7 +170,7 @@ fun Lyrics(
 
         if (isEditing) {
             TextFieldDialog(
-                hintText = "Enter the lyrics",
+                hintText = stringResource(R.string.enter_the_lyrics),
                 initialTextInput = text ?: "",
                 singleLine = false,
                 maxLines = 10,
@@ -334,8 +335,14 @@ fun Lyrics(
                                 Menu {
                                     MenuEntry(
                                         icon = R.drawable.time,
-                                        text = "Show ${if (isShowingSynchronizedLyrics) "un" else ""}synchronized lyrics",
-                                        secondaryText = if (isShowingSynchronizedLyrics) null else "Provided by kugou.com",
+                                        text = stringResource(R.string.show) + " ${
+                                            if (isShowingSynchronizedLyrics) stringResource(
+                                                R.string.unsynchronized_lyrics
+                                            ) else stringResource(R.string.synchronized_lyrics)
+                                        }",
+                                        secondaryText = if (isShowingSynchronizedLyrics) null else stringResource(
+                                            R.string.provided_by
+                                        ) + " kugou.com",
                                         onClick = {
                                             menuState.hide()
                                             isShowingSynchronizedLyrics =
@@ -345,7 +352,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.pencil,
-                                        text = "Edit lyrics",
+                                        text = stringResource(R.string.edit_lyrics),
                                         onClick = {
                                             menuState.hide()
                                             isEditing = true
@@ -354,7 +361,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.search,
-                                        text = "Search lyrics online",
+                                        text = stringResource(R.string.search_lyrics_online),
                                         onClick = {
                                             menuState.hide()
                                             val mediaMetadata = mediaMetadataProvider()
@@ -376,7 +383,7 @@ fun Lyrics(
 
                                     MenuEntry(
                                         icon = R.drawable.download,
-                                        text = "Fetch lyrics again",
+                                        text = stringResource(R.string.fetch_lyrics_again),
                                         enabled = lyrics != null,
                                         onClick = {
                                             menuState.hide()
