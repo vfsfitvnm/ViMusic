@@ -60,6 +60,11 @@ Under development...
      height="80">](https://f-droid.org/packages/it.vfsfitvnm.vimusic/)
 -->
 
+##Contribute
+**Clone**, develop new functions and send your Pull Request
+or
+**Translate** into your language
+
 ## Acknowledgments
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
 - [**ionicons**](https://github.com/ionic-team/ionicons): Premium hand-crafted icons built by Ionic, for Ionic apps and web apps everywhere.
