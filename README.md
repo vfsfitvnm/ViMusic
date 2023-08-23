@@ -61,6 +61,7 @@ Under development...
 -->
 
 ## Contribute
+##### Pull Requests are welcome
 - **Clone**, if you want to develop new functions, or fix any bug, finally send your Pull Request.
 - **Translate**, if you want to translate into your language or improve the languages already provided, finally send your Pull Request.
 
