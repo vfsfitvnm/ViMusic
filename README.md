@@ -1,6 +1,6 @@
 <div align="center">
     <img src="./app/src/main/ic_launcher-playstore.png" width="128" height="128" style="display: block; margin: 0 auto"/>
-    <h1>ViMusic</h1>
+    <h1>RiMusic</h1>
     <p>An Android application for streaming music from YouTube Music</p>
 </div>
 
@@ -17,7 +17,7 @@
 </p>
 
 ## Features
-- Play (almost) any song or video from YouTube Music
+- Play song (or video under development) from YouTube Music
 - Background playback
 - Cache audio chunks for offline playback
 - Search for songs, albums, artists videos and playlists
@@ -33,10 +33,12 @@
 - Android Auto
 - Persistent queue
 - Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
+- Multilingual support, English, Italian,  
 - ...
 
 ## Installation
-
+Under development...
+<!--
 [<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
     alt="Get it on GitHub"
     height="80">](https://github.com/vfsfitvnm/ViMusic/releases/latest)
@@ -46,6 +48,7 @@
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/it.vfsfitvnm.vimusic/)
+-->
 
 ## Acknowledgments
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
