@@ -61,8 +61,8 @@ Under development...
 -->
 
 ## Contribute
-- **Clone**, if you want to develop new functions,or fix any bug, finally send your Pull Request
-- **Translate**, if you want to translate into your language or improve the languages already provided.
+- **Clone**, if you want to develop new functions, or fix any bug, finally send your Pull Request.
+- **Translate**, if you want to translate into your language or improve the languages already provided, finally send your Pull Request.
 
 ## Acknowledgments
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
