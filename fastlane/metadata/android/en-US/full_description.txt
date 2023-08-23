@@ -17,4 +17,4 @@
 * Loudness/audio normalization
 * Android Auto
 * Simple and minimal UI
-* Ridiculously lightweight APK
+* Multilingual support
