@@ -1,0 +1,8 @@
+* The Offline (renamed from Cached) playlist is now displayed only if the playlist grid is expanded
+* The Sleep Timer functionality is moved to the playing song menu
+* The search screen text input now correctly handles playlist URLs
+* The 200 song limit problem when opening or importing a YouTube playlist is now fixed
+* The stats for nerds (long press the playing song thumbnail) also display the bitrate
+* The stats for nerds are now correctly updated when skipping songs
+* The song list can now be sorted also by title (other than play time and date)
+* The playlists can now be sorted by name, song count and date

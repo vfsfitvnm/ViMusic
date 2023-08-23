@@ -1,0 +1,6 @@
+* Added option to pause search history
+* Added option to clear trending song
+* Added description to artist screen
+* Fixed "Unknown" artist problem
+* Fixed "Quick picks" not loading
+* Fixed playback controls not working in Android < 26

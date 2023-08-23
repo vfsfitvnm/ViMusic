@@ -1,0 +1,6 @@
+* Android 13 is now officially supported
+* Added "Queue loop" toggle button
+* Added option to use the system font
+* Added option to automatically resume the playback when a wired or bluetooth device is connected
+* The screen will now not turn off when synchronized lyrics are displayed
+* Fixed a couple of crashes

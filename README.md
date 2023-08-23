@@ -1,19 +1,28 @@
 <div align="center">
     <img src="./app/src/main/ic_launcher-playstore.png" width="128" height="128" style="display: block; margin: 0 auto"/>
     <h1>RiMusic</h1>
-    <p>An **multilingual** Android application for streaming music from YouTube Music</p>
+    <p>A <b>multilingual</b> Android application for streaming music from YouTube Music</p>
 </div>
 
 ---
 
 <p align="center">
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" height="50%" />
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="30%" />
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="30%" />
 
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="30%" />
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="30%" />
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="30%" />
+</p>
+<p align="center">
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/1.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/2.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/3.jpg" width="30%" />
+
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/4.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/5.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/6.jpg" width="30%" />
 </p>
 
 ## Features

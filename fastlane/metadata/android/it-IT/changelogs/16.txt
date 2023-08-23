@@ -1,0 +1,10 @@
+* New user interface
+* Added "Quick picks", "Albums" and "Artists" tabs to the home screen
+* Added "Songs", "Albums" and "Singles" tabs to the artist screen
+* Added "Other versions" tab to the album screen
+* Albums and artists can be bookmarked
+* Added "Library" tab to the search screen
+* Removed the "loop none" option
+* Imported playlists can now be synchronized
+* Added the ability to open channel urls
+* Opening a song url now automatically starts the playback
