@@ -33,7 +33,7 @@
 - Android Auto
 - Persistent queue
 - Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
-- Multilingual support, English, Italian,  
+- **Multilingual support**, English, Italian,  
 - ...
 
 ## Installation
