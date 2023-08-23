@@ -22,7 +22,7 @@
 - Android Auto
 - Persistent queue
 - Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
-- **Multilingual support**, English, Italian,  
+- **Multilingual support**, English, Italian, French, Spanish and German, contribute for other language are welcome 
 - ...
 ## Screenshot
 <h4>Sample screenshot in English language</h4>
@@ -45,6 +45,14 @@
   <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/5.jpg" width="15%" />
   <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/6.jpg" width="15%" />
 </p>
+
+## Languages
+* English, native language
+* Italian, native language
+* French, non native language, contribute to improve
+* Spanish, non native language, contribute to improve
+* German, non native language, contribute to improve
+
 
 ## Installation
 Under development...
