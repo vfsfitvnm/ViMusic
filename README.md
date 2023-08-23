@@ -52,10 +52,11 @@
 * French, non native language, contribute to improve
 * Spanish, non native language, contribute to improve
 * German, non native language, contribute to improve
+* contribute for any other language
 
 
 ## Installation
-Under development...
+Coming soon, under development...
 <!--
 [<img src="https://github.com/machiav3lli/oandbackupx/blob/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png"
     alt="Get it on GitHub"
@@ -74,9 +75,9 @@ Under development...
 - **Translate**, if you want to translate into your language or improve the languages already provided, finally send your Pull Request.
 
 ## Acknowledgments
+- [**ViMusic**](https://github.com/vfsfitvnm/ViMusic): ViMusic
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
 - [**ionicons**](https://github.com/ionic-team/ionicons): Premium hand-crafted icons built by Ionic, for Ionic apps and web apps everywhere.
-- [**ViMusic**](https://github.com/vfsfitvnm/ViMusic): ViMusic original
 
 
 <a href="https://www.flaticon.com/authors/ilham-fitrotul-hayat" title="music icons">App icon based on icon created by Ilham Fitrotul Hayat - Flaticon</a>
