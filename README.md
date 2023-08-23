@@ -5,27 +5,6 @@
 </div>
 
 ---
-
-<p align="center">
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="15%" />
-
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="15%" />
-</p>
-<h3>Sample screenshot in Italian language</h3>
-<p align="center">  
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/1.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/2.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/3.jpg" width="15%" />
-
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/4.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/5.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/6.jpg" width="15%" />
-</p>
-
 ## Features
 - Play song (or video under development) from YouTube Music
 - Background playback
@@ -45,6 +24,27 @@
 - Open YouTube/YouTube Music links (`watch`, `playlist`, `channel`)
 - **Multilingual support**, English, Italian,  
 - ...
+## Screenshot
+<h4>Sample screenshot in English language</h4>
+<p align="center">
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="15%" />
+
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="15%" />
+</p>
+<h4>Sample screenshot in Italian language</h4>
+<p align="center">  
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/1.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/2.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/3.jpg" width="15%" />
+
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/4.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/5.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/6.jpg" width="15%" />
+</p>
 
 ## Installation
 Under development...
