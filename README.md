@@ -15,14 +15,15 @@
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="15%" />
   <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="15%" />
 </p>
-<p align="center">
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/1.jpg" width="30%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/2.jpg" width="30%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/3.jpg" width="30%" />
+<h3>Sample screenshot in Italian language</h3>
+<p align="center">  
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/1.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/2.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/3.jpg" width="15%" />
 
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/4.jpg" width="30%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/5.jpg" width="30%" />
-  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/6.jpg" width="30%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/4.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/5.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/it-IT/images/phoneScreenshots/6.jpg" width="15%" />
 </p>
 
 ## Features
