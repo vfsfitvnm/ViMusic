@@ -60,7 +60,7 @@ Under development...
      height="80">](https://f-droid.org/packages/it.vfsfitvnm.vimusic/)
 -->
 
-##Contribute
+## Contribute
 **Clone**, develop new functions and send your Pull Request
 or
 **Translate** into your language
