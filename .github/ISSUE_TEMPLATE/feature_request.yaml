@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest an idea for this project
-labels: [feature]
+labels: "[feature]"
 body:
 
   - type: textarea
@@ -8,8 +8,7 @@ body:
     attributes:
       label: Is your feature request related to a problem?
       description:  Please describe. 
-      placeholder: |
-       A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]       
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]       
     validations:
       required: true
 
@@ -18,8 +17,7 @@ body:
     attributes:
       label: Describe the solution you'd like
       description:  Please describe. 
-      placeholder: |
-       A clear and concise description of what you want to happen.       
+      placeholder: A clear and concise description of what you want to happen.       
     validations:
       required: true
 
@@ -28,8 +26,7 @@ body:
     attributes:
       label: Describe alternatives you've considered.
       description:  Please describe. 
-      placeholder: |
-       A clear and concise description of any alternative solutions or features you've considered.      
+      placeholder: A clear and concise description of any alternative solutions or features you've considered.      
     validations:
       required: false
 
@@ -38,7 +35,6 @@ body:
     attributes:
       label: Additional info 
       description:  Please describe. 
-      placeholder: |
-       Any other additional info? Insert here
+      placeholder: Any other additional info? Insert here
     validations:
       required: false
