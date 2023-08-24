@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## ⚠️ Make sure you are able to reproduce the bug with the [latest version](https://github.com/vfsfitvnm/vimusic/releases/latest).
+        ## ⚠️ Make sure you are able to reproduce the bug with the [latest version](https://github.com/fast4x/rimusic/releases/latest).
         ## ⚠️ Make sure there is no issue about this bug already.
 
   - type: textarea
@@ -59,11 +59,11 @@ body:
         If your bug includes a crash, please use `adb logcat` or other ways to provide logs.
   
   - type: input
-    id: vimusic-version
+    id: rimusic-version
     attributes:
-      label: ViMusic version
+      label: RiMusic version
       placeholder: |
-        Example: "0.5.4"
+        Example: "0.1.5"
     validations:
       required: true
 
