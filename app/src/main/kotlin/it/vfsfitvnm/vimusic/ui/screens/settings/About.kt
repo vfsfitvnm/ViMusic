@@ -68,6 +68,7 @@ fun About() {
             }
         )
 
+
         SettingsEntry(
             title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
             text = stringResource(R.string.you_will_be_redirected_to_github),
