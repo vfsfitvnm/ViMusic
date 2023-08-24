@@ -296,8 +296,8 @@ fun Queue(
                                         if (isPlayingThisMediaItem) return@rememberDraggableState
                                         offsetX += delta
                                     }),
-                                    onDragStopped = { velocity ->
-                                        if ((offsetX <= -300.0f && velocity <= -3000.0f) || (offsetX >= 300.0f && velocity >= 3000.0f)) {
+                                    onDragStopped = { _ ->
+                                        if (offsetX >= 200.0f || offsetX <= -200.0f) {
                                             binder.player.removeMediaItem(window.firstPeriodIndex)
                                         } else {
                                             offsetX = 0f
