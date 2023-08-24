@@ -3,7 +3,7 @@ description: Suggest an idea for this project
 labels: "[feature]"
 body:
 
-  - type: textarea
+- type: textarea
     id: featurebyproblem
     attributes:
       label: Is your feature request related to a problem?
@@ -12,7 +12,7 @@ body:
     validations:
       required: true
 
-   - type: textarea
+- type: textarea
     id: describesolution
     attributes:
       label: Describe the solution you'd like
@@ -21,7 +21,7 @@ body:
     validations:
       required: true
 
-    - type: textarea
+- type: textarea
     id: describealternative
     attributes:
       label: Describe alternatives you've considered.
@@ -30,7 +30,7 @@ body:
     validations:
       required: false
 
-    - type: textarea
+- type: textarea
     id: additionalinfo
     attributes:
       label: Additional info 
