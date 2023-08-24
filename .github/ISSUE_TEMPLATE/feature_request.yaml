@@ -33,7 +33,7 @@ body:
     validations:
       required: false
 
-        - type: textarea
+    - type: textarea
     id: additionalinfo
     attributes:
       label: Additional info 
@@ -42,5 +42,3 @@ body:
        Any other additional info? Insert here
     validations:
       required: false
-
- 
