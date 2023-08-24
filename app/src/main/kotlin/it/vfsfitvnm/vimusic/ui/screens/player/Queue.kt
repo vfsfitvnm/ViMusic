@@ -15,6 +15,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -82,6 +87,7 @@ import it.vfsfitvnm.vimusic.utils.shuffleQueue
 import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
 import it.vfsfitvnm.vimusic.utils.windows
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -202,6 +208,7 @@ fun Queue(
                         key = { it.uid.hashCode() }
                     ) { window ->
                         val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
+                        var offsetX by remember { mutableStateOf(0f) }
 
                         SongItem(
                             song = window.mediaItem,
@@ -283,6 +290,21 @@ fun Queue(
                                     reorderingState = reorderingState,
                                     index = window.firstPeriodIndex
                                 )
+                                .draggable(
+                                    orientation = Orientation.Horizontal,
+                                    state = rememberDraggableState(onDelta = { delta ->
+                                        if (isPlayingThisMediaItem) return@rememberDraggableState
+                                        offsetX += delta
+                                    }),
+                                    onDragStopped = { velocity ->
+                                        if ((offsetX <= -300.0f && velocity <= -3000.0f) || (offsetX >= 300.0f && velocity >= 3000.0f)) {
+                                            binder.player.removeMediaItem(window.firstPeriodIndex)
+                                        } else {
+                                            offsetX = 0f
+                                        }
+                                    }
+                                )
+                                .offset{ IntOffset(offsetX.roundToInt(), 0) }
                         )
                     }
 
