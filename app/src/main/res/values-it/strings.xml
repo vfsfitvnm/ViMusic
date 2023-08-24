@@ -122,8 +122,8 @@
     <string name="loudness_normalization">Normalizzazione del volume</string>
     <string name="autoadjust_the_volume">Regola il volume a un livello fisso</string>
     <string name="interact_with_the_system_equalizer">Interagisci con l\'equalizzatore di sistema</string>
-    <string name="about">About</string>
-    <string name="more_of">Altro su</string>
+    <string name="about">Info</string>
+    <string name="more_of">Altro da</string>
     <string name="sleep_timer">Timer spegnimento</string>
     <string name="left">%1$s rimanenti</string>
     <string name="set">Imposta</string>
