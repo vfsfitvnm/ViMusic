@@ -23,9 +23,9 @@
 - Search for songs, albums, artists videos and playlists
 - Bookmark artists and albums
 - Import playlists
-- Fetch, display and edit songs lyrics or synchronized lyrics
+- Fetch, display and edit song lyrics or synchronized lyrics
 - Local playlist management
-- Reorder songs in playlist or queue
+- Reorder songs in the playlist or queue
 - Light/Dark/Dynamic theme
 - Skip silence
 - Sleep timer
@@ -51,7 +51,7 @@
 - [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
 - [**ionicons**](https://github.com/ionic-team/ionicons): Premium hand-crafted icons built by Ionic, for Ionic apps and web apps everywhere.
 
-<a href="https://www.flaticon.com/authors/ilham-fitrotul-hayat" title="music icons">App icon based on icon created by Ilham Fitrotul Hayat - Flaticon</a>
+<a href="https://www.flaticon.com/authors/ilham-fitrotul-hayat" title="music icons">App icon based on the icon created by Ilham Fitrotul Hayat - Flaticon</a>
 
 ## Disclaimer
 This project and its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with YouTube, Google LLC or any of its affiliates and subsidiaries.
