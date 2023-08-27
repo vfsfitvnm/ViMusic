@@ -1,6 +1,6 @@
 <div align="center">
     <img src="./app/src/main/ic_launcher-playstore.png" width="128" height="128" style="display: block; margin: 0 auto"/>
-    <h1>WiMusic</h1>
+    <h1>ViMusic Next</h1>
     <p>A <b>multilingual</b> Android application for streaming music from YouTube Music</p>
 </div>
 
