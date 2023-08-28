@@ -25,7 +25,7 @@
 - Import playlists
 - Fetch, display and edit song lyrics or synchronized lyrics
 - Local playlist management
-- Reorder songs in the playlist or queue
+- Reorder songs in playlists and queues
 - Light/Dark/Dynamic theme
 - Skip silence
 - Sleep timer
