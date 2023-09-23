@@ -36,6 +36,7 @@ dependencyResolutionManagement {
 
             version("media3", "1.0.0-beta03")
             library("exoplayer", "androidx.media3", "media3-exoplayer").versionRef("media3")
+            library("exoplayer-okhttp", "androidx.media3", "media3-datasource-okhttp").versionRef("media3")
 
             version("ktor", "2.1.2")
             library("ktor-client-core", "io.ktor", "ktor-client-core").versionRef("ktor")

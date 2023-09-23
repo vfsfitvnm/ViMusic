@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.palette)
 
     implementation(libs.exoplayer)
+    implementation(libs.exoplayer.okhttp)
 
     implementation(libs.room)
     kapt(libs.room.compiler)

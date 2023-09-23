@@ -43,13 +43,13 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.exoplayer.analytics.AnalyticsListener
@@ -71,6 +71,7 @@ import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import it.vfsfitvnm.innertube.models.bodies.PlayerBody
 import it.vfsfitvnm.innertube.requests.player
+import it.vfsfitvnm.innertube.utils.ProxyPreferences
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.MainActivity
 import it.vfsfitvnm.vimusic.R
@@ -117,6 +118,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import java.net.InetSocketAddress
+import java.net.Proxy
+import java.time.Duration
 
 @Suppress("DEPRECATION")
 class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListener.Callback,
@@ -737,12 +742,23 @@ class PlayerService : InvincibleService(), Player.Listener, PlaybackStatsListene
         }
     }
 
+    private fun okHttpClient() : OkHttpClient{
+        ProxyPreferences.preference?.let{
+            return OkHttpClient.Builder()
+                .proxy(Proxy(it.proxyMode,InetSocketAddress(it.proxyHost,it.proxyPort)))
+                .connectTimeout(Duration.ofSeconds(16))
+                .readTimeout(Duration.ofSeconds(8))
+                .build()
+        }
+        return OkHttpClient.Builder()
+            .connectTimeout(Duration.ofSeconds(16))
+            .readTimeout(Duration.ofSeconds(8))
+            .build()
+    }
     private fun createCacheDataSource(): DataSource.Factory {
         return CacheDataSource.Factory().setCache(cache).apply {
             setUpstreamDataSourceFactory(
-                DefaultHttpDataSource.Factory()
-                    .setConnectTimeoutMs(16000)
-                    .setReadTimeoutMs(8000)
+                OkHttpDataSource.Factory(okHttpClient())
                     .setUserAgent("Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0")
             )
         }

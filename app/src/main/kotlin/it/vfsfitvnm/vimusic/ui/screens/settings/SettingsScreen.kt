@@ -21,17 +21,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import it.vfsfitvnm.compose.routing.RouteHandler
 import it.vfsfitvnm.vimusic.R
 import it.vfsfitvnm.vimusic.ui.components.themed.Scaffold
 import it.vfsfitvnm.vimusic.ui.components.themed.Switch
+import it.vfsfitvnm.vimusic.ui.components.themed.TextFieldDialog
 import it.vfsfitvnm.vimusic.ui.components.themed.ValueSelectorDialog
 import it.vfsfitvnm.vimusic.ui.screens.globalRoutes
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.utils.color
 import it.vfsfitvnm.vimusic.utils.secondary
 import it.vfsfitvnm.vimusic.utils.semiBold
+import it.vfsfitvnm.vimusic.utils.toast
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -191,6 +194,36 @@ fun SettingsEntry(
 
         trailingContent?.invoke()
     }
+}
+
+@Composable
+fun TextDialogSettingEntry(
+    title: String,
+    text: String,
+    currentText: String,
+    onTextSave: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    if (showDialog) {
+        TextFieldDialog(hintText =title ,
+            onDismiss = { showDialog = false },
+            onDone ={value->
+                onTextSave(value)
+                context.toast("Preference Saved")
+                    } , doneText = "Save", initialTextInput = currentText)
+    }
+    SettingsEntry(
+        title = title,
+        text = text,
+        isEnabled = isEnabled,
+        onClick = { showDialog = true },
+        trailingContent = { },
+        modifier = modifier
+    )
 }
 
 @Composable

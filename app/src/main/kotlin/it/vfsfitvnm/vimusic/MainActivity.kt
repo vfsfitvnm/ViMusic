@@ -64,6 +64,8 @@ import it.vfsfitvnm.innertube.Innertube
 import it.vfsfitvnm.innertube.models.bodies.BrowseBody
 import it.vfsfitvnm.innertube.requests.playlistPage
 import it.vfsfitvnm.innertube.requests.song
+import it.vfsfitvnm.innertube.utils.ProxyPreferenceItem
+import it.vfsfitvnm.innertube.utils.ProxyPreferences
 import it.vfsfitvnm.vimusic.enums.ColorPaletteMode
 import it.vfsfitvnm.vimusic.enums.ColorPaletteName
 import it.vfsfitvnm.vimusic.enums.ThumbnailRoundness
@@ -91,7 +93,11 @@ import it.vfsfitvnm.vimusic.utils.getEnum
 import it.vfsfitvnm.vimusic.utils.intent
 import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid6
 import it.vfsfitvnm.vimusic.utils.isAtLeastAndroid8
+import it.vfsfitvnm.vimusic.utils.isProxyEnabledKey
 import it.vfsfitvnm.vimusic.utils.preferences
+import it.vfsfitvnm.vimusic.utils.proxyHostNameKey
+import it.vfsfitvnm.vimusic.utils.proxyModeKey
+import it.vfsfitvnm.vimusic.utils.proxyPortKey
 import it.vfsfitvnm.vimusic.utils.thumbnailRoundnessKey
 import it.vfsfitvnm.vimusic.utils.useSystemFontKey
 import kotlinx.coroutines.Dispatchers
@@ -100,6 +106,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.Proxy
 
 class MainActivity : ComponentActivity(), PersistMapOwner {
     private val serviceConnection = object : ServiceConnection {
@@ -133,6 +140,17 @@ class MainActivity : ComponentActivity(), PersistMapOwner {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         val launchedFromNotification = intent?.extras?.getBoolean("expandPlayerBottomSheet") == true
+
+        with(preferences){
+            if(getBoolean(isProxyEnabledKey,false)) {
+                val hostName = getString(proxyHostNameKey,null)
+                val proxyPort = getInt(proxyPortKey, 8080)
+                val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
+                hostName?.let { hName->
+                    ProxyPreferences.preference = ProxyPreferenceItem(hName,proxyPort,proxyMode)
+                }
+            }
+        }
 
         setContent {
             val coroutineScope = rememberCoroutineScope()
