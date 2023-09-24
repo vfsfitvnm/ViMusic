@@ -6,6 +6,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
@@ -48,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -87,6 +90,7 @@ import it.vfsfitvnm.vimusic.utils.shuffleQueue
 import it.vfsfitvnm.vimusic.utils.smoothScrollToTop
 import it.vfsfitvnm.vimusic.utils.windows
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.math.roundToInt
 
 @ExperimentalFoundationApi
@@ -208,8 +212,7 @@ fun Queue(
                         key = { it.uid.hashCode() }
                     ) { window ->
                         val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
-                        var offsetX by remember { mutableStateOf(0f) }
-
+                        val offsetX = remember { Animatable(Offset(0f, 0f), Offset.VectorConverter) }
                         SongItem(
                             song = window.mediaItem,
                             thumbnailSizePx = thumbnailSizePx,
@@ -294,17 +297,24 @@ fun Queue(
                                     orientation = Orientation.Horizontal,
                                     state = rememberDraggableState(onDelta = { delta ->
                                         if (isPlayingThisMediaItem) return@rememberDraggableState
-                                        offsetX += delta
+                                        runBlocking {
+                                            offsetX.snapTo(offsetX.value + Offset(delta, 0f))
+                                        }
                                     }),
                                     onDragStopped = { _ ->
-                                        if (offsetX >= 200.0f || offsetX <= -200.0f) {
+                                        if (offsetX.value.x >= 200.0f || offsetX.value.x <= -200.0f) {
+                                            if (offsetX.value.x < 0) {
+                                                offsetX.animateTo(Offset(-1500.0f, offsetX.value.y))
+                                            } else {
+                                                offsetX.animateTo(Offset(1500.0f, offsetX.value.y))
+                                            }
                                             binder.player.removeMediaItem(window.firstPeriodIndex)
                                         } else {
-                                            offsetX = 0f
+                                            offsetX.animateTo(Offset(0f, offsetX.value.y))
                                         }
                                     }
                                 )
-                                .offset{ IntOffset(offsetX.roundToInt(), 0) }
+                                .offset { IntOffset(offsetX.value.x.roundToInt(), 0) }
                         )
                     }
 
