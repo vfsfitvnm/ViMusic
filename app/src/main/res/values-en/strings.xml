@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="AlbumsHeader">Albums</string>
+    <string name="ArtistsHeader">Artists</string>
+    <string name="PlaylistNameHint">Enter the playlist name</string>
+    <string name="PlaylistsHeader">Playlists</string>
+    <string name="NewPlaylist">New playlist</string>
+    <string name="Favorites">Favorites</string>
+    <string name="Offline">Offline</string>
+    <string name="PlaylistIdNullError">playlistId cannot be null</string>
+    <string name="ScaffoldQuickPicks">Quick picks</string>
+    <string name="ScaffoldSongs">Songs</string>
+    <string name="ScaffoldPlaylists">Playlists</string>
+    <string name="ScaffoldArtists">Artists</string>
+    <string name="ScaffoldAlbums">Albums</string>
+    <string name="SongsHeader">Songs</string>
+    <string name="QuickPicksHeader">Quick picks</string>
+    <string name="RelatedAlbums">Related albums</string>
+    <string name="SimilarArtists">Similar artists</string>
+    <string name="PlaylistsMightLike">Playlists you might like</string>
+    <string name="OcurredError">An error has occurred</string>
+    <string name="BuiltInPlaylistFavorites">Favorites</string>
+    <string name="BuiltInPlaylistOffline">Offline</string>
+    <string name="Enqueue">Enqueue</string>
+    <string name="ScaffoldFavorites">Favorites</string>
+    <string name="ScaffoldOffline">Offline</string>
+    <string name="Shuffle">Shuffle</string>
+    <string name="Songs">Songs</string>
+    <string name="ViewAll">View all</string>
+    <string name="Albums">Albums</string>
+    <string name="Singles">Singles</string>
+    <string name="FromWikipediaAttribution">From Wikipedia under Creative Commons Attribution CC-BY-SA 3.0</string>
+    <string name="HeaderUnknown">Unknown</string>
+    <string name="ScaffoldOverview">Overview</string>
+    <string name="ScaffoldSingles">Singles</string>
+    <string name="ScaffoldLibrary">Library</string>
+    <string name="EmptyReleases">This artist didn\'t release any album</string>
+</resources>
