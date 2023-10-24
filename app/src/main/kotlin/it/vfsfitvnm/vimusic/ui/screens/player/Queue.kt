@@ -42,6 +42,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -191,6 +192,10 @@ fun Queue(
 
         val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
 
+        val deleteHistory = remember {
+            mutableStateListOf<String>()
+        }
+
         Column {
             Box(
                 modifier = Modifier
@@ -303,12 +308,27 @@ fun Queue(
                                     }),
                                     onDragStopped = { _ ->
                                         if (offsetX.value.x >= 200.0f || offsetX.value.x <= -200.0f) {
+                                            val currentIndex = window.firstPeriodIndex
+                                            val mediaId = window.mediaItem.mediaId
+
+                                            if (deleteHistory.indexOf(mediaId) != -1) return@draggable
+                                            deleteHistory.add(mediaId)
+
+                                            var indexToDelete = currentIndex
+                                            for (i in 0 until currentIndex) {
+                                                if (deleteHistory.indexOf(windows.elementAt(i).mediaItem.mediaId) != -1) {
+                                                    indexToDelete--
+                                                }
+                                            }
+
                                             if (offsetX.value.x < 0) {
                                                 offsetX.animateTo(Offset(-1500.0f, offsetX.value.y))
                                             } else {
                                                 offsetX.animateTo(Offset(1500.0f, offsetX.value.y))
                                             }
-                                            binder.player.removeMediaItem(window.firstPeriodIndex)
+
+                                            binder.player.removeMediaItem(indexToDelete)
+                                            deleteHistory.removeFirst()
                                         } else {
                                             offsetX.animateTo(Offset(0f, offsetX.value.y))
                                         }
