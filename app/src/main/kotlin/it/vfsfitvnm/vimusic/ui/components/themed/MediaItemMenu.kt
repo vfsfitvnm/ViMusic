@@ -680,7 +680,7 @@ fun MediaItemMenu(
                     artistsInfo?.forEach { (authorId, authorName) ->
                         MenuEntry(
                             icon = R.drawable.person,
-                            text = "More of $authorName",
+                            text = "More from $authorName",
                             onClick = {
                                 onDismiss()
                                 onGoToArtist(authorId)
