@@ -18,5 +18,5 @@ dependencies {
     implementation(libs.ktor.client.serialization)
     implementation(libs.ktor.serialization.json)
 
-    testImplementation(testLibs.junit)
+    testImplementation(libs.junit)
 }

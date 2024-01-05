@@ -1,0 +1,41 @@
+[versions]
+brotli="0.1.2"
+kotlin = "1.7.20"
+compose-compiler = "1.3.2"
+compose = "1.3.0-rc01"
+compose-activity="1.7.0-alpha01"
+compose-coil="2.2.2"
+coroutines= "1.6.4"
+compose-shimmer="1.0.3"
+room = "2.5.0-beta01"
+media3 = "1.0.0-beta03"
+palette="1.0.0"
+ktor = "2.1.2"
+desugaring = "1.1.5"
+junit = "4.13.2"
+
+[libraries]
+kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+compose-ui-util = { group = "androidx.compose.ui", name = "ui-util", version.ref = "compose" }
+compose-ripple = { group = "androidx.compose.material", name = "material-ripple", version.ref = "compose" }
+compose-shimmer = { group = "com.valentinilk.shimmer", name = "compose-shimmer", version.ref = "compose-shimmer" }
+compose-activity = { group = "androidx.activity", name = "activity-compose", version.ref = "compose-activity" }
+compose-coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "compose-coil" }
+room = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-encoding = { group = "io.ktor", name = "ktor-client-encoding", version.ref = "ktor" }
+ktor-client-serialization = { group = "io.ktor", name = "ktor-client-serialization", version.ref = "ktor" }
+ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+brotli = { group = "org.brotli", name = "dec", version.ref = "brotli" }
+palette = { group = "androidx.palette", name = "palette", version.ref = "palette" }
+desugaring = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugaring" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+[plugins]
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
