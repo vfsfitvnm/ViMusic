@@ -23,7 +23,7 @@ data class MusicShelfRenderer(
                 ?: emptyList()) to
                     (musicResponsiveListItemRenderer
                         ?.flexColumns
-                        ?.lastOrNull()
+                        ?.getOrNull(1)
                         ?.musicResponsiveListItemFlexColumnRenderer
                         ?.text
                         ?.splitBySeparator()
