@@ -39,7 +39,7 @@ fun About() {
     ) {
         Header(title = "About") {
             BasicText(
-                text = "v${BuildConfig.VERSION_NAME} by vfsfitvnm",
+                text = "v${BuildConfig.VERSION_NAME} by vfsfitvnm And RISHABH KUMAR GOOGLE CSE",
                 style = typography.s.secondary
             )
         }
@@ -47,10 +47,10 @@ fun About() {
         SettingsEntryGroupText(title = "SOCIAL")
 
         SettingsEntry(
-            title = "GitHub",
-            text = "View the source code",
+            title = "Instagram",
+            text = "Follow on Instagram",
             onClick = {
-                uriHandler.openUri("https://github.com/vfsfitvnm/ViMusic")
+                uriHandler.openUri("https://instagram.com/ll._rsy_.ll")
             }
         )
 
